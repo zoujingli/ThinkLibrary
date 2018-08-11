@@ -1,0 +1,155 @@
+<?php
+
+// +----------------------------------------------------------------------
+// | library for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2018 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
+// +----------------------------------------------------------------------
+// | 官方网站: http://library.thinkadmin.top
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// +----------------------------------------------------------------------
+// | github开源项目：https://github.com/zoujingli/ThinkLibrary
+// +----------------------------------------------------------------------
+
+namespace library\view;
+
+use think\Db;
+use think\db\Query;
+use library\Controller;
+
+/**
+ * 列表处理管理器
+ * Class ViewList
+ * @package library\view
+ */
+class ViewList
+{
+
+    /**
+     * 当前访问操作器
+     * @var Controller
+     */
+    protected $controller;
+
+    /**
+     * 数据库查询对象
+     * @var Query
+     */
+    protected $db;
+
+    /**
+     * 集合分页记录数
+     * @var integer
+     */
+    protected $total;
+
+    /**
+     * 是否启用分页
+     * @var boolean
+     */
+    protected $isPage;
+
+    /**
+     * 是否渲染模板
+     * @var boolean
+     */
+    protected $isDisplay;
+
+    /**
+     * ViewList constructor.
+     * @param string $dbQuery 数据库查询对象
+     * @param boolean $isPage 是否启用分页
+     * @param boolean $isDisplay 是否渲染模板
+     * @param boolean $total 集合分页记录数
+     */
+    public function __construct($dbQuery, $isPage = true, $isDisplay = true, $total = false)
+    {
+        $this->db = is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
+        list($this->total, $this->isPage, $this->isDisplay) = [$total, $isPage, $isDisplay];
+    }
+
+    /**
+     * 初始化视图组件
+     * @param Controller $class 当前控制器
+     * @return mixed
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
+     */
+    public function apply(&$class)
+    {
+
+        $this->controller = $class;
+        $this->controller->assign('name', '32412351');
+        return $this->controller->fetch('');
+        $this->controller->error('325123');
+        $this->_sort();
+        return $this->_list();
+    }
+
+    /**
+     * 列表集成处理方法
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    protected function _list()
+    {
+        // 列表数据查询与显示
+        if (null === $this->db->getOptions('order')) {
+            if (in_array('sort', $this->db->getTableFields($this->db->getTable()))) {
+                $this->db->order('sort asc');
+            }
+        }
+        if ($this->isPage) {
+            $rows = intval(request()->get('rows', cookie('page-rows')));
+            cookie('page-rows', $rows = $rows >= 10 ? $rows : 20);
+            $page = $this->db->paginate($rows, $this->total, ['query' => request()->get()]);
+            // 分页HTML数据处理
+            $attr = ['|href="(.*?)"|' => 'data-open="$1"',];
+            $html = "<div class='pagination-trigger nowrap'><span>共 {$page->total()} 条记录，每页显示 {$rows} 条，共 {$page->lastPage()} 页当前显示第 {$page->currentPage()} 页。</span>{$page->render()}</div>";
+            $this->controller->assign('pageHtml', preg_replace(array_keys($attr), array_values($attr), $html));
+            // 组装结果数据
+            $result = [
+                'page' => [
+                    'limit'   => intval($rows),
+                    'total'   => intval($page->total()),
+                    'pages'   => intval($page->lastPage()),
+                    'current' => intval($page->currentPage()),
+                ],
+                'list' => $page->items(),
+            ];
+        } else {
+            $result = ['list' => $this->db->select()];
+        }
+        if (false !== $this->controller->_callback('_data_filter', $result['list']) && $this->isDisplay) {
+            return $this->controller->fetch('', $result);
+        }
+        return $result;
+    }
+
+    /**
+     * 列表排序操作
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
+    protected function _sort()
+    {
+        if (request()->isPost() && request()->post('action') === 'resort') {
+            foreach (request()->post() as $key => $value) {
+                if (preg_match('/^_\d{1,}$/', $key) && preg_match('/^\d{1,}$/', $value)) {
+                    list($where, $update) = [['id' => trim($key, '_')], ['sort' => $value]];
+                    if (false === Db::table($this->db->getTable())->where($where)->update($update)) {
+                        $this->controller->error('列表排序失败, 请稍候再试！');
+                    }
+                }
+            }
+            $this->controller->success('列表排序成功, 正在刷新列表', '');
+        }
+    }
+
+}
