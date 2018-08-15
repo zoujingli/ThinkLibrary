@@ -12,9 +12,8 @@
 // | github开源项目：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\view;
+namespace library\logic;
 
-use library\Controller;
 use library\tools\Data;
 use think\db\Query;
 
@@ -23,7 +22,7 @@ use think\db\Query;
  * Class ViewSave
  * @package library\view
  */
-class ViewSave extends View
+class LogicSave extends Logic
 {
     /**
      * 表单扩展数据

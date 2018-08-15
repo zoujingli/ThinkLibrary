@@ -12,7 +12,7 @@
 // | github开源项目：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\view;
+namespace library\logic;
 
 use think\Db;
 
@@ -21,7 +21,7 @@ use think\Db;
  * Class ViewList
  * @package library\view
  */
-class ViewList extends View
+class LogicList extends Logic
 {
     /**
      * 集合分页记录数

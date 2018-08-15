@@ -20,7 +20,7 @@ use library\traits\Jump;
 /**
  * 标准控制器基类
  * --------------------------------
- * Class Api
+ * Class Controller
  * @package library
  * --------------------------------
  * @method mixed assign($name, $value = '')
@@ -65,7 +65,7 @@ class Controller
      */
     public function __call($name, $arguments = [])
     {
-        $className = "library\\view\\View" . ucfirst(strtolower($name));
+        $className = "library\\logic\\Logic" . ucfirst(strtolower($name));
         if (class_exists($className)) {
             $app = app($className, $arguments);
             return method_exists($app, 'apply') ? $app->apply($this) : $app;

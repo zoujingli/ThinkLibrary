@@ -12,7 +12,7 @@
 // | github开源项目：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\view;
+namespace library\logic;
 
 use think\db\Query;
 use library\tools\Data;
@@ -22,7 +22,7 @@ use library\tools\Data;
  * Class ViewForm
  * @package library\view
  */
-class ViewForm extends View
+class LogicForm extends Logic
 {
     /**
      * 表单额外更新条件

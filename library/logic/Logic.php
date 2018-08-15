@@ -12,7 +12,7 @@
 // | github开源项目：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\view;
+namespace library\logic;
 
 use think\Db;
 use think\db\Query;
@@ -23,7 +23,7 @@ use library\Controller;
  * Class View
  * @package library\view
  */
-class View
+class Logic
 {
     /**
      * 数据库操作对象
