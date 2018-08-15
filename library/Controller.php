@@ -29,6 +29,8 @@ use library\traits\Jump;
  * @method mixed error($info, $data = [], $code = 0)
  * @method mixed success($info, $data = [], $code = 1)
  * --------------------------------
+ * @method view\ViewDelete delete($dbQuery, $pkField = '', $where = [])
+ * @method view\ViewSave save($dbQuery, $data = [], $pkField = '', $where = [])
  * @method view\ViewList list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
  * @method view\ViewForm form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
  * --------------------------------

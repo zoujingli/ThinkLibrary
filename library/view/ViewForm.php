@@ -14,30 +14,16 @@
 
 namespace library\view;
 
-use think\Db;
 use think\db\Query;
 use library\tools\Data;
-use library\Controller;
 
 /**
  * 表单视图管理器
  * Class ViewForm
  * @package library\view
  */
-class ViewForm
+class ViewForm extends View
 {
-    /**
-     * 数据库操作对象
-     * @var Query
-     */
-    protected $db;
-
-    /**
-     * 当前操作控制器引用
-     * @var Controller
-     */
-    protected $class;
-
     /**
      * 表单额外更新条件
      * @var array
@@ -66,7 +52,7 @@ class ViewForm
      * 表单扩展数据
      * @var array
      */
-    protected $extendData;
+    protected $data;
 
     /**
      * ViewForm constructor.
@@ -74,24 +60,22 @@ class ViewForm
      * @param string $tplFile 模板名称
      * @param string $pkField 指定数据对象主键
      * @param array $where 额外更新条件
-     * @param array $extendData 表单扩展数据
+     * @param array $data 表单扩展数据
      */
-    public function __construct($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
+    public function __construct($dbQuery, $tplFile = '', $pkField = '', $where = [], $data = [])
     {
-        // 生成数据库操作对象
-        $this->db = is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
+        parent::__construct($dbQuery);
         // 传入的参数赋值处理
-        list($this->tplFile, $this->where, $this->extendData) = [$tplFile, $where, $extendData];
+        list($this->tplFile, $this->where, $this->data) = [$tplFile, $where, $data];
         // 获取表单主键的名称
         $this->pkField = empty($pkField) ? ($this->db->getPk() ? $this->db->getPk() : 'id') : $pkField;;
         // 从where及extend中获取主键的默认值
-        $pkWhereValue = isset($where[$this->pkField]) ? $where[$this->pkField] : (isset($extendData[$this->pkField]) ? $extendData[$this->pkField] : null);
-        $this->pkValue = request()->request($this->pkField, $pkWhereValue);
+        $pkWhereValue = isset($where[$this->pkField]) ? $where[$this->pkField] : (isset($data[$this->pkField]) ? $data[$this->pkField] : null);
+        $this->pkValue = $this->request->request($this->pkField, $pkWhereValue);
     }
 
     /**
-     * 组件应用器
-     * @param Controller $contrlloer
+     * 应用初始化
      * @return array|mixed
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
@@ -99,16 +83,15 @@ class ViewForm
      * @throws \think\exception\DbException
      * @throws \think\exception\PDOException
      */
-    public function apply($contrlloer)
+    protected function init()
     {
-        $this->class = $contrlloer;
         // GET请求, 获取数据并显示表单页面
         if (request()->isGet()) {
             return $this->display();
         }
         // POST请求, 数据自动存库处理
         if (request()->isPost()) {
-            $this->update();
+            return $this->update();
         }
     }
 
@@ -119,9 +102,9 @@ class ViewForm
      */
     protected function update()
     {
-        $post = request()->post();
-        $data = array_merge($post, $this->extendData);
-        if (false !== $this->class->_callback('_form_filter', $data, $post)) {
+        $post = $this->request->post();
+        $data = array_merge($post, $this->data);
+        if (false !== $this->class->_callback('_form_filter', $data, $this->where)) {
             $result = Data::save($this->db, $data, $this->pkField, $this->where);
             if (false !== $this->class->_callback('_form_result', $result, $data)) {
                 if ($result !== false) {
@@ -134,23 +117,23 @@ class ViewForm
 
     /**
      * 数据显示处理
-     * @param array $vo
+     * @param array $data
      * @return array|mixed
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    protected function display($vo = [])
+    protected function display($data = [])
     {
         if ($this->pkValue !== null) {
             $where = [$this->tplFile => $this->pkValue];
-            $vo = (array)$this->db->where($where)->where($this->where)->find();
+            $data = (array)$this->db->where($where)->where($this->where)->find();
         }
-        $vo = array_merge($vo, $this->extendData);
-        if (false !== $this->class->_callback('_form_filter', $vo)) {
-            return $this->class->fetch($this->tplFile, ['vo' => $vo]);
+        $data = array_merge($data, $this->data);
+        if (false !== $this->class->_callback('_form_filter', $data)) {
+            return $this->class->fetch($this->tplFile, ['vo' => $data]);
         }
-        return $vo;
+        return $data;
     }
 
 }
