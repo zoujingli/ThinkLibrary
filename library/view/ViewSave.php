@@ -17,7 +17,6 @@ namespace library\view;
 use library\Controller;
 use library\tools\Data;
 use think\db\Query;
-use think\facade\Request;
 
 /**
  * 数据更新插件管理器
@@ -26,6 +25,12 @@ use think\facade\Request;
  */
 class ViewSave extends View
 {
+    /**
+     * 表单扩展数据
+     * @var array
+     */
+    protected $data;
+
     /**
      * 表单额外更新条件
      * @var array
@@ -43,18 +48,6 @@ class ViewSave extends View
      * @var string
      */
     protected $pkValue;
-
-    /**
-     * 表单扩展数据
-     * @var array
-     */
-    protected $data;
-
-    /**
-     * 当前请求对象
-     * @var Request
-     */
-    protected $request;
 
     /**
      * ViewForm constructor.
@@ -79,14 +72,12 @@ class ViewSave extends View
 
     /**
      * 组件应用器
-     * @param Controller $controller
+     * @return boolean
      * @throws \think\Exception
      * @throws \think\exception\PDOException
-     * @return boolean
      */
-    public function apply($controller)
+    protected function init()
     {
-        $this->class = $controller;
         // 操作前置数据过滤处理
         if (false !== $this->class->_callback('_save_filter', $this->where, $this->data)) {
             $result = Data::save($this->db, $this->data, $this->pkField, $this->where);
