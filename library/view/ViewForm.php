@@ -36,7 +36,7 @@ class ViewForm
      * 当前操作控制器引用
      * @var Controller
      */
-    protected $controller;
+    protected $class;
 
     /**
      * 表单额外更新条件
@@ -101,7 +101,7 @@ class ViewForm
      */
     public function apply($contrlloer)
     {
-        $this->controller = $contrlloer;
+        $this->class = $contrlloer;
         // GET请求, 获取数据并显示表单页面
         if (request()->isGet()) {
             return $this->display();
@@ -121,13 +121,13 @@ class ViewForm
     {
         $post = request()->post();
         $data = array_merge($post, $this->extendData);
-        if (false !== $this->controller->_callback('_form_filter', $data, $post)) {
+        if (false !== $this->class->_callback('_form_filter', $data, $post)) {
             $result = Data::save($this->db, $data, $this->pkField, $this->where);
-            if (false !== $this->controller->_callback('_form_result', $result, $data)) {
+            if (false !== $this->class->_callback('_form_result', $result, $data)) {
                 if ($result !== false) {
-                    $this->controller->success('恭喜, 数据保存成功!', '');
+                    $this->class->success('恭喜, 数据保存成功!', '');
                 }
-                $this->controller->error('数据保存失败, 请稍候再试!');
+                $this->class->error('数据保存失败, 请稍候再试!');
             }
         }
     }
@@ -147,8 +147,8 @@ class ViewForm
             $vo = (array)$this->db->where($where)->where($this->where)->find();
         }
         $vo = array_merge($vo, $this->extendData);
-        if (false !== $this->controller->_callback('_form_filter', $vo)) {
-            return $this->controller->fetch($this->tplFile, ['vo' => $vo]);
+        if (false !== $this->class->_callback('_form_filter', $vo)) {
+            return $this->class->fetch($this->tplFile, ['vo' => $vo]);
         }
         return $vo;
     }

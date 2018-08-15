@@ -30,7 +30,7 @@ class ViewList
      * 当前访问操作器
      * @var Controller
      */
-    protected $controller;
+    protected $class;
 
     /**
      * 数据库查询对象
@@ -81,11 +81,7 @@ class ViewList
      */
     public function apply(&$class)
     {
-
-        $this->controller = $class;
-        $this->controller->assign('name', '32412351');
-        return $this->controller->fetch('');
-        $this->controller->error('325123');
+        $this->class = $class;
         $this->_sort();
         return $this->_list();
     }
@@ -112,7 +108,7 @@ class ViewList
             // 分页HTML数据处理
             $attr = ['|href="(.*?)"|' => 'data-open="$1"',];
             $html = "<div class='pagination-trigger nowrap'><span>共 {$page->total()} 条记录，每页显示 {$rows} 条，共 {$page->lastPage()} 页当前显示第 {$page->currentPage()} 页。</span>{$page->render()}</div>";
-            $this->controller->assign('pageHtml', preg_replace(array_keys($attr), array_values($attr), $html));
+            $this->class->assign('pageHtml', preg_replace(array_keys($attr), array_values($attr), $html));
             // 组装结果数据
             $result = [
                 'page' => [
@@ -126,8 +122,8 @@ class ViewList
         } else {
             $result = ['list' => $this->db->select()];
         }
-        if (false !== $this->controller->_callback('_data_filter', $result['list']) && $this->isDisplay) {
-            return $this->controller->fetch('', $result);
+        if (false !== $this->class->_callback('_data_filter', $result['list']) && $this->isDisplay) {
+            return $this->class->fetch('', $result);
         }
         return $result;
     }
@@ -144,11 +140,11 @@ class ViewList
                 if (preg_match('/^_\d{1,}$/', $key) && preg_match('/^\d{1,}$/', $value)) {
                     list($where, $update) = [['id' => trim($key, '_')], ['sort' => $value]];
                     if (false === Db::table($this->db->getTable())->where($where)->update($update)) {
-                        $this->controller->error('列表排序失败, 请稍候再试！');
+                        $this->class->error('排序失败, 请稍候再试！');
                     }
                 }
             }
-            $this->controller->success('列表排序成功, 正在刷新列表', '');
+            $this->class->success('排序成功, 正在刷新页面！', '');
         }
     }
 

@@ -24,9 +24,10 @@ use library\traits\Jump;
  * @package library
  * --------------------------------
  * @method mixed assign($name, $value = '')
+ * @method mixed fetch($tpl, $vars = [], $config = [])
+ * --------------------------------
  * @method mixed error($info, $data = [], $code = 0)
  * @method mixed success($info, $data = [], $code = 1)
- * @method mixed fetch($tpl, $vars = [], $config = [])
  * --------------------------------
  * @method view\ViewList list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
  * @method view\ViewForm form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
