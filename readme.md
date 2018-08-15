@@ -1,2 +1,2 @@
 # ThinkLibrary
-library for ThinkAdmin
+Library for ThinkAdmin

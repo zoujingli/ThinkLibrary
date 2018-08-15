@@ -1,17 +1,11 @@
 {
   "type": "library",
   "name": "zoujingli/think-library",
-  "homepage": "https://github.com/zoujingli/ThinkLibrary",
-  "description": "ThinkAdmin development of Library",
   "license": "MIT",
-  "authors": [
-    {
-      "name": "Anyon",
-      "email": "zoujingli@qq.com",
-      "homepage": "https://library.thinkadmin.top"
-    }
-  ],
+  "homepage": "https://library.thinkadmin.top",
+  "description": "ThinkAdmin development of Library",
   "keywords": ["Library", "ThinkAdmin", "ThinkLibrary"],
+  "authors": [{"name": "Anyon", "email": "zoujingli@qq.com"}],
   "require": {
     "php": ">=5.4",
     "ext-curl": "*",
@@ -21,6 +15,12 @@
   "autoload": {
     "psr-4": {
       "library\\": "library"
+    }
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://packagist.laravel-china.org"
     }
   }
 }
