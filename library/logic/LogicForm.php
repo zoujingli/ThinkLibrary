@@ -86,11 +86,11 @@ class LogicForm extends Logic
     protected function init()
     {
         // GET请求, 获取数据并显示表单页面
-        if (request()->isGet()) {
+        if ($this->request->isGet()) {
             return $this->display();
         }
         // POST请求, 数据自动存库处理
-        if (request()->isPost()) {
+        if ($this->request->isPost()) {
             return $this->update();
         }
     }
