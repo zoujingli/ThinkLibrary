@@ -23,16 +23,10 @@ use library\traits\Jump;
  * Class Controller
  * @package library
  * --------------------------------
- * @method mixed assign($name, $value = '')
- * @method mixed fetch($tpl, $vars = [], $config = [])
- * --------------------------------
- * @method mixed error($info, $data = [], $code = 0)
- * @method mixed success($info, $data = [], $code = 1)
- * --------------------------------
- * @method view\ViewDelete delete($dbQuery, $pkField = '', $where = [])
- * @method view\ViewSave save($dbQuery, $data = [], $pkField = '', $where = [])
- * @method view\ViewList list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
- * @method view\ViewForm form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
+ * @method logic\LogicDelete delete($dbQuery, $pkField = '', $where = [])
+ * @method logic\LogicSave save($dbQuery, $data = [], $pkField = '', $where = [])
+ * @method logic\LogicList list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
+ * @method logic\LogicForm form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
  * --------------------------------
  * @author Anyon <zoujingli@qq.com>
  * @date 2018/08/10 11:31
