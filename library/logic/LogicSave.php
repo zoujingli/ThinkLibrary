@@ -78,7 +78,7 @@ class LogicSave extends Logic
     protected function init()
     {
         // 操作前置数据过滤处理
-        if (false !== $this->class->_callback('_save_filter', $this->where, $this->data)) {
+        if (false !== $this->class->_callback('_save_filter', $this->data, $this->where)) {
             $result = Data::save($this->db, $this->data, $this->pkField, $this->where);
             // 操作后置结果处理
             if (false === $this->class->_callback('_save_result', $result)) {

@@ -70,8 +70,7 @@ class LogicForm extends Logic
         // 获取表单主键的名称
         $this->pkField = empty($pkField) ? ($this->db->getPk() ? $this->db->getPk() : 'id') : $pkField;;
         // 从where及extend中获取主键的默认值
-        $pkWhereValue = isset($where[$this->pkField]) ? $where[$this->pkField] : (isset($data[$this->pkField]) ? $data[$this->pkField] : null);
-        $this->pkValue = $this->request->request($this->pkField, $pkWhereValue);
+        $this->pkValue = $this->request->request($this->pkField, (isset($data[$this->pkField]) ? $data[$this->pkField] : null));
     }
 
     /**

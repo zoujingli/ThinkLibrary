@@ -82,7 +82,7 @@ class LogicList extends Logic
     {
         // 列表数据查询与显示
         if (null === $this->db->getOptions('order')) {
-            if (in_array('sort', $this->db->getTableFields($this->db->getTable()))) {
+            if (method_exists($this->db, 'getTableFields') && in_array('sort', $this->db->getTableFields())) {
                 $this->db->order('sort asc');
             }
         }
