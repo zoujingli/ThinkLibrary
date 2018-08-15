@@ -56,9 +56,9 @@ class LogicDelete extends Logic
         $this->where = $where;
         // 获取表单主键的名称
         $this->pkField = empty($pkField) ? ($this->db->getPk() ? $this->db->getPk() : 'id') : $pkField;;
-        // 从where及extend中获取主键的默认值
+        // 从where中获取主键的默认值
         $pkWhereValue = isset($where[$this->pkField]) ? $where[$this->pkField] : null;
-        $this->pkValue = request()->request($this->pkField, $pkWhereValue);
+        $this->pkValue = $this->request->request($this->pkField, $pkWhereValue);
     }
 
     /**
@@ -79,13 +79,12 @@ class LogicDelete extends Logic
             if (false === $this->class->_callback('_delete_filter', $map, $where)) {
                 return null;
             }
-            $table = $this->db->getTable();
             if (method_exists($this->db, 'getTableFields') && in_array('is_deleted', $this->db->getTableFields())) {
                 // 软删除操作
-                $result = Db::table($table)->where($this->where)->where($map)->update(['is_deleted' => '1']);
+                $result = Db::table($this->db->getTable())->where($this->where)->where($map)->update(['is_deleted' => '1']);
             } else {
                 // 硬删除操作
-                $result = Db::table($table)->where($this->where)->where($map)->delete();
+                $result = Db::table($this->db->getTable())->where($this->where)->where($map)->delete();
             }
             // 删除结果回调处理
             if (false !== $this->class->_callback('_delete_result', $result)) {

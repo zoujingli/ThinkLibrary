@@ -24,6 +24,13 @@ use library\tools\Data;
  */
 class LogicForm extends Logic
 {
+
+    /**
+     * 表单扩展数据
+     * @var array
+     */
+    protected $data;
+
     /**
      * 表单额外更新条件
      * @var array
@@ -49,12 +56,6 @@ class LogicForm extends Logic
     protected $pkValue;
 
     /**
-     * 表单扩展数据
-     * @var array
-     */
-    protected $data;
-
-    /**
      * ViewForm constructor.
      * @param string|Query $dbQuery
      * @param string $tplFile 模板名称
@@ -70,7 +71,7 @@ class LogicForm extends Logic
         // 获取表单主键的名称
         $this->pkField = empty($pkField) ? ($this->db->getPk() ? $this->db->getPk() : 'id') : $pkField;;
         // 从where及extend中获取主键的默认值
-        $this->pkValue = $this->request->request($this->pkField, (isset($data[$this->pkField]) ? $data[$this->pkField] : null));
+        $this->pkValue = $this->request->request($this->pkField, isset($data[$this->pkField]) ? $data[$this->pkField] : null);
     }
 
     /**
@@ -125,7 +126,7 @@ class LogicForm extends Logic
     protected function display($data = [])
     {
         if ($this->pkValue !== null) {
-            $where = [$this->tplFile => $this->pkValue];
+            $where = [$this->pkField => $this->pkValue];
             $data = (array)$this->db->where($where)->where($this->where)->find();
         }
         $data = array_merge($data, $this->data);
