@@ -19,7 +19,7 @@ namespace library\logic;
  * Class LogicValidate
  * @package library\logic
  */
-class LogicValidate extends Logic
+class LogicVali extends Logic
 {
 
     /**
