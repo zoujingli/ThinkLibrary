@@ -107,7 +107,7 @@ class LogicList extends Logic
         } else {
             $result = ['list' => $this->db->select()];
         }
-        if (false !== $this->class->_callback('_data_filter', $result['list']) && $this->isDisplay) {
+        if (false !== $this->class->_callback('_list_filter', $result['list']) && $this->isDisplay) {
             return $this->class->fetch('', $result);
         }
         return $result;

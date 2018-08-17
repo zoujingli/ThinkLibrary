@@ -23,8 +23,8 @@ use library\traits\Jump;
  * Class Controller
  * @package library
  * --------------------------------
- * @method logic\LogicValidate validate($data, $rule = [], $message = [])
  * @method logic\LogicDelete delete($dbQuery, $pkField = '', $where = [])
+ * @method logic\LogicValidate validate($data, $rule = [], $message = [])
  * @method logic\LogicSave save($dbQuery, $data = [], $pkField = '', $where = [])
  * @method logic\LogicList list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
  * @method logic\LogicForm form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
