@@ -33,7 +33,7 @@ class LogicDelete extends Logic
 
     /**
      * 数据对象主键名称
-     * @var array|string
+     * @var string
      */
     protected $pkField;
 
