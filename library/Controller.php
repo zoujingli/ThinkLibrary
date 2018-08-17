@@ -23,11 +23,11 @@ use library\traits\Jump;
  * Class Controller
  * @package library
  * --------------------------------
- * @method array validate($data, $rule = [], $message = [])
- * @method mixed delete($dbQuery, $pkField = '', $where = [])
- * @method mixed save($dbQuery, $data = [], $pkField = '', $where = [])
- * @method array list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
- * @method mixed form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
+ * @method array _validate($data, $rule = [], $message = [])
+ * @method mixed _delete($dbQuery, $pkField = '', $where = [])
+ * @method mixed _save($dbQuery, $data = [], $pkField = '', $where = [])
+ * @method array _list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
+ * @method mixed _form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
  * --------------------------------
  * @author Anyon <zoujingli@qq.com>
  * @date 2018/08/10 11:31
@@ -60,7 +60,7 @@ class Controller
      */
     public function __call($name, $arguments = [])
     {
-        $className = "library\\logic\\Logic" . ucfirst(strtolower($name));
+        $className = "library\\logic\\Logic" . ucfirst(ltrim($name, '_'));
         if (class_exists($className)) {
             $app = app($className, $arguments);
             return method_exists($app, 'apply') ? $app->apply($this) : $app;
