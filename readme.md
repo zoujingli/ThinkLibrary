@@ -10,7 +10,7 @@ class MyController extend \library\Controller{
     // 显示数据列表
     public function index(){
     
-        return $this->list('MyTableName');
+        return $this->_list('MyTableName');
         
     }
     
@@ -20,11 +20,11 @@ class MyController extend \library\Controller{
 ## 列表处理
 ```php
 // 列表展示
-return $this->list($dbQuery, $isPage, $isDisplay, $total);
+return $this->_list($dbQuery, $isPage, $isDisplay, $total);
 ```
 
 ## 表单处理
 ```php
 // 表单显示及数据更新
-return $this->form($dbQuery, $tplFile, $pkField , $where, $data);
+return $this->_form($dbQuery, $tplFile, $pkField , $where, $data);
 ```
