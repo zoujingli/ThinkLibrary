@@ -93,7 +93,7 @@ class LogicList extends Logic
             // 分页HTML数据处理
             $attr = ['|href="(.*?)"|' => 'data-open="$1"',];
             $html = "<div class='pagination-trigger nowrap'><span>共 {$page->total()} 条记录，每页显示 {$rows} 条，共 {$page->lastPage()} 页当前显示第 {$page->currentPage()} 页。</span>{$page->render()}</div>";
-            $this->class->assign('pageHtml', preg_replace(array_keys($attr), array_values($attr), $html));
+            $this->class->assign('pagehtml', preg_replace(array_keys($attr), array_values($attr), $html));
             // 组装结果数据
             $result = [
                 'page' => [

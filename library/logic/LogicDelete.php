@@ -55,10 +55,10 @@ class LogicDelete extends Logic
         // 传入的参数赋值处理
         $this->where = $where;
         // 获取表单主键的名称
-        $this->pkField = empty($pkField) ? ($this->db->getPk() ? $this->db->getPk() : 'id') : $pkField;;
+        $this->pkField = empty($pkField) ? ($this->db->getPk() ? $this->db->getPk() : 'id') : $pkField;
         // 从where中获取主键的默认值
-        $pkWhereValue = isset($where[$this->pkField]) ? $where[$this->pkField] : null;
-        $this->pkValue = $this->request->request($this->pkField, $pkWhereValue);
+        $pkValue = isset($where[$this->pkField]) ? $where[$this->pkField] : null;
+        $this->pkValue = $this->request->request($this->pkField, $pkValue);
     }
 
     /**

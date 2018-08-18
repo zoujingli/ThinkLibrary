@@ -9,6 +9,7 @@
   "require": {
     "php": ">=5.4",
     "ext-curl": "*",
+    "ext-iconv": "*",
     "ext-openssl": "*",
     "topthink/framework": "5.1.*"
   },

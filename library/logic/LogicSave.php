@@ -64,7 +64,8 @@ class LogicSave extends Logic
         $this->pkField = empty($pkField) ? ($this->db->getPk() ? $this->db->getPk() : 'id') : $pkField;;
         // 从extend中获取主键的默认值
         if (!isset($this->data[$this->pkField])) {
-            $this->pkValue = $this->request->request($this->pkField, isset($data[$this->pkField]) ? $data[$this->pkField] : null);
+            $pkField = isset($data[$this->pkField]) ? $data[$this->pkField] : null;
+            $this->pkValue = $this->request->request($this->pkField, $pkField);
             $this->data[$this->pkField] = $this->pkValue;
         }
     }
