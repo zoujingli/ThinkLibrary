@@ -53,7 +53,7 @@ class Search extends Logic
      * 设置Like查询条件
      * @param string|array $fields 查询字段
      * @param string $inputType 输入类型 get|post
-     * @return Search
+     * @return $this
      */
     public function setLike($fields, $inputType = 'get')
     {
@@ -88,7 +88,7 @@ class Search extends Logic
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
      * @param string $inputType 输入类型 get|post
-     * @return Search
+     * @return $this
      */
     public function setDateBetween($fields, $split = ' - ', $inputType = 'get')
     {
