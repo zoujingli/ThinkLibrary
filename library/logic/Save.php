@@ -14,15 +14,15 @@
 
 namespace library\logic;
 
-use library\tools\Data;
 use think\db\Query;
+use library\tools\Data;
 
 /**
  * 数据更新插件管理器
  * Class ViewSave
  * @package library\view
  */
-class LogicSave extends Logic
+class Save extends Logic
 {
     /**
      * 表单扩展数据

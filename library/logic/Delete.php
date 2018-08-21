@@ -22,7 +22,7 @@ use think\db\Query;
  * Class ViewDelete
  * @package library\view
  */
-class LogicDele extends Logic
+class Delete extends Logic
 {
 
     /**

@@ -21,7 +21,7 @@ use think\Db;
  * Class ViewList
  * @package library\view
  */
-class LogicList extends Logic
+class Page extends Logic
 {
     /**
      * 集合分页记录数
@@ -68,7 +68,7 @@ class LogicList extends Logic
     protected function init()
     {
         $this->_sort();
-        return $this->_list();
+        return $this->_page();
     }
 
     /**
@@ -78,7 +78,7 @@ class LogicList extends Logic
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    protected function _list()
+    protected function _page()
     {
         // 列表数据查询与显示
         if (null === $this->db->getOptions('order')) {
@@ -107,7 +107,7 @@ class LogicList extends Logic
         } else {
             $result = ['list' => $this->db->select()];
         }
-        if (false !== $this->class->_callback('_list_filter', $result['list']) && $this->isDisplay) {
+        if (false !== $this->class->_callback('_page_filter', $result['list']) && $this->isDisplay) {
             return $this->class->fetch('', $result);
         }
         return $result;

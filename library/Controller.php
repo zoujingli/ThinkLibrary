@@ -23,10 +23,11 @@ use library\traits\Jump;
  * Class Controller
  * @package library
  * --------------------------------
- * @method array _vali($data, $rule = [], $message = [])
- * @method mixed _dele($dbQuery, $pkField = '', $where = [])
+ * @method logic\Search _search($dbQuery)
+ * @method array _validate($data, $rule = [], $message = [])
+ * @method mixed _delete($dbQuery, $pkField = '', $where = [])
  * @method mixed _save($dbQuery, $data = [], $pkField = '', $where = [])
- * @method array _list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
+ * @method array _page($dbQuery, $isPage = true, $isDisplay = true, $total = false)
  * @method mixed _form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
  * --------------------------------
  * @author Anyon <zoujingli@qq.com>
@@ -60,7 +61,7 @@ class Controller
      */
     public function __call($name, $arguments = [])
     {
-        $className = "library\\logic\\Logic" . ucfirst(ltrim($name, '_'));
+        $className = "library\\logic\\" . ucfirst(ltrim($name, '_'));
         if (class_exists($className)) {
             $app = app($className, $arguments);
             return method_exists($app, 'apply') ? $app->apply($this) : $app;

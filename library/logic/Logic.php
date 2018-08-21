@@ -58,11 +58,24 @@ class Logic
      * @param Controller $controller
      * @return mixed
      */
-    public function apply($controller)
+    protected function apply($controller)
     {
         $this->class = $controller;
         if (method_exists($this, 'init')) {
             return $this->init();
+        }
+    }
+
+    /**
+     * 魔术调用函数
+     * @param string $name 函数名称
+     * @param array $arguments 调用参数
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        if (method_exists($this, $name)) {
+            return call_user_func_array([$this, $name], $arguments);
         }
     }
 

@@ -22,7 +22,7 @@ use library\tools\Data;
  * Class ViewForm
  * @package library\view
  */
-class LogicForm extends Logic
+class Form extends Logic
 {
 
     /**
