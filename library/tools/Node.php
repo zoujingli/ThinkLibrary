@@ -27,13 +27,11 @@ class Node
      * 获取当前访问节点
      * @return string
      */
-    public static function getCurrentNode()
+    public static function current()
     {
         $request = request();
-        list($module, $controller, $action) = [
-            $request->module(), $request->controller(), $request->action(),
-        ];
-        return self::parseControllerNodeString("{$module}/{$controller}") . '/' . strtolower($action);
+        list($module, $controller, $action) = [$request->module(), $request->controller(), $request->action()];
+        return self::parseString("{$module}/{$controller}") . '/' . strtolower($action);
     }
 
     /**
@@ -42,9 +40,9 @@ class Node
      * @param array $nodes 额外数据
      * @return array
      */
-    public static function getNodeTree($dir, $nodes = [])
+    public static function getTree($dir, $nodes = [])
     {
-        foreach (self::scanDirFile($dir) as $file) {
+        foreach (self::scanDir($dir) as $file) {
             list($matches, $filename) = [[], str_replace(DIRECTORY_SEPARATOR, '/', $file)];
             if (!preg_match('|/(\w+)/controller/(.+)|', $filename, $matches)) {
                 continue;
@@ -56,7 +54,7 @@ class Node
                         continue;
                     }
                     $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                    $nodes[] = self::parseControllerNodeString("{$matches[1]}/{$controller}") . '/' . strtolower($funcName);
+                    $nodes[] = self::parseString("{$matches[1]}/{$controller}") . '/' . strtolower($funcName);
                 }
             }
         }
@@ -68,7 +66,7 @@ class Node
      * @param string $node 节点名称
      * @return string
      */
-    public static function parseControllerNodeString($node)
+    public static function parseString($node)
     {
         $nodes = [];
         foreach (explode('/', $node) as $str) {
@@ -88,13 +86,13 @@ class Node
      * @param string $ext 有文件后缀
      * @return array
      */
-    public static function scanDirFile($dir, $data = [], $ext = 'php')
+    public static function scanDir($dir, $data = [], $ext = 'php')
     {
         foreach (scandir($dir) as $_dir) {
             if (strpos($_dir, '.') !== 0) {
                 $tmpPath = realpath($dir . DIRECTORY_SEPARATOR . $_dir);
                 if (is_dir($tmpPath)) {
-                    $data = array_merge($data, self::scanDirFile($tmpPath));
+                    $data = array_merge($data, self::scanDir($tmpPath));
                 } elseif (pathinfo($tmpPath, 4) === $ext) {
                     $data[] = $tmpPath;
                 }

@@ -50,10 +50,10 @@ class LogicList extends Logic
      */
     public function __construct($dbQuery, $isPage = true, $isDisplay = true, $total = false)
     {
-        parent::__construct($dbQuery);
         $this->total = $total;
         $this->isPage = $isPage;
         $this->isDisplay = $isDisplay;
+        parent::__construct($dbQuery);
     }
 
     /**
