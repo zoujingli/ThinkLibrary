@@ -21,16 +21,7 @@ namespace library\logic;
  */
 class Search extends Logic
 {
-
-    /**
-     * Search constructor.
-     * @param $dbQuery
-     */
-    public function __construct($dbQuery)
-    {
-        parent::__construct($dbQuery);
-    }
-
+    
     /**
      * 应用初始化
      * @return $this
