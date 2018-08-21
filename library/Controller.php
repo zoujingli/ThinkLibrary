@@ -24,8 +24,8 @@ use library\traits\Jump;
  * @package library
  * --------------------------------
  * @method array _vali($data, $rule = [], $message = [])
- * @method boolean _delete($dbQuery, $pkField = '', $where = [])
- * @method boolean _save($dbQuery, $data = [], $pkField = '', $where = [])
+ * @method mixed _delete($dbQuery, $pkField = '', $where = [])
+ * @method mixed _save($dbQuery, $data = [], $pkField = '', $where = [])
  * @method array _list($dbQuery, $isPage = true, $isDisplay = true, $total = false)
  * @method mixed _form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
  * --------------------------------
