@@ -25,7 +25,7 @@ class Data
 {
     /**
      * 数据增量保存
-     * @param Query $db 数据查询对象
+     * @param Query|string $dbQuery 数据查询对象
      * @param array $data 需要保存或更新的数据
      * @param string $key 条件主键限制
      * @param array $where 其它的where条件
@@ -33,10 +33,10 @@ class Data
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
-    public static function save($db, $data, $key = 'id', $where = [])
+    public static function save($dbQuery, $data, $key = 'id', $where = [])
     {
-        $table = $db->getTable();
-        $value = isset($data[$key]) ? $data[$key] : null;
+        $db = is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
+        list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
         $map = isset($where[$key]) ? [] : (is_string($value) ? [$key, 'in', explode(',', $value)] : [$key => $value]);
         if (Db::table($table)->where($where)->where($map)->count() > 0) {
             return Db::table($table)->strict(false)->where($where)->where($map)->update($data) !== false;
