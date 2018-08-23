@@ -10,7 +10,7 @@ class MyController extend \library\Controller{
     // 显示数据列表
     public function index(){
     
-        return $this->_list('MyTableName');
+        return $this->_page('MyTableName');
         
     }
     
@@ -20,7 +20,7 @@ class MyController extend \library\Controller{
 ## 列表处理
 ```php
 // 列表展示
-return $this->_list($dbQuery, $isPage, $isDisplay, $total);
+return $this->_page($dbQuery, $isPage, $isDisplay, $total);
 ```
 
 ## 表单处理
