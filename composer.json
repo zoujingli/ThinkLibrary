@@ -17,11 +17,5 @@
     "psr-4": {
       "library\\": "library"
     }
-  },
-  "repositories": {
-    "packagist": {
-      "type": "composer",
-      "url": "https://packagist.laravel-china.org"
-    }
   }
 }
