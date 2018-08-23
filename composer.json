@@ -10,8 +10,7 @@
     "php": ">=5.4",
     "ext-curl": "*",
     "ext-iconv": "*",
-    "ext-openssl": "*",
-    "topthink/framework": "5.1.*"
+    "ext-openssl": "*"
   },
   "autoload": {
     "psr-4": {
