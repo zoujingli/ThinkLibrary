@@ -4,7 +4,7 @@
   "license": "MIT",
   "homepage": "https://library.thinkadmin.top",
   "description": "ThinkPHP development of Library",
-  "keywords": ["Library", "ThinkAdmin", "ThinkLibrary"],
+  "keywords": ["ThinkAdmin", "ThinkLibrary","Library"],
   "authors": [{"name": "Anyon", "email": "zoujingli@qq.com"}],
   "require": {
     "php": ">=5.4",
