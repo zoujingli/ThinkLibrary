@@ -67,7 +67,9 @@ class Page extends Logic
      */
     protected function init()
     {
-        $this->_sort();
+        if ($this->request->isPost()) {
+            $this->_sort();
+        }
         return $this->_page();
     }
 
@@ -80,18 +82,15 @@ class Page extends Logic
      */
     protected function _page()
     {
-        // 列表数据查询与显示
-        if (null === $this->db->getOptions('order')) {
-            if (method_exists($this->db, 'getTableFields') && in_array('sort', $this->db->getTableFields())) {
-                $this->db->order('sort asc');
-            }
+        // 未配置 order 规则时自动按 sort 字段排序
+        if ($this->db->getOptions('order') && method_exists($this->db, 'getTableFields')) {
+            in_array('sort', $this->db->getTableFields()) && $this->db->order('sort asc');
         }
         if ($this->isPage) {
             $rows = intval($this->request->get('rows', cookie('page-rows')));
             cookie('page-rows', $rows = $rows >= 10 ? $rows : 20);
             $page = $this->db->paginate($rows, $this->total, ['query' => $this->request->get()]);
-            // 分页HTML数据处理
-            $attr = ['|href="(.*?)"|' => 'data-open="$1"',];
+            $attr = ['|href="(.*?)"|' => 'data-open="$1"'];
             $html = "<div class='pagination-trigger nowrap'><span>共 {$page->total()} 条记录，每页显示 {$rows} 条，共 {$page->lastPage()} 页当前显示第 {$page->currentPage()} 页。</span>{$page->render()}</div>";
             $this->class->assign('pagehtml', preg_replace(array_keys($attr), array_values($attr), $html));
             // 组装结果数据
@@ -120,11 +119,12 @@ class Page extends Logic
      */
     protected function _sort()
     {
-        if ($this->request->isPost() && $this->request->post('action') === 'resort') {
+        if ($this->request->post('action') === 'resort') {
+            $table = $this->db->getTable();
             foreach ($this->request->post() as $key => $value) {
                 if (preg_match('/^_\d{1,}$/', $key) && preg_match('/^\d{1,}$/', $value)) {
                     list($where, $update) = [['id' => trim($key, '_')], ['sort' => $value]];
-                    if (false === Db::table($this->db->getTable())->where($where)->update($update)) {
+                    if (false === Db::table($table)->where($where)->update($update)) {
                         $this->class->error('排序失败, 请稍候再试！');
                     }
                 }

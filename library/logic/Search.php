@@ -21,7 +21,7 @@ namespace library\logic;
  */
 class Search extends Logic
 {
-    
+
     /**
      * 应用初始化
      * @return $this
