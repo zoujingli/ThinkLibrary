@@ -37,7 +37,7 @@ class Data
     {
         $db = is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
         list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
-        $map = isset($where[$key]) ? [] : (is_string($value) ? [$key, 'in', explode(',', $value)] : [$key => $value]);
+        $map = isset($where[$key]) ? [] : (is_string($value) ? [[$key, 'in', explode(',', $value)]] : [$key => $value]);
         if (Db::table($table)->where($where)->where($map)->count() > 0) {
             return Db::table($table)->strict(false)->where($where)->where($map)->update($data) !== false;
         }
