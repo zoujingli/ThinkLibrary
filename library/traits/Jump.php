@@ -33,7 +33,7 @@ trait Jump
      */
     protected function success($info, $data = [], $code = 1)
     {
-        $result = ['code' => $code, 'info' => $info, 'token' => Cors::getSessionToken(), 'data' => $data];
+        $result = ['code' => $code, 'info' => $info, 'data' => $data];
         throw new HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
 
@@ -45,7 +45,7 @@ trait Jump
      */
     protected function error($info, $data = [], $code = 0)
     {
-        $result = ['code' => $code, 'info' => $info, 'token' => Cors::getSessionToken(), 'data' => $data];
+        $result = ['code' => $code, 'info' => $info, 'data' => $data];
         throw new HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
 

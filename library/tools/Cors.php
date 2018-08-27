@@ -83,6 +83,7 @@ class Cors
             'Access-Control-Allow-Credentials' => "true",
             'Access-Control-Allow-Methods'     => 'GET,POST,OPTIONS',
             'Access-Control-Allow-Origin'      => request()->header('origin', '*'),
+            'token'                            => self::getSessionToken(),
         ];
     }
 
