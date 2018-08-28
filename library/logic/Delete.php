@@ -69,32 +69,30 @@ class Delete extends Logic
      */
     protected function init()
     {
-        if (false !== $this->class->_callback('_delete_filter', $this->where)) {
-            // 主键限制条件处理
-            $map = isset($this->where[$this->pkField]) ? [] :
-                (is_array($this->pkValue) ? [$this->pkField, 'in', $this->pkValue] :
-                    (is_string($this->pkValue) ? [$this->pkField, 'in', explode(',', $this->pkValue)] :
-                        [$this->pkField => $this->pkValue]));
-            // 删除前置回调处理
-            if (false === $this->class->_callback('_delete_filter', $map, $where)) {
-                return null;
-            }
-            if (method_exists($this->db, 'getTableFields') && in_array('is_deleted', $this->db->getTableFields())) {
-                // 软删除操作
-                $result = Db::table($this->db->getTable())->where($this->where)->where($map)->update(['is_deleted' => '1']);
-            } else {
-                // 硬删除操作
-                $result = Db::table($this->db->getTable())->where($this->where)->where($map)->delete();
-            }
-            // 删除结果回调处理
-            if (false !== $this->class->_callback('_delete_result', $result)) {
-                if ($result !== false) {
-                    $this->class->success('恭喜, 数据保存成功!', '');
-                }
-                $this->class->error('数据保存失败, 请稍候再试!');
-            }
-            return $result;
+        // 主键限制条件处理
+        $map = isset($this->where[$this->pkField]) ? [] :
+            (is_array($this->pkValue) ? [$this->pkField, 'in', $this->pkValue] :
+                (is_string($this->pkValue) ? [$this->pkField, 'in', explode(',', $this->pkValue)] :
+                    [$this->pkField => $this->pkValue]));
+        // 删除前置回调处理
+        if (false === $this->class->_callback('_delete_filter', $map, $where)) {
+            return null;
         }
+        if (method_exists($this->db, 'getTableFields') && in_array('is_deleted', $this->db->getTableFields())) {
+            // 软删除操作
+            $result = Db::table($this->db->getTable())->where($this->where)->where($map)->update(['is_deleted' => '1']);
+        } else {
+            // 硬删除操作
+            $result = Db::table($this->db->getTable())->where($this->where)->where($map)->delete();
+        }
+        // 删除结果回调处理
+        if (false !== $this->class->_callback('_delete_result', $result)) {
+            if ($result !== false) {
+                $this->class->success('恭喜, 数据保存成功!', '');
+            }
+            $this->class->error('数据保存失败, 请稍候再试!');
+        }
+        return $result;
     }
 
 }
