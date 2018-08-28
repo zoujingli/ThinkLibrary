@@ -20,7 +20,7 @@ use library\Controller;
 
 /**
  * 基础视图管理器
- * Class View
+ * Class Logic
  * @package library\view
  */
 class Logic
