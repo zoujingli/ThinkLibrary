@@ -88,53 +88,31 @@ class Form extends Logic
     {
         // GET请求, 获取数据并显示表单页面
         if ($this->request->isGet()) {
-            return $this->display();
+            $data = [];
+            if ($this->pkValue !== null) {
+                $where = [$this->pkField => $this->pkValue];
+                $data = (array)$this->db->where($where)->where($this->where)->find();
+            }
+            $data = array_merge($data, $this->data);
+            if (false !== $this->class->_callback('_form_filter', $data)) {
+                return $this->class->fetch($this->tplFile, ['vo' => $data]);
+            }
+            return $data;
         }
         // POST请求, 数据自动存库处理
         if ($this->request->isPost()) {
-            return $this->update();
-        }
-    }
-
-    /**
-     * 表单数据更新
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
-     */
-    protected function update()
-    {
-        $post = $this->request->post();
-        $data = array_merge($post, $this->data);
-        if (false !== $this->class->_callback('_form_filter', $data, $this->where)) {
-            $result = Data::save($this->db, $data, $this->pkField, $this->where);
-            if (false !== $this->class->_callback('_form_result', $result, $data)) {
-                if ($result !== false) {
-                    $this->class->success('恭喜, 数据保存成功!', '');
+            $post = $this->request->post();
+            $data = array_merge($post, $this->data);
+            if (false !== $this->class->_callback('_form_filter', $data, $this->where)) {
+                $result = Data::save($this->db, $data, $this->pkField, $this->where);
+                if (false !== $this->class->_callback('_form_result', $result, $data)) {
+                    if ($result !== false) {
+                        $this->class->success('恭喜, 数据保存成功!', '');
+                    }
+                    $this->class->error('数据保存失败, 请稍候再试!');
                 }
-                $this->class->error('数据保存失败, 请稍候再试!');
             }
         }
-    }
-
-    /**
-     * 数据显示处理
-     * @param array $data
-     * @return array|mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     */
-    protected function display($data = [])
-    {
-        if ($this->pkValue !== null) {
-            $where = [$this->pkField => $this->pkValue];
-            $data = (array)$this->db->where($where)->where($this->where)->find();
-        }
-        $data = array_merge($data, $this->data);
-        if (false !== $this->class->_callback('_form_filter', $data)) {
-            return $this->class->fetch($this->tplFile, ['vo' => $data]);
-        }
-        return $data;
     }
 
 }
