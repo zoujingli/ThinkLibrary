@@ -86,28 +86,21 @@ class Page extends Logic
         if ($this->db->getOptions('order') && method_exists($this->db, 'getTableFields')) {
             in_array('sort', $this->db->getTableFields()) && $this->db->order('sort asc');
         }
+        // 列表分页及结果集处理
         if ($this->isPage) {
             $rows = intval($this->request->get('rows', cookie('page-rows')));
             cookie('page-rows', $rows = $rows >= 10 ? $rows : 20);
             $page = $this->db->paginate($rows, $this->total, ['query' => $this->request->get()]);
-            $attr = ['|href="(.*?)"|' => 'data-open="$1"'];
             $html = "<div class='pagination-trigger nowrap'><span>共 {$page->total()} 条记录，每页显示 {$rows} 条，共 {$page->lastPage()} 页当前显示第 {$page->currentPage()} 页。</span>{$page->render()}</div>";
-            $this->class->assign('pagehtml', preg_replace(array_keys($attr), array_values($attr), $html));
-            // 组装结果数据
-            $result = [
-                'page' => [
-                    'limit'   => intval($rows),
-                    'total'   => intval($page->total()),
-                    'pages'   => intval($page->lastPage()),
-                    'current' => intval($page->currentPage()),
-                ],
-                'list' => $page->items(),
-            ];
+            $this->class->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1"', $html));
+            $result = ['page' => ['limit' => intval($rows), 'total' => intval($page->total()), 'pages' => intval($page->lastPage()), 'current' => intval($page->currentPage())], 'list' => $page->items()];
         } else {
             $result = ['list' => $this->db->select()];
         }
-        if (false !== $this->class->_callback('_page_filter', $result['list']) && $this->isDisplay) {
-            return $this->class->fetch('', $result);
+        if (false !== $this->class->_callback('_page_filter', $result['list'])) {
+            if ($this->isDisplay) {
+                return $this->class->fetch('', $result);
+            }
         }
         return $result;
     }
