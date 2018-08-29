@@ -42,11 +42,6 @@ class Save extends Logic
      */
     protected $pkField;
 
-    /**
-     * 数据对象主键值
-     * @var string
-     */
-    protected $pkValue;
 
     /**
      * ViewForm constructor.
@@ -65,8 +60,7 @@ class Save extends Logic
         // 从extend中获取主键的默认值
         if (!isset($this->data[$this->pkField])) {
             $pkField = isset($data[$this->pkField]) ? $data[$this->pkField] : null;
-            $this->pkValue = $this->request->request($this->pkField, $pkField);
-            $this->data[$this->pkField] = $this->pkValue;
+            $this->data[$this->pkField] = $this->request->request($this->pkField, $pkField);
         }
     }
 
@@ -78,10 +72,8 @@ class Save extends Logic
      */
     protected function init()
     {
-        // 操作前置数据过滤处理
         if (false !== $this->class->_callback('_save_filter', $this->data, $this->where)) {
             $result = Data::save($this->db, $this->data, $this->pkField, $this->where);
-            // 操作后置结果处理
             if (false === $this->class->_callback('_save_result', $result)) {
                 return $result;
             }
