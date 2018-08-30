@@ -48,6 +48,17 @@ trait Jump
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
         throw new HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
+    
+    /**
+     * URL重定向
+     * @param string $url 重定向跳转链接
+     * @param array $params 重定向链接参数
+     * @param integer $code 重定向跳转代码
+     */
+    protected function redirect($url, $params = [], $code = 301)
+    {
+        throw new HttpResponseException(redirect($url, $params, $code));
+    }
 
     /**
      * 返回视图内容
@@ -70,17 +81,6 @@ trait Jump
     protected function assign($name, $value = '')
     {
         app('view')->assign($name, $value);
-    }
-
-    /**
-     * URL重定向
-     * @param string $url 重定向跳转链接
-     * @param array $params 重定向链接参数
-     * @param integer $code 重定向跳转代码
-     */
-    protected function redirect($url, $params = [], $code = 301)
-    {
-        throw new HttpResponseException(redirect($url, $params, $code));
     }
 
 }
