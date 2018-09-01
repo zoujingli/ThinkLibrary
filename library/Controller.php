@@ -16,6 +16,7 @@ namespace library;
 
 use library\tools\Cors;
 use library\traits\Jump;
+use think\Exception;
 
 /**
  * 标准控制器基类
@@ -55,20 +56,22 @@ class Controller
 
     /**
      * 实例方法调用
-     * @param string $name 函数名称
+     * @param string $method 函数名称
      * @param array $arguments 调用参数
      * @return mixed
+     * @throws Exception
      */
-    public function __call($name, $arguments = [])
+    public function __call($method, $arguments = [])
     {
-        $className = "library\\logic\\" . ucfirst(ltrim($name, '_'));
+        $className = "library\\logic\\" . ucfirst(ltrim($method, '_'));
         if (class_exists($className)) {
             $app = app($className, $arguments);
             return method_exists($app, 'apply') ? $app->apply($this) : $app;
         }
-        if (method_exists($this, $name)) {
-            return call_user_func_array([$this, $name], $arguments);
+        if (method_exists($this, $method)) {
+            return call_user_func_array([$this, $method], $arguments);
         }
+        throw new Exception('method not exists:' . __CLASS__ . '->' . $method);
     }
 
     /**
