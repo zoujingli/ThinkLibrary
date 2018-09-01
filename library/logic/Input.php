@@ -38,24 +38,24 @@ class Input extends Logic
      * 验证结果消息
      * @var array
      */
-    protected $message;
+    protected $info;
 
     /**
      * Validate constructor.
-     * @param array|string $data 待验证的数据
-     * @param array $rule 验证器规则
-     * @param array $message 验证结果消息
+     * @param array $data 验证数据
+     * @param array $rule 验证规则
+     * @param array $info 验证消息
      */
-    public function __construct($data, $rule = [], $message = [])
+    public function __construct($data, $rule = [], $info = [])
     {
         $this->rule = $rule;
-        $this->message = $message;
+        $this->info = $info;
         $this->request = request();
         $this->data = $this->parseData($data);
     }
 
     /**
-     * 解析数据
+     * 解析输入数据
      * @param array|string $data
      * @return array
      */
@@ -84,7 +84,7 @@ class Input extends Logic
      */
     public function init()
     {
-        $validate = \think\Validate::make($this->rule, $this->message);
+        $validate = \think\Validate::make($this->rule, $this->info);
         if ($validate->check($this->data)) {
             return $this->data;
         }
