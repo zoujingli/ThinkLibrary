@@ -18,9 +18,9 @@ use think\db\Query;
 use library\tools\Data;
 
 /**
- * 数据更新插件管理器
- * Class ViewSave
- * @package library\view
+ * 数据更新管理器
+ * Class Save
+ * @package library\logic
  */
 class Save extends Logic
 {

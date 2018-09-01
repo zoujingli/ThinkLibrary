@@ -19,8 +19,8 @@ use library\tools\Data;
 
 /**
  * 表单视图管理器
- * Class ViewForm
- * @package library\view
+ * Class Form
+ * @package library\logic
  */
 class Form extends Logic
 {

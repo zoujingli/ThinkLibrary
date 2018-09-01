@@ -18,8 +18,8 @@ use think\Db;
 
 /**
  * 列表处理管理器
- * Class ViewList
- * @package library\view
+ * Class Page
+ * @package library\logic
  */
 class Page extends Logic
 {

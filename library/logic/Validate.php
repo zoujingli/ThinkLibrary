@@ -41,17 +41,40 @@ class Validate extends Logic
     protected $message;
 
     /**
-     * LogicValidate constructor.
-     * @param array $data 待验证的数据
+     * Validate constructor.
+     * @param array|string $data 待验证的数据
      * @param array $rule 验证器规则
      * @param array $message 验证结果消息
      */
-    public function __construct(array $data, $rule = [], $message = [])
+    public function __construct($data, $rule = [], $message = [])
     {
-        $this->data = $data;
         $this->rule = $rule;
         $this->message = $message;
-        $this->request = app('request');
+        $this->request = request();
+        $this->data = $this->parseData($data);
+    }
+
+    /**
+     * 解析数据
+     * @param array|string $data
+     * @return array
+     */
+    private function parseData($data)
+    {
+        if (is_array($data)) {
+            return $data;
+        } elseif (is_string($data)) {
+            $value = [];
+            foreach (explode(',', $data) as $field) {
+                if (strpos($field, '|') === false) {
+                    $value[$field] = input($field);
+                } else {
+                    list($f, $v) = explode('|', $field);
+                    $value[$f] = input($f, $v);
+                }
+            }
+            return $value;
+        }
     }
 
     /**

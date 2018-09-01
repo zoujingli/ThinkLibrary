@@ -19,8 +19,8 @@ use think\db\Query;
 
 /**
  * 通用删除管理器
- * Class ViewDelete
- * @package library\view
+ * Class Delete
+ * @package library\logic
  */
 class Delete extends Logic
 {
