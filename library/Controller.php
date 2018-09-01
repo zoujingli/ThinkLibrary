@@ -24,7 +24,7 @@ use library\traits\Jump;
  * @package library
  * --------------------------------
  * @method logic\Search _search($dbQuery)
- * @method array _validate($data, $rule = [], $message = [])
+ * @method array _input($data, $rule = [], $message = [])
  * @method mixed _delete($dbQuery, $pkField = '', $where = [])
  * @method mixed _save($dbQuery, $data = [], $pkField = '', $where = [])
  * @method array _page($dbQuery, $isPage = true, $isDisplay = true, $total = false)

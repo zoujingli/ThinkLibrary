@@ -15,11 +15,11 @@
 namespace library\logic;
 
 /**
- * 输入验证管理器
- * Class LogicValidate
+ * 输入管理器
+ * Class Input
  * @package library\logic
  */
-class Validate extends Logic
+class Input extends Logic
 {
 
     /**
@@ -63,17 +63,18 @@ class Validate extends Logic
     {
         if (is_array($data)) {
             return $data;
-        } elseif (is_string($data)) {
-            $value = [];
+        }
+        if (is_string($data)) {
+            $result = [];
             foreach (explode(',', $data) as $field) {
                 if (strpos($field, '|') === false) {
-                    $value[$field] = input($field);
+                    $result[$field] = input($field);
                 } else {
                     list($f, $v) = explode('|', $field);
-                    $value[$f] = input($f, $v);
+                    $result[$f] = input($f, $v);
                 }
             }
-            return $value;
+            return $result;
         }
     }
 
