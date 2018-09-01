@@ -71,7 +71,7 @@ class Controller
         if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $arguments);
         }
-        throw new Exception('method not exists:' . __CLASS__ . '->' . $method);
+        throw new Exception('method not exists:' . get_class($this) . '->' . $method);
     }
 
     /**
