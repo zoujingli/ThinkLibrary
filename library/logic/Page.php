@@ -83,7 +83,7 @@ class Page extends Logic
     protected function _page()
     {
         // 未配置 order 规则时自动按 sort 字段排序
-        if ($this->db->getOptions('order') && method_exists($this->db, 'getTableFields')) {
+        if (!$this->db->getOptions('order') && method_exists($this->db, 'getTableFields')) {
             in_array('sort', $this->db->getTableFields()) && $this->db->order('sort asc');
         }
         // 列表分页及结果集处理
