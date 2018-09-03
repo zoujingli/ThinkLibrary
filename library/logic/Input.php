@@ -68,10 +68,12 @@ class Input extends Logic
             $result = [];
             foreach (explode(',', $data) as $field) {
                 if (strpos($field, '|') === false) {
-                    $result[$field] = input($field);
+                    $arr = explode('.', $field);
+                    $result[array_pop($arr)] = input($field);
                 } else {
                     list($f, $v) = explode('|', $field);
-                    $result[$f] = input($f, $v);
+                    $arr = explode('.', $f);
+                    $result[array_pop($arr)] = input($f, $v);
                 }
             }
             return $result;
