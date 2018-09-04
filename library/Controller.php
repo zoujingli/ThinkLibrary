@@ -34,7 +34,7 @@ use think\Exception;
  * @author Anyon <zoujingli@qq.com>
  * @date 2018/08/10 11:31
  */
-class Controller
+class Controller extends \stdClass
 {
 
     use Jump;
