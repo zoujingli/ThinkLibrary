@@ -75,6 +75,16 @@ class Controller
     }
 
     /**
+     * 模板数据赋值
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+        $this->assign($name, $value);
+    }
+
+    /**
      * 数据回调处理机制
      * @param string $name 回调方法名称
      * @param mixed $one 回调引用参数1
