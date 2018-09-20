@@ -19,7 +19,7 @@ namespace library\logic;
  * Class Search
  * @package library\logic
  */
-class Search extends Logic
+class Query extends Logic
 {
 
     /**
