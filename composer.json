@@ -8,6 +8,7 @@
   "authors": [{"name": "Anyon", "email": "zoujingli@qq.com"}],
   "require": {
     "php": ">=5.4",
+    "ext-json":"*",
     "ext-curl": "*",
     "ext-iconv": "*",
     "ext-openssl": "*",
