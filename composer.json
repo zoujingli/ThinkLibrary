@@ -15,8 +15,7 @@
     "topthink/framework": "5.1.*"
   },
   "autoload": {
-    "psr-4": {
-      "library\\": "library"
-    }
+    "files":["library/common.php"],
+    "psr-4": {"library\\": "library"}
   }
 }
