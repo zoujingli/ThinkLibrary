@@ -50,6 +50,16 @@ trait Jump
     }
 
     /**
+     * 获取当前会话TOKEN
+     */
+    protected function token()
+    {
+        $this->success('Get Session Token Success', [
+            'token' => Cors::getSessionToken(),
+        ]);
+    }
+
+    /**
      * URL重定向
      * @param string $url 重定向跳转链接
      * @param array $params 重定向链接参数
