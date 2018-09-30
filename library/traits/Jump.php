@@ -48,17 +48,7 @@ trait Jump
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
         throw new HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
-
-    /**
-     * 获取当前会话TOKEN
-     */
-    protected function token()
-    {
-        $this->success('Get Session Token Success', [
-            'token' => Cors::getSessionToken(),
-        ]);
-    }
-
+    
     /**
      * URL重定向
      * @param string $url 重定向跳转链接
