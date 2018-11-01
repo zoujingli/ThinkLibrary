@@ -12,6 +12,34 @@
 // | github开源项目：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+if (!function_exists('http_get')) {
+    /**
+     * 以get模拟网络请求
+     * @param string $url HTTP请求URL地址
+     * @param array $query GET请求参数
+     * @param array $options CURL参数
+     * @return boolean|string
+     */
+    function http_get($url, $query = [], $options = [])
+    {
+        return \library\tools\Http::get($url, $query, $options);
+    }
+}
+
+if (!function_exists('http_post')) {
+    /**
+     * 以get模拟网络请求
+     * @param string $url HTTP请求URL地址
+     * @param array $data POST请求数据
+     * @param array $options CURL参数
+     * @return boolean|string
+     */
+    function http_post($url, $data, $options = [])
+    {
+        return \library\tools\Http::post($url, $data, $options);
+    }
+}
+
 if (!function_exists('data_save')) {
     /**
      * 数据增量保存
