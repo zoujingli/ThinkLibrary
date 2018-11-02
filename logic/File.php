@@ -15,7 +15,7 @@
 
 namespace logic;
 
-use library\tools\Object;
+use library\tools\Options;
 
 /**
  * 文件管理逻辑
@@ -33,7 +33,7 @@ class File
 {
     /**
      * 当前配置对象
-     * @var Object
+     * @var Options
      */
     protected static $config;
 
@@ -117,8 +117,10 @@ class File
      */
     public static function name($url, $ext = '', $pre = '')
     {
+        $names = str_split(md5($url), 16);
         if (empty($ext)) $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
-        return $pre . join('/', str_split(md5($url), 16)) . '.' . ($ext ? $ext : 'tmp');
+        if (strlen(trim($pre, '\\/')) > 0) array_unshift($names, trim($pre, '\\/'));
+        return join('/', $names) . '.' . ($ext ? $ext : 'tmp');
     }
 
     /**
@@ -148,7 +150,7 @@ class File
     public static function config(array $data = null)
     {
         if (is_array($data)) {
-            self::$config = new Object($data);
+            self::$config = new Options($data);
         }
         return self::$config->get();
     }

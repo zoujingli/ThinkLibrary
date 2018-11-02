@@ -20,7 +20,7 @@ namespace library\tools;
  * Class Object
  * @package library\tools
  */
-class Object
+class Options
 {
     /**
      * 当前数据对象
