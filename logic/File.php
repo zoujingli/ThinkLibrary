@@ -52,8 +52,7 @@ class File
      */
     public static function __callStatic($name, $arguments)
     {
-        $class = self::instance(sysconf('storage_type'));
-        if (method_exists($class, $name)) {
+        if (method_exists($class = self::instance(self::$config->get('storage_type')), $name)) {
             return call_user_func_array([$class, $name], $arguments);
         }
         throw new \think\Exception("File driver method not exists: " . get_class($class) . "->{$name}");

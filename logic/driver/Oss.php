@@ -68,13 +68,11 @@ class Oss extends File
     /**
      * 获取AliOSS上传地址
      * @return string
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function upload()
     {
         $protocol = request()->isSsl() ? 'https' : 'http';
-        return "{$protocol}://" . sysconf('storage_oss_domain');
+        return "{$protocol}://" . self::$config->get('storage_oss_domain');
     }
 
     /**
