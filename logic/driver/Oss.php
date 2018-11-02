@@ -167,16 +167,13 @@ class Oss extends File
      * @return array|null
      * @throws \OSS\Core\OssException
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function info($name)
     {
-        if ($this->has($name)) {
-            $bucket = self::$config->get('storage_oss_bucket');
-            $result = $this->getOssClient()->getObjectMeta($bucket, $name);
-            return ['file' => $name, 'hash' => $result['content-md5'], 'url' => $this->base($name), 'key' => $name];
-        }
-        return null;
+        $bucket = self::$config->get('storage_oss_bucket');
+        $result = $this->getOssClient()->getObjectMeta($bucket, $name);
+        if (empty($result) || !isset($result['content-md5'])) return null;
+        return ['file' => $name, 'hash' => $result['content-md5'], 'url' => $this->base($name), 'key' => $name];
     }
 
     /**
