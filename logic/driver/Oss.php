@@ -39,8 +39,8 @@ class Oss extends File
     public function has($name)
     {
         list($keyid, $secret) = [sysconf('storage_oss_keyid'), sysconf('storage_oss_secret')];
-        $ossClient = new OssClient($keyid, $secret, $this->upload(), true);
-        return $ossClient->doesObjectExist(sysconf('storage_oss_bucket'), $name);
+        $client = new OssClient($keyid, $secret, $this->upload(), true);
+        return $client->doesObjectExist(sysconf('storage_oss_bucket'), $name);
     }
 
     /**
@@ -54,8 +54,8 @@ class Oss extends File
     public function get($name)
     {
         list($keyid, $secret) = [sysconf('storage_oss_keyid'), sysconf('storage_oss_secret')];
-        $ossClient = new OssClient($keyid, $secret, $this->upload(), true);
-        return $ossClient->getObject(sysconf('storage_oss_bucket'), $name);
+        $client = new OssClient($keyid, $secret, $this->upload(), true);
+        return $client->getObject(sysconf('storage_oss_bucket'), $name);
     }
 
     /**
@@ -114,8 +114,8 @@ class Oss extends File
     {
         try {
             $endpoint = 'http://' . sysconf('storage_oss_domain');
-            $ossClient = new OssClient(sysconf('storage_oss_keyid'), sysconf('storage_oss_secret'), $endpoint, true);
-            $result = $ossClient->putObject(sysconf('storage_oss_bucket'), $name, $content);
+            $client = new OssClient(sysconf('storage_oss_keyid'), sysconf('storage_oss_secret'), $endpoint, true);
+            $result = $client->putObject(sysconf('storage_oss_bucket'), $name, $content);
             return ['file' => $name, 'hash' => $result['content-md5'], 'key' => $name, 'url' => $this->base($name)];
         } catch (\Exception $err) {
             \think\facade\Log::error('阿里云OSS文件上传失败, ' . $err->getMessage());
@@ -134,8 +134,8 @@ class Oss extends File
     public function setBucket($bucket)
     {
         $acl = OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE;
-        $endpoint = 'http://' . sysconf('storage_oss_endpoint');
-        $client = new OssClient(sysconf('storage_oss_keyid'), sysconf('storage_oss_secret'), $endpoint);
+        $point = 'http://' . sysconf('storage_oss_endpoint');
+        $client = new OssClient(sysconf('storage_oss_keyid'), sysconf('storage_oss_secret'), $point);
         // 空间及权限处理
         if ($client->doesBucketExist($bucket)) {
             $result = $client->getBucketMeta($bucket);

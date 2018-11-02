@@ -18,13 +18,13 @@ namespace logic;
  * 文件管理逻辑
  * Class File
  * @package logic
+ * @method bool has($name) static 判断文件上否已经上传
  * @method array save($name, $content) static 保存二进制文件
  * @method string url($name) static 获取文件对应地址
  * @method string get($name) static 获取文件二进制内容
  * @method string base($name = '') static 获取文件存储基础目录
- * @method string upload($client = '') static 获取文件上传推送地址
- * @method string setBucket($name) static 动态创建指定bucket
- * @method boolean has($name) static 判断文件上否已经上传
+ * @method string upload($client = '') static 获取文件上传地址
+ * @method string setBucket($name) static 动态创建指定空间名称
  */
 class File
 {
@@ -44,7 +44,9 @@ class File
     public static function __callStatic($name, $arguments)
     {
         $class = self::instance(sysconf('storage_type'));
-        if (method_exists($class, $name)) return call_user_func_array([$class, $name], $arguments);
+        if (method_exists($class, $name)) {
+            return call_user_func_array([$class, $name], $arguments);
+        }
         throw new \think\Exception("File driver method not exists: " . get_class($class) . "->{$name}");
     }
 

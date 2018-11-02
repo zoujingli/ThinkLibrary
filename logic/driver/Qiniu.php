@@ -39,8 +39,7 @@ class Qiniu extends File
     public function has($name)
     {
         $auth = new Auth(sysconf('storage_qiniu_access_key'), sysconf('storage_qiniu_secret_key'));
-        $bucketMgr = new BucketManager($auth);
-        list($ret, $err) = $bucketMgr->stat(sysconf('storage_qiniu_bucket'), $name);
+        list($ret, $err) = (new BucketManager($auth))->stat(sysconf('storage_qiniu_bucket'), $name);
         return $err === null;
     }
 
@@ -78,9 +77,8 @@ class Qiniu extends File
      */
     public function upload($client = true)
     {
-        $region = sysconf('storage_qiniu_region');
         $isHttps = !!sysconf('storage_qiniu_is_https');
-        switch ($region) {
+        switch (sysconf('storage_qiniu_region')) {
             case '华东':
                 if ($isHttps) return $client ? 'https://upload.qiniup.com' : 'https://upload.qiniup.com';
                 return $client ? 'http://upload.qiniup.com' : 'http://upload.qiniup.com';
@@ -93,8 +91,9 @@ class Qiniu extends File
             case '华南':
                 if ($isHttps) return $client ? 'https://upload-z2.qiniup.com' : 'https://up-z2.qiniup.com';
                 return $client ? 'http://upload-z2.qiniup.com' : 'http://up-z2.qiniup.com';
+            default:
+                throw new \think\Exception('未配置七牛云存储区域');
         }
-        throw new \think\Exception('未配置七牛云存储区域');
     }
 
     /**
