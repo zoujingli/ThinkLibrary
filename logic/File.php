@@ -123,20 +123,20 @@ class File
 
     /**
      * 下载文件到本地
-     * @param string $location 文件URL地址
+     * @param string $url 文件URL地址
      * @param boolean $force 是否强制重新下载文件
      * @return array
      */
-    public static function down($location, $force = false)
+    public static function down($url, $force = false)
     {
         try {
             $file = self::instance('local');
-            $name = self::name($location, '', 'down/');
+            $name = self::name($url, '', 'down/');
             if (!$force && $file->has($name)) return $file->info($name);
-            return $file->save($name, file_get_contents($location));
+            return $file->save($name, file_get_contents($url));
         } catch (\Exception $e) {
-            \think\facade\Log::error(__METHOD__ . " 文件下载失败 [ {$location} ] {$e->getMessage()}");
-            return ['url' => $location, 'hash' => md5($location), 'key' => $location, 'file' => $location];
+            \think\facade\Log::error(__METHOD__ . " 文件下载失败 [ {$url} ] {$e->getMessage()}");
+            return ['url' => $url, 'hash' => md5($url), 'key' => $url, 'file' => $url];
         }
     }
 
