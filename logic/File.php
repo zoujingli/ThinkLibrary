@@ -120,8 +120,8 @@ class File
         empty($ext) && $ext = pathinfo($url, 4);
         empty($ext) || $ext = trim($ext, '.\\/');
         empty($pre) || $pre = trim($pre, '.\\/');
-        $names = array_merge([$pre], str_split(md5($url), 16));
-        return trim(join('/', $names), '/') . '.' . ($ext ? $ext : 'tmp');
+        $splits = array_merge([$pre], str_split(md5($url), 16));
+        return trim(join('/', $splits), '/') . '.' . ($ext ? $ext : 'tmp');
     }
 
     /**
