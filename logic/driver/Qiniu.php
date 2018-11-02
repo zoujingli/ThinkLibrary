@@ -34,7 +34,6 @@ class Qiniu extends File
      * @param string $name 文件名称
      * @return boolean
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function has($name)
     {
@@ -57,7 +56,6 @@ class Qiniu extends File
      * @param string $name
      * @return boolean|string
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function url($name)
     {

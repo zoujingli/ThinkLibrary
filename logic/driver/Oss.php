@@ -24,7 +24,7 @@ use OSS\OssClient;
 /**
  * AliOss文件存储
  * Class Oss
- * @package app\admin\logic\driver
+ * @package logic\driver
  */
 class Oss extends File
 {
