@@ -16,7 +16,6 @@
 namespace app\admin\logic\driver;
 
 use logic\File;
-use Qiniu\Auth;
 use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\UploadManager;
 use think\facade\Log;
@@ -39,9 +38,7 @@ class Qiniu extends File
      */
     public function has($name)
     {
-        $auth = new Auth(sysconf('storage_qiniu_access_key'), sysconf('storage_qiniu_secret_key'));
-        list($ret, $err) = (new BucketManager($auth))->stat(sysconf('storage_qiniu_bucket'), $name);
-        return $err === null;
+        return is_array($this->info($name));
     }
 
     /**
@@ -49,12 +46,10 @@ class Qiniu extends File
      * @param string $name
      * @return string
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function get($name)
     {
-        $auth = new Auth(sysconf('storage_qiniu_access_key'), sysconf('storage_qiniu_secret_key'));
-        return file_get_contents($auth->privateDownloadUrl($this->base($name)));
+        return file_get_contents($this->getAuth()->privateDownloadUrl($this->base($name)));
     }
 
     /**
@@ -74,12 +69,11 @@ class Qiniu extends File
      * @param boolean $client
      * @return string
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function upload($client = true)
     {
-        $isHttps = !!sysconf('storage_qiniu_is_https');
-        switch (sysconf('storage_qiniu_region')) {
+        $isHttps = !!self::$config->get('storage_qiniu_is_https');
+        switch (self::$config->get('storage_qiniu_region')) {
             case '华东':
                 if ($isHttps) return $client ? 'https://upload.qiniup.com' : 'https://upload.qiniup.com';
                 return $client ? 'http://upload.qiniup.com' : 'http://upload.qiniup.com';
@@ -102,12 +96,11 @@ class Qiniu extends File
      * @param string $name
      * @return string
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function base($name = '')
     {
-        $domain = sysconf('storage_qiniu_domain');
-        switch (strtolower(sysconf('storage_qiniu_is_https'))) {
+        $domain = self::$config->get('storage_qiniu_domain');
+        switch (strtolower(self::$config->get('storage_qiniu_is_https'))) {
             case 'https':
                 return "https://{$domain}/{$name}";
             case 'http':
@@ -124,14 +117,13 @@ class Qiniu extends File
      * @param string $content
      * @return array|null
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function save($name, $content)
     {
-        $auth = new Auth(sysconf('storage_qiniu_access_key'), sysconf('storage_qiniu_secret_key'));
-        $token = $auth->uploadToken(sysconf('storage_qiniu_bucket'));
+        $bucket = self::$config->get('storage_qiniu_bucket');
+        $token = $this->getAuth()->uploadToken($bucket);
         list($ret, $err) = (new UploadManager())->put($token, $name, $content);
-        if ($err !== null) Log::error(__METHOD__ . '七牛云文件上传失败');
+        if ($err !== null) Log::error(__METHOD__ . ' 七牛云文件上传失败');
         return $this->info($name);
     }
 
@@ -150,14 +142,26 @@ class Qiniu extends File
      * @param string $name
      * @return array|null
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function info($name)
     {
-        $auth = new Auth(sysconf('storage_qiniu_access_key'), sysconf('storage_qiniu_secret_key'));
-        list($ret, $err) = (new BucketManager($auth))->stat(sysconf('storage_qiniu_bucket'), $name);
+        $manager = new BucketManager($this->getAuth());
+        $bucket = self::$config->get('storage_qiniu_bucket');
+        list($ret, $err) = $manager->stat($bucket, $name);
         if ($err !== null) return null;
         return ['file' => $name, 'hash' => $ret['hash'], 'url' => $this->base($name), 'key' => $name];
+    }
+
+    /**
+     * 获取接口Auth对象
+     * @return \Qiniu\Auth
+     */
+    private function getAuth()
+    {
+        return new \Qiniu\Auth(
+            self::$config->get('storage_qiniu_access_key'),
+            self::$config->get('storage_qiniu_secret_key')
+        );
     }
 
 }

@@ -34,14 +34,11 @@ class Oss extends File
      * @param string $name
      * @return boolean
      * @throws \OSS\Core\OssException
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function has($name)
     {
-        list($keyid, $secret) = [sysconf('storage_oss_keyid'), sysconf('storage_oss_secret')];
-        $client = new OssClient($keyid, $secret, $this->upload(), true);
-        return $client->doesObjectExist(sysconf('storage_oss_bucket'), $name);
+        $bucket = self::$config->get('storage_oss_bucket');
+        return $this->getOssClient()->doesObjectExist($bucket, $name);
     }
 
     /**
@@ -49,14 +46,11 @@ class Oss extends File
      * @param string $name
      * @return string
      * @throws \OSS\Core\OssException
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function get($name)
     {
-        list($keyid, $secret) = [sysconf('storage_oss_keyid'), sysconf('storage_oss_secret')];
-        $client = new OssClient($keyid, $secret, $this->upload(), true);
-        return $client->getObject(sysconf('storage_oss_bucket'), $name);
+        $bucket = self::$config->get('storage_oss_bucket');
+        return $this->getOssClient()->getObject($bucket, $name);
     }
 
     /**
@@ -65,7 +59,6 @@ class Oss extends File
      * @return boolean|string
      * @throws \OSS\Core\OssException
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function url($name)
     {
@@ -89,12 +82,11 @@ class Oss extends File
      * @param string $name
      * @return string
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
      */
     public function base($name = '')
     {
-        $domain = sysconf('storage_oss_domain');
-        switch (strtolower(sysconf('storage_oss_is_https'))) {
+        $domain = self::$config->get('storage_oss_domain');
+        switch (strtolower(self::$config->get('storage_oss_is_https'))) {
             case 'https':
                 return "https://{$domain}/{$name}";
             case 'http':
@@ -114,9 +106,8 @@ class Oss extends File
     public function save($name, $content)
     {
         try {
-            $endpoint = 'http://' . sysconf('storage_oss_domain');
-            $client = new OssClient(sysconf('storage_oss_keyid'), sysconf('storage_oss_secret'), $endpoint, true);
-            $result = $client->putObject(sysconf('storage_oss_bucket'), $name, $content);
+            $bucket = self::$config->get('storage_oss_bucket');
+            $result = $this->getOssClient()->putObject($bucket, $name, $content);
             return ['file' => $name, 'hash' => $result['content-md5'], 'key' => $name, 'url' => $this->base($name)];
         } catch (\Exception $err) {
             \think\facade\Log::error('阿里云OSS文件上传失败, ' . $err->getMessage());
@@ -134,17 +125,15 @@ class Oss extends File
      */
     public function setBucket($bucket)
     {
-        $acl = OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE;
-        $point = 'http://' . sysconf('storage_oss_endpoint');
-        $client = new OssClient(sysconf('storage_oss_keyid'), sysconf('storage_oss_secret'), $point);
+        $client = $this->getOssClient();
         // 空间及权限处理
         if ($client->doesBucketExist($bucket)) {
             $result = $client->getBucketMeta($bucket);
-            if ($client->getBucketAcl($bucket) !== $acl) {
-                $client->putBucketAcl($bucket, $acl);
+            if ($client->getBucketAcl($bucket) !== OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE) {
+                $client->putBucketAcl($bucket, OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE);
             }
         } else {
-            $result = $client->createBucket($bucket, $acl);
+            $result = $client->createBucket($bucket, OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE);
         }
         // CORS 跨域处理
         $corsRule = new CorsRule();
@@ -183,12 +172,24 @@ class Oss extends File
     public function info($name)
     {
         if ($this->has($name)) {
-            $endpoint = 'http://' . sysconf('storage_oss_endpoint');
-            $client = new OssClient(sysconf('storage_oss_keyid'), sysconf('storage_oss_secret'), $endpoint);
-            $result = $client->getObjectMeta(sysconf('storage_oss_bucket'), $name);
+            $bucket = self::$config->get('storage_oss_bucket');
+            $result = $this->getOssClient()->getObjectMeta($bucket, $name);
             return ['file' => $name, 'hash' => $result['content-md5'], 'url' => $this->base($name), 'key' => $name];
         }
         return null;
+    }
+
+    /**
+     * 获取OssClient对象
+     * @return OssClient
+     * @throws \OSS\Core\OssException
+     */
+    private function getOssClient()
+    {
+        $osskeyid = self::$config->get('storage_oss_keyid');
+        $osssecret = self::$config->get('storage_oss_secret');
+        $endpoint = 'http://' . self::$config->get('storage_oss_endpoint');
+        return new OssClient($osskeyid, $osssecret, $endpoint, true);
     }
 
 }

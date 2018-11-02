@@ -15,6 +15,8 @@
 
 namespace logic;
 
+use library\tools\Object;
+
 /**
  * 文件管理逻辑
  * Class File
@@ -29,6 +31,12 @@ namespace logic;
  */
 class File
 {
+    /**
+     * 当前配置对象
+     * @var Object
+     */
+    protected static $config;
+
     /**
      * 对象缓存器
      * @var array
@@ -131,5 +139,32 @@ class File
             \think\facade\Log::error(__METHOD__ . " 文件下载失败 [ {$location} ] {$e->getMessage()}");
             return ['url' => $location, 'hash' => md5($location), 'key' => $location, 'file' => $location];
         }
+    }
+
+    /**
+     * 需要配置的参数
+     * @return array
+     */
+    public static function config()
+    {
+        return [
+            'local' => [],
+            'oss'   => [
+                'storage_oss_domain'   => '文件访问域名',
+                'storage_oss_keyid'    => '接口授权AppId',
+                'storage_oss_secret'   => '接口授权AppSecret',
+                'storage_oss_bucket'   => '文件存储空间名称',
+                'storage_oss_is_https' => '文件HTTP访问协议',
+                'storage_oss_endpoint' => '文件存储节点域名',
+            ],
+            'qiniu' => [
+                'storage_qiniu_region'     => '文件存储节点',
+                'storage_qiniu_domain'     => '文件访问域名',
+                'storage_qiniu_bucket'     => '文件存储空间名称',
+                'storage_qiniu_is_https'   => '文件HTTP访问协议',
+                'storage_qiniu_access_key' => '接口授权AccessKey',
+                'storage_qiniu_secret_key' => '接口授权SectretKey',
+            ],
+        ];
     }
 }
