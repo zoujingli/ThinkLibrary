@@ -117,7 +117,7 @@ class File
      */
     public static function name($url, $ext = '', $pre = '')
     {
-        empty($ext) || $ext = pathinfo($url, 4);
+        empty($ext) && $ext = pathinfo($url, 4);
         empty($ext) || $ext = trim($ext, '.\\/');
         empty($pre) || $pre = trim($pre, '.\\/');
         $names = array_merge([$pre], str_split(md5($url), 16));
