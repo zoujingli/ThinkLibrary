@@ -141,10 +141,23 @@ class File
     }
 
     /**
-     * 需要配置的参数
+     * 文件存储参数配置
+     * @param array|null $data
+     * @return mixed|null
+     */
+    public static function config(array $data = null)
+    {
+        if (is_array($data)) {
+            self::$config = new Object($data);
+        }
+        return self::$config->get();
+    }
+
+    /**
+     * 需要配置的参数信息
      * @return array
      */
-    public static function config()
+    public static function param()
     {
         return [
             'local' => [],

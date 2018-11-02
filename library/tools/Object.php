@@ -60,11 +60,12 @@ class Object
 
     /**
      * 获取数据内容
-     * @param string $name
+     * @param string|null $name
      * @return mixed|null
      */
-    public function get($name)
+    public function get($name = null)
     {
+        if (is_null($name)) return $this->data;
         return isset($this->data[$name]) ? $this->data[$name] : null;
     }
 
