@@ -117,10 +117,11 @@ class File
      */
     public static function name($url, $ext = '', $pre = '')
     {
-        $names = str_split(md5($url), 16);
-        if (empty($ext)) $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
-        if (strlen(trim($pre, '\\/')) > 0) array_unshift($names, trim($pre, '\\/'));
-        return join('/', $names) . '.' . ($ext ? $ext : 'tmp');
+        empty($ext) || $ext = pathinfo($url, 4);
+        empty($ext) || $ext = trim($ext, '.\\/');
+        empty($pre) || $pre = trim($pre, '.\\/');
+        $names = array_merge([$pre], str_split(md5($url), 16));
+        return trim(join('/', $names), '/') . '.' . ($ext ? $ext : 'tmp');
     }
 
     /**
