@@ -180,7 +180,7 @@ class File
                 'storage_qiniu_bucket'     => '文件存储空间名称',
                 'storage_qiniu_is_https'   => '文件HTTP访问协议',
                 'storage_qiniu_access_key' => '接口授权AccessKey',
-                'storage_qiniu_secret_key' => '接口授权SectretKey',
+                'storage_qiniu_secret_key' => '接口授权SecretKey',
             ],
         ];
     }
