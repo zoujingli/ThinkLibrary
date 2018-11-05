@@ -171,15 +171,18 @@ class File
 
     /**
      * 文件储存初始化
+     * @param array $data
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
-    public static function init()
+    public static function init($data = [])
     {
         if (empty(self::$config) && function_exists('sysconf')) {
+            $data = [];
             foreach (self::$params as $arr) foreach (array_keys($arr) as $key) {
-                File::$config->set($key, sysconf($key));
+                $data[$key] = sysconf($key);
             }
+            File::$config = new Options($data);
         }
     }
 }
@@ -190,3 +193,5 @@ try {
 } catch (\Exception $e) {
     \think\facade\Log::error(__METHOD__ . $e->getMessage());
 }
+
+var_export(File);

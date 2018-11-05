@@ -27,18 +27,6 @@ if (!function_exists('p')) {
     }
 }
 
-if (!function_exists('auth')) {
-    /**
-     * 节点访问权限检查
-     * @param string $node
-     * @return boolean
-     */
-    function auth($node)
-    {
-        return \logic\Auth::checkAuthNode($node);
-    }
-}
-
 if (!function_exists('format_datetime')) {
     /**
      * 日期格式标准输出
