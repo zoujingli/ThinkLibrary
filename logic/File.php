@@ -35,13 +35,37 @@ class File
      * 当前配置对象
      * @var Options
      */
-    protected static $config;
+    public static $config;
 
     /**
      * 对象缓存器
      * @var array
      */
-    protected static $instance = [];
+    protected static $object = [];
+
+    /**
+     * 文件存储参数
+     * @var array
+     */
+    protected static $params = [
+        'local' => [],
+        'oss'   => [
+            'storage_oss_domain'   => '文件访问域名',
+            'storage_oss_keyid'    => '接口授权AppId',
+            'storage_oss_secret'   => '接口授权AppSecret',
+            'storage_oss_bucket'   => '文件存储空间名称',
+            'storage_oss_is_https' => '文件HTTP访问协议',
+            'storage_oss_endpoint' => '文件存储节点域名',
+        ],
+        'qiniu' => [
+            'storage_qiniu_region'     => '文件存储节点',
+            'storage_qiniu_domain'     => '文件访问域名',
+            'storage_qiniu_bucket'     => '文件存储空间名称',
+            'storage_qiniu_is_https'   => '文件HTTP访问协议',
+            'storage_qiniu_access_key' => '接口授权AccessKey',
+            'storage_qiniu_secret_key' => '接口授权SecretKey',
+        ],
+    ];
 
     /**
      * 静态魔术方法
@@ -67,13 +91,13 @@ class File
     public static function instance($name)
     {
         $class = ucfirst(strtolower($name));
-        if (!isset(self::$instance[$class])) {
+        if (!isset(self::$object[$class])) {
             if (class_exists($object = __NAMESPACE__ . "\\driver\\{$class}")) {
-                return self::$instance[$class] = new $object;
+                return self::$object[$class] = new $object;
             }
             throw new \think\Exception("File driver [{$class}] does not exist.");
         }
-        return self::$instance[$class];
+        return self::$object[$class];
     }
 
     /**
@@ -146,56 +170,23 @@ class File
     }
 
     /**
-     * 文件存储参数配置
-     * @param array|null $data
-     * @return mixed|null
-     */
-    public static function config(array $data = null)
-    {
-        if (is_array($data)) {
-            self::$config = new Options($data);
-        }
-        return self::$config->get();
-    }
-
-    /**
-     * 初始化文件存储配置
+     * 文件储存初始化
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
     public static function init()
     {
-        if (function_exists('sysconf')) {
-            foreach (self::param() as $arr) foreach (array_keys($arr) as $key) {
-                self::$config->set($key, sysconf($key));
+        if (empty(self::$config) && function_exists('sysconf')) {
+            foreach (self::$params as $arr) foreach (array_keys($arr) as $key) {
+                File::$config->set($key, sysconf($key));
             }
         }
     }
+}
 
-    /**
-     * 需要配置的参数信息
-     * @return array
-     */
-    public static function param()
-    {
-        return [
-            'local' => [],
-            'oss'   => [
-                'storage_oss_domain'   => '文件访问域名',
-                'storage_oss_keyid'    => '接口授权AppId',
-                'storage_oss_secret'   => '接口授权AppSecret',
-                'storage_oss_bucket'   => '文件存储空间名称',
-                'storage_oss_is_https' => '文件HTTP访问协议',
-                'storage_oss_endpoint' => '文件存储节点域名',
-            ],
-            'qiniu' => [
-                'storage_qiniu_region'     => '文件存储节点',
-                'storage_qiniu_domain'     => '文件访问域名',
-                'storage_qiniu_bucket'     => '文件存储空间名称',
-                'storage_qiniu_is_https'   => '文件HTTP访问协议',
-                'storage_qiniu_access_key' => '接口授权AccessKey',
-                'storage_qiniu_secret_key' => '接口授权SecretKey',
-            ],
-        ];
-    }
+try {
+    // 初始化文件存储
+    File::init();
+} catch (\Exception $e) {
+    \think\facade\Log::error(__METHOD__ . $e->getMessage());
 }
