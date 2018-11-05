@@ -159,6 +159,20 @@ class File
     }
 
     /**
+     * 初始化文件存储配置
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
+    public static function init()
+    {
+        if (function_exists('sysconf')) {
+            foreach (self::param() as $arr) foreach (array_keys($arr) as $key) {
+                self::$config->set($key, sysconf($key));
+            }
+        }
+    }
+
+    /**
      * 需要配置的参数信息
      * @return array
      */

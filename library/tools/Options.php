@@ -78,4 +78,13 @@ class Options
         unset($this->data[$name]);
     }
 
+    /**
+     * 清理所有配置
+     */
+    public function clear()
+    {
+        unset($this->data);
+        $this->data = [];
+    }
+
 }
