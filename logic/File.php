@@ -113,14 +113,16 @@ class File
      * @param string $url 文件链接
      * @param string $ext 文件后缀
      * @param string $pre 文件前缀（若有值需要以/结尾）
+     * @param string $fun 文件名生成方法
      * @return string
      */
-    public static function name($url, $ext = '', $pre = '')
+    public static function name($url, $ext = '', $pre = '', $fun = 'md5')
     {
+
         empty($ext) && $ext = pathinfo($url, 4);
         empty($ext) || $ext = trim($ext, '.\\/');
         empty($pre) || $pre = trim($pre, '.\\/');
-        $splits = array_merge([$pre], str_split(md5($url), 16));
+        $splits = array_merge([$pre], str_split($fun($url), 16));
         return trim(join('/', $splits), '/') . '.' . ($ext ? $ext : 'tmp');
     }
 

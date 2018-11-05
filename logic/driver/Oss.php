@@ -20,7 +20,6 @@ use OSS\Model\CorsConfig;
 use OSS\Model\CorsRule;
 use OSS\OssClient;
 
-
 /**
  * AliOss文件存储
  * Class Oss
@@ -127,11 +126,12 @@ class Oss extends File
         // 空间及权限处理
         if ($client->doesBucketExist($bucket)) {
             $result = $client->getBucketMeta($bucket);
-            if ($client->getBucketAcl($bucket) !== OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE) {
-                $client->putBucketAcl($bucket, OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE);
+            $aclType = OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE;
+            if ($client->getBucketAcl($bucket) !== $aclType) {
+                $client->putBucketAcl($bucket, $aclType);
             }
         } else {
-            $result = $client->createBucket($bucket, OssClient::OSS_ACL_TYPE_PUBLIC_READ_WRITE);
+            $result = $client->createBucket($bucket, $aclType);
         }
         // CORS 跨域处理
         $corsRule = new CorsRule();
@@ -144,8 +144,10 @@ class Oss extends File
         $corsConfig->addRule($corsRule);
         $client->putBucketCors($bucket, $corsConfig);
         $domain = pathinfo($result['oss-request-url'], 2);
-        sysconf('storage_oss_bucket', $bucket);
-        sysconf('storage_oss_domain', $domain);
+        if (function_exists('sysconf')) {
+            sysconf('storage_oss_bucket', $bucket);
+            sysconf('storage_oss_domain', $domain);
+        }
         return $domain;
     }
 
@@ -181,10 +183,10 @@ class Oss extends File
      */
     private function getOssClient()
     {
-        $osskeyid = self::$config->get('storage_oss_keyid');
-        $osssecret = self::$config->get('storage_oss_secret');
+        $keyid = self::$config->get('storage_oss_keyid');
+        $secret = self::$config->get('storage_oss_secret');
         $endpoint = 'http://' . self::$config->get('storage_oss_endpoint');
-        return new OssClient($osskeyid, $osssecret, $endpoint, true);
+        return new OssClient($keyid, $secret, $endpoint, true);
     }
 
 }
