@@ -178,20 +178,16 @@ class File
     public static function init($data = [])
     {
         if (empty(self::$config) && function_exists('sysconf')) {
-            $data = [];
-            foreach (self::$params as $arr) foreach (array_keys($arr) as $key) {
-                $data[$key] = sysconf($key);
-            }
-            File::$config = new Options($data);
+            foreach (self::$params as $arr) foreach (array_keys($arr) as $key) $data[$key] = sysconf($key);
         }
+        File::$config = new Options($data);
     }
 }
 
+
+// 初始化文件存储
 try {
-    // 初始化文件存储
     File::init();
 } catch (\Exception $e) {
-    \think\facade\Log::error(__METHOD__ . $e->getMessage());
+    \think\facade\Log::error(__METHOD__ . ' 文件存储初始化异常， ' . $e->getMessage());
 }
-
-var_export(File);
