@@ -48,6 +48,9 @@ class File
      */
     protected static $params = [
         'local' => [],
+        'coust' => [
+            'storage_type' => '文件存储类型',
+        ],
         'oss'   => [
             'storage_oss_domain'   => '文件访问域名',
             'storage_oss_keyid'    => '接口授权AppId',
