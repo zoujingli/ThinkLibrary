@@ -15,8 +15,10 @@ ThinkLibrary 是针对 ThinkPHP5.1 版本封装的一套工具类库，方便快
 * 通用数据保存更新（通过 key 值及 where 判定是否存在，存在则更新，不存在则新增）
 * 通用网络请求 （支持 get 及 post，可配置请求证书等）
 * emoji 表情转义处理（部分数据库不支持保存 Emoji 表情，可用这个方法哦）
-* 系统参数通用 k-v 配置
-* UTF8加密算法支持
+* 系统参数通用 k-v 配置（快速参数长久化配置）
+* UTF8加密算法支持（安全URL参数传参数）
+* 接口 CORS 跨域默认支持（输出 JSON 标准化）
+* 更新功能等待您来发现哦....
 
 ## 参考项目
 * Gitee 仓库：https://gitee.com/zoujingli/framework
