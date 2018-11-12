@@ -100,3 +100,12 @@ return $this->_save($dbQuery,['status'=>'1']);
 // 指定关键列更新（$where为扩展条件）
 boolean data_save($dbQuery,$data,'pkname',$where);
 ```
+
+## 通用网络请求
+```php
+// 发起get请求
+$result = http_get($url,$query,$options);
+
+// 发起post请求
+$result = http_post($url,$data,$options);
+```
