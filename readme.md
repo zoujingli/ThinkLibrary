@@ -57,7 +57,7 @@ return $this->_save($dbQuery,['status'=>'0']);
 return $this->_save($dbQuery,['status'=>'1']);
 ```
 
-## 文件存储（oss有qiniu需要配置参数）
+## 文件存储组件（oss及qiniu需要配置参数）
 ```php
 // 获取文件内容（自动存储方式）
 \library\File::get($filename)
