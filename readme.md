@@ -105,7 +105,7 @@ sysconf('storage_oss_bucket', '文件存储空间名称');
 sysconf('storage_oss_is_https', '文件HTTP访问协议');
 sysconf('storage_oss_endpoint', '文件存储节点域名');
 
-// 七牛去存储配置
+// 七牛云存储配置
 sysconf('storage_qiniu_region', '文件存储节点');
 sysconf('storage_qiniu_domain', '文件访问域名');
 sysconf('storage_qiniu_bucket', '文件存储空间名称');
