@@ -46,11 +46,11 @@ return $this->_form($dbQuery, $tplFile, $pkField , $where, $data);
 \library\File::name($url,$ext,$prv,$fun);
 
 //指定存储类型，调用方法
-\library\File::instance('local')->save($filename,$content);
 \library\File::instance('oss')->save($filename,$content);
+\library\File::instance('local')->save($filename,$content);
 \library\File::instance('qiuniu')->save($filename,$content);
 
-\library\File::instance('local')->get($filename,$content);
-\library\File::instance('oss')->get($filename,$content);
-\library\File::instance('qiuniu')->get($filename,$content);
+\library\File::instance('oss')->get($filename);
+\library\File::instance('local')->get($filename);
+\library\File::instance('qiuniu')->get($filename);
 ```
