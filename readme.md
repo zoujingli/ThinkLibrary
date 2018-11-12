@@ -4,19 +4,18 @@
 [![License](https://poser.pugx.org/zoujingli/think-library/license)](https://packagist.org/packages/zoujingli/think-library)
 
 # ThinkLibrary for ThinkPHP5.1
-ThinkLibrary 是针对ThinkPHP5.1版本封装的一套工具类库，方便快速构建WEB应用。
+ThinkLibrary 是针对 ThinkPHP5.1 版本封装的一套工具类库，方便快速构建 WEB 应用。
 
 ## 主要包含内容
 * 数据列表展示（可带高级搜索器）
-* FORM表单处理器
-* 数据快速删除处理
-* 数据状态快速处理
-* 数据安全删除处理（硬删除+软删除）
+* FORM表单处理器（表单展示及数据入库）
+* 数据状态快速处理（数据指定字段更新，支持多字段同时）
+* 数据安全删除处理（硬删除 + 软删除，is_deleted 字段存储则自动软删除）
 * 文件存储通用组件（本地服务存储 + 阿里云OSS存储 + 七牛云存储）
-* 通用数据保存更新（通过key值及where判定是否存在，存在则更新，不存在则新增）
-* 通用网络请求 （支持get及post，可配置请求证书等）
-* emoji 表情转义处理（部分数据库不支持保存Emoji表情，可用这个方法哦）
-* 系统参数通用k-v配置
+* 通用数据保存更新（通过 key 值及 where 判定是否存在，存在则更新，不存在则新增）
+* 通用网络请求 （支持 get 及 post，可配置请求证书等）
+* emoji 表情转义处理（部分数据库不支持保存 Emoji 表情，可用这个方法哦）
+* 系统参数通用 k-v 配置
 * UTF8加密算法支持
 
 ## 参考项目
