@@ -91,33 +91,38 @@ return $this->_save($dbQuery,['status'=>'1']);
 
 ## 文件存储组件（ oss 及 qiniu 需要配置参数）
 ```php
+
+// 生成文件名称(链接url或文件md5)
+$filename = \library\File::name($url,$ext,$prv,$fun);
+
 // 获取文件内容（自动存储方式）
-\library\File::get($filename)
+$result = \library\File::get($filename)
 
 // 保存内容到文件（自动存储方式）
-\library\File::save($filename,$content);
-
-// 生成文件名称
-\library\File::name($url,$ext,$prv,$fun);
+boolean \library\File::save($filename,$content);
 
 // 判断文件是否存在
-\library\File::has($filename);
+boolean \library\File::has($filename);
 
 // 获取文件信息
-\library\File::info($filename);
+$result = \library\File::info($filename);
 
 //指定存储类型（调用方法）
-\library\File::instance('oss')->save($filename,$content);
-\library\File::instance('local')->save($filename,$content);
-\library\File::instance('qiuniu')->save($filename,$content);
+boolean \library\File::instance('oss')->save($filename,$content);
+boolean \library\File::instance('local')->save($filename,$content);
+boolean \library\File::instance('qiuniu')->save($filename,$content);
 
-\library\File::instance('oss')->get($filename);
-\library\File::instance('local')->get($filename);
-\library\File::instance('qiuniu')->get($filename);
+$result = \library\File::instance('oss')->get($filename);
+$result = \library\File::instance('local')->get($filename);
+$result = \library\File::instance('qiuniu')->get($filename);
 
-\library\File::instance('oss')->has($filename);
-\library\File::instance('local')->has($filename);
-\library\File::instance('qiuniu')->has($filename);
+boolean \library\File::instance('oss')->has($filename);
+boolean \library\File::instance('local')->has($filename);
+boolean \library\File::instance('qiuniu')->has($filename);
+
+$resutl = \library\File::instance('oss')->info($filename);
+$resutl = \library\File::instance('local')->info($filename);
+$resutl = \library\File::instance('qiuniu')->info($filename);
 ```
 
 ## 通用数据保存
