@@ -97,7 +97,7 @@ return $this->_save($dbQuery,['status'=>'1']);
 // 保存内容到文件（自动存储方式）
 \library\File::save($filename,$content);
 
-// 生成文件名称（自动存储方式）
+// 生成文件名称
 \library\File::name($url,$ext,$prv,$fun);
 
 // 判断文件是否存在
@@ -140,10 +140,10 @@ $result = http_post($url,$data,$options);
 ## emoji 表情转义（部分数据库不支持可以用这个）
 ```php
 // 输入数据库前转义
-emoji_encode($content);
+$content = emoji_encode($content);
 
 // 输出数据库后转义
-emoji_decode($content); 
+$content = emoji_decode($content); 
 ```
 
 ## 系统参数配置（基于 system_config 数据表）
@@ -152,7 +152,7 @@ emoji_decode($content);
 sysconf($keyname,$keyvalue);
 
 // 获取参数
-sysconf($kename);
+$keyvalue = sysconf($kename);
 ```
 
 ## UTF8加密算法
