@@ -80,3 +80,9 @@ return $this->_save($dbQuery,['status'=>'1']);
 \library\File::instance('local')->get($filename);
 \library\File::instance('qiuniu')->get($filename);
 ```
+
+### 通过数据保存
+```php
+// 指定关键列更新（$where为扩展条件）
+boolean data_save($dbQuery,$data,'pkname',$where);
+```
