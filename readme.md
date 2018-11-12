@@ -10,7 +10,10 @@ ThinkLibrary 是针对ThinkPHP5.1版本封装的一套工具类库，方便快�
 * Gitee 仓库：https://gitee.com/zoujingli/framework
 * Github 仓库：https://gitee.com/zoujingli/framework
 
-## 使用说明（需Composer支持）
+## 使用说明
+* ThinkLibrary 需要Composer支持
+* 安装命令 ` composer require zoujingli/think-library `
+* 案例代码：
 控制器需要继续 `library\Controller`，然后`$this`就可能使用全部功能。
 ```php
 // 定义 MyController 控制器
@@ -32,6 +35,16 @@ class MyController extend \library\Controller{
     }
     
 }
+```
+* 必要数据库表SQL（sysconf函数需要用到这个表）
+```sql
+CREATE TABLE `system_config` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL COMMENT '配置名',
+  `value` varchar(500) DEFAULT NULL COMMENT '配置值',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `index_system_config_name` (`name`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统配置';
 ```
 
 ## 列表处理
@@ -97,7 +110,7 @@ return $this->_save($dbQuery,['status'=>'1']);
 
 ## 通用数据保存
 ```php
-// 指定关键列更新（$where为扩展条件）
+// 指定关键列更新（$where 为扩展条件）
 boolean data_save($dbQuery,$data,'pkname',$where);
 ```
 
@@ -119,4 +132,13 @@ emoji_encode($content);
 
 // 输出数据库后转义
 emoji_decode($content); 
+```
+
+## 系统参数配置（基于 system_config 数据表）
+```php
+// 设置参数
+sysconf($keyname,$keyvalue);
+
+// 获取参数
+sysconf($kename);
 ```
