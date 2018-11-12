@@ -10,7 +10,7 @@ ThinkLibrary 是针对ThinkPHP5.1版本封装的一套工具类库，方便快�
 * Gitee 仓库：https://gitee.com/zoujingli/framework
 * Github 仓库：https://gitee.com/zoujingli/framework
 
-## ThinkLibrary 使用
+## 使用说明（需Composer支持）
 控制器需要继续 `library\Controller`，然后`$this`就可能使用全部功能。
 ```php
 // 定义 MyController 控制器
