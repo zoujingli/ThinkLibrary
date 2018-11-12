@@ -65,8 +65,8 @@ CREATE TABLE `system_config` (
 return $this->_page($dbQuery, $isPage, $isDisplay, $total);
 
 // 列表展示搜索器（按 name、title 模糊搜索；按 status 精确搜索）
-$db = $this->_query($dbQuery)->like('name,title')->equal('status');
-return $this->_page($db, $isPage, $isDisplay, $total);
+$query = $this->_query($dbQuery)->like('name,title')->equal('status');
+return $this->_page($query->db(), $isPage, $isDisplay, $total);
 ```
 
 ## 表单处理
