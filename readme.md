@@ -48,7 +48,7 @@ class MyController extend \library\Controller{
     
 }
 ```
-* 必要数据库表SQL（sysconf函数需要用到这个表）
+* 必要数据库表SQL（sysconf 函数需要用到这个表）
 ```sql
 CREATE TABLE `system_config` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -64,7 +64,7 @@ CREATE TABLE `system_config` (
 // 列表展示
 return $this->_page($dbQuery, $isPage, $isDisplay, $total);
 
-// 列表展示搜索器（按name、title模糊搜索；按status精确搜索）
+// 列表展示搜索器（按 name、title 模糊搜索；按 status 精确搜索）
 $db = $this->_query($dbQuery)->like('name,title')->equal('status');
 return $this->_page($db, $isPage, $isDisplay, $total);
 ```
@@ -89,7 +89,7 @@ return $this->_save($dbQuery,['status'=>'0']);
 return $this->_save($dbQuery,['status'=>'1']);
 ```
 
-## 文件存储组件（oss及qiniu需要配置参数）
+## 文件存储组件（ oss 及 qiniu 需要配置参数）
 ```php
 // 获取文件内容（自动存储方式）
 \library\File::get($filename)
@@ -160,6 +160,6 @@ sysconf($kename);
 // 字符串加密操作
 $string = encode($content);
 
-// 加密解密操作
+// 加密字符串解密
 $content = decode($string);
 ```
