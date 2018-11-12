@@ -71,6 +71,9 @@ return $this->_save($dbQuery,['status'=>'1']);
 // 判断文件是否存在
 \library\File::has($filename);
 
+// 获取文件信息
+\library\File::info($filename);
+
 //指定存储类型（调用方法）
 \library\File::instance('oss')->save($filename,$content);
 \library\File::instance('local')->save($filename,$content);
@@ -79,6 +82,10 @@ return $this->_save($dbQuery,['status'=>'1']);
 \library\File::instance('oss')->get($filename);
 \library\File::instance('local')->get($filename);
 \library\File::instance('qiuniu')->get($filename);
+
+\library\File::instance('oss')->has($filename);
+\library\File::instance('local')->has($filename);
+\library\File::instance('qiuniu')->has($filename);
 ```
 
 ## 通用数据保存
