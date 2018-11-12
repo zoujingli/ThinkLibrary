@@ -6,6 +6,19 @@
 # ThinkLibrary for ThinkPHP5.1
 ThinkLibrary 是针对ThinkPHP5.1版本封装的一套工具类库，方便快速构建WEB应用。
 
+## 主要包含内容
+* 数据列表展示（可带高级搜索器）
+* FORM表单处理器
+* 数据快速删除处理
+* 数据状态快速处理
+* 数据安全删除处理（硬删除+软删除）
+* 文件存储通用组件（本地服务存储 + 阿里云OSS存储 + 七牛云存储）
+* 通用数据保存更新（通过key值及where判定是否存在，存在则更新，不存在则新增）
+* 通用网络请求 （支持get及post，可配置请求证书等）
+* emoji 表情转义处理（部分数据库不支持保存Emoji表情，可用这个方法哦）
+* 系统参数通用k-v配置
+* UTF8加密算法支持
+
 ## 参考项目
 * Gitee 仓库：https://gitee.com/zoujingli/framework
 * Github 仓库：https://gitee.com/zoujingli/framework
@@ -141,4 +154,13 @@ sysconf($keyname,$keyvalue);
 
 // 获取参数
 sysconf($kename);
+```
+
+## UTF8加密算法
+```php
+// 字符串加密操作
+$string = encode($content);
+
+// 加密解密操作
+$content = decode($string);
 ```
