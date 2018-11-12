@@ -14,9 +14,14 @@ class MyController extend \library\Controller{
     
     // 显示数据列表
     public function index(){
-    
         return $this->_page($dbQuery);
-        
+    }
+    
+    // 当前列表数据处理
+    protected function _index_page_filter(&$data){
+         foreach($data as &$vo){
+            // @todo 修改原列表
+         }
     }
     
 }
