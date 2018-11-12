@@ -15,7 +15,7 @@ class MyController extend \library\Controller{
     // 显示数据列表
     public function index(){
     
-        return $this->_page('MyTableName');
+        return $this->_page($dbQuery);
         
     }
     
@@ -26,6 +26,10 @@ class MyController extend \library\Controller{
 ```php
 // 列表展示
 return $this->_page($dbQuery, $isPage, $isDisplay, $total);
+
+// 列表展示搜索器（按name、title模糊搜索；按status精确搜索）
+$db = $this->_query($dbQuery)->like('name,title')->equal('status');
+return $this->_page($db, $isPage, $isDisplay, $total);
 ```
 
 ## 表单处理
@@ -34,18 +38,35 @@ return $this->_page($dbQuery, $isPage, $isDisplay, $total);
 return $this->_form($dbQuery, $tplFile, $pkField , $where, $data);
 ```
 
+## 删除处理
+```php
+// 数据删除处理
+return $this->_deleted($dbQuery);
+```
+
+## 禁用启用处理
+```php
+// 数据禁用处理
+return $this->_save($dbQuery,['status'=>'0']);
+// 数据启用处理
+return $this->_save($dbQuery,['status'=>'1']);
+```
+
 ## 文件存储
 ```php
-// 保存内容到文件
-\library\File::save($filename,$content);
-
-// 获取文件内容
+// 获取文件内容（自动存储方式）
 \library\File::get($filename)
 
-// 生成文件名称
+// 保存内容到文件（自动存储方式）
+\library\File::save($filename,$content);
+
+// 生成文件名称（自动存储方式）
 \library\File::name($url,$ext,$prv,$fun);
 
-//指定存储类型，调用方法
+// 判断文件是否存在
+\library\File::has($filename);
+
+//指定存储类型（调用方法）
 \library\File::instance('oss')->save($filename,$content);
 \library\File::instance('local')->save($filename,$content);
 \library\File::instance('qiuniu')->save($filename,$content);
