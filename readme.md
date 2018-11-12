@@ -105,7 +105,18 @@ boolean data_save($dbQuery,$data,'pkname',$where);
 ```php
 // 发起get请求
 $result = http_get($url,$query,$options);
+\library\tools\Http::get($url,$query,$options);
 
 // 发起post请求
 $result = http_post($url,$data,$options);
+\library\tools\Http::post($url,$data,$options);
+```
+
+## emoji 表情转义（部分数据库不支持可以用这个）
+```php
+// 输入数据库前转义
+emoji_encode($content);
+
+// 输出数据库后转义
+emoji_decode($content); 
 ```
