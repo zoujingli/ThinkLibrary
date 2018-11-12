@@ -33,3 +33,24 @@ return $this->_page($dbQuery, $isPage, $isDisplay, $total);
 // 表单显示及数据更新
 return $this->_form($dbQuery, $tplFile, $pkField , $where, $data);
 ```
+
+## 文件存储
+```php
+// 保存内容到文件
+\library\File::save($filename,$content);
+
+// 获取文件内容
+\library\File::get($filename)
+
+// 生成文件名称
+\library\File::name($url,$ext,$prv,$fun);
+
+//指定存储类型，调用方法
+\library\File::instance('local')->save($filename,$content);
+\library\File::instance('oss')->save($filename,$content);
+\library\File::instance('qiuniu')->save($filename,$content);
+
+\library\File::instance('local')->get($filename,$content);
+\library\File::instance('oss')->get($filename,$content);
+\library\File::instance('qiuniu')->get($filename,$content);
+```
