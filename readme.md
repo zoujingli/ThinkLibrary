@@ -38,7 +38,7 @@ class MyController extend \library\Controller{
     
     // 显示数据列表
     public function index(){
-        return $this->_page($dbQuery);
+        return $this->_page($this->dbQuery);
     }
     
     // 当前列表数据处理
