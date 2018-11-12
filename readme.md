@@ -6,6 +6,9 @@
 # ThinkLibrary for ThinkPHP5.1
 ThinkLibrary 是针对ThinkPHP5.1版本封装的一套工具类库，方便快速构建WEB应用。
 
+## 参考项目
+试用项目：https://gitee.com/zoujingli/framework
+
 ## ThinkLibrary 使用
 控制器需要继续 `library\Controller`，然后`$this`就可能使用全部功能。
 ```php
