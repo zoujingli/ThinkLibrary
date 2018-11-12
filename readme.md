@@ -132,19 +132,19 @@ $result = \library\File::info($filename);
 //指定存储类型（调用方法）
 boolean \library\File::instance('oss')->save($filename,$content);
 boolean \library\File::instance('local')->save($filename,$content);
-boolean \library\File::instance('qiuniu')->save($filename,$content);
+boolean \library\File::instance('qiniu')->save($filename,$content);
 
 $result = \library\File::instance('oss')->get($filename);
 $result = \library\File::instance('local')->get($filename);
-$result = \library\File::instance('qiuniu')->get($filename);
+$result = \library\File::instance('qiniu')->get($filename);
 
 boolean \library\File::instance('oss')->has($filename);
 boolean \library\File::instance('local')->has($filename);
-boolean \library\File::instance('qiuniu')->has($filename);
+boolean \library\File::instance('qiniu')->has($filename);
 
 $resutl = \library\File::instance('oss')->info($filename);
 $resutl = \library\File::instance('local')->info($filename);
-$resutl = \library\File::instance('qiuniu')->info($filename);
+$resutl = \library\File::instance('qiniu')->info($filename);
 ```
 
 ## 通用数据保存
