@@ -15,6 +15,9 @@ ThinkLibrary 是针对ThinkPHP5.1版本封装的一套工具类库，方便快�
 ```php
 // 定义 MyController 控制器
 class MyController extend \library\Controller{
+
+    // 指定当前数据表名
+    protected $dbQuery = '数据表名';
     
     // 显示数据列表
     public function index(){
