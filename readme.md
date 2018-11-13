@@ -22,7 +22,7 @@ ThinkLibrary 是针对 ThinkPHP5.1 版本封装的一套工具类库，方便快
 
 ## 参考项目
 * Gitee 仓库：https://gitee.com/zoujingli/framework
-* Github 仓库：https://gitee.com/zoujingli/framework
+* Github 仓库：https://github.com/zoujingli/framework
 
 ## 使用说明
 * ThinkLibrary 需要Composer支持
