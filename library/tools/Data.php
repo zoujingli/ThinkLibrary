@@ -58,7 +58,7 @@ class Data
     {
         list($case, $_data) = [[], []];
         $db = is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
-        foreach ($data as $row) foreach (array_keys($row) as $k) $case[$k][] = "WHEN {$row[$key]} THEN '{$row[$k]}'";
+        foreach ($data as $row) foreach ($row as $k => $v) $case[$k][] = "WHEN {$row[$key]} THEN '{$v}'";
         if (isset($case[$key])) unset($case[$key]);
         foreach ($case as $k => $v) $_data[$k] = Db::raw("CASE `{$key}` " . join(' ', $v) . ' END');
         return $db->whereIn($key, array_unique(array_column($data, $key)))->where($where)->update($_data) !== false;
