@@ -31,7 +31,7 @@ use think\exception\HttpResponseException;
  * @method mixed _form($dbQuery, $tplFile = '', $pkField = '', $where = [], $extendData = [])
  * --------------------------------
  * @author Anyon <zoujingli@qq.com>
- * @date 2018/08/10 11:31
+ * @date 2018/11/10 11:31
  */
 class Controller extends \stdClass
 {
