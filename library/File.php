@@ -163,7 +163,7 @@ class File
         try {
             $file = self::instance('local');
             $name = self::name($url, '', 'down/');
-            if (!$force && $file->has($name)) return $file->info($name);
+            if (empty($force) && $file->has($name)) return $file->info($name);
             return $file->save($name, file_get_contents($url));
         } catch (\Exception $e) {
             \think\facade\Log::error(__METHOD__ . " File download failed [ {$url} ] {$e->getMessage()}");
