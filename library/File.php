@@ -94,13 +94,13 @@ class File
      */
     public static function instance($name)
     {
-        if (!isset(self::$object[$class = ucfirst(strtolower($name))])) {
-            if (class_exists($object = __NAMESPACE__ . "\\driver\\{$class}")) {
-                return self::$object[$class] = new $object;
-            }
-            throw new \think\Exception("File driver [{$class}] does not exist.");
+        if (isset(self::$object[$class = ucfirst(strtolower($name))])) {
+            return self::$object[$class];
         }
-        return self::$object[$class];
+        if (class_exists($object = __NAMESPACE__ . "\\driver\\{$class}")) {
+            return self::$object[$class] = new $object;
+        }
+        throw new \think\Exception("File driver [{$class}] does not exist.");
     }
 
     /**
