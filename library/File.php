@@ -145,12 +145,11 @@ class File
      */
     public static function name($url, $ext = '', $pre = '', $fun = 'md5')
     {
-
         empty($ext) && $ext = pathinfo($url, 4);
         empty($ext) || $ext = trim($ext, '.\\/');
         empty($pre) || $pre = trim($pre, '.\\/');
         $splits = array_merge([$pre], str_split($fun($url), 16));
-        return trim(join('/', $splits), '/') . '.' . ($ext ? $ext : 'tmp');
+        return trim(join('/', $splits), '/') . '.' . strtolower($ext ? $ext : 'tmp');
     }
 
     /**
