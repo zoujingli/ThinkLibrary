@@ -81,18 +81,6 @@ class Page extends Logic
         if ($this->request->isPost()) {
             $this->_sort();
         }
-        return $this->_page();
-    }
-
-    /**
-     * 列表集成处理方法
-     * @return mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     */
-    protected function _page()
-    {
         // 未配置 order 规则时自动按 sort 字段排序
         if (!$this->db->getOptions('order') && method_exists($this->db, 'getTableFields')) {
             if (in_array('sort', $this->db->getTableFields())) $this->db->order('sort asc');

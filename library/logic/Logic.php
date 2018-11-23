@@ -14,8 +14,8 @@
 
 namespace library\logic;
 
-use think\db\Query;
 use library\Controller;
+use think\db\Query;
 
 /**
  * 基础视图管理器
@@ -48,7 +48,6 @@ abstract class Logic
      */
     public function __construct($dbQuery)
     {
-        $this->db = $dbQuery;
         $this->request = app('request');
         if (is_string($this->db)) {
             if (class_exists('think\facade\Db')) {
