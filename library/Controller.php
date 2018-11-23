@@ -15,7 +15,6 @@
 namespace library;
 
 use library\tools\Cors;
-use think\Exception;
 use think\exception\HttpResponseException;
 
 /**
@@ -38,7 +37,6 @@ class Controller extends \stdClass
 {
 
     /**
-     * 当前请求对象
      * @var \think\Request
      */
     protected $request;
@@ -54,26 +52,29 @@ class Controller extends \stdClass
 
     /**
      * 实例方法调用
+     * @access public
      * @param string $method 函数名称
      * @param array $arguments 调用参数
      * @return mixed
-     * @throws Exception
+     * @throws \think\Exception
+     * @throws \ReflectionException
      */
     public function __call($method, $arguments = [])
     {
-        $className = "library\\logic\\" . ucfirst(ltrim($method, '_'));
-        if (class_exists($className)) {
-            $app = app($className, $arguments, true);
-            return method_exists($app, 'apply') ? $app->apply($this) : $app;
+        $name = "library\\logic\\" . ucfirst(ltrim($method, '_'));
+        if (class_exists($name)) {
+            $reflect = new \ReflectionClass($name);
+            return $reflect->newInstanceArgs($arguments)->init($this);
         }
         if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $arguments);
         }
-        throw new Exception('method not exists:' . get_class($this) . '->' . $method);
+        throw new \think\Exception('method not exists:' . get_class($this) . '->' . $method);
     }
 
     /**
      * 数据回调处理机制
+     * @access public
      * @param string $name 回调方法名称
      * @param mixed $one 回调引用参数1
      * @param mixed $two 回调引用参数2
