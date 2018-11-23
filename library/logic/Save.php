@@ -65,13 +65,13 @@ class Save extends Logic
     }
 
     /**
-     * 组件应用器
+     * 逻辑器初始化
      * @param Controller $controller
      * @return boolean
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
-    protected function init(Controller $controller)
+    public function init(Controller $controller)
     {
         $this->controller = $controller;
         // 主键限制处理

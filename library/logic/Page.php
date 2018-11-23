@@ -66,7 +66,7 @@ class Page extends Logic
     }
 
     /**
-     * 应用初始化
+     * 逻辑器初始化
      * @param Controller $controller
      * @return mixed
      * @throws \think\Exception
@@ -75,7 +75,7 @@ class Page extends Logic
      * @throws \think\exception\DbException
      * @throws \think\exception\PDOException
      */
-    protected function init(Controller $controller)
+    public function init(Controller $controller)
     {
         $this->controller = $controller;
         if ($this->request->isPost()) {

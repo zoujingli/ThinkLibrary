@@ -14,7 +14,6 @@
 
 namespace library\logic;
 
-use think\Db;
 use think\db\Query;
 use library\Controller;
 
@@ -49,23 +48,22 @@ abstract class Logic
      */
     public function __construct($dbQuery)
     {
+        $this->db = $dbQuery;
         $this->request = app('request');
-        $this->db = is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
-    }
-
-    /**
-     * 魔术调用函数
-     * @param string $name 函数名称
-     * @param array $arguments 调用参数
-     * @return mixed
-     */
-    public function __call($name, $arguments)
-    {
-        if (method_exists($this, $name)) {
-            return call_user_func_array([$this, $name], $arguments);
+        if (is_string($this->db)) {
+            if (class_exists('think\facade\Db')) {
+                $this->db = \think\facade\Db::name($this->db);
+            } else {
+                $this->db = \think\Db::name($this->db);
+            }
         }
     }
 
-    abstract protected function init(Controller $controller);
+    /**
+     * 逻辑器初始化
+     * @param Controller $controller
+     * @return mixed
+     */
+    abstract public function init(Controller $controller);
 
 }
