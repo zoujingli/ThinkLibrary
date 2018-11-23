@@ -49,7 +49,7 @@ abstract class Logic
     public function __construct($dbQuery)
     {
         $this->request = app('request');
-        if (is_string($this->db)) {
+        if (is_string($this->db = $dbQuery)) {
             if (class_exists('think\facade\Db')) {
                 $this->db = \think\facade\Db::name($this->db);
             } else {
