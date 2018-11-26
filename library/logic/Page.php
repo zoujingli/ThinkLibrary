@@ -91,12 +91,12 @@ class Page extends Logic
             $limit = intval($this->request->get('limit', cookie('page-limit')));
             cookie('page-limit', $limit = $limit >= 10 ? $limit : 20);
             if ($this->limit > 0) $limit = $this->limit;
-            list($rows, $query) = [[], $this->request->get()];
-            $page = $this->db->paginate($limit, $this->total, ['query' => $query]);
+            $rows = [];
+            $page = $this->db->paginate($limit, $this->total, ['query' => ($query = $this->request->get())]);
             foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as $num) {
                 list($query['limit'], $query['page'], $selected) = [$num, '1', $limit === $num ? 'selected' : ''];
                 $url = url('@admin') . '#' . $this->request->baseUrl() . '?' . urldecode(http_build_query($query));
-                $rows[] = "<option data-num='{$num}' value='{$url}' {$selected}>{$num}</option>";
+                array_push($rows, "<option data-num='{$num}' value='{$url}' {$selected}>{$num}</option>");
             }
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>" . join('', $rows) . "</select>";
             $html = "<div class='pagination-container nowrap'><span>共 {$page->total()} 条记录，每页显示 {$select} 条，共 {$page->lastPage()} 页当前显示第 {$page->currentPage()} 页。</span>{$page->render()}</div>";
