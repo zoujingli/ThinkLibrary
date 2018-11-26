@@ -27,8 +27,8 @@ use think\exception\HttpResponseException;
  * @method array _input($data, $rule = [], $info = [])
  * @method mixed _delete($dbQuery, $pkField = '', $where = [])
  * @method mixed _save($dbQuery, $data = [], $pkField = '', $where = [])
- * @method array _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
  * @method mixed _form($dbQuery, $tplFile = '', $pkField = '', $where = [], $data = [])
+ * @method array _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
  * --------------------------------
  * @author Anyon <zoujingli@qq.com>
  * @date 2018/08/10 11:31
