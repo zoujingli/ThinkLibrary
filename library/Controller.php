@@ -146,7 +146,7 @@ class Controller extends \stdClass
      */
     protected function assign($name, $value = '')
     {
-        $this->{$name} = $value;
+        app('view')->assign($name, $value);
         return $this;
     }
 
