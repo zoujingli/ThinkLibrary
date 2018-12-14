@@ -132,6 +132,19 @@ class Query extends Logic
         return (new Page($this->query, $isPage, $isDisplay, $total, $limit))->init($this->controller);
     }
 
+
+    /**
+     * 列表指定排序
+     * @param  string|array $field 排序字段
+     * @param  string $order 排序方式
+     * @return $this
+     */
+    public function order($field, $order = null)
+    {
+        $this->query->order($field, $order);
+        return $this;
+    }
+
     /**
      * 设置DateTime区间查询
      * @param string|array $fields 查询字段
