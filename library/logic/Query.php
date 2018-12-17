@@ -152,8 +152,8 @@ class Query extends Logic
 
     /**
      * 魔术调用方法
-     * @param string $name
-     * @param array $arguments
+     * @param string $name 调用方法名称
+     * @param array $arguments 调用参数
      * @return $this
      */
     public function __call($name, $arguments)
