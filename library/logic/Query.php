@@ -185,6 +185,21 @@ class Query extends Logic
     }
 
     /**
+     * 指定查询字段 支持字段排除和指定数据表
+     * @param mixed $field
+     * @param  boolean $except 是否排除
+     * @param  string $tableName 数据表名
+     * @param  string $prefix 字段前缀
+     * @param  string $alias 别名前缀
+     * @return $this
+     */
+    public function field($field, $except = false, $tableName = '', $prefix = '', $alias = '')
+    {
+        $this->query->field($field, $except, $tableName, $prefix, $alias);
+        return $this;
+    }
+
+    /**
      * 实例化分页管理器
      * @param boolean $isPage 是否启用分页
      * @param boolean $isDisplay 是否渲染模板
