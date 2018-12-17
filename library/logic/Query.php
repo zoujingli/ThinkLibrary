@@ -151,36 +151,16 @@ class Query extends Logic
     }
 
     /**
-     * 设置where条件
-     * @param array $where
+     * 魔术调用方法
+     * @param string $name
+     * @param array $arguments
      * @return $this
      */
-    public function where($where)
+    public function __call($name, $arguments)
     {
-        $this->query->where($where);
-        return $this;
-    }
-
-    /**
-     * 子条件查询sql
-     * @param string $subSql
-     * @return $this
-     */
-    public function whereRaw($subSql)
-    {
-        $this->query->whereRaw($subSql);
-        return $this;
-    }
-
-    /**
-     * 列表指定排序
-     * @param  string|array $field 排序字段
-     * @param  string $order 排序方式
-     * @return $this
-     */
-    public function order($field, $order = null)
-    {
-        $this->query->order($field, $order);
+        if (method_exists($this->query, $name)) {
+            call_user_func_array([$this->query, $name], $arguments);
+        }
         return $this;
     }
 
