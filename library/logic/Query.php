@@ -20,6 +20,8 @@ use library\Controller;
  * 搜索条件处理器
  * Class Query
  * @package library\logic
+ * @see \think\Db\Query
+ * @mixin \think\Db\Query
  */
 class Query extends Logic
 {
