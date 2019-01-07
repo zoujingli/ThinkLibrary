@@ -43,7 +43,7 @@ class Csv
         foreach ($list as $data) {
             $rows = [];
             foreach ($rules as $rule) {
-                $rows[] = @iconv('utf-8', 'gbk//TRANSLIT', emoji_clear(self::parseKeyDot($data, $rule)));
+                $rows[] = @iconv('utf-8', 'gbk//TRANSLIT', Crypt::emojiClear(self::parseKeyDot($data, $rule)));
             }
             echo "\"" . implode('","', $rows) . "\"\n";
             flush();
