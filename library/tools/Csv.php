@@ -36,14 +36,14 @@ class Csv
     /**
      * 写入CSV文件内容
      * @param array $list 数据列表(二维数组或多维数组)
-     * @param array $rules 数据规则(一维数组)
+     * @param array $maps 数据规则(一维数组)
      */
-    public static function body(array $list, array $rules)
+    public static function body(array $list, array $maps)
     {
         foreach ($list as $data) {
             $rows = [];
-            foreach ($rules as $rule) {
-                $rows[] = @iconv('utf-8', 'gbk//TRANSLIT', Crypt::emojiClear(self::parseKeyDot($data, $rule)));
+            foreach ($maps as $map) {
+                $rows[] = @iconv('utf-8', 'gbk//TRANSLIT', Crypt::emojiClear(self::parseKeyDot($data, $map)));
             }
             echo "\"" . implode('","', $rows) . "\"\n";
             flush();
