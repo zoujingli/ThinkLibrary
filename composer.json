@@ -19,7 +19,6 @@
     "php": ">=5.4",
     "ext-json": "*",
     "ext-curl": "*",
-    "ext-soap": "*",
     "ext-iconv": "*",
     "ext-openssl": "*",
     "qiniu/php-sdk": "^7.2",
