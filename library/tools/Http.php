@@ -109,7 +109,7 @@ class Http
     private static function getUserAgent()
     {
         if (!empty($_SERVER['HTTP_USER_AGENT'])) return $_SERVER['HTTP_USER_AGENT'];
-        $agentarry = [
+        $userAgents = [
             "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
             "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50",
             "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0",
@@ -122,7 +122,7 @@ class Http
             "Opera/9.80 (Windows NT 6.1; U; en) Presto/2.8.131 Version/11.11",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11",
         ];
-        return $agentarry[array_rand($agentarry, 1)];
+        return $userAgents[array_rand($userAgents, 1)];
     }
 
 }
