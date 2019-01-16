@@ -106,7 +106,7 @@ class Http
      * 获取浏览器代理信息
      * @return string
      */
-    public static function getUserAgent()
+    private static function getUserAgent()
     {
         if (!empty($_SERVER['HTTP_USER_AGENT'])) return $_SERVER['HTTP_USER_AGENT'];
         $agentarry = [
