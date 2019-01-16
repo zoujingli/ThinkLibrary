@@ -47,7 +47,7 @@ class Express
     public static function query($express_code, $express_no)
     {
         list($microtime, $client_ip) = [microtime(true), request()->ip()];
-        $header = ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $client_ip, 'X-FORWARDED-FOR' => $client_ip, 'WWWID' => 'WWW2B97AE1F999680D050FEAF0E6F2C40DC'];
+        $header = ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $client_ip, 'X-FORWARDED-FOR' => $client_ip];
         $location = "http://www.kuaidi100.com/query?type={$express_code}&postid={$express_no}&phone=&temp={$microtime}";
         return json_decode(Http::get($location, [], ['header' => $header, 'timeout' => 30]), true);
     }
