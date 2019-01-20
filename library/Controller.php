@@ -132,7 +132,7 @@ class Controller extends \stdClass
      */
     protected function fetch($tpl = '', $vars = [])
     {
-        foreach ($this as $name => $value) $data[$name] = $value;
+        foreach ($this as $name => $value) $vars[$name] = $value;
         throw new \think\exception\HttpResponseException(view($tpl, $vars));
     }
 
