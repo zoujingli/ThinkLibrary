@@ -132,8 +132,8 @@ class Controller extends \stdClass
      */
     protected function fetch($tpl = '', $vars = [])
     {
-        $data = json_decode(json_encode($this), true);
-        throw new \think\exception\HttpResponseException(view($tpl, $vars)->assign($data));
+        foreach ($this as $name => $value) $data[$name] = $value;
+        throw new \think\exception\HttpResponseException(view($tpl, $vars));
     }
 
     /**
