@@ -146,12 +146,8 @@ class Controller extends \stdClass
     protected function assign($name, $value = '')
     {
         if (is_array($name)) {
-            foreach ($name as $k => $v) {
-                if (is_string($k)) $this->$k = $v;
-            }
-        } elseif (is_string($name)) {
-            $this->$name = $value;
-        }
+            foreach ($name as $k => $v) if (is_string($k)) $this->$k = $v;
+        } elseif (is_string($name)) $this->$name = $value;
         return $this;
     }
 
