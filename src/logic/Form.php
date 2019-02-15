@@ -16,7 +16,6 @@ namespace library\logic;
 
 use library\Controller;
 use library\tools\Data;
-use think\Db;
 use think\db\Query;
 
 /**
