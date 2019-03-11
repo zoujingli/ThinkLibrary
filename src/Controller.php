@@ -166,15 +166,12 @@ class Controller extends \stdClass
      */
     protected function applyCsrfToken($isRutrun = false)
     {
-        if ($this->request->isPost()) {
-            if ($this->_isCsrf && !Csrf::checkFormToken()) {
-                if ($isRutrun) return false;
-                $this->error('表单令牌验证失败，请刷新页面再试！');
-            }
-            return true;
-        } else {
-            return $this->_isCsrf = true;
+        $this->_isCsrf = true;
+        if ($this->request->isPost() && !Csrf::checkFormToken()) {
+            if ($isRutrun) return false;
+            $this->error('表单令牌验证失败，请刷新页面再试！');
         }
+        return true;
     }
 
 }
