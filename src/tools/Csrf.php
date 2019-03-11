@@ -28,7 +28,7 @@ class Csrf
      */
     public static function checkFormToken()
     {
-        $field = input('csrf-totken-name', '__token__');
+        $field = input('csrf-token-name', '__token__');
         return input($field, '--') === session($field, '', 'csrf');
     }
 
@@ -61,7 +61,7 @@ class Csrf
         throw new \think\exception\HttpResponseException(view($tpl, $vars, 200, function ($html) {
             return preg_replace_callback('/<\/form>/i', function () {
                 $csrf = self::buildFormToken();
-                return "<input type='hidden' name='{$csrf['name']}' value='{$csrf['token']}'><input type='hidden' name='csrf-totken-name' value='{$csrf['name']}'></form>";
+                return "<input type='hidden' name='{$csrf['name']}' value='{$csrf['token']}'><input type='hidden' name='csrf-token-name' value='{$csrf['name']}'></form>";
             }, $html);
         }));
     }
