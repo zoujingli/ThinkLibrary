@@ -46,7 +46,7 @@ class Controller extends \stdClass
      * 表单CSRF验证
      * @var boolean
      */
-    public $isCsrf = false;
+    public $csrf = false;
 
     /**
      * Controller constructor.
@@ -55,7 +55,7 @@ class Controller extends \stdClass
     {
         Cors::optionsHandler();
         $this->request = request();
-        if ($this->isCsrf && $this->request->isPost() && !Csrf::checkFormToken()) {
+        if ($this->csrf && $this->request->isPost() && !Csrf::checkFormToken()) {
             $this->error('表单令牌验证失败，请刷新页面再试！');
         }
     }
@@ -88,7 +88,7 @@ class Controller extends \stdClass
     public function success($info, $data = [], $code = 1)
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if ($this->isCsrf) Csrf::clearFormToken(input('csrf_token_name', '__token__'));
+        if ($this->csrf) Csrf::clearFormToken(input('csrf_token_name', '__token__'));
         throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
 
@@ -123,7 +123,7 @@ class Controller extends \stdClass
     public function fetch($tpl = '', $vars = [])
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
-        if ($this->isCsrf) {
+        if ($this->csrf) {
             Csrf::fetchTemplate($tpl, $vars);
         } else {
             throw new \think\exception\HttpResponseException(view($tpl, $vars));
