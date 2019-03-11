@@ -46,7 +46,7 @@ class Controller extends \stdClass
      * 表单CSRF验证
      * @var boolean
      */
-    public $csrf = false;
+    private $_isCsrf = false;
 
     /**
      * Controller constructor.
@@ -55,9 +55,6 @@ class Controller extends \stdClass
     {
         Cors::optionsHandler();
         $this->request = request();
-        if ($this->csrf && $this->request->isPost() && !Csrf::checkFormToken()) {
-            $this->error('表单令牌验证失败，请刷新页面再试！');
-        }
     }
 
     /**
@@ -88,7 +85,7 @@ class Controller extends \stdClass
     public function success($info, $data = [], $code = 1)
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if ($this->csrf) Csrf::clearFormToken(input('csrf_token_name', '__token__'));
+        if ($this->_isCsrf) Csrf::clearFormToken(input('csrf_token_name', '__token__'));
         throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
 
@@ -123,7 +120,7 @@ class Controller extends \stdClass
     public function fetch($tpl = '', $vars = [])
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
-        if ($this->csrf) {
+        if ($this->_isCsrf) {
             Csrf::fetchTemplate($tpl, $vars);
         } else {
             throw new \think\exception\HttpResponseException(view($tpl, $vars));
@@ -159,6 +156,24 @@ class Controller extends \stdClass
             if (false === $this->$method($one, $two)) return false;
         }
         return true;
+    }
+
+    /**
+     * 检查表单令牌验证
+     * @param boolean $isRutrun
+     * @return boolean
+     */
+    protected function applyCsrfToken($isRutrun = false)
+    {
+        if ($this->request->isPost()) {
+            if ($this->_isCsrf && !Csrf::checkFormToken()) {
+                if ($isRutrun) return false;
+                $this->error('表单令牌验证失败，请刷新页面再试！');
+            }
+            return true;
+        } else {
+            return $this->_isCsrf = true;
+        }
     }
 
 }
