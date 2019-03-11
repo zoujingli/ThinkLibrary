@@ -88,7 +88,7 @@ class Controller extends \stdClass
     public function success($info, $data = [], $code = 1)
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if ($this->isCsrf) Csrf::clearFormToken(input('csrf-token-field', '__token__'));
+        if ($this->isCsrf) Csrf::clearFormToken(input('csrf-totken-name', '__token__'));
         throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
 
