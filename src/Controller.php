@@ -135,8 +135,9 @@ class Controller extends \stdClass
      */
     public function assign($name, $value = '')
     {
-        if (is_string($name)) $this->$name = $value;
-        elseif (is_array($name)) foreach ($name as $k => $v) {
+        if (is_string($name)) {
+            $this->$name = $value;
+        } elseif (is_array($name)) foreach ($name as $k => $v) {
             if (is_string($k)) $this->$k = $v;
         }
         return $this;
