@@ -15,6 +15,7 @@
 namespace library;
 
 use library\tools\Cors;
+use library\tools\Csrf;
 
 /**
  * 标准控制器基类
@@ -36,9 +37,16 @@ class Controller extends \stdClass
 {
 
     /**
+     * 当前请求对象
      * @var \think\Request
      */
     public $request;
+
+    /**
+     * 表单CSRF验证
+     * @var boolean
+     */
+    public $isCsrf = false;
 
     /**
      * Controller constructor.
@@ -77,6 +85,7 @@ class Controller extends \stdClass
     public function success($info, $data = [], $code = 1)
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
+        if ($this->isCsrf) Csrf::clearFormToken(input('csrf-token-field', '__token__'));
         throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader()));
     }
 
@@ -111,7 +120,8 @@ class Controller extends \stdClass
     public function fetch($tpl = '', $vars = [])
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
-        throw new \think\exception\HttpResponseException(view($tpl, $vars));
+        if ($this->isCsrf) Csrf::fetchTemplate($tpl, $vars);
+        else throw new \think\exception\HttpResponseException(view($tpl, $vars));
     }
 
     /**
