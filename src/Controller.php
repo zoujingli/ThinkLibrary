@@ -55,6 +55,9 @@ class Controller extends \stdClass
     {
         Cors::optionsHandler();
         $this->request = request();
+        if ($this->isCsrf && $this->request->isPost() && !Csrf::checkFormToken()) {
+            $this->error('表单令牌验证失败，请刷新页面再试！');
+        }
     }
 
     /**
@@ -120,8 +123,11 @@ class Controller extends \stdClass
     public function fetch($tpl = '', $vars = [])
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
-        if ($this->isCsrf) Csrf::fetchTemplate($tpl, $vars);
-        else throw new \think\exception\HttpResponseException(view($tpl, $vars));
+        if ($this->isCsrf) {
+            Csrf::fetchTemplate($tpl, $vars);
+        } else {
+            throw new \think\exception\HttpResponseException(view($tpl, $vars));
+        }
     }
 
     /**

@@ -28,11 +28,8 @@ class Csrf
      */
     public static function checkFormToken()
     {
-        $field = input('csrf-token-field', '__token__');
-        if (input($field, '--') === session($field, '', 'csrf')) {
-            return true;
-        }
-        return false;
+        $field = input('csrf-totken-name', '__token__');
+        return input($field, '--') === session($field, '', 'csrf');
     }
 
     /**
@@ -45,6 +42,16 @@ class Csrf
     }
 
     /**
+     * 生成表单CSRF信息
+     * @return array
+     */
+    public static function buildFormToken()
+    {
+        session($name = 'csrf-token-value-' . uniqid(), $value = md5(uniqid()), 'csrf');
+        return ['name' => $name, 'token' => $value];
+    }
+
+    /**
      * 返回视图内容
      * @param string $tpl 模板名称
      * @param array $vars 模板变量
@@ -53,8 +60,8 @@ class Csrf
     {
         throw new \think\exception\HttpResponseException(view($tpl, $vars, 200, function ($html) {
             return preg_replace_callback('/<\/form>/i', function () {
-                session($name = 'csrf-token-value-' . uniqid(), $value = md5(uniqid()), 'csrf');
-                return "<input type='hidden' name='{$name}' value='{$value}'><input type='hidden' name='csrf-token-field' value='{$name}'></form>";
+                $csrf = self::buildFormToken();
+                return "<input type='hidden' name='{$csrf['name']}' value='{$csrf['token']}'><input type='hidden' name='csrf-totken-name' value='{$csrf['name']}'></form>";
             }, $html);
         }));
     }
