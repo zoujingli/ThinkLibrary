@@ -48,16 +48,19 @@ class Csrf
 
     /**
      * 生成表单CSRF信息
-     * @param null $node
+     * @param null|string $node
      * @return array
      */
     public static function buildFormToken($node = null)
     {
-        $token = md5(uniqid());
+        list($token, $time) = [md5(uniqid()), time()];
         $name = 'csrf_token_value_' . uniqid();
         if (is_null($node)) $node = Node::current();
-        session($name, ['node' => $node, 'token' => $token], 'csrf');
-        return ['name' => $name, 'token' => $token, 'node' => $node];
+        session($name, ['node' => $node, 'token' => $token, 'time' => $time], 'csrf');
+        foreach (session('', '', 'csrf') as $k => $v) {
+            if (isset($v['time']) && $v['time'] + 600 < time()) self::clearFormToken($k);
+        }
+        return ['name' => $name, 'token' => $token, 'node' => $node, 'time' => $time];
     }
 
     /**
