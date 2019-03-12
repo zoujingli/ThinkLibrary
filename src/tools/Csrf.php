@@ -55,12 +55,18 @@ class Csrf
      */
     public static function buildFormToken($node = null)
     {
-        list($token, $time) = [md5(uniqid()), time()];
-        $name = 'csrf_token_value_' . uniqid();
+        $name = 'csrf_token_' . uniqid();
         if (is_null($node)) $node = Node::current();
+        list($token, $time, $nodes) = [md5(uniqid()), time(), []];
         session($name, ['node' => $node, 'token' => $token, 'time' => $time], 'csrf');
-        foreach (session('', '', 'csrf') as $k => $v) {
-            if (isset($v['time']) && $v['time'] + 600 < time()) self::clearFormToken($k);
+        foreach (session('', '', 'csrf') as $keys => $item) if (isset($item['time']) && isset($item['node'])) {
+            list($node, $item['keys']) = [$item['node'], $keys];
+            if ($item['time'] + 600 < time()) self::clearFormToken($keys);
+            elseif (empty($nodes[$node])) $nodes[$node] = $item;
+            elseif ($nodes[$node]['time'] < $item['time']) {
+                self::clearFormToken($nodes[$node]['keys']);
+                $nodes[$node] = $item;
+            }
         }
         return ['name' => $name, 'token' => $token, 'node' => $node, 'time' => $time];
     }
