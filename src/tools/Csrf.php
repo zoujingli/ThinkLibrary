@@ -31,7 +31,9 @@ class Csrf
         $field = input('csrf_token_name', '__token__');
         $csrf = session($field, '', 'csrf');
         if (empty($csrf['node'])) return false;
+        if (empty($csrf['time'])) return false;
         if (empty($csrf['token'])) return false;
+        if ($csrf['time'] + 600 < time()) return false;
         if ($csrf['token'] !== input($field)) return false;
         if ($csrf['node'] !== Node::current()) return false;
         return true;
