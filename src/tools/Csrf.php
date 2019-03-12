@@ -57,16 +57,10 @@ class Csrf
     {
         $name = 'csrf_token_' . uniqid();
         if (is_null($node)) $node = Node::current();
-        list($token, $time, $nodes) = [md5(uniqid()), time(), []];
+        list($token, $time) = [md5(uniqid()), time()];
         session($name, ['node' => $node, 'token' => $token, 'time' => $time], 'csrf');
-        foreach (session('', '', 'csrf') as $keys => $item) if (isset($item['time']) && isset($item['node'])) {
-            list($node, $item['keys']) = [$item['node'], $keys];
-            if ($item['time'] + 600 < time()) self::clearFormToken($keys); // 清理10分钟的无效计算
-            elseif (empty($nodes[$node])) $nodes[$node] = $item; // 首次出现NODE保存CSRF数据
-            elseif ($nodes[$node]['time'] <= $item['time']) { // 保存最新相同NODE的CSRF数据
-                self::clearFormToken($nodes[$node]['keys']);
-                $nodes[$node] = $item;
-            }
+        foreach (session('', '', 'csrf') as $keys => $item) if (isset($item['time'])) {
+            if ($item['time'] + 600 < $time) self::clearFormToken($item['keys']);
         }
         return ['name' => $name, 'token' => $token, 'node' => $node, 'time' => $time];
     }
