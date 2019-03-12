@@ -30,9 +30,10 @@ class Csrf
     {
         $field = input('csrf_token_name', '__token__');
         $csrf = session($field, '', 'csrf');
-        if (empty($csrf['node']) || empty($csrf['token'])) return false;
-        if (input($field, '--') !== $csrf['token']) return false;
-        if (Node::current() !== $csrf['node']) return false;
+        if (empty($csrf['node'])) return false;
+        if (empty($csrf['token'])) return false;
+        if ($csrf['token'] !== input($field)) return false;
+        if ($csrf['node'] !== Node::current()) return false;
         return true;
     }
 
