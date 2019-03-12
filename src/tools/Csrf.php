@@ -60,7 +60,7 @@ class Csrf
         list($token, $time) = [md5(uniqid()), time()];
         session($name, ['node' => $node, 'token' => $token, 'time' => $time], 'csrf');
         foreach (session('', '', 'csrf') as $keys => $item) if (isset($item['time'])) {
-            if ($item['time'] + 600 < $time) self::clearFormToken($item['keys']);
+            if ($item['time'] + 600 < $time) self::clearFormToken($keys);
         }
         return ['name' => $name, 'token' => $token, 'node' => $node, 'time' => $time];
     }
