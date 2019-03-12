@@ -64,13 +64,17 @@ class Csrf
      * 返回视图内容
      * @param string $tpl 模板名称
      * @param array $vars 模板变量
+     * @param string $node CSRF授权节点
      */
-    public static function fetchTemplate($tpl = '', $vars = [])
+    public static function fetchTemplate($tpl = '', $vars = [], $node = null)
     {
-        throw new \think\exception\HttpResponseException(view($tpl, $vars, 200, function ($html) {
-            return preg_replace_callback('/<\/form>/i', function () {
-                $csrf = self::buildFormToken();
-                return "<input type='hidden' name='csrf_token_name' value='{$csrf['name']}'><input type='hidden' name='{$csrf['name']}' value='{$csrf['token']}'></form>";
+        throw new \think\exception\HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
+            return preg_replace_callback('/<\/form>/i', function () use ($node) {
+                $csrf = self::buildFormToken($node);
+                return
+                    "<input type='hidden' name='csrf_token_name' value='{$csrf['name']}'>" .
+                    "<input type='hidden' name='{$csrf['name']}' value='{$csrf['token']}'>" .
+                    "</form>";
             }, $html);
         }));
     }

@@ -116,12 +116,13 @@ class Controller extends \stdClass
      * 返回视图内容
      * @param string $tpl 模板名称
      * @param array $vars 模板变量
+     * @param string $node CSRF授权节点
      */
-    public function fetch($tpl = '', $vars = [])
+    public function fetch($tpl = '', $vars = [], $node = null)
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
         if ($this->_isCsrf) {
-            Csrf::fetchTemplate($tpl, $vars);
+            Csrf::fetchTemplate($tpl, $vars, $node);
         } else {
             throw new \think\exception\HttpResponseException(view($tpl, $vars));
         }
