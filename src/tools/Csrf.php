@@ -61,9 +61,9 @@ class Csrf
         session($name, ['node' => $node, 'token' => $token, 'time' => $time], 'csrf');
         foreach (session('', '', 'csrf') as $keys => $item) if (isset($item['time']) && isset($item['node'])) {
             list($node, $item['keys']) = [$item['node'], $keys];
-            if ($item['time'] + 600 < time()) self::clearFormToken($keys);
-            elseif (empty($nodes[$node])) $nodes[$node] = $item;
-            elseif ($nodes[$node]['time'] < $item['time']) {
+            if ($item['time'] + 600 < time()) self::clearFormToken($keys); // 清理10分钟的无效计算
+            elseif (empty($nodes[$node])) $nodes[$node] = $item; // 首次出现NODE保存CSRF数据
+            elseif ($nodes[$node]['time'] < $item['time']) { // 保存最新相同NODE的CSRF数据
                 self::clearFormToken($nodes[$node]['keys']);
                 $nodes[$node] = $item;
             }
