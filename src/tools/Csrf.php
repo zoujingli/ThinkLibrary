@@ -28,7 +28,7 @@ class Csrf
      */
     public static function getToken()
     {
-        return request()->header('User-Token-Csrf', input('_token_', ''));
+        return request()->header('User-Token-Csrf', input('_csrf_', ''));
     }
 
     /**
