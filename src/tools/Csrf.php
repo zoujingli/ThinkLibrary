@@ -84,7 +84,7 @@ class Csrf
         throw new \think\exception\HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
             return preg_replace_callback('/<\/form>/i', function () use ($node) {
                 $csrf = self::buildFormToken($node);
-                return "<input type='hidden' name='_token_' value='{$csrf['token']}'></form>";
+                return "<input type='hidden' name='_csrf_' value='{$csrf['token']}'></form>";
             }, $html);
         }));
     }
