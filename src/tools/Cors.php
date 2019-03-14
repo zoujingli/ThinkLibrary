@@ -76,7 +76,7 @@ class Cors
             header('Access-Control-Allow-Methods:GET,POST,OPTIONS');
             header('Access-Control-Allow-Origin:' . request()->header('origin', '*'));
             header('Access-Control-Allow-Headers:' . join(',', self::$allowHeader));
-            header('Access-Control-Expose-Headers:CorsToken');
+            header('Access-Control-Expose-Headers:CorsToken,FormToken');
             header('Content-Type:text/plain charset=UTF-8');
             header('Access-Control-Max-Age:1728000');
             header('HTTP/1.0 204 No Content');
@@ -97,7 +97,7 @@ class Cors
             'Access-Control-Allow-Methods'     => 'GET,POST,OPTIONS',
             'Access-Control-Allow-Origin'      => request()->header('origin', '*'),
             'Access-Control-Allow-Headers'     => join(',', self::$allowHeader),
-            'Access-Control-Expose-Headers'    => 'CorsToken',
+            'Access-Control-Expose-Headers'    => 'CorsToken,FormToken',
             'CorsToken'                        => self::getSessionToken(),
         ];
     }

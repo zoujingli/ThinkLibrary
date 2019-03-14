@@ -28,7 +28,7 @@ class Csrf
      */
     public static function getToken()
     {
-        return input('_token_', header('_token_'));
+        return input('_token_', input('FormToken', header('FormToken')));
     }
 
     /**
