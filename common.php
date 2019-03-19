@@ -65,7 +65,7 @@ if (!function_exists('sysconf')) {
     function sysconf($name, $value = null)
     {
         static $data = [];
-        list($field, $raw) = explode('|', $name);
+        list($field, $raw) = explode('|', "{$name}|");
         if ($value !== null) {
             list($row, $data) = [['name' => $field, 'value' => $value], []];
             return \library\tools\Data::save('SystemConfig', $row, 'name');
