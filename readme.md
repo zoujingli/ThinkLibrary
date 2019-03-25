@@ -31,7 +31,7 @@ ThinkLibrary 是针对 ThinkPHP5.1 版本封装的一套工具类库，方便快
  
  部分代码来自互联网，若有异议可以联系作者进行删除。
  
- * 在线体验地址：https://framework.thinkadmin.top（账号和密码都是 admin ）
+ * 在线体验地址：https://framework.thinkadmin.top （账号和密码都是 admin ）
  * Gitee仓库地址：https://gitee.com/zoujingli/ThinkLibrary
  * GitHub仓库地址：https://github.com/zoujingli/ThinkLibrary
 
