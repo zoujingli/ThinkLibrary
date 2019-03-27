@@ -61,7 +61,7 @@ class Http
         if (!empty($options['query'])) {
             $url .= (stripos($url, '?') !== false ? '&' : '?') . http_build_query($options['query']);
         }
-        // 设置浏览器代理
+        // 浏览器代理设置
         curl_setopt($curl, CURLOPT_USERAGENT, self::getUserAgent());
         // CURL 头信息设置
         if (!empty($options['headers'])) {
