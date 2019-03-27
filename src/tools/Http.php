@@ -67,6 +67,10 @@ class Http
         if (!empty($options['headers'])) {
             curl_setopt($curl, CURLOPT_HTTPHEADER, $options['headers']);
         }
+        // Cookie 信息设置
+        if (!empty($options['cookie'])) {
+            curl_setopt($curl, CURLOPT_COOKIE, $options['cookie']);
+        }
         // POST 数据设置
         if (strtolower($method) === 'post') {
             curl_setopt($curl, CURLOPT_POST, true);
