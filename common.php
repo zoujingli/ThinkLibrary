@@ -36,7 +36,10 @@ if (!function_exists('format_datetime')) {
      */
     function format_datetime($datetime, $format = 'Y年m月d日 H:i:s')
     {
-        return date($format, strtotime($datetime));
+        if (empty($datetime)) {
+            return date($format, strtotime($datetime));
+        }
+        return '--';
     }
 }
 
