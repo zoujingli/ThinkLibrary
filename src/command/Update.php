@@ -109,7 +109,6 @@ class update extends Command
             'think',
             'config/app.php',
             'config/log.php',
-            'config/system.php',
             'config/cookie.php',
             'config/template.php',
             'application/admin',
