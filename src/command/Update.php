@@ -94,7 +94,7 @@ class update extends Command
      */
     private static function removeEmptyDir($dir)
     {
-        if (is_dir($dir) && count(scandir($dir)) == 2) {
+        if (is_dir($dir) && count(scandir($dir)) === 2) {
             rmdir($dir);
         }
     }
