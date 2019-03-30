@@ -27,7 +27,7 @@ class Composer extends Command
 
     protected function configure()
     {
-        $this->bin = __DIR__ . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'composer.phar';
+        $this->bin = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'composer.phar';
         $this->setName('xsync:composer')->setDescription('Synchronize update composer plugs');
     }
 
