@@ -107,7 +107,6 @@ class update extends Command
     {
         return self::tree([
             'think',
-            'config/app.php',
             'config/log.php',
             'config/cookie.php',
             'config/template.php',
