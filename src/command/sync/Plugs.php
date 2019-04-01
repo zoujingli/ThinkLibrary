@@ -12,20 +12,20 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\command\update;
+namespace library\command\sync;
 
-use library\command\Update;
+use library\command\sync;
 
 /**
- * 更新微信模块指令
- * Class UpdateWechat
+ * 更新插件指令
+ * Class UpdatePlugs
  * @package app\admin\logic\update
  */
-class Wechat extends Update
+class Plugs extends Update
 {
     protected function configure()
     {
-        $this->modules = ['application/wechat/'];
-        $this->setName('xsync:wechat')->setDescription('synchronize update wechat module files');
+        $this->modules = ['public/static/'];
+        $this->setName('xsync:plugs')->setDescription('synchronize update plugs static files');
     }
 }

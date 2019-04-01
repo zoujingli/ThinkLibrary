@@ -73,7 +73,7 @@ if (!function_exists('sysconf')) {
             return \library\tools\Data::save('SystemConfig', $row, 'name');
         }
         if (empty($data)) {
-            $data = \think\facade\Cache::tag('system')->get('_sysconf_',[]);
+            $data = \think\facade\Cache::tag('system')->get('_sysconf_', []);
             if (empty($data)) {
                 $data = \think\Db::name('SystemConfig')->column('name,value');
                 \think\facade\Cache::tag('system')->set('_sysconf_', $data, 3600);
@@ -213,11 +213,11 @@ if (!function_exists('emoji_clear')) {
     'library\command\task\State',
     'library\command\task\Start',
     'library\command\task\Reset',
-    'library\command\update\Admin',
-    'library\command\update\Plugs',
-    'library\command\update\Config',
-    'library\command\update\Wechat',
-    'library\command\update\Service',
+    'library\command\sync\Admin',
+    'library\command\sync\Plugs',
+    'library\command\sync\Config',
+    'library\command\sync\Wechat',
+    'library\command\sync\Service',
 ]);
 
 // 动态加载模块配置文件

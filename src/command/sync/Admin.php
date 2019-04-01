@@ -12,20 +12,20 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\command\update;
+namespace library\command\sync;
 
-use library\command\Update;
+use library\command\sync;
 
 /**
- * 更新插件指令
- * Class UpdatePlugs
+ * 系统模块更新指令
+ * Class UpdateAdmin
  * @package app\admin\logic\update
  */
-class Plugs extends Update
+class Admin extends Update
 {
     protected function configure()
     {
-        $this->modules = ['public/static/'];
-        $this->setName('xsync:plugs')->setDescription('synchronize update plugs static files');
+        $this->modules = ['application/admin/', 'think'];
+        $this->setName('xsync:admin')->setDescription('synchronize update admin module files');
     }
 }

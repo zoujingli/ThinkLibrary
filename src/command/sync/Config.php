@@ -1,6 +1,5 @@
 <?php
 
-
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
@@ -13,20 +12,20 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\command\update;
+namespace library\command\sync;
 
-use library\command\Update;
+use library\command\sync;
 
 /**
- * 系统模块更新指令
- * Class UpdateAdmin
- * @package app\admin\logic\update
+ * 更新系统配置指令
+ * Class UpdateConfig
+ * @package library\command\update
  */
-class Admin extends Update
+class Config extends Update
 {
     protected function configure()
     {
-        $this->modules = ['application/admin/', 'think'];
-        $this->setName('xsync:admin')->setDescription('synchronize update admin module files');
+        $this->modules = ['config/'];
+        $this->setName('xsync:config')->setDescription('synchronize update config php files');
     }
 }
