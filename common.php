@@ -208,7 +208,7 @@ if (!function_exists('emoji_clear')) {
 
 // 注册系统指令
 \think\Console::addDefaultCommands([
-    'library\command\Session',
+    'library\command\Sess',
     'library\command\task\Stop',
     'library\command\task\State',
     'library\command\task\Start',

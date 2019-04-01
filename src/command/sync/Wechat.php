@@ -21,7 +21,7 @@ use library\command\sync;
  * Class UpdateWechat
  * @package app\admin\logic\update
  */
-class Wechat extends Update
+class Wechat extends Sync
 {
     protected function configure()
     {

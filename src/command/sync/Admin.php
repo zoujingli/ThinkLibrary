@@ -21,7 +21,7 @@ use library\command\sync;
  * Class UpdateAdmin
  * @package app\admin\logic\update
  */
-class Admin extends Update
+class Admin extends Sync
 {
     protected function configure()
     {

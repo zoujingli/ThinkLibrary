@@ -20,7 +20,7 @@ use library\command\sync;
  * Class UpdateService
  * @package app\admin\logic\update
  */
-class Service extends Update
+class Service extends Sync
 {
     protected function configure()
     {

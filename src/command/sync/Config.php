@@ -21,7 +21,7 @@ use library\command\sync;
  * Class UpdateConfig
  * @package library\command\update
  */
-class Config extends Update
+class Config extends Sync
 {
     protected function configure()
     {

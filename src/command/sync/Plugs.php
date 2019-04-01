@@ -21,7 +21,7 @@ use library\command\sync;
  * Class UpdatePlugs
  * @package app\admin\logic\update
  */
-class Plugs extends Update
+class Plugs extends Sync
 {
     protected function configure()
     {

@@ -23,7 +23,7 @@ use think\console\Output;
  * Class update
  * @package app\admin\logic
  */
-class update extends Command
+class Sync extends Command
 {
 
     /**
