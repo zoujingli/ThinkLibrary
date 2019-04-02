@@ -53,8 +53,8 @@ class Controller extends \stdClass
      */
     public function __construct()
     {
-        Cors::setOptionHandler();
         $this->request = request();
+        Cors::setOptionHandler($this->request);
     }
 
     /**
@@ -86,7 +86,7 @@ class Controller extends \stdClass
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
         if ($this->_isCsrf) Csrf::clearFormToken(Csrf::getToken());
-        throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader()));
+        throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader($this->request)));
     }
 
     /**
@@ -98,7 +98,7 @@ class Controller extends \stdClass
     public function error($info, $data = [], $code = 0)
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader()));
+        throw new \think\exception\HttpResponseException(json($result, 200, Cors::getRequestHeader($this->request)));
     }
 
     /**
