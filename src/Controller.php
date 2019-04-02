@@ -53,7 +53,7 @@ class Controller extends \stdClass
      */
     public function __construct()
     {
-        Cors::optionsHandler();
+        Cors::setOptionHandler();
         $this->request = request();
     }
 
@@ -127,8 +127,8 @@ class Controller extends \stdClass
 
     /**
      * 模板变量赋值
-     * @param  mixed $name 要显示的模板变量
-     * @param  mixed $value 变量的值
+     * @param mixed $name 要显示的模板变量
+     * @param mixed $value 变量的值
      * @return $this
      */
     public function assign($name, $value = '')
