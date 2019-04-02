@@ -70,7 +70,7 @@ class Cors
      */
     public static function optionsHandler()
     {
-        self::setSessionToken();
+        // self::setSessionToken();
         if (request()->isOptions()) {
             header('Access-Control-Allow-Credentials:true');
             header('Access-Control-Allow-Methods:GET,POST,OPTIONS');
@@ -97,8 +97,9 @@ class Cors
             'Access-Control-Allow-Methods'     => 'GET,POST,OPTIONS',
             'Access-Control-Allow-Origin'      => request()->header('origin', '*'),
             'Access-Control-Allow-Headers'     => join(',', self::$allowHeader),
-            'Access-Control-Expose-Headers'    => 'User-Token-Cors,User-Token-Csrf',
-            'User-Token-Cors'                  => self::getSessionToken(),
+            'Access-Control-Expose-Headers'    => 'User-Token-Csrf',
+            // 'Access-Control-Expose-Headers' => 'User-Token-Cors,User-Token-Csrf',
+            // 'User-Token-Cors'               => self::getSessionToken(),
         ];
     }
 
