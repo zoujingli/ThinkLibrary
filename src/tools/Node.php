@@ -145,4 +145,24 @@ class Node
         return $data;
     }
 
+    /**
+     * 递归统计目录大小
+     * @param string $dir 目录
+     * @return integer
+     */
+    public static function totalDirSize($dir)
+    {
+        list($total, $dir) = [0, realpath($dir)];
+        if (!file_exists($dir)) return $total;
+        if (!is_dir($dir)) return filesize($dir);
+        if ($handle = opendir($dir)) {
+            while ($file = readdir($handle)) if (!in_array($file, ['.', '..'])) {
+                $temp = $dir . DIRECTORY_SEPARATOR . $file;
+                $total += (is_dir($file) ? self::totalDirSize($temp) : filesize($temp));
+            }
+            if (is_resource($handle)) closedir($handle);
+        }
+        return $total;
+    }
+
 }
