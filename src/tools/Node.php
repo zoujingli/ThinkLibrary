@@ -158,7 +158,7 @@ class Node
         if ($handle = opendir($path)) {
             while ($file = readdir($handle)) if (!in_array($file, ['.', '..'])) {
                 $temp = $path . DIRECTORY_SEPARATOR . $file;
-                $total += (is_dir($file) ? self::totalDirSize($temp) : filesize($temp));
+                $total += (is_dir($temp) ? self::totalDirSize($temp) : filesize($temp));
             }
             if (is_resource($handle)) closedir($handle);
         }
