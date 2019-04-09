@@ -137,10 +137,10 @@ class Node
      */
     public static function scanDir($dir, $data = [], $ext = 'php')
     {
-        foreach (scandir($dir) as $_dir) if (strpos($_dir, '.') !== 0) {
-            $path = realpath($dir . DIRECTORY_SEPARATOR . $_dir);
+        foreach (scandir($dir) as $curr) if (strpos($curr, '.') !== 0) {
+            $path = realpath($dir . DIRECTORY_SEPARATOR . $curr);
             if (is_dir($path)) $data = array_merge($data, self::scanDir($path));
-            elseif (pathinfo($path, 4) === $ext) $data[] = $path;
+            elseif (pathinfo($path, PATHINFO_EXTENSION) === $ext) $data[] = $path;
         }
         return $data;
     }
