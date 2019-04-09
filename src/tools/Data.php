@@ -148,7 +148,7 @@ class Data
     public static function toFileSize($size, $dec = 2)
     {
         list($pos, $map) = [0, ['B', 'KB', 'MB', 'GB', 'TB']];
-        while ($size >= 1024 && ++$pos > 0) $size /= 1024;
+        while ($size >= 1024 && ++$pos < 5) $size /= 1024;
         return round($size, $dec) . ' ' . $map[$pos];
     }
 }
