@@ -138,4 +138,17 @@ class Data
         while (strlen($string) < $length) $string .= rand(0, 9);
         return $string;
     }
+
+    /**
+     * 文件大小显示转换
+     * @param integer $size
+     * @param integer $dec
+     * @return string
+     */
+    public static function toFileSize($size, $dec = 2)
+    {
+        list($pos, $map) = [0, ['B', 'KB', 'MB', 'GB', 'TB']];
+        while ($size >= 1024 && ++$pos > 0) $size /= 1024;
+        return round($size, $dec) . ' ' . $map[$pos];
+    }
 }
