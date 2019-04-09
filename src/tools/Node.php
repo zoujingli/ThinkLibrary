@@ -147,17 +147,17 @@ class Node
 
     /**
      * 递归统计目录大小
-     * @param string $dir 目录
+     * @param string $path 目录
      * @return integer
      */
-    public static function totalDirSize($dir)
+    public static function totalDirSize($path)
     {
-        list($total, $dir) = [0, realpath($dir)];
-        if (!file_exists($dir)) return $total;
-        if (!is_dir($dir)) return filesize($dir);
-        if ($handle = opendir($dir)) {
+        list($total, $path) = [0, realpath($path)];
+        if (!file_exists($path)) return $total;
+        if (!is_dir($path)) return filesize($path);
+        if ($handle = opendir($path)) {
             while ($file = readdir($handle)) if (!in_array($file, ['.', '..'])) {
-                $temp = $dir . DIRECTORY_SEPARATOR . $file;
+                $temp = $path . DIRECTORY_SEPARATOR . $file;
                 $total += (is_dir($file) ? self::totalDirSize($temp) : filesize($temp));
             }
             if (is_resource($handle)) closedir($handle);
