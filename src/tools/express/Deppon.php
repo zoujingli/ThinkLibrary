@@ -17,7 +17,7 @@ namespace library\tools\express;
 use library\tools\Http;
 
 /**
- * 德邦物流查询
+ * 德邦快递查询
  * Class Deppon
  * @package library\tools\express
  */
