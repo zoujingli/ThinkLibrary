@@ -29,14 +29,12 @@ class Express
      */
     public static function query($code, $number)
     {
-        list($microtime, $clientIp, $list) = [microtime(true), request()->ip(), []];
-        $header = ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $clientIp, 'X-FORWARDED-FOR' => $clientIp];
-        $location = "https://sp0.baidu.com/9_Q4sjW91Qh3otqbppnN2DJv/pae/channel/data/asyncqury?cb=callback&appid=4001&com=debangwuliu&nu={$number}&vcode=&token=&_=1555125847285";
-        $result = http_get($location, [], ['header' => $header, 'cookie_file' => env('runtime_path') . 'cookie']);
-        $result = json_decode(str_replace('/**/callback(', '', trim($result, ')')), true);
+        list($microtime, $clientIp, $list) = [time(), request()->ip(), []];
+        $options = ['header' => ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $clientIp, 'X-FORWARDED-FOR' => $clientIp], 'cookie_file' => env('runtime_path') . 'temp/cookie'];
+        $location = "https://sp0.baidu.com/9_Q4sjW91Qh3otqbppnN2DJv/pae/channel/data/asyncqury?cb=callback&appid=4001&com=debangwuliu&nu={$number}&vcode=&token=&_={$microtime}";
+        $result = json_decode(str_replace('/**/callback(', '', trim(http_get($location, [], $options), ')')), true);
         if (empty($result['data']['info']['context'])) { // 第一次可能失败，这里尝试第二次查询
-            $result = http_get($location, [], ['header' => $header, 'cookie_file' => env('runtime_path') . 'cookie']);
-            $result = json_decode(str_replace('/**/callback(', '', trim($result, ')')), true);
+            $result = json_decode(str_replace('/**/callback(', '', trim(http_get($location, [], $options), ')')), true);
             if (empty($result['data']['info']['context'])) {
                 return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $list];
             }
