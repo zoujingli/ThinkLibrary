@@ -25,6 +25,12 @@ class Deppon
 {
 
     /**
+     * 公司编号
+     * @var string
+     */
+    protected $company = 'EWBGZCCXXKJYXGS';
+
+    /**
      * APPKEY
      * @var string
      */
@@ -58,9 +64,9 @@ class Deppon
         $json = json_encode(['mailNo' => $number]);
         return [
             'params'      => $json,
-            'timestamp'   => $time,
-            'companyCode' => 'EWBGZCCXXKJYXGS',
             'digest'      => base64_encode(md5($json . $this->appkey . $time)),
+            'timestamp'   => $time,
+            'companyCode' => $this->company,
         ];
     }
 
