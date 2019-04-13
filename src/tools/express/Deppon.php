@@ -65,3 +65,6 @@ class Deppon
     }
 
 }
+
+$q = new Deppon();
+$q->query('7810449060');
