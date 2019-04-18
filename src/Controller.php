@@ -54,7 +54,7 @@ class Controller extends \stdClass
     {
         // 获取当前请求对象
         $this->request = request();
-        // 禁用内部方法被访问
+        // 禁用访问内部方法
         if (in_array($this->request->method(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
