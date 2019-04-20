@@ -19,9 +19,8 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 更新微信模块指令
- * Class UpdateWechat
- * @package app\admin\logic\update
+ * Class Wechat
+ * @package library\command\sync
  */
 class Wechat extends Sync
 {

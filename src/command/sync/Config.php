@@ -19,9 +19,8 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 更新系统配置指令
- * Class UpdateConfig
- * @package library\command\update
+ * Class Config
+ * @package library\command\sync
  */
 class Config extends Sync
 {

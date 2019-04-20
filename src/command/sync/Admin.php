@@ -19,9 +19,8 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 系统模块更新指令
- * Class UpdateAdmin
- * @package app\admin\logic\update
+ * Class Admin
+ * @package library\command\sync
  */
 class Admin extends Sync
 {

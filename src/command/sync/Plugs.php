@@ -19,9 +19,8 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 更新插件指令
- * Class UpdatePlugs
- * @package app\admin\logic\update
+ * Class Plugs
+ * @package library\command\sync
  */
 class Plugs extends Sync
 {

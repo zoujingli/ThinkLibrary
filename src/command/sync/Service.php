@@ -19,8 +19,8 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * Class UpdateService
- * @package app\admin\logic\update
+ * Class Service
+ * @package library\command\sync
  */
 class Service extends Sync
 {
