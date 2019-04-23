@@ -52,13 +52,18 @@ class Controller extends \stdClass
      */
     public function __construct()
     {
-        // 获取请求对象
         $this->request = request();
-        // 禁用访问方法
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('access without permission.');
         }
-        // 请求前置处理
+    }
+
+    /**
+     * Controller destruct
+     */
+    public function __destruct()
+    {
+        $this->request = request();
         list($active, $method) = [$this->request->action(), $this->request->method()];
         if (method_exists($this, $callback = strtolower("_{$active}_{$method}"))) {
             call_user_func_array([$this, $callback], $this->request->route());
