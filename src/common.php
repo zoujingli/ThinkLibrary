@@ -208,7 +208,6 @@ if (!function_exists('emoji_clear')) {
 
 // 注册跨域中间键
 \think\facade\Middleware::add(function (\think\Request $request, \Closure $next, $header = []) {
-    // CrossDomain
     if (($origin = $request->header('origin', '*')) !== '*') {
         $header['Access-Control-Allow-Origin'] = $origin;
         $header['Access-Control-Allow-Methods'] = 'GET, POST, PATCH, PUT, DELETE';
