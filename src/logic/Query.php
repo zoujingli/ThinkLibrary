@@ -36,6 +36,20 @@ class Query extends Logic
     }
 
     /**
+     * Query call.
+     * @param string $name 调用方法名称
+     * @param array $args 调用参数内容
+     * @return $this
+     */
+    public function __call($name, $args)
+    {
+        if (is_callable($callable = [$this->query, $name])) {
+            call_user_func_array($callable, $args);
+        }
+        return $this;
+    }
+
+    /**
      * 逻辑器初始化
      * @param Controller $controller
      * @return $this
@@ -123,6 +137,19 @@ class Query extends Logic
     }
 
     /**
+     * 设置内容区间查询
+     * @param string|array $fields 查询字段
+     * @param string $split 输入分隔符
+     * @param string $input 输入类型 get|post
+     * @param string $alias 别名分割符
+     * @return $this
+     */
+    public function valueBetween($fields, $split = ' ', $input = 'request', $alias = '#')
+    {
+        return $this->setBetweenWhere($fields, $split, $input, $alias);
+    }
+
+    /**
      * 设置日期时间区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
@@ -133,7 +160,7 @@ class Query extends Logic
     public function dateBetween($fields, $split = ' - ', $input = 'request', $alias = '#')
     {
         return $this->setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
-            if ($type === 'end') {
+            if ($type === 'after') {
                 return "{$value} 23:59:59";
             } else {
                 return "{$value} 00:00:00";
@@ -152,25 +179,12 @@ class Query extends Logic
     public function timeBetween($fields, $split = ' - ', $input = 'request', $alias = '#')
     {
         return $this->setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
-            if ($type === 'end') {
+            if ($type === 'after') {
                 return strtotime("{$value} 23:59:59");
             } else {
                 return strtotime("{$value} 00:00:00");
             }
         });
-    }
-
-    /**
-     * 设置区间查询
-     * @param string|array $fields 查询字段
-     * @param string $split 输入分隔符
-     * @param string $input 输入类型 get|post
-     * @param string $alias 别名分割符
-     * @return $this
-     */
-    public function valueBetween($fields, $split = ' ', $input = 'request', $alias = '#')
-    {
-        return $this->setBetweenWhere($fields, $split, $input, $alias);
     }
 
     /**
@@ -191,12 +205,12 @@ class Query extends Logic
                 list($dk, $qk) = explode($alias, $field);
             }
             if (isset($data[$qk]) && $data[$qk] !== '') {
-                list($start, $end) = explode($split, $data[$field]);
+                list($begin, $after) = explode($split, $data[$field]);
                 if (is_callable($callback)) {
-                    $end = call_user_func($callback, $end, 'end');
-                    $start = call_user_func($callback, $start, 'start');
+                    $after = call_user_func($callback, $after, 'after');
+                    $begin = call_user_func($callback, $begin, 'begin');
                 }
-                $this->query->whereBetween($dk, [$start, $end]);
+                $this->query->whereBetween($dk, [$begin, $after]);
             }
         }
         return $this;
@@ -219,19 +233,4 @@ class Query extends Logic
     {
         return (new Page($this->query, $isPage, $isDisplay, $total, $limit))->init($this->controller);
     }
-
-    /**
-     * 魔术调用方法
-     * @param string $name 调用方法名称
-     * @param array $arguments 调用参数
-     * @return $this
-     */
-    public function __call($name, $arguments)
-    {
-        if (method_exists($this->query, $name)) {
-            call_user_func_array([$this->query, $name], $arguments);
-        }
-        return $this;
-    }
-
 }
