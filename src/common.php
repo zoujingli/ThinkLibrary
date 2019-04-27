@@ -216,8 +216,9 @@ if (!function_exists('emoji_clear')) {
     }
     if ($request->isOptions()) {
         return \think\Response::create()->code(204)->header($header);
+    } else {
+        return $next($request)->header($header);
     }
-    return $next($request)->header($header);
 });
 
 // 注册系统常用指令
