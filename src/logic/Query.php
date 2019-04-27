@@ -58,17 +58,21 @@ class Query extends Logic
     /**
      * 设置Like查询条件
      * @param string|array $fields 查询字段
-     * @param string $inputType 输入类型 get|post
-     * @param string $aliasSplit 别名分割符
+     * @param string $input 输入类型 get|post
+     * @param string $alias 别名分割符
      * @return $this
      */
-    public function like($fields, $inputType = 'request', $aliasSplit = '#')
+    public function like($fields, $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$inputType();
+        $data = $this->controller->request->$input();
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             list($dk, $qk) = [$field, $field];
-            if (stripos($field, $aliasSplit) !== false) list($dk, $qk) = explode($aliasSplit, $field);
-            if (isset($data[$qk]) && $data[$qk] !== '') $this->query->whereLike($dk, "%{$data[$qk]}%");
+            if (stripos($field, $alias) !== false) {
+                list($dk, $qk) = explode($alias, $field);
+            }
+            if (isset($data[$qk]) && $data[$qk] !== '') {
+                $this->query->whereLike($dk, "%{$data[$qk]}%");
+            }
         }
         return $this;
     }
@@ -76,17 +80,21 @@ class Query extends Logic
     /**
      * 设置Equal查询条件
      * @param string|array $fields 查询字段
-     * @param string $inputType 输入类型 get|post
-     * @param string $aliasSplit 别名分割符
+     * @param string $input 输入类型 get|post
+     * @param string $alias 别名分割符
      * @return $this
      */
-    public function equal($fields, $inputType = 'request', $aliasSplit = '#')
+    public function equal($fields, $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$inputType();
+        $data = $this->controller->request->$input();
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             list($dk, $qk) = [$field, $field];
-            if (stripos($field, $aliasSplit) !== false) list($dk, $qk) = explode($aliasSplit, $field);
-            if (isset($data[$qk]) && $data[$qk] !== '') $this->query->where($dk, "{$data[$qk]}");
+            if (stripos($field, $alias) !== false) {
+                list($dk, $qk) = explode($alias, $field);
+            }
+            if (isset($data[$qk]) && $data[$qk] !== '') {
+                $this->query->where($dk, "{$data[$qk]}");
+            }
         }
         return $this;
     }
@@ -95,98 +103,101 @@ class Query extends Logic
      * 设置IN区间查询
      * @param string $fields 查询字段
      * @param string $split 输入分隔符
-     * @param string $inputType 输入类型 get|post
-     * @param string $aliasSplit 别名分割符
+     * @param string $input 输入类型 get|post
+     * @param string $alias 别名分割符
      * @return $this
      */
-    public function in($fields, $split = ',', $inputType = 'request', $aliasSplit = '#')
+    public function in($fields, $split = ',', $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$inputType();
+        $data = $this->controller->request->$input();
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             list($dk, $qk) = [$field, $field];
-            if (stripos($field, $aliasSplit) !== false) list($dk, $qk) = explode($aliasSplit, $field);
-            if (isset($data[$qk]) && $data[$qk] !== '') $this->query->whereIn($dk, explode($split, $data[$qk]));
+            if (stripos($field, $alias) !== false) {
+                list($dk, $qk) = explode($alias, $field);
+            }
+            if (isset($data[$qk]) && $data[$qk] !== '') {
+                $this->query->whereIn($dk, explode($split, $data[$qk]));
+            }
         }
         return $this;
     }
 
-
     /**
-     * 设置DateTime区间查询
+     * 设置日期时间区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param string $inputType 输入类型 get|post
-     * @param string $aliasSplit 别名分割符
+     * @param string $input 输入类型
+     * @param string $alias 别名分割符
      * @return $this
      */
-    public function dateBetween($fields, $split = ' - ', $inputType = 'request', $aliasSplit = '#')
+    public function dateBetween($fields, $split = ' - ', $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$inputType();
-        foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
-            list($dk, $qk) = [$field, $field];
-            if (stripos($field, $aliasSplit) !== false) list($dk, $qk) = explode($aliasSplit, $field);
-            if (isset($data[$qk]) && $data[$qk] !== '') {
-                list($start, $end) = explode($split, $data[$qk]);
-                $this->query->whereBetween($dk, ["{$start} 00:00:00", "{$end} 23:59:59"]);
+        return $this->setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
+            if ($type === 'end') {
+                return "{$value} 23:59:59";
+            } else {
+                return "{$value} 00:00:00";
             }
-        }
-        return $this;
+        });
     }
 
     /**
      * 设置时间戳区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param string $inputType 输入类型 get|post
-     * @param string $aliasSplit 别名分割符
+     * @param string $input 输入类型
+     * @param string $alias 别名分割符
      * @return $this
      */
-    public function timeBetween($fields, $split = ' - ', $inputType = 'request', $aliasSplit = '#')
+    public function timeBetween($fields, $split = ' - ', $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$inputType();
-        foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
-            list($dk, $qk) = [$field, $field];
-            if (stripos($field, $aliasSplit) !== false) list($dk, $qk) = explode($aliasSplit, $field);
-            if (isset($data[$qk]) && $data[$qk] !== '') {
-                list($start, $end) = explode($split, $data[$qk]);
-                $this->query->whereBetween($dk, [strtotime("{$start} 00:00:00"), strtotime("{$end} 23:59:59")]);
+        return $this->setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
+            if ($type === 'end') {
+                return strtotime("{$value} 23:59:59");
+            } else {
+                return strtotime("{$value} 00:00:00");
             }
-        }
-        return $this;
+        });
     }
 
     /**
      * 设置区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param string $inputType 输入类型 get|post
-     * @param string $aliasSplit 别名分割符
+     * @param string $input 输入类型 get|post
+     * @param string $alias 别名分割符
      * @return $this
      */
-    public function valueBetween($fields, $split = ' ', $inputType = 'request', $aliasSplit = '#')
+    public function valueBetween($fields, $split = ' ', $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$inputType();
-        foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
-            list($dk, $qk) = [$field, $field];
-            if (stripos($field, $aliasSplit) !== false) list($dk, $qk) = explode($aliasSplit, $field);
-            if (isset($data[$qk]) && $data[$qk] !== '') {
-                list($start, $end) = explode($split, $data[$field]);
-                $this->query->whereBetween($dk, ["{$start}", "{$end}"]);
-            }
-        }
-        return $this;
+        return $this->setBetweenWhere($fields, $split, $input, $alias);
     }
 
     /**
-     * 魔术调用方法
-     * @param string $name 调用方法名称
-     * @param array $arguments 调用参数
+     * 设置区域查询条件
+     * @param string|array $fields 查询字段
+     * @param string $split 输入分隔符
+     * @param string $input 输入类型
+     * @param string $alias 别名分割符
+     * @param callable $callback
      * @return $this
      */
-    public function __call($name, $arguments)
+    private function setBetweenWhere($fields, $split = ' ', $input = 'request', $alias = '#', $callback = null)
     {
-        if (method_exists($this->query, $name)) {
-            call_user_func_array([$this->query, $name], $arguments);
+        $data = $this->controller->request->$input();
+        foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
+            list($dk, $qk) = [$field, $field];
+            if (stripos($field, $alias) !== false) {
+                list($dk, $qk) = explode($alias, $field);
+            }
+            if (isset($data[$qk]) && $data[$qk] !== '') {
+                list($start, $end) = explode($split, $data[$field]);
+                if (is_callable($callback)) {
+                    $end = call_user_func($callback, $end, 'end');
+                    $start = call_user_func($callback, $start, 'start');
+                }
+                $this->query->whereBetween($dk, [$start, $end]);
+            }
         }
         return $this;
     }
@@ -207,6 +218,20 @@ class Query extends Logic
     public function page($isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
         return (new Page($this->query, $isPage, $isDisplay, $total, $limit))->init($this->controller);
+    }
+
+    /**
+     * 魔术调用方法
+     * @param string $name 调用方法名称
+     * @param array $arguments 调用参数
+     * @return $this
+     */
+    public function __call($name, $arguments)
+    {
+        if (method_exists($this->query, $name)) {
+            call_user_func_array([$this->query, $name], $arguments);
+        }
+        return $this;
     }
 
 }
