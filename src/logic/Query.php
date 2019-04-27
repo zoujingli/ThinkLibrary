@@ -134,6 +134,28 @@ class Query extends Logic
     }
 
     /**
+     * 设置时间戳区间查询
+     * @param string|array $fields 查询字段
+     * @param string $split 输入分隔符
+     * @param string $inputType 输入类型 get|post
+     * @param string $aliasSplit 别名分割符
+     * @return $this
+     */
+    public function timeBetween($fields, $split = ' - ', $inputType = 'request', $aliasSplit = '#')
+    {
+        $data = $this->controller->request->$inputType();
+        foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
+            list($dk, $qk) = [$field, $field];
+            if (stripos($field, $aliasSplit) !== false) list($dk, $qk) = explode($aliasSplit, $field);
+            if (isset($data[$qk]) && $data[$qk] !== '') {
+                list($start, $end) = explode($split, $data[$qk]);
+                $this->query->whereBetween($dk, [strtotime("{$start} 00:00:00"), strtotime("{$end} 23:59:59")]);
+            }
+        }
+        return $this;
+    }
+
+    /**
      * 设置区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
