@@ -236,8 +236,6 @@ if (!function_exists('emoji_clear')) {
 
 // 动态加载模块配置文件
 if (function_exists('think\__include_file')) {
-    $ds = DIRECTORY_SEPARATOR;
-    foreach (glob(env('app_path') . "*{$ds}sys.php") as $file) {
-        \think\__include_file($file);
-    }
+    $root = rtrim('/', str_replace('\\', '/', env('app_path')));
+    foreach (glob("{$root}/*/sys.php") as $file) \think\__include_file($file);
 }
