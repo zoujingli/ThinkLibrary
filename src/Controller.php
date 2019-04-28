@@ -111,9 +111,9 @@ class Controller extends \stdClass
 
     /**
      * URL重定向
-     * @param string $url 重定向跳转链接
-     * @param array $vars 重定向链接参数
-     * @param integer $code 重定向跳转代码
+     * @param string $url 跳转链接
+     * @param array $vars 跳转参数
+     * @param integer $code 跳转代码
      */
     public function redirect($url, $vars = [], $code = 301)
     {
