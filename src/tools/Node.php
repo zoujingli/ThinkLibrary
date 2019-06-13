@@ -39,8 +39,8 @@ class Node
     {
         if (empty($node)) return self::current();
         if (count(explode('/', $node)) === 1) {
-            $prenode = Request::module() . '/' . Request::controller();
-            return self::parseString($prenode) . '/' . strtolower($node);
+            $preNode = Request::module() . '/' . Request::controller();
+            return self::parseString($preNode) . '/' . strtolower($node);
         }
         return $node;
     }
@@ -51,8 +51,8 @@ class Node
      */
     public static function current()
     {
-        $prenode = Request::module() . '/' . Request::controller();
-        return self::parseString($prenode) . '/' . strtolower(Request::action());
+        $preNode = Request::module() . '/' . Request::controller();
+        return self::parseString($preNode) . '/' . strtolower(Request::action());
     }
 
     /**
