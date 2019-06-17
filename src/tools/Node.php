@@ -28,7 +28,7 @@ class Node
      * 忽略控制名的前缀
      * @var array
      */
-    protected static $ingoreController = [
+    protected static $ignoreController = [
         'api.', 'wap.', 'web.',
     ];
 
@@ -76,7 +76,7 @@ class Node
             if (!preg_match('|/(\w+)/controller/(.+)|', str_replace('\\', '/', $file), $matches)) continue;
             if (class_exists($classname = env('app_namespace') . str_replace('/', '\\', substr($matches[0], 0, -4)))) {
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                foreach (self::$ingoreController as $ignore) if (stripos($controller, $ignore) !== false) continue 2;
+                foreach (self::$ignoreController as $ignore) if (stripos($controller, $ignore) !== false) continue 2;
                 foreach (get_class_methods($classname) as $action) {
                     if (stripos($action, '_') === 0 || in_array($action, self::$ignoreAction)) continue;
                     $nodes[] = self::parseString("{$matches[1]}/{$controller}/{$action}");
@@ -99,7 +99,7 @@ class Node
             if (!preg_match('|/(\w+)/controller/(.+)|', str_replace('\\', '/', $file), $matches)) continue;
             if (class_exists($classname = env('app_namespace') . str_replace('/', '\\', substr($matches[0], 0, -4)))) {
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                foreach (self::$ingoreController as $ignore) if (stripos($controller, $ignore) !== false) continue 2;
+                foreach (self::$ignoreController as $ignore) if (stripos($controller, $ignore) !== false) continue 2;
                 $node = self::parseString("{$matches[1]}/{$controller}");
                 $comment = (new \ReflectionClass($classname))->getDocComment();
                 $nodes[$node] = preg_replace('/^\/\*\*\*(.*?)\*.*?$/', '$1', preg_replace("/\s/", '', $comment));
@@ -122,7 +122,7 @@ class Node
             if (!preg_match('|/(\w+)/controller/(.+)|', str_replace('\\', '/', $file), $matches)) continue;
             if (class_exists($classname = env('app_namespace') . str_replace('/', '\\', substr($matches[0], 0, -4)))) {
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                foreach (self::$ingoreController as $ignore) if (stripos($controller, $ignore) === 0) continue 2;
+                foreach (self::$ignoreController as $ignore) if (stripos($controller, $ignore) === 0) continue 2;
                 foreach ((new \ReflectionClass($classname))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     list($action, $comment) = [$method->getName(), $method->getDocComment()];
                     if (stripos($action, '_') === 0 || in_array($action, self::$ignoreAction)) continue;
