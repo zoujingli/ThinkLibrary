@@ -25,11 +25,20 @@ class Node
 {
 
     /**
-     * 控制器忽略函数
+     * 忽略控制名的前缀
      * @var array
      */
-    protected static $ignore = [
-        'initialize', 'success', 'error', 'fetch', 'redirect', 'assign', 'callback',
+    protected static $ingoreController = [
+        'api.', 'wap.', 'web.',
+    ];
+
+    /**
+     * 忽略控制的方法名
+     * @var array
+     */
+    protected static $ignoreAction = [
+        'redirect', 'assign', 'callback',
+        'initialize', 'success', 'error', 'fetch',
     ];
 
     /**
@@ -64,14 +73,13 @@ class Node
     public static function getTree($dir, $nodes = [])
     {
         foreach (self::scanDir($dir) as $file) {
-            $filename = str_replace(DIRECTORY_SEPARATOR, '/', $file);
-            if (!preg_match('|/(\w+)/controller/(.+)|', $filename, $matches)) continue;
+            if (!preg_match('|/(\w+)/controller/(.+)|', str_replace('\\', '/', $file), $matches)) continue;
             if (class_exists($classname = env('app_namespace') . str_replace('/', '\\', substr($matches[0], 0, -4)))) {
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                foreach (['api.', 'wap.', 'web.'] as $ignore) if (stripos($controller, $ignore) !== false) continue;
-                foreach (get_class_methods($classname) as $function) {
-                    if (stripos($function, '_') === 0 || in_array($function, self::$ignore)) continue;
-                    $nodes[] = self::parseString("{$matches[1]}/{$controller}/{$function}");
+                foreach (self::$ingoreController as $ignore) if (stripos($controller, $ignore) !== false) continue 2;
+                foreach (get_class_methods($classname) as $action) {
+                    if (stripos($action, '_') === 0 || in_array($action, self::$ignoreAction)) continue;
+                    $nodes[] = self::parseString("{$matches[1]}/{$controller}/{$action}");
                 }
             }
         }
@@ -88,11 +96,10 @@ class Node
     public static function getClassTreeNode($dir, $nodes = [])
     {
         foreach (self::scanDir($dir) as $file) {
-            $filename = str_replace(DIRECTORY_SEPARATOR, '/', $file);
-            if (!preg_match('|/(\w+)/controller/(.+)|', $filename, $matches)) continue;
+            if (!preg_match('|/(\w+)/controller/(.+)|', str_replace('\\', '/', $file), $matches)) continue;
             if (class_exists($classname = env('app_namespace') . str_replace('/', '\\', substr($matches[0], 0, -4)))) {
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                foreach (['api.', 'wap.', 'web.'] as $ignore) if (stripos($controller, $ignore) !== false) continue;
+                foreach (self::$ingoreController as $ignore) if (stripos($controller, $ignore) !== false) continue 2;
                 $node = self::parseString("{$matches[1]}/{$controller}");
                 $comment = (new \ReflectionClass($classname))->getDocComment();
                 $nodes[$node] = preg_replace('/^\/\*\*\*(.*?)\*.*?$/', '$1', preg_replace("/\s/", '', $comment));
@@ -112,15 +119,14 @@ class Node
     public static function getMethodTreeNode($dir, $nodes = [])
     {
         foreach (self::scanDir($dir) as $file) {
-            $filename = str_replace(DIRECTORY_SEPARATOR, '/', $file);
-            if (!preg_match('|/(\w+)/controller/(.+)|', $filename, $matches)) continue;
+            if (!preg_match('|/(\w+)/controller/(.+)|', str_replace('\\', '/', $file), $matches)) continue;
             if (class_exists($classname = env('app_namespace') . str_replace('/', '\\', substr($matches[0], 0, -4)))) {
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                foreach (['api.', 'wap.', 'web.'] as $ignore) if (stripos($controller, $ignore) !== false) continue;
+                foreach (self::$ingoreController as $ignore) if (stripos($controller, $ignore) === 0) continue 2;
                 foreach ((new \ReflectionClass($classname))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    list($function, $comment) = [$method->getName(), $method->getDocComment()];
-                    if (stripos($function, '_') === 0 || in_array($function, self::$ignore)) continue;
-                    $node = self::parseString("{$matches[1]}/{$controller}/{$function}");
+                    list($action, $comment) = [$method->getName(), $method->getDocComment()];
+                    if (stripos($action, '_') === 0 || in_array($action, self::$ignoreAction)) continue;
+                    $node = self::parseString("{$matches[1]}/{$controller}/{$action}");
                     $nodes[$node] = preg_replace('/^\/\*\*\*(.*?)\*.*?$/', '$1', preg_replace("/\s/", '', $comment));
                     if (stripos($nodes[$node], '@') !== false) $nodes[$node] = '';
                 }
