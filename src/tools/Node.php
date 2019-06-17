@@ -70,7 +70,9 @@ class Node
             if (class_exists($classname)) foreach (get_class_methods($classname) as $function) {
                 if (stripos($function, '_') === 0 || in_array($function, self::$ignore)) continue;
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                if (stripos($controller, 'api.') !== false || stripos($controller, 'wap.') !== false) continue;
+                foreach (['api.', 'wap.' . 'web.'] as $ignore) {
+                    if (stripos($controller, $ignore) !== false) continue;
+                }
                 $nodes[] = self::parseString("{$matches[1]}/{$controller}/{$function}");
             }
         }
@@ -91,7 +93,9 @@ class Node
             if (!preg_match('|/(\w+)/controller/(.+)|', $filename, $matches)) continue;
             if (class_exists($classname = env('app_namespace') . str_replace('/', '\\', substr($matches[0], 0, -4)))) {
                 $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                if (stripos($controller, 'api.') !== false || stripos($controller, 'wap.') !== false) continue;
+                foreach (['api.', 'wap.' . 'web.'] as $ignore) {
+                    if (stripos($controller, $ignore) !== false) continue;
+                }
                 $node = self::parseString("{$matches[1]}/{$controller}");
                 $comment = (new \ReflectionClass($classname))->getDocComment();
                 $nodes[$node] = preg_replace('/^\/\*\*\*(.*?)\*.*?$/', '$1', preg_replace("/\s/", '', $comment));
@@ -118,7 +122,9 @@ class Node
                     list($function, $comment) = [$method->getName(), $method->getDocComment()];
                     if (stripos($function, '_') === 0 || in_array($function, self::$ignore)) continue;
                     $controller = str_replace('/', '.', substr($matches[2], 0, -4));
-                    if (stripos($controller, 'api.') !== false || stripos($controller, 'wap.') !== false) continue;
+                    foreach (['api.', 'wap.' . 'web.'] as $ignore) {
+                        if (stripos($controller, $ignore) !== false) continue;
+                    }
                     $node = self::parseString("{$matches[1]}/{$controller}/{$function}");
                     $nodes[$node] = preg_replace('/^\/\*\*\*(.*?)\*.*?$/', '$1', preg_replace("/\s/", '', $comment));
                     if (stripos($nodes[$node], '@') !== false) $nodes[$node] = '';
