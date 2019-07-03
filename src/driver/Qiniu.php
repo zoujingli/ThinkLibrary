@@ -167,7 +167,17 @@ class Qiniu extends File
      */
     public function getBucketList()
     {
-        return (new BucketManager($this->getAuth()))->buckets(true);
+        list($list, $err) = (new BucketManager($this->getAuth()))->buckets(true);
+        if (!empty($err)) throw new \Exception($err);
+        foreach ($list as &$bucket) {
+            list($domain, $err) = $this->getDomainList($bucket);
+            if (empty($err)) {
+                $bucket = ['bucket' => $bucket, 'domain' => $domain];
+            } else {
+                throw new \Exception($err);
+            }
+        }
+        return $list;
     }
 
     /**
