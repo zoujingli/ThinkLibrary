@@ -162,6 +162,25 @@ class Qiniu extends File
     }
 
     /**
+     * 获取空间列表
+     * @return array
+     */
+    public function getBucketList()
+    {
+        return (new BucketManager($this->getAuth()))->buckets(true);
+    }
+
+    /**
+     * 获取空间绑定的域名列表
+     * @param string $bucket 空间名称
+     * @return array
+     */
+    public function getDomainList($bucket)
+    {
+        return (new BucketManager($this->getAuth()))->domains($bucket);
+    }
+
+    /**
      * 获取接口Auth对象
      * @return \Qiniu\Auth
      */
