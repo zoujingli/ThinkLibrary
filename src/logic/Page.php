@@ -49,7 +49,7 @@ class Page extends Logic
     protected $isDisplay;
 
     /**
-     * ViewList constructor.
+     * Page constructor.
      * @param string $dbQuery 数据库查询对象
      * @param boolean $isPage 是否启用分页
      * @param boolean $isDisplay 是否渲染模板
@@ -68,7 +68,7 @@ class Page extends Logic
     /**
      * 逻辑器初始化
      * @param Controller $controller
-     * @return mixed
+     * @return array
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
