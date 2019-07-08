@@ -91,9 +91,9 @@ class Save extends Logic
         }
         // 回复前端结果
         if ($result !== false) {
-            $this->controller->success('数据记录保存成功!', '');
+            $this->controller->success('数据更新成功!', '');
         } else {
-            $this->controller->error('数据保存失败, 请稍候再试!');
+            $this->controller->error('数据更新失败, 请稍候再试!');
         }
     }
 
