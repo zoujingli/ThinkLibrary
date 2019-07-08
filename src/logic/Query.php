@@ -205,7 +205,7 @@ class Query extends Logic
                 list($dk, $qk) = explode($alias, $field);
             }
             if (isset($data[$qk]) && $data[$qk] !== '') {
-                list($begin, $after) = explode($split, $data[$field]);
+                list($begin, $after) = explode($split, $data[$qk]);
                 if (is_callable($callback)) {
                     $after = call_user_func($callback, $after, 'after');
                     $begin = call_user_func($callback, $begin, 'begin');
