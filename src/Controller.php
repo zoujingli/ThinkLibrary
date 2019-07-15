@@ -46,6 +46,12 @@ class Controller extends \stdClass
     private $csrf = false;
 
     /**
+     * 表单CSRF验证失败提示消息
+     * @var string
+     */
+    protected $csrf_message = '表单令牌验证失败，请刷新页面再试！';
+
+    /**
      * Controller constructor.
      */
     public function __construct()
@@ -185,7 +191,7 @@ class Controller extends \stdClass
         $this->csrf = true;
         if ($this->request->isPost() && !Csrf::checkFormToken()) {
             if ($return) return false;
-            $this->error('表单令牌验证失败，请刷新页面再试！');
+            $this->error($this->csrf_message);
         } else {
             return true;
         }
