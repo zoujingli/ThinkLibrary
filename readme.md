@@ -23,12 +23,12 @@ ThinkLibrary 是针对 ThinkPHP5.1 版本封装的一套工具类库，方便快
 #### framework - V1.0 / V2.0
 * Gitee 仓库 https://gitee.com/zoujingli/framework
 * Github 仓库 https://github.com/zoujingli/framework
-* 在线体能地址（账号密码都是admin）https://framework.thinkadmin.top
+* 体验地址（账号密码都是admin）https://framework.thinkadmin.top
 
 #### ThinkAdmin - V4.0 / V4.1
 * Gitee 仓库 https://gitee.com/zoujingli/ThinkAdmin
 * Github 仓库 https://github.com/zoujingli/ThinkAdmin
-* 在线体能地址（账号密码都是admin）https://demo.thinkadmin.top
+* 体验地址（账号密码都是admin）https://demo.thinkadmin.top
 
 ## 代码仓库
  ThinkLibrary 为 MIT 协议开源项目，安装使用或二次开发不受约束，欢迎 fork 项目。
