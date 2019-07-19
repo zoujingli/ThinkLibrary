@@ -54,7 +54,7 @@ class Sync extends Command
         $this->version = config('app.thinkadmin_ver');
         if (empty($this->version)) $this->version = 'v4';
         $this->baseUri = "https://{$this->version}.thinkadmin.top";
-        parent::__construct($name);
+        if (is_string($name)) parent::__construct($name);
     }
 
     /**
