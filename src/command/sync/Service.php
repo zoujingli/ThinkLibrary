@@ -38,7 +38,6 @@ class Service extends Sync
      * 执行更新操作
      * @param Input $input
      * @param Output $output
-     * @return int|void|null
      */
     protected function execute(Input $input, Output $output)
     {
