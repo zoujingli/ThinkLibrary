@@ -174,9 +174,8 @@ class File
         try {
             $file = self::instance('local');
             $name = self::name($url, '', 'down/');
-            if ($file->has($name) && empty($force)) {
-                if (empty($expire)) return $file->info($name);
-                if (filemtime($file->path($name)) + $expire > time()) {
+            if (empty($force) && $file->has($name)) {
+                if ($expire < 1 || filemtime($file->path($name)) + $expire > time()) {
                     return $file->info($name);
                 }
             }
