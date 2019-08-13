@@ -25,10 +25,22 @@ use think\console\Command;
 class Task extends Command
 {
     /**
+     * 指令基础
+     * @var string
+     */
+    protected $bin;
+
+    /**
      * 任务指令
      * @var string
      */
     protected $cmd;
+
+    /**
+     * 项目根目录
+     * @var string
+     */
+    protected $root;
 
     /**
      * Task constructor.
@@ -37,7 +49,9 @@ class Task extends Command
     public function __construct($name = null)
     {
         parent::__construct($name);
-        $this->cmd = str_replace('\\', '/', 'php ' . env('ROOT_PATH') . 'think queue:listen');
+        $this->root = str_replace('\\', '/', env('ROOT_PATH'));
+        $this->bin = "php {$this->root}think";
+        $this->cmd = "{$this->bin} xtask:listen";
     }
 
     /**
