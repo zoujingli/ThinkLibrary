@@ -58,7 +58,6 @@ class Task extends Command
         $this->root = str_replace('\\', '/', env('ROOT_PATH'));
         $this->bin = "php {$this->root}think";
         $this->cmd = "{$this->bin} xtask:listen";
-        // 识别 ThinkAdmin 版本
         $this->version = config('app.thinkadmin_ver');
         if (empty($this->version)) $this->version = 'v4';
     }
@@ -126,7 +125,7 @@ class Task extends Command
     /**
      * 判断是否包含字符串
      * @param string $content
-     * @param string $substring
+     * @param string $substr
      * @return boolean
      */
     protected function _issub($content, $substr)
