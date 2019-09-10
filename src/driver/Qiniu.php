@@ -204,4 +204,19 @@ class Qiniu extends File
         );
     }
 
+    /**
+     * 生成文件上传TOKEN
+     * @param null|string $key 指定保存名称
+     * @param integer $expires 指定令牌有效时间
+     * @return string
+     * @throws \think\Exception
+     */
+    public function buildUploadToken($key = null, $expires = 3600)
+    {
+        $location = $this->base();
+        $bucket = self::$config->get('storage_qiniu_bucket');
+        $policy = ['returnBody' => '{"filename":"$(key)","url":"' . $location . '$(key)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}'];
+        return $this->getAuth()->uploadToken($bucket, $key, $expires, $policy, true);
+    }
+
 }
