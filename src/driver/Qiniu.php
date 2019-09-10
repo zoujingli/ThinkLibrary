@@ -214,7 +214,7 @@ class Qiniu extends File
     {
         $location = $this->base();
         $bucket = self::$config->get('storage_qiniu_bucket');
-        $policy = ['returnBody' => '{"filename":"$(key)","url":"' . $location . '$(key)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}'];
+        $policy = ['returnBody' => '{"uploaded":true,"filename":"$(key)","url":"' . $location . '$(key)"}'];
         return $this->getAuth()->uploadToken($bucket, $key, $expires, $policy, true);
     }
 
