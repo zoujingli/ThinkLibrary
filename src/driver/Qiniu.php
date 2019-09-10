@@ -19,6 +19,7 @@ use library\File;
 use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\UploadManager;
 use think\facade\Log;
+use think\facade\Request;
 
 /**
  * 七牛云文件驱动
@@ -69,7 +70,7 @@ class Qiniu extends File
      */
     public function upload($client = false)
     {
-        $isHttps = !!self::$config->get('storage_qiniu_is_https');
+        $isHttps = Request::isSsl();
         switch (self::$config->get('storage_qiniu_region')) {
             case '华东':
                 if ($isHttps) return $client ? 'https://upload.qiniup.com' : 'https://upload.qiniup.com';
