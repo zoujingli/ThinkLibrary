@@ -48,19 +48,4 @@ class Crypt
         return iconv('GBK//TRANSLIT', 'UTF-8', $chars);
     }
 
-    /**
-     * 静态调用方法处理
-     * @param string $name
-     * @param string $args
-     * @return mixed
-     */
-    public static function __callStatic($name, $args)
-    {
-        if (stripos($name, 'emoji') === 0) {
-            $method = str_replace('emoji', '', strtolower($name));
-            if (in_array($method, ['encode', 'decode', 'clear'])) {
-                return Emoji::$method($args[0]);
-            }
-        }
-    }
 }

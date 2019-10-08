@@ -196,42 +196,6 @@ if (!function_exists('decode')) {
     }
 }
 
-if (!function_exists('emoji_encode')) {
-    /**
-     * 编码 Emoji 表情
-     * @param string $content
-     * @return string
-     */
-    function emoji_encode($content)
-    {
-        return Emoji::encode($content);
-    }
-}
-
-if (!function_exists('emoji_decode')) {
-    /**
-     * 解析 Emoji 表情
-     * @param string $content
-     * @return string
-     */
-    function emoji_decode($content)
-    {
-        return Emoji::decode($content);
-    }
-}
-
-if (!function_exists('emoji_clear')) {
-    /**
-     * 清除 Emoji 表情
-     * @param string $content
-     * @return string
-     */
-    function emoji_clear($content)
-    {
-        return Emoji::clear($content);
-    }
-}
-
 // 注册跨域中间键
 Middleware::add(function (Request $request, \Closure $next, $header = []) {
     if (($origin = $request->header('origin', '*')) !== '*') {
@@ -250,10 +214,6 @@ Middleware::add(function (Request $request, \Closure $next, $header = []) {
 // 注册系统常用指令
 Console::addDefaultCommands([
     'library\command\Sess',
-    'library\command\task\Stop',
-    'library\command\task\State',
-    'library\command\task\Start',
-    // 'library\command\task\Reset',
     'library\command\sync\Admin',
     'library\command\sync\Plugs',
     'library\command\sync\Config',
