@@ -99,14 +99,14 @@ abstract class Storage
 
     /**
      * 根据文件后缀获取文件MINE
-     * @param array $ext 文件后缀
-     * @param array $mine 文件后缀MINE信息
+     * @param array $exts 文件后缀
+     * @param array $mine 文件MINE信息
      * @return string
      */
-    public static function mine($ext, $mine = [])
+    public static function mine($exts, $mine = [])
     {
         $mines = self::mines();
-        foreach (is_string($ext) ? explode(',', $ext) : $ext as $e) {
+        foreach (is_string($exts) ? explode(',', $exts) : $exts as $e) {
             $mine[] = isset($mines[strtolower($e)]) ? $mines[strtolower($e)] : 'application/octet-stream';
         }
         return join(',', array_unique($mine));
