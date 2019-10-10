@@ -17,20 +17,28 @@ class QiniuStorage extends Storage
      */
     public function __construct()
     {
-        $domain = sysconf('storage_qiniu_domain');
-        if (strtolower(sysconf('storage_qiniu_is_https')) === 'https') {
-            $this->root = "https://{$domain}/";
-        } elseif (strtolower(sysconf('storage_qiniu_is_https')) === 'http') {
-            $this->root = "http://{$domain}/";
-        } elseif (strtolower(sysconf('storage_qiniu_is_https')) === 'auto') {
-            $this->root = "//{$domain}/";
-        } else {
-            throw new \think\Exception('未配置七牛云URL前缀');
-        }
+        $type = strtolower(sysconf('storage_qiniu_is_https'));
+        $domain = strtolower(sysconf('storage_qiniu_domain'));
+        if ($type === 'auto') $this->root = "//{$domain}/";
+        elseif ($type === 'http') $this->root = "http://{$domain}/";
+        elseif ($type === 'https') $this->root = "https://{$domain}/";
+        else throw new \think\Exception('未配置七牛云URL域名哦');
     }
 
+    /**
+     * @param string $name
+     * @param string $content
+     * @param boolean $safe
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
     public function set($name, $content, $safe = false)
     {
+        $bucket = sysconf('storage_qiniu_bucket');
+        $policy = [
+            'returnBody' => '{"filename":"$(key)","url":"' . $this->root . '$(key)"}',
+        ];
+
         // TODO: Implement put() method.
     }
 
