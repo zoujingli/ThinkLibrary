@@ -29,7 +29,7 @@ abstract class Storage
 
     static protected $object = [];
 
-    abstract public function put($name, $content, $safe = false);
+    abstract public function set($name, $content, $safe = false);
 
     abstract public function get($name, $safe = false);
 

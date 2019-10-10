@@ -29,7 +29,7 @@ class QiniuStorage extends Storage
         }
     }
 
-    public function put($name, $content, $safe = false)
+    public function set($name, $content, $safe = false)
     {
         // TODO: Implement put() method.
     }
