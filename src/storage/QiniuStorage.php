@@ -51,10 +51,11 @@ class QiniuStorage extends Storage
 
     /**
      * 上传文件内容
-     * @param string $name
-     * @param string $content
-     * @param boolean $safe
+     * @param string $name 文件名称
+     * @param string $content 文件内容
+     * @param boolean $safe 安全模式
      * @return array
+     * @throws \think\Exception
      */
     public function set($name, $content, $safe = false)
     {
@@ -64,19 +65,96 @@ class QiniuStorage extends Storage
         ]));
         $token = "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
         list($attrs, $frontier) = [[], uniqid()];
-        foreach (['key' => $name, 'token' => $token, 'fileName' => $name] as $k => $v) {
+        foreach (['key' => $name, 'token' => $token, 'fileName' => $name] as $key => $value) {
             $attrs[] = "--{$frontier}";
-            $attrs[] = "Content-Disposition:form-data; name=\"{$k}\"";
+            $attrs[] = "Content-Disposition:form-data; name=\"{$key}\"";
             $attrs[] = "";
-            $attrs[] = $v;
+            $attrs[] = $value;
         }
         $attrs[] = "--{$frontier}";
         $attrs[] = "Content-Disposition:form-data; name=\"file\"; filename=\"{$name}\"";
         $attrs[] = "";
         $attrs[] = $content;
         $attrs[] = "--{$frontier}--";
-        $result = Http::post('http://up-z2.qiniup.com/', join("\r\n", $attrs), ['headers' => ["Content-type:multipart/form-data;boundary={$frontier}"]]);
-        return json_decode($result, true);
+        return json_decode(Http::post($this->getRegion(), join("\r\n", $attrs), [
+            'headers' => ["Content-type:multipart/form-data;boundary={$frontier}"],
+        ]), true);
+    }
+
+
+    /**
+     * 根据文件名读取文件内容
+     * @param string $name 文件名称
+     * @param boolean $safe 安全模式
+     * @return string
+     */
+    public function get($name, $safe = false)
+    {
+        $time = time();
+        $url = $this->url($name, $safe) . "?e={$time}";
+        $token = "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $url, $this->secretKey, true))}";
+        return file_get_contents("{$url}&token={$token}");
+    }
+
+    /**
+     * 删除存储的文件
+     * @param string $name 文件名称
+     * @param boolean $safe 安全模式
+     * @return boolean|null
+     */
+    public function del($name, $safe = false)
+    {
+        list($uri, $token) = $this->getAccessToken($name, 'delete');
+        $data = json_decode(Http::post("http://rs.qiniu.com/delete/{$uri}", [], ['headers' => ["Authorization:QBox {$token}"]]), true);
+        if (isset($data['md5'])) return isset($data['md5']) ? true : null;
+    }
+
+    /**
+     * 检查文件是否已经存在
+     * @param string $name 文件名称
+     * @param boolean $safe 安全模式
+     * @return boolean
+     */
+    public function has($name, $safe = false)
+    {
+        return is_array($this->info($name, $safe));
+    }
+
+    /**
+     * 获取文件当前URL地址
+     * @param string $name 文件名称
+     * @param boolean $safe 安全模式
+     * @return string
+     */
+    public function url($name, $safe = false)
+    {
+        return "{$this->root}/{$name}";
+    }
+
+    /**
+     * 获取文件存储路径
+     * @param string $name 文件名称
+     * @param boolean $safe 安全模式
+     * @return string
+     */
+    public function path($name, $safe = false)
+    {
+        return $this->url($name, $safe);
+    }
+
+    /**
+     * 获取文件存储信息
+     * @param string $name 文件名称
+     * @param boolean $safe 安全模式
+     * @return array|null
+     */
+    public function info($name, $safe = false)
+    {
+        list($uri, $token) = $this->getAccessToken($name);
+        $data = json_decode(Http::post("http://rs.qiniu.com/stat/{$uri}", [], ['headers' => ["Authorization:QBox {$token}"]]), true);
+        if (isset($data['md5'])) return isset($data['md5']) ? [
+            'file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name,
+        ] : null;
     }
 
     /**
@@ -89,33 +167,38 @@ class QiniuStorage extends Storage
         return str_replace(['+', '/'], ['-', '_'], base64_encode($content));
     }
 
-    public function get($name, $safe = false)
+    /**
+     * 获取管理凭证
+     * @param string $name 文件名称
+     * @param string $type 操作类型
+     * @return array
+     */
+    private function getAccessToken($name, $type = 'state')
     {
-        // TODO: Implement get() method.
+        $enuri = $this->safeBase64("{$this->bucket}:{$name}");
+        return [$enuri, "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', "/{$type}/{$enuri}\n", $this->secretKey, true))}"];
     }
 
-    public function del($name, $safe = false)
+    /**
+     * 获取存储区域
+     * @return string
+     * @throws \think\Exception
+     */
+    private function getRegion()
     {
-        // TODO: Implement del() method.
-    }
-
-    public function has($name, $safe = false)
-    {
-        // TODO: Implement has() method.
-    }
-
-    public function url($name, $safe = false)
-    {
-        // TODO: Implement url() method.
-    }
-
-    public function path($name, $safe = false)
-    {
-        // TODO: Implement path() method.
-    }
-
-    public function info($name, $safe = false)
-    {
-        // TODO: Implement info() method.
+        switch (sysconf('storage_qiniu_region')) {
+            case '华东':
+                return 'https://up.qiniup.com';
+            case '华北':
+                return 'https://up-z1.qiniup.com';
+            case '华南':
+                return 'https://up-z2.qiniup.com';
+            case '北美':
+                return 'https://up-na0.qiniup.com';
+            case '东南亚':
+                return 'https://up-as0.qiniup.com';
+            default:
+                throw new \think\Exception('未配置七牛云空间区域哦');
+        }
     }
 }
