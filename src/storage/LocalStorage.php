@@ -16,9 +16,9 @@
 namespace library\storage;
 
 use library\Storage;
-use think\facade\Log;
 
 /**
+ * 本地服务文件存储支持
  * Class LocalStorage
  * @package library\storage
  */
@@ -39,6 +39,7 @@ class LocalStorage extends Storage
      * @param string $content 文件内容
      * @param boolean $safe 安全模式
      * @return array|null
+     * @throws \think\Exception
      */
     public function set($name, $content, $safe = false)
     {
@@ -47,7 +48,7 @@ class LocalStorage extends Storage
             file_exists(dirname($file)) || mkdir(dirname($file), 0755, true);
             if (file_put_contents($file, $content)) return $this->info($name, $safe);
         } catch (\Exception $e) {
-            Log::error(__METHOD__ . " 本地文件存储失败，{$e->getMessage()}");
+            throw new \think\Exception("本地文件存储失败，{$e->getMessage()}");
         }
         return null;
     }

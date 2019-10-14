@@ -19,6 +19,7 @@ use library\Storage;
 use library\tools\Http;
 
 /**
+ * 七牛云存储支持
  * Class QiniuStorage
  * @package library\storage
  */
@@ -153,7 +154,8 @@ class QiniuStorage extends Storage
         list($uri, $token) = $this->getAccessToken($name);
         $data = json_decode(Http::post("http://rs.qiniu.com/stat/{$uri}", [], ['headers' => ["Authorization:QBox {$token}"]]), true);
         if (isset($data['md5'])) return isset($data['md5']) ? [
-            'file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name,
+            'file' => $name, 'url' => $this->url($name, $safe),
+            'hash' => $data['md5'], 'key' => $name,
         ] : null;
     }
 
@@ -168,7 +170,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取管理凭证
+     * 获取对象管理凭证
      * @param string $name 文件名称
      * @param string $type 操作类型
      * @return array
@@ -180,7 +182,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取存储区域
+     * 获取云存储区域
      * @return string
      * @throws \think\Exception
      */
