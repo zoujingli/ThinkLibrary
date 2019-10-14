@@ -180,7 +180,9 @@ if (!function_exists('encode')) {
      */
     function encode($content)
     {
-        return Crypt::encode($content);
+        list($chars, $length) = ['', strlen($string = iconv('UTF-8', 'GBK//TRANSLIT', $content))];
+        for ($i = 0; $i < $length; $i++) $chars .= str_pad(base_convert(ord($string[$i]), 10, 36), 2, 0, 0);
+        return $chars;
     }
 }
 
@@ -192,7 +194,11 @@ if (!function_exists('decode')) {
      */
     function decode($content)
     {
-        return Crypt::decode($content);
+        $chars = '';
+        foreach (str_split($content, 2) as $char) {
+            $chars .= chr(intval(base_convert($char, 36, 10)));
+        }
+        return iconv('GBK//TRANSLIT', 'UTF-8', $chars);
     }
 }
 
