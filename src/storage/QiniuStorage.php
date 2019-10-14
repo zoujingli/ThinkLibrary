@@ -182,7 +182,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取云存储区域
+     * 获取七牛云存储区域
      * @return string
      * @throws \think\Exception
      */
