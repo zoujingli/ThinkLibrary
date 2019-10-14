@@ -41,7 +41,7 @@ class QiniuStorage extends Storage
         $this->accessKey = sysconf('storage_qiniu_access_key');
         $this->secretKey = sysconf('storage_qiniu_secret_key');
         $this->domain = strtolower(sysconf('storage_qiniu_domain'));
-        // 计算文件前置链接
+        // 计算前置链接
         $type = strtolower(sysconf('storage_qiniu_is_https'));
         if ($type === 'auto') $this->root = "//{$this->domain}/";
         elseif ($type === 'http') $this->root = "http://{$this->domain}/";
