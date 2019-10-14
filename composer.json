@@ -3,7 +3,7 @@
   "name": "zoujingli/think-library",
   "license": "MIT",
   "homepage": "http://framework.thinkadmin.top",
-  "description": "ThinkPHP Basic Development Library",
+  "description": "ThinkPHP v6.0 Basic Development Library",
   "require": {
     "php": ">=5.4",
     "ext-json": "*",
@@ -18,6 +18,12 @@
     ],
     "psr-4": {
       "library\\": "src"
+    }
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://mirrors.aliyun.com/composer"
     }
   }
 }
