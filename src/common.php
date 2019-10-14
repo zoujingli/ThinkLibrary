@@ -13,18 +13,11 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-use library\tools\Crypt;
 use library\tools\Csrf;
 use library\tools\Data;
-use library\tools\Emoji;
-use library\tools\Http;
-use library\tools\Node;
-use think\Console;
-use think\Db;
 use think\facade\Cache;
-use think\facade\Middleware;
-use think\facade\Response;
-use think\Request;
+use think\facade\Request;
+use think\Response;
 
 if (!function_exists('p')) {
     /**
@@ -97,24 +90,11 @@ if (!function_exists('sysconf')) {
     }
 }
 
-if (!function_exists('systoken')) {
-    /**
-     * 生成CSRF-TOKEN参数
-     * @param string $node
-     * @return string
-     */
-    function systoken($node = null)
-    {
-        $csrf = Csrf::buildFormToken(Node::get($node));
-        return $csrf['token'];
-    }
-}
-
 if (!function_exists('http_get')) {
     /**
      * 以get模拟网络请求
      * @param string $url HTTP请求URL地址
-     * @param array $query GET请求参数
+     * @param array|string $query GET请求参数
      * @param array $options CURL参数
      * @return boolean|string
      */
@@ -128,7 +108,7 @@ if (!function_exists('http_post')) {
     /**
      * 以get模拟网络请求
      * @param string $url HTTP请求URL地址
-     * @param array $data POST请求数据
+     * @param array|string $data POST请求数据
      * @param array $options CURL参数
      * @return boolean|string
      */
@@ -152,23 +132,6 @@ if (!function_exists('data_save')) {
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
         return Data::save($dbQuery, $data, $key, $where);
-    }
-}
-
-if (!function_exists('data_batch_save')) {
-    /**
-     * 批量更新数据
-     * @param \think\db\Query|string $dbQuery 数据查询对象
-     * @param array $data 需要更新的数据(二维数组)
-     * @param string $key 条件主键限制
-     * @param array $where 其它的where条件
-     * @return boolean
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
-     */
-    function data_batch_save($dbQuery, $data, $key = 'id', $where = [])
-    {
-        return Data::batchSave($dbQuery, $data, $key, $where);
     }
 }
 
@@ -217,20 +180,10 @@ Middleware::add(function (Request $request, \Closure $next, $header = []) {
     }
 });
 
-// 注册系统常用指令
-Console::addDefaultCommands([
-    'library\command\Sess',
-    'library\command\sync\Admin',
-    'library\command\sync\Plugs',
-    'library\command\sync\Config',
-    'library\command\sync\Wechat',
-    'library\command\sync\Service',
-]);
-
 // 动态加载模块配置
-if (function_exists('think\__include_file')) {
+if (function_exists('Composer\Autoload\includeFile')) {
     $root = rtrim(str_replace('\\', '/', env('app_path')), '/');
     foreach (glob("{$root}/*/sys.php") as $file) {
-        \think\__include_file($file);
+        \Composer\Autoload\includeFile($file);
     }
 }
