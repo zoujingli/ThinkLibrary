@@ -105,9 +105,9 @@ class QiniuStorage extends Storage
      */
     public function del($name, $safe = false)
     {
-        list($uri, $token) = $this->getAccessToken($name, 'delete');
-        $data = json_decode(Http::post("http://rs.qiniu.com/delete/{$uri}", [], ['headers' => ["Authorization:QBox {$token}"]]), true);
-        if (isset($data['md5'])) return isset($data['md5']) ? true : null;
+        list($EncodedEntryURI, $AccessToken) = $this->getAccessToken($name, 'delete');
+        $data = json_decode(Http::post("http://rs.qiniu.com/delete/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
+        return empty($data['error']);
     }
 
     /**
@@ -151,12 +151,9 @@ class QiniuStorage extends Storage
      */
     public function info($name, $safe = false)
     {
-        list($uri, $token) = $this->getAccessToken($name);
-        $data = json_decode(Http::post("http://rs.qiniu.com/stat/{$uri}", [], ['headers' => ["Authorization:QBox {$token}"]]), true);
-        if (isset($data['md5'])) return isset($data['md5']) ? [
-            'file' => $name, 'url' => $this->url($name, $safe),
-            'hash' => $data['md5'], 'key' => $name,
-        ] : null;
+        list($EncodedEntryURI, $AccessToken) = $this->getAccessToken($name);
+        $data = json_decode(Http::post("http://rs.qiniu.com/stat/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
+        if (isset($data['md5'])) return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name] : null;
     }
 
     /**
@@ -177,8 +174,8 @@ class QiniuStorage extends Storage
      */
     private function getAccessToken($name, $type = 'state')
     {
-        $enuri = $this->safeBase64("{$this->bucket}:{$name}");
-        return [$enuri, "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', "/{$type}/{$enuri}\n", $this->secretKey, true))}"];
+        $EncodedEntryURI = $this->safeBase64("{$this->bucket}:{$name}");
+        return [$EncodedEntryURI, "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', "/{$type}/{$EncodedEntryURI}\n", $this->secretKey, true))}"];
     }
 
     /**
