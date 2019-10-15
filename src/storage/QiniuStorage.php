@@ -44,9 +44,9 @@ class QiniuStorage extends Storage
         $this->domain = strtolower(sysconf('storage_qiniu_domain'));
         // 计算前置链接
         $type = strtolower(sysconf('storage_qiniu_is_https'));
-        if ($type === 'auto') $this->root = "//{$this->domain}/";
-        elseif ($type === 'http') $this->root = "http://{$this->domain}/";
-        elseif ($type === 'https') $this->root = "https://{$this->domain}/";
+        if ($type === 'auto') $this->prefix = "//{$this->domain}/";
+        elseif ($type === 'http') $this->prefix = "http://{$this->domain}/";
+        elseif ($type === 'https') $this->prefix = "https://{$this->domain}/";
         else throw new \think\Exception('未配置七牛云URL域名哦');
     }
 
@@ -62,7 +62,7 @@ class QiniuStorage extends Storage
     {
         $policy = $this->safeBase64(json_encode([
             "deadline"   => time() + 3600, "scope" => "{$this->bucket}:{$name}",
-            'returnBody' => json_encode(['filename' => '$(key)', 'url' => "{$this->root}/$(key)"], JSON_UNESCAPED_UNICODE),
+            'returnBody' => json_encode(['filename' => '$(key)', 'url' => "{$this->prefix}/$(key)"], JSON_UNESCAPED_UNICODE),
         ]));
         $token = "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
         list($attrs, $frontier) = [[], uniqid()];
@@ -129,7 +129,7 @@ class QiniuStorage extends Storage
      */
     public function url($name, $safe = false)
     {
-        return "{$this->root}/{$name}";
+        return "{$this->prefix}/{$name}";
     }
 
     /**

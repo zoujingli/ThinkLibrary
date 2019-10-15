@@ -227,8 +227,6 @@ class Query extends Logic
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
      */
     public function page($isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {

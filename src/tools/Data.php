@@ -31,8 +31,9 @@ class Data
      * @param string $key 条件主键限制
      * @param array $where 其它的where条件
      * @return boolean|integer
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function save($dbQuery, $data, $key = 'id', $where = [])
     {
@@ -57,8 +58,7 @@ class Data
      * @param string $key 条件主键限制
      * @param array $where 其它的where条件
      * @return boolean
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DbException
      */
     public static function batchSave($dbQuery, $data, $key = 'id', $where = [])
     {

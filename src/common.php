@@ -126,8 +126,9 @@ if (!function_exists('data_save')) {
      * @param string $key 条件主键限制
      * @param array $where 其它的where条件
      * @return boolean
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
@@ -182,7 +183,7 @@ Middleware::add(function (Request $request, \Closure $next, $header = []) {
 
 // 动态加载模块配置
 if (function_exists('Composer\Autoload\includeFile')) {
-    $root = rtrim(str_replace('\\', '/', env('app_path')), '/');
+    $root = rtrim(str_replace('\\', '/', app()->getAppPath()), '/');
     foreach (glob("{$root}/*/sys.php") as $file) {
         \Composer\Autoload\includeFile($file);
     }

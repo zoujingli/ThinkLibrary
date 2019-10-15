@@ -62,8 +62,7 @@ class Delete extends Logic
      * 逻辑器初始化
      * @param Controller $controller
      * @return boolean|null
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DbException
      */
     public function init(Controller $controller)
     {

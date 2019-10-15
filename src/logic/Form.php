@@ -59,16 +59,16 @@ class Form extends Logic
     /**
      * Form constructor.
      * @param string|Query $dbQuery
-     * @param string $tpl 模板名称
-     * @param string $pkField 指定数据对象主键
+     * @param string $template 模板名称
+     * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
      */
-    public function __construct($dbQuery, $tpl = '', $pkField = '', $where = [], $data = [])
+    public function __construct($dbQuery, $template = '', $field = '', $where = [], $data = [])
     {
         $this->query = $this->buildQuery($dbQuery);
-        list($this->tpl, $this->where, $this->data) = [$tpl, $where, $data];
-        $this->pkField = empty($pkField) ? ($this->query->getPk() ? $this->query->getPk() : 'id') : $pkField;;
+        list($this->tpl, $this->where, $this->data) = [$template, $where, $data];
+        $this->pkField = empty($field) ? ($this->query->getPk() ? $this->query->getPk() : 'id') : $field;;
         $this->pkValue = input($this->pkField, isset($data[$this->pkField]) ? $data[$this->pkField] : null);
     }
 
@@ -77,11 +77,9 @@ class Form extends Logic
      * @param Controller $controller
      * @param array $data
      * @return array|boolean
-     * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
      */
     public function init(Controller $controller, $data = [])
     {

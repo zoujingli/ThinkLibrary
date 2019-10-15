@@ -42,7 +42,7 @@ class Controller extends \stdClass
      * 表单CSRF验证状态
      * @var boolean
      */
-    private $csrf_state = false;
+    protected $csrf_state = false;
 
     /**
      * 表单CSRF验证失败提示消息
@@ -102,12 +102,11 @@ class Controller extends \stdClass
     /**
      * URL重定向
      * @param string $url 跳转链接
-     * @param array $vars 跳转参数
      * @param integer $code 跳转代码
      */
-    public function redirect($url, $vars = [], $code = 301)
+    public function redirect($url, $code = 301)
     {
-        throw new HttpResponseException(redirect($url, $vars, $code));
+        throw new HttpResponseException(redirect($url, $code));
     }
 
     /**
@@ -201,8 +200,6 @@ class Controller extends \stdClass
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
      */
     protected function _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
@@ -217,11 +214,9 @@ class Controller extends \stdClass
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
      * @return array|boolean
-     * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
      */
     protected function _form($dbQuery, $tpl = '', $pkField = '', $where = [], $data = [])
     {
@@ -232,27 +227,14 @@ class Controller extends \stdClass
      * 快捷更新逻辑器
      * @param string|\think\db\Query $dbQuery
      * @param array $data 表单扩展数据
-     * @param string $pkField 数据对象主键
+     * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DbException
      */
-    protected function _save($dbQuery, $data = [], $pkField = '', $where = [])
+    protected function _save($dbQuery, $data = [], $field = '', $where = [])
     {
-        return (new Save($dbQuery, $data, $pkField, $where))->init($this);
-    }
-
-    /**
-     * 快捷输入逻辑器
-     * @param array|string $data 验证数据
-     * @param array $rule 验证规则
-     * @param array $info 验证消息
-     * @return array
-     */
-    protected function _input($data, $rule = [], $info = [])
-    {
-        return (new Input($data, $rule, $info))->init($this);
+        return (new Save($dbQuery, $data, $field, $where))->init($this);
     }
 
     /**
@@ -261,8 +243,7 @@ class Controller extends \stdClass
      * @param string $pkField 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean|null
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DbException
      */
     protected function _delete($dbQuery, $pkField = '', $where = [])
     {

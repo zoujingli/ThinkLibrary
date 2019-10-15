@@ -38,7 +38,7 @@ class Http
     /**
      * 以get模拟网络请求
      * @param string $url HTTP请求URL地址
-     * @param array $data POST请求数据
+     * @param array|string $data POST请求数据
      * @param array $options CURL参数
      * @return boolean|string
      */

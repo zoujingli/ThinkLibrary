@@ -25,7 +25,7 @@ use library\storage\QiniuStorage;
  */
 abstract class Storage
 {
-    protected $root;
+    protected $prefix;
 
     static protected $object = [];
 

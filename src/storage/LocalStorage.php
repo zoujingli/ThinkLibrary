@@ -30,7 +30,7 @@ class LocalStorage extends Storage
      */
     public function __construct()
     {
-        $this->root = rtrim(env('root_path'), '\\/');
+        $this->prefix = rtrim(env('root_path'), '\\/');
     }
 
     /**
@@ -113,7 +113,7 @@ class LocalStorage extends Storage
     public function path($name, $safe = false)
     {
         $path = $safe ? 'safefile' : 'public/upload';
-        return str_replace('\\', '/', "{$this->root}/{$path}/{$name}");
+        return str_replace('\\', '/', "{$this->prefix}/{$path}/{$name}");
     }
 
     /**

@@ -53,15 +53,15 @@ class Save extends Logic
      * Save constructor.
      * @param string|Query $dbQuery
      * @param array $data 表单扩展数据
-     * @param string $pkField 数据对象主键
+     * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      */
-    public function __construct($dbQuery, $data = [], $pkField = '', $where = [])
+    public function __construct($dbQuery, $data = [], $field = '', $where = [])
     {
         $this->where = $where;
         $this->query = $this->buildQuery($dbQuery);
         $this->data = empty($data) ? request()->post() : $data;
-        $this->pkField = empty($pkField) ? $this->query->getPk() : $pkField;
+        $this->pkField = empty($field) ? $this->query->getPk() : $field;
         $this->pkValue = request()->post($this->pkField, null);
     }
 
@@ -69,8 +69,7 @@ class Save extends Logic
      * 逻辑器初始化
      * @param Controller $controller
      * @return boolean
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DbException
      */
     public function init(Controller $controller)
     {

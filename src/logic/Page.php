@@ -113,8 +113,7 @@ class Page extends Logic
 
     /**
      * 列表排序操作
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DbException
      */
     protected function _sort()
     {
