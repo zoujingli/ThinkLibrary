@@ -15,6 +15,7 @@
 
 use library\tools\Csrf;
 use library\tools\Data;
+use library\tools\Http;
 use think\facade\Cache;
 use think\facade\Request;
 use think\Response;
@@ -167,7 +168,7 @@ if (!function_exists('decode')) {
 }
 
 // 注册跨域中间键
-Middleware::add(function (Request $request, \Closure $next, $header = []) {
+app()->middleware->add(function (Request $request, \Closure $next, $header = []) {
     if (($origin = $request->header('origin', '*')) !== '*') {
         $header['Access-Control-Allow-Origin'] = $origin;
         $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
