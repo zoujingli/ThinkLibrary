@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\logic;
+namespace library\helper;
 
 use library\Controller;
 use think\Db;
@@ -23,7 +23,7 @@ use think\Db;
  * Class Logic
  * @package library\view
  */
-abstract class Logic
+abstract class Helper
 {
     /**
      * 数据库操作对象

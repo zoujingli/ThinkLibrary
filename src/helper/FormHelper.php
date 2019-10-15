@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\logic;
+namespace library\helper;
 
 use library\Controller;
 use library\tools\Data;
@@ -24,7 +24,7 @@ use think\db\Query;
  * Class Form
  * @package library\logic
  */
-class Form extends Logic
+class FormHelper extends Helper
 {
     /**
      * 表单模板文件
@@ -58,7 +58,7 @@ class Form extends Logic
 
     /**
      * Form constructor.
-     * @param string|Query $dbQuery
+     * @param string|QueryHelper $dbQuery
      * @param string $template 模板名称
      * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件

@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\logic;
+namespace library\helper;
 
 use library\Controller;
 use think\db\Query;
@@ -23,7 +23,7 @@ use think\db\Query;
  * Class Save
  * @package library\logic
  */
-class Save extends Logic
+class SaveHelper extends Helper
 {
     /**
      * 表单扩展数据
@@ -51,7 +51,7 @@ class Save extends Logic
 
     /**
      * Save constructor.
-     * @param string|Query $dbQuery
+     * @param string|QueryHelper $dbQuery
      * @param array $data 表单扩展数据
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件

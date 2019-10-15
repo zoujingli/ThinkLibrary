@@ -15,12 +15,12 @@
 
 namespace library;
 
-use library\logic\Delete;
-use library\logic\Form;
-use library\logic\Input;
-use library\logic\Page;
-use library\logic\Query;
-use library\logic\Save;
+use library\helper\CsrfHelper;
+use library\helper\DeleteHelper;
+use library\helper\FormHelper;
+use library\helper\PageHelper;
+use library\helper\QueryHelper;
+use library\helper\SaveHelper;
 use library\tools\Csrf;
 use think\exception\HttpResponseException;
 
@@ -42,13 +42,13 @@ class Controller extends \stdClass
      * 表单CSRF验证状态
      * @var boolean
      */
-    protected $csrf_state = false;
+    public $csrf_state = false;
 
     /**
      * 表单CSRF验证失败提示消息
      * @var string
      */
-    protected $csrf_message = '表单令牌验证失败，请刷新页面再试！';
+    public $csrf_message = '表单令牌验证失败，请刷新页面再试！';
 
     /**
      * Controller constructor.
@@ -168,25 +168,19 @@ class Controller extends \stdClass
      * @param boolean $return 是否返回结果
      * @return boolean
      */
-    protected function applyCsrfToken($return = false)
+    protected function _csrf($return = false)
     {
-        $this->csrf_state = true;
-        if ($this->request->isPost() && !Csrf::checkFormToken()) {
-            if ($return) return false;
-            $this->error($this->csrf_message);
-        } else {
-            return true;
-        }
+        return (new CsrfHelper())->init($this, $return);
     }
 
     /**
      * 快捷查询逻辑器
      * @param string|\think\db\Query $dbQuery
-     * @return Query
+     * @return QueryHelper
      */
     protected function _query($dbQuery)
     {
-        return (new Query($dbQuery))->init($this);
+        return (new QueryHelper($dbQuery))->init($this);
     }
 
     /**
@@ -203,7 +197,7 @@ class Controller extends \stdClass
      */
     protected function _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
-        return (new Page($dbQuery, $isPage, $isDisplay, $total, $limit))->init($this);
+        return (new PageHelper($dbQuery, $isPage, $isDisplay, $total, $limit))->init($this);
     }
 
     /**
@@ -220,7 +214,7 @@ class Controller extends \stdClass
      */
     protected function _form($dbQuery, $tpl = '', $pkField = '', $where = [], $data = [])
     {
-        return (new Form($dbQuery, $tpl, $pkField, $where, $data))->init($this);
+        return (new FormHelper($dbQuery, $tpl, $pkField, $where, $data))->init($this);
     }
 
     /**
@@ -234,7 +228,7 @@ class Controller extends \stdClass
      */
     protected function _save($dbQuery, $data = [], $field = '', $where = [])
     {
-        return (new Save($dbQuery, $data, $field, $where))->init($this);
+        return (new SaveHelper($dbQuery, $data, $field, $where))->init($this);
     }
 
     /**
@@ -247,7 +241,7 @@ class Controller extends \stdClass
      */
     protected function _delete($dbQuery, $pkField = '', $where = [])
     {
-        return (new Delete($dbQuery, $pkField, $where))->init($this);
+        return (new DeleteHelper($dbQuery, $pkField, $where))->init($this);
     }
 
 }

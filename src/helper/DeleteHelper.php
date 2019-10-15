@@ -13,17 +13,16 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\logic;
+namespace library\helper;
 
 use library\Controller;
-use think\db\Query;
 
 /**
  * 通用删除管理器
  * Class Delete
  * @package library\logic
  */
-class Delete extends Logic
+class DeleteHelper extends Helper
 {
 
     /**
@@ -46,7 +45,7 @@ class Delete extends Logic
 
     /**
      * Delete constructor.
-     * @param string|Query $dbQuery
+     * @param string|QueryHelper $dbQuery
      * @param string $pkField 数据对象主键
      * @param array $where 额外更新条件
      */

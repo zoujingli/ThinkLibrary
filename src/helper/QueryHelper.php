@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\logic;
+namespace library\helper;
 
 use library\Controller;
 
@@ -24,7 +24,7 @@ use library\Controller;
  * @see \think\Db\Query
  * @mixin \think\Db\Query
  */
-class Query extends Logic
+class QueryHelper extends Helper
 {
 
     /**
@@ -230,6 +230,6 @@ class Query extends Logic
      */
     public function page($isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
-        return (new Page($this->query, $isPage, $isDisplay, $total, $limit))->init($this->controller);
+        return (new PageHelper($this->query, $isPage, $isDisplay, $total, $limit))->init($this->controller);
     }
 }
