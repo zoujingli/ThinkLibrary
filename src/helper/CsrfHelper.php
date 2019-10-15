@@ -72,6 +72,14 @@ class CsrfHelper
     }
 
     /**
+     * 清理表单令牌
+     */
+    public function clear()
+    {
+        $this->clearFormToken($this->token);
+    }
+
+    /**
      * 检查表单CSRF验证
      * @return boolean
      */

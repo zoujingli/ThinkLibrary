@@ -21,7 +21,6 @@ use library\helper\FormHelper;
 use library\helper\PageHelper;
 use library\helper\QueryHelper;
 use library\helper\SaveHelper;
-use library\tools\Csrf;
 use think\exception\HttpResponseException;
 
 /**
@@ -95,7 +94,7 @@ class Controller extends \stdClass
     public function success($info, $data = [], $code = 1)
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if ($this->csrf_state) Csrf::clearFormToken(Csrf::getToken());
+        if ($this->csrf_state) (new CsrfHelper())->clear();
         throw new HttpResponseException(json($result));
     }
 
@@ -119,7 +118,7 @@ class Controller extends \stdClass
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
         if ($this->csrf_state) {
-            Csrf::fetchTemplate($tpl, $vars, $node);
+            (new CsrfHelper())->fetchTemplate($tpl, $vars, $node);
         } else {
             throw new HttpResponseException(view($tpl, $vars));
         }
