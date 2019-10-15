@@ -100,32 +100,32 @@ abstract class Storage
     /**
      * 根据文件后缀获取文件MINE
      * @param array $exts 文件后缀
-     * @param array $mine 文件MINE信息
+     * @param array $mime 文件MINE信息
      * @return string
      */
-    public static function mine($exts, $mine = [])
+    public static function mime($exts, $mime = [])
     {
-        $mines = self::mines();
+        $mimes = self::mimes();
         foreach (is_string($exts) ? explode(',', $exts) : $exts as $e) {
-            $mine[] = isset($mines[strtolower($e)]) ? $mines[strtolower($e)] : 'application/octet-stream';
+            $mime[] = isset($mimes[strtolower($e)]) ? $mimes[strtolower($e)] : 'application/octet-stream';
         }
-        return join(',', array_unique($mine));
+        return join(',', array_unique($mime));
     }
 
     /**
      * 获取所有文件扩展的MINES
      * @return array
      */
-    public static function mines()
+    public static function mimes()
     {
-        $mines = cache('all_ext_mine');
-        if (empty($mines)) {
+        $mimes = cache('all_ext_mime');
+        if (empty($mimes)) {
             $content = file_get_contents('http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types');
             preg_match_all('#^([^\s]{2,}?)\s+(.+?)$#ism', $content, $matches, PREG_SET_ORDER);
-            foreach ($matches as $match) foreach (explode(" ", $match[2]) as $ext) $mines[$ext] = $match[1];
-            cache('all_ext_mine', $mines);
+            foreach ($matches as $match) foreach (explode(" ", $match[2]) as $ext) $mimes[$ext] = $match[1];
+            cache('all_ext_mime', $mimes);
         }
-        return $mines;
+        return $mimes;
     }
 
 }
