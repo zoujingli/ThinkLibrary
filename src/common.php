@@ -182,6 +182,16 @@ app()->middleware->add(function (Request $request, \Closure $next, $header = [])
     }
 });
 
+// 注册系统指令
+app()->console->addCommands([
+    \library\process\Listen::class,
+    \library\process\Query::class,
+    \library\process\Start::class,
+    \library\process\State::class,
+    \library\process\Stop::class,
+    \library\process\Work::class,
+]);
+
 // 动态加载模块配置
 if (function_exists('Composer\Autoload\includeFile')) {
     $root = rtrim(str_replace('\\', '/', app()->getAppPath()), '/');
