@@ -168,34 +168,36 @@ if (!function_exists('decode')) {
 }
 
 // 注册跨域中间键
-app()->middleware->add(function (Request $request, \Closure $next, $header = []) {
-    if (($origin = $request->header('origin', '*')) !== '*') {
-        $header['Access-Control-Allow-Origin'] = $origin;
-        $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
-        $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
-        $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
-    }
-    if ($request->isOptions()) {
-        return Response::create()->code(204)->header($header);
-    } else {
-        return $next($request)->header($header);
-    }
-});
-
+//app()->middleware->add(function (Request $request, \Closure $next, $header = []) {
+//    if (($origin = $request->header('origin', '*')) !== '*') {
+//        $header['Access-Control-Allow-Origin'] = $origin;
+//        $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
+//        $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
+//        $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
+//    }
+//    if ($request->isOptions()) {
+//        return Response::create()->code(204)->header($header);
+//    } else {
+//        return $next($request)->header($header);
+//    }
+//});
+//\think\facade\App::getInstance();
+//\think\facade\App::instance();
+// \think\facade\Console::setUser();
 // 注册系统指令
-app()->console->addCommands([
-    \library\process\Listen::class,
-    \library\process\Query::class,
-    \library\process\Start::class,
-    \library\process\State::class,
-    \library\process\Stop::class,
-    \library\process\Work::class,
-]);
+//app()->console->addCommands([
+//    \library\process\Listen::class,
+//    \library\process\Query::class,
+//    \library\process\Start::class,
+//    \library\process\State::class,
+//    \library\process\Stop::class,
+//    \library\process\Work::class,
+//]);
 
 // 动态加载模块配置
-if (function_exists('Composer\Autoload\includeFile')) {
-    $root = rtrim(str_replace('\\', '/', app()->getAppPath()), '/');
-    foreach (glob("{$root}/*/sys.php") as $file) {
-        \Composer\Autoload\includeFile($file);
-    }
-}
+//if (function_exists('Composer\Autoload\includeFile')) {
+//    $root = rtrim(str_replace('\\', '/', app()->getAppPath()), '/');
+//    foreach (glob("{$root}/*/sys.php") as $file) {
+//        \Composer\Autoload\includeFile($file);
+//    }
+//}
