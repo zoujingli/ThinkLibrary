@@ -67,7 +67,7 @@ class Work extends Command
             $queue = Db::name('SystemQueue')->where(['id' => $this->id, 'status' => '2'])->find();
             if (empty($queue)) throw new \think\Exception("执行任务{$this->id}的信息或状态异常！");
             // 设置进程标题
-            if (Process::isWin() && function_exists('cli_set_process_title')) {
+            if (Process::iswin() && function_exists('cli_set_process_title')) {
                 cli_set_process_title("ThinkAdmin " . Process::version() . " 异步任务执行子进程 - {$queue['title']}");
             }
             // 执行任务内容

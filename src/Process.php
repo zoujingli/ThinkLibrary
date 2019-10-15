@@ -25,7 +25,7 @@ class Process
 {
 
     /**
-     * 获取Think指令入口
+     * 创建并获取Think指令内容
      * @param string $args 指定参数
      * @return string
      */
@@ -36,23 +36,21 @@ class Process
     }
 
     /**
-     * 获取当前系统版本
+     * 获取当前应用版本
      * @return string
      */
     public static function version()
     {
-        $version = app()->config->get('app.thinkadmin_ver');
-        if (empty($version)) $version = 'v4';
-        return $version;
+        return app()->config->get('app.thinkadmin_ver', 'v4');
     }
 
     /**
      * 创建消息任务进程
      * @param string $command 任务指令
      */
-    public static function create($command = null)
+    public static function create($command)
     {
-        if (self::isWin()) {
+        if (self::iswin()) {
             $command = __DIR__ . "process/bin/ThinkAdmin.exe {$command}";
             pclose(popen("wmic process call create \"{$command}\"", 'r'));
         } else {
@@ -65,10 +63,10 @@ class Process
      * @param string $command 任务指令
      * @return array
      */
-    public static function query($command = null)
+    public static function query($command)
     {
         $list = [];
-        if (self::isWin()) {
+        if (self::iswin()) {
             $result = str_replace('\\', '/', shell_exec('wmic process where name="php.exe" get processid,CommandLine'));
             foreach (explode("\n", $result) as $line) if (self::_issub($line, $command) !== false) {
                 $attr = explode(' ', self::_space($line));
@@ -92,7 +90,7 @@ class Process
      */
     public static function close($pid)
     {
-        if (self::isWin()) {
+        if (self::iswin()) {
             shell_exec("wmic process {$pid} call terminate");
         } else {
             shell_exec("kill -9 {$pid}");
@@ -104,7 +102,7 @@ class Process
      * 判断系统类型
      * @return boolean
      */
-    public static function isWin()
+    public static function iswin()
     {
         return PATH_SEPARATOR === ';';
     }
