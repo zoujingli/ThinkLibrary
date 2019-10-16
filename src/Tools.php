@@ -15,7 +15,6 @@
 
 namespace library;
 
-
 use think\Db;
 use think\db\Query;
 
@@ -76,7 +75,9 @@ class Tools
         $handle = fopen('php://output', 'w');
         foreach ($list as $data) {
             $rows = [];
-            foreach ($rules as $rule) $rows[] = self::parseKeyDotValue($data, $rule);
+            foreach ($rules as $rule) {
+                $rows[] = self::parseKeyDotValue($data, $rule);
+            }
             fputcsv($handle, $rows);
         }
         if (is_resource($handle)) fclose($handle);
