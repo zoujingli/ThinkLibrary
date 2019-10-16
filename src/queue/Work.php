@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace library\process;
+namespace library\queue;
 
 use library\Process;
 use think\console\Command;

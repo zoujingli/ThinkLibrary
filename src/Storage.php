@@ -120,7 +120,7 @@ abstract class Storage
     {
         static $mimes = [];
         if (count($mimes) > 0) return $mimes;
-        return $mimes = include __DIR__ . '/storage/_mimes.php';
+        return $mimes = include __DIR__ . '/storage/bin/mimes.php';
     }
 
 }

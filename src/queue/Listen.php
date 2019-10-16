@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace library\process;
+namespace library\queue;
 
 use library\Process;
 use think\console\Command;
@@ -52,22 +52,23 @@ class Listen extends Command
             cli_set_process_title("ThinkAdmin " . Process::version() . " 异步任务监听主进程");
         }
         while (true) {
-            foreach (Db::name('SystemQueue')->where([['status', 'eq', '1'], ['time', '<=', time()]])->order('time asc')->select() as $item) {
+            $where = [['status', 'eq', '1'], ['time', '<=', time()]];
+            foreach (Db::name('SystemQueue')->where($where)->order('time asc')->select() as $vo) {
                 try {
-                    Db::name('SystemQueue')->where(['id' => $item['id']])->update(['status' => '2', 'start_at' => date('Y-m-d H:i:s')]);
-                    $command = Process::think("xtask:_work {$item['id']} -");
+                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '2', 'start_at' => date('Y-m-d H:i:s')]);
+                    $command = Process::think("xtask:_work {$vo['id']} -");
                     if (Process::query($command)) {
-                        $output->comment("处理任务的子进程已经存在 --> [{$item['id']}] {$item['title']}");
+                        $output->comment("任务正在执行 --> [{$vo['id']}] {$vo['title']}");
                     } else {
                         Process::create($command);
-                        $output->info("创建处理任务的子进程成功 --> [{$item['id']}] {$item['title']}");
+                        $output->info("任务创建成功 --> [{$vo['id']}] {$vo['title']}");
                     }
                 } catch (\Exception $e) {
-                    Db::name('SystemQueue')->where(['id' => $item['id']])->update(['status' => '4', 'desc' => $e->getMessage()]);
-                    $output->error("创建处理任务的子进程失败 --> [{$item['id']}] {$item['title']}，{$e->getMessage()}");
+                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '4', 'desc' => $e->getMessage()]);
+                    $output->error("任务创建失败 --> [{$vo['id']}] {$vo['title']}，{$e->getMessage()}");
                 }
             }
-            sleep(2);
+            sleep(1);
         }
     }
 
