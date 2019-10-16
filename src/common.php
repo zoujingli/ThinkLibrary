@@ -13,7 +13,6 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-use library\tools\Csrf;
 use library\tools\Data;
 use library\tools\Http;
 use think\facade\Cache;
@@ -59,8 +58,9 @@ if (!function_exists('sysconf')) {
      * @param string $name 参数名称
      * @param boolean $value 无值为获取
      * @return string|boolean
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     function sysconf($name, $value = null)
     {
@@ -191,32 +191,28 @@ if (!function_exists('safe_base64_decode')) {
     }
 }
 
-// 注册跨域中间键
-//app()->middleware->add(function (Request $request, \Closure $next, $header = []) {
-//    if (($origin = $request->header('origin', '*')) !== '*') {
-//        $header['Access-Control-Allow-Origin'] = $origin;
-//        $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
-//        $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
-//        $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
-//    }
-//    if ($request->isOptions()) {
-//        return Response::create()->code(204)->header($header);
-//    } else {
-//        return $next($request)->header($header);
-//    }
-//});
-//\think\facade\App::getInstance();
-//\think\facade\App::instance();
-// \think\facade\Console::setUser();
-// 注册系统指令
-//app()->console->addCommands([
-//    \library\process\Listen::class,
-//    \library\process\Query::class,
-//    \library\process\Start::class,
-//    \library\process\State::class,
-//    \library\process\Stop::class,
-//    \library\process\Work::class,
-//]);
+// 注册前置中间键
+$GLOBALS['ThinkAdminMiddleware'][] = function (Request $request, \Closure $next, $header = []) {
+    if (($origin = $request->header('origin', '*')) !== '*') {
+        $header['Access-Control-Allow-Origin'] = $origin;
+        $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
+        $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
+        $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
+    }
+    if ($request->isOptions()) {
+        return Response::create()->code(204)->header($header);
+    } else {
+        return $next($request)->header($header);
+    }
+};
+
+// 注册前置系统指令
+$GLOBALS['ThinkAdminConsole'][] = 'library\process\Listen';
+$GLOBALS['ThinkAdminConsole'][] = 'library\process\Query';
+$GLOBALS['ThinkAdminConsole'][] = 'library\process\Start';
+$GLOBALS['ThinkAdminConsole'][] = 'library\process\State';
+$GLOBALS['ThinkAdminConsole'][] = 'library\process\Stop';
+$GLOBALS['ThinkAdminConsole'][] = 'library\process\Work';
 
 // 动态加载模块配置
 //if (function_exists('Composer\Autoload\includeFile')) {
