@@ -45,8 +45,8 @@ abstract class Storage
 
     /**
      * 文件操作静态访问
-     * @param string $name
-     * @param array $arguments
+     * @param string $name 方法名称
+     * @param array $arguments 调用参数
      * @return mixed
      * @throws \Exception
      * @throws \think\db\exception\DataNotFoundException
