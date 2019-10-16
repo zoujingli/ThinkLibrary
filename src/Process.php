@@ -67,13 +67,13 @@ class Process
     {
         $list = [];
         if (self::iswin()) {
-            $result = str_replace('\\', '/', shell_exec('wmic process where name="php.exe" get processid,CommandLine'));
+            $result = strtr(shell_exec('wmic process where name="php.exe" get processid,CommandLine'), '\\', '/');
             foreach (explode("\n", $result) as $line) if (self::_issub($line, $command) !== false) {
                 $attr = explode(' ', self::_space($line));
                 $list[] = ['pid' => array_pop($attr), 'cmd' => join(' ', $attr)];
             }
         } else {
-            $result = str_replace('\\', '/', shell_exec('ps ax|grep -v grep|grep "' . $command . '"'));
+            $result = strtr(shell_exec('ps ax|grep -v grep|grep "' . $command . '"'), '\\', '/');
             foreach (explode("\n", $result) as $line) if (self::_issub($line, $command) !== false) {
                 $attr = explode(' ', self::_space($line));
                 list($pid) = [array_shift($attr), array_shift($attr), array_shift($attr), array_shift($attr)];
