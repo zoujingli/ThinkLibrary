@@ -30,7 +30,7 @@ class LocalStorage extends Storage
      */
     public function __construct()
     {
-        $this->prefix = rtrim(env('root_path'), '\\/');
+        $this->prefix = rtrim(app()->getRootPath(), '\\/');
     }
 
     /**
