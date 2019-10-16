@@ -215,9 +215,9 @@ $GLOBALS['ThinkAdminConsole'][] = 'library\process\Stop';
 $GLOBALS['ThinkAdminConsole'][] = 'library\process\Work';
 
 // 动态加载模块配置
-//if (function_exists('Composer\Autoload\includeFile')) {
-//    $root = rtrim(str_replace('\\', '/', app()->getAppPath()), '/');
-//    foreach (glob("{$root}/*/sys.php") as $file) {
-//        \Composer\Autoload\includeFile($file);
-//    }
-//}
+if (function_exists('Composer\Autoload\includeFile')) {
+    $root = rtrim(app()->getAppPath(), '\\/');
+    foreach (glob("{$root}/*/sys.php") as $file) {
+        \Composer\Autoload\includeFile($file);
+    }
+}
