@@ -33,7 +33,9 @@ class QiniuStorage extends Storage
     /**
      * QiniuStorage constructor.
      * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function __construct()
     {
@@ -182,6 +184,9 @@ class QiniuStorage extends Storage
      * 获取七牛云存储区域
      * @return string
      * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     private function getRegion()
     {
