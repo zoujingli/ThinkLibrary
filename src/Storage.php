@@ -44,23 +44,19 @@ abstract class Storage
     abstract public function info($name, $safe = false);
 
     /**
-     * 返回本地存储操作
-     * @return LocalStorage
+     * 文件操作静态访问
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
      * @throws \Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function LocalStorage()
+    public static function __callStatic($name, $arguments)
     {
-        return self::instance('local');
-    }
-
-    /**
-     * 返回七牛云存储操作
-     * @return QiniuStorage
-     * @throws \Exception
-     */
-    public static function QiniuStorage()
-    {
-        return self::instance('qiniu');
+        $class = self::instance(sysconf('storage_type'));
+        return call_user_func_array([$class, $name], $arguments);
     }
 
     /**
