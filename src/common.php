@@ -13,9 +13,10 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-use library\tools\Data;
-use library\tools\Http;
+use library\Http;
+use library\Tools;
 use think\facade\Cache;
+use think\facade\Db;
 use think\facade\Request;
 use think\Response;
 
@@ -70,7 +71,7 @@ if (!function_exists('sysconf')) {
         if ($value !== null) {
             Cache::tag('system')->rm("_sysconfig_{$key}");
             list($row, $data) = [['name' => $field, 'value' => $value], []];
-            return Data::save('SystemConfig', $row, 'name');
+            return Tools::dataSave('SystemConfig', $row, 'name');
         }
         if (empty($data)) {
             $data = Cache::tag('system')->get("_sysconfig_{$key}", []);
@@ -133,7 +134,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
-        return Data::save($dbQuery, $data, $key, $where);
+        return Tools::dataSave($dbQuery, $data, $key, $where);
     }
 }
 

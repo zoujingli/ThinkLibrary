@@ -15,7 +15,6 @@
 
 namespace library;
 
-
 /**
  * 进程基础管理器
  * Class Process
