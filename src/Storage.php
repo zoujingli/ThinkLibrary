@@ -118,7 +118,7 @@ abstract class Storage
      */
     public static function mimes()
     {
-        return include_once(__DIR__ . 'storage/_mimes.php');
+        return include __DIR__ . '/storage/_mimes.php';
     }
 
 }
