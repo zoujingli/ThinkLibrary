@@ -141,8 +141,7 @@ class File
         if (count($mimes) > 0) return $mimes;
         return $mimes = include __DIR__ . '/driver/_mime.php';
     }
-
-
+    
     /**
      * 获取文件相对名称
      * @param string $url 文件链接
