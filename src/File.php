@@ -137,7 +137,7 @@ class File
      */
     public static function mines()
     {
-        return include_once(__DIR__ . 'driver/_mime.php');
+        return include __DIR__ . '/driver/_mime.php';
     }
 
 
