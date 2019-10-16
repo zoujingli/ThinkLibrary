@@ -118,14 +118,7 @@ abstract class Storage
      */
     public static function mimes()
     {
-        $mimes = cache('all_ext_mime');
-        if (empty($mimes)) {
-            $content = file_get_contents('http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types');
-            preg_match_all('#^([^\s]{2,}?)\s+(.+?)$#ism', $content, $matches, PREG_SET_ORDER);
-            foreach ($matches as $match) foreach (explode(" ", $match[2]) as $ext) $mimes[$ext] = $match[1];
-            cache('all_ext_mime', $mimes);
-        }
-        return $mimes;
+        return include_once(__DIR__ . 'storage/_mimes.php');
     }
 
 }
