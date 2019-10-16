@@ -13,16 +13,18 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\tools;
+namespace library;
+
 
 use think\Db;
 use think\db\Query;
 
 /**
- * Class Data
- * @package library\tools
+ * 扩展工具包
+ * Class Tools
+ * @package library
  */
-class Data
+class Tools
 {
     /**
      * 通过百度快递100应用查询物流信息
@@ -104,7 +106,7 @@ class Data
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function save($dbQuery, $data, $key = 'id', $where = [])
+    public static function dataSave($dbQuery, $data, $key = 'id', $where = [])
     {
         $db = is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
         list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
@@ -129,7 +131,7 @@ class Data
      * @return boolean
      * @throws \think\db\exception\DbException
      */
-    public static function batchSave($dbQuery, $data, $key = 'id', $where = [])
+    public static function batchDataSave($dbQuery, $data, $key = 'id', $where = [])
     {
         list($case, $input) = [[], []];
         foreach ($data as $row) foreach ($row as $key => $value) {
@@ -203,6 +205,26 @@ class Data
     }
 
     /**
+     * 获取随机字符串编码
+     * @param integer $length 字符串长度
+     * @param integer $type 字符串类型(1纯数字,2纯字母,3数字字母)
+     * @return string
+     */
+    public static function randomCode($length = 10, $type = 1)
+    {
+        $numbs = '0123456789';
+        $chars = 'abcdefghijklmnopqrstuvwxyz';
+        if (intval($type) === 1) $chars = $numbs;
+        if (intval($type) === 2) $chars = "a{$chars}";
+        if (intval($type) === 3) $chars = "{$numbs}{$chars}";
+        $string = $chars[rand(1, strlen($chars) - 1)];
+        if (isset($chars)) while (strlen($string) < $length) {
+            $string .= $chars[rand(0, strlen($chars) - 1)];
+        }
+        return $string;
+    }
+
+    /**
      * 唯一数字编码
      * @param integer $length
      * @return string
@@ -229,36 +251,4 @@ class Data
         return $string;
     }
 
-    /**
-     * 获取随机字符串编码
-     * @param integer $length 字符串长度
-     * @param integer $type 字符串类型(1纯数字,2纯字母,3数字字母)
-     * @return string
-     */
-    public static function randomCode($length = 10, $type = 1)
-    {
-        $numbs = '0123456789';
-        $chars = 'abcdefghijklmnopqrstuvwxyz';
-        if (intval($type) === 1) $chars = $numbs;
-        if (intval($type) === 2) $chars = "a{$chars}";
-        if (intval($type) === 3) $chars = "{$numbs}{$chars}";
-        $string = $chars[rand(1, strlen($chars) - 1)];
-        if (isset($chars)) while (strlen($string) < $length) {
-            $string .= $chars[rand(0, strlen($chars) - 1)];
-        }
-        return $string;
-    }
-
-    /**
-     * 文件大小显示转换
-     * @param integer $size 文件大小
-     * @param integer $deci 小数位数
-     * @return string
-     */
-    public static function toFileSize($size, $deci = 2)
-    {
-        list($pos, $map) = [0, ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB']];
-        while ($size >= 1024 && $pos < 6) if (++$pos) $size /= 1024;
-        return round($size, $deci) . ' ' . $map[$pos];
-    }
 }

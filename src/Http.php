@@ -13,20 +13,20 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\tools;
+namespace library;
 
 /**
  * CURL数据请求管理器
  * Class Http
- * @package library\tools
+ * @package library
  */
 class Http
 {
     /**
      * 以get模拟网络请求
-     * @param string $url HTTP请求URL地址
-     * @param array $query GET请求参数
-     * @param array $options CURL参数
+     * @param string $url HTTP请求地址
+     * @param array|string $query GET请求参数
+     * @param array $options CURL请求参数
      * @return boolean|string
      */
     public static function get($url, $query = [], $options = [])
@@ -36,10 +36,10 @@ class Http
     }
 
     /**
-     * 以get模拟网络请求
-     * @param string $url HTTP请求URL地址
+     * 以post模拟网络请求
+     * @param string $url HTTP请求地址
      * @param array|string $data POST请求数据
-     * @param array $options CURL参数
+     * @param array $options CURL请求参数
      * @return boolean|string
      */
     public static function post($url, $data = [], $options = [])
@@ -139,5 +139,4 @@ class Http
         ];
         return $userAgents[array_rand($userAgents, 1)];
     }
-
 }
