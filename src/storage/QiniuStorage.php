@@ -15,8 +15,9 @@
 
 namespace library\storage;
 
+
+use library\Http;
 use library\Storage;
-use library\tools\Http;
 
 /**
  * 七牛云存储支持
@@ -59,6 +60,9 @@ class QiniuStorage extends Storage
      * @param boolean $safe 安全模式
      * @return array
      * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function set($name, $content, $safe = false)
     {
