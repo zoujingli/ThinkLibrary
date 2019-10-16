@@ -167,6 +167,30 @@ if (!function_exists('decode')) {
     }
 }
 
+if (!function_exists('safe_base64_encode')) {
+    /**
+     * URL安全BASE64编码
+     * @param string $content
+     * @return string
+     */
+    function safe_base64_encode($content)
+    {
+        return rtrim(strtr(base64_encode($content), '+/', '-_'), '=');
+    }
+}
+
+if (!function_exists('safe_base64_decode')) {
+    /**
+     * URL安全BASE64解码
+     * @param string $content
+     * @return string
+     */
+    function safe_base64_decode($content)
+    {
+        return base64_decode(str_pad(strtr($content, '-_', '+/'), strlen($content) % 4, '=', STR_PAD_RIGHT));
+    }
+}
+
 // 注册跨域中间键
 //app()->middleware->add(function (Request $request, \Closure $next, $header = []) {
 //    if (($origin = $request->header('origin', '*')) !== '*') {
