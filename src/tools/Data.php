@@ -25,6 +25,75 @@ use think\db\Query;
 class Data
 {
     /**
+     * 通过百度快递100应用查询物流信息
+     * @param string $code 快递公司编辑
+     * @param string $number 快递物流编号
+     * @return array
+     */
+    public static function express($code, $number)
+    {
+        if (in_array($code, ['debangkuaidi'])) $code = 'debangwuliu';
+        list($microtime, $clientIp, $list) = [time(), request()->ip(), []];
+        $options = ['header' => ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $clientIp, 'X-FORWARDED-FOR' => $clientIp], 'cookie_file' => env('runtime_path') . 'temp/cookie'];
+        $location = "https://sp0.baidu.com/9_Q4sjW91Qh3otqbppnN2DJv/pae/channel/data/asyncqury?cb=callback&appid=4001&com={$code}&nu={$number}&vcode=&token=&_={$microtime}";
+        $result = json_decode(str_replace('/**/callback(', '', trim(http_get($location, [], $options), ')')), true);
+        if (empty($result['data']['info']['context'])) { // 第一次可能失败，这里尝试第二次查询
+            $result = json_decode(str_replace('/**/callback(', '', trim(http_get($location, [], $options), ')')), true);
+            if (empty($result['data']['info']['context'])) {
+                return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $list];
+            }
+        }
+        foreach ($result['data']['info']['context'] as $vo) $list[] = [
+            'time' => date('Y-m-d H:i:s', $vo['time']), 'ftime' => date('Y-m-d H:i:s', $vo['time']), 'context' => $vo['desc'],
+        ];
+        return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $list];
+    }
+
+    /**
+     * 设置写入CSV文件头部
+     * @param string $filename 导出文件
+     * @param array $headers CSV 头部(一级数组)
+     */
+    public static function setCsvHeader($filename, array $headers)
+    {
+        header('Content-Type: application/octet-stream');
+        header("Content-Disposition: attachment; filename=" . iconv('utf-8', 'gbk//TRANSLIT', $filename));
+        $handle = fopen('php://output', 'w');
+        foreach ($headers as $key => $value) $headers[$key] = iconv("utf-8", "gbk//TRANSLIT", $value);
+        fputcsv($handle, $headers);
+        if (is_resource($handle)) fclose($handle);
+    }
+
+    /**
+     * 设置写入CSV文件内容
+     * @param array $list 数据列表(二维数组或多维数组)
+     * @param array $rules 数据规则(一维数组)
+     */
+    public static function setCsvBody(array $list, array $rules)
+    {
+        $handle = fopen('php://output', 'w');
+        foreach ($list as $data) {
+            $rows = [];
+            foreach ($rules as $rule) $rows[] = self::parseKeyDotValue($data, $rule);
+            fputcsv($handle, $rows);
+        }
+        if (is_resource($handle)) fclose($handle);
+    }
+
+    /**
+     * 根据数组key查询(可带点规则)
+     * @param array $data 数据
+     * @param string $rule 规则，如: order.order_no
+     * @return mixed
+     */
+    public static function parseKeyDotValue(array $data, $rule)
+    {
+        list($temp, $attr) = [$data, explode('.', trim($rule, '.'))];
+        while ($key = array_shift($attr)) $temp = isset($temp[$key]) ? $temp[$key] : $temp;
+        return (is_string($temp) || is_numeric($temp)) ? @iconv('utf-8', 'gbk//TRANSLIT', "{$temp}") : '';
+    }
+
+    /**
      * 数据增量保存
      * @param Query|string $dbQuery 数据查询对象
      * @param array $data 需要保存或更新的数据
