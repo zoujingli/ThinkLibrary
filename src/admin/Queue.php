@@ -68,7 +68,7 @@ abstract class Queue
     }
 
     /**
-     * 执行任务内容
+     * 执行任务处理
      * @param Input $input 输入对象
      * @param Output $output 输出对象
      * @param array $data 任务参数
