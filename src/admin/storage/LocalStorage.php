@@ -69,7 +69,7 @@ class LocalStorage extends Storage
      * 删除存储的文件
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @return boolean|null
+     * @return boolean
      */
     public function del($name, $safe = false)
     {
@@ -127,7 +127,7 @@ class LocalStorage extends Storage
         return $this->has($name, $safe) ? [
             'file' => $this->path($name, $safe), 'url' => $this->url($name, $safe),
             'hash' => md5_file($this->path($name, $safe)), 'key' => "upload/{$name}",
-        ] : null;
+        ] : [];
     }
 
 }

@@ -152,13 +152,13 @@ class QiniuStorage extends Storage
      * 获取文件存储信息
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @return array|null
+     * @return array
      */
     public function info($name, $safe = false)
     {
         list($EncodedEntryURI, $AccessToken) = $this->getAccessToken($name);
         $data = json_decode(Http::post("http://rs.qiniu.com/stat/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
-        if (isset($data['md5'])) return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name] : null;
+        if (isset($data['md5'])) return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name] : [];
     }
 
     /**

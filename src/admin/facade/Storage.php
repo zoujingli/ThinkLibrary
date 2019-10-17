@@ -22,13 +22,13 @@ use think\Facade;
  * @package think\admin\facade
  * @see \think\admin\Storage
  * @mixin \think\admin\Storage
- * @method string get($name, $safe = false) static 读取文件
- * @method string set($name, $content, $safe = false) static 文件储存
- * @method boolean|null del($name, $safe = false) static 删除存储
- * @method boolean has($name, $safe = false) static 检查文件是否存在
+ * @method array info($name, $safe = false) static 文件存储信息
+ * @method string get($name, $safe = false) static 读取文件内容
  * @method string url($name, $safe = false) static 获取文件地址
+ * @method string set($name, $content, $safe = false) static 文件储存
  * @method string path($name, $safe = false) static 文件存储路径
- * @method array|null info($name, $safe = false) static 文件存储信息
+ * @method boolean del($name, $safe = false) static 删除存储
+ * @method boolean has($name, $safe = false) static 检查文件是否存在
  */
 class Storage extends Facade
 {
