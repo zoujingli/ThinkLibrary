@@ -20,7 +20,7 @@ use think\admin\Storage;
 /**
  * 本地服务文件存储支持
  * Class LocalStorage
- * @package library\storage
+ * @package think\admin\storage
  */
 class LocalStorage extends Storage
 {

@@ -21,7 +21,7 @@ use think\admin\Storage;
 /**
  * 七牛云存储支持
  * Class QiniuStorage
- * @package library\storage
+ * @package think\admin\storage
  */
 class QiniuStorage extends Storage
 {

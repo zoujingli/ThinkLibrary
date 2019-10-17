@@ -15,48 +15,42 @@
 
 namespace think\admin;
 
-use library\storage\LocalStorage;
-use library\storage\QiniuStorage;
+use think\admin\storage\LocalStorage;
+use think\admin\storage\QiniuStorage;
 
 /**
  * 文件存储引擎管理
  * Class Storage
  * @package library
+ * @see LocalStorage
  */
-abstract class Storage
+class Storage
 {
+    /**
+     * 存储域名前缀
+     * @var string
+     */
     protected $prefix;
 
-    static protected $object = [];
-
-    abstract public function set($name, $content, $safe = false);
-
-    abstract public function get($name, $safe = false);
-
-    abstract public function del($name, $safe = false);
-
-    abstract public function has($name, $safe = false);
-
-    abstract public function url($name, $safe = false);
-
-    abstract public function path($name, $safe = false);
-
-    abstract public function info($name, $safe = false);
+    /**
+     * 存储对象缓存
+     * @var array
+     */
+    protected static $object = [];
 
     /**
-     * 文件操作静态访问
-     * @param string $name 方法名称
-     * @param array $arguments 调用参数
+     * @param string $method
+     * @param array $args
      * @return mixed
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function __callStatic($name, $arguments)
+    public function __call($method, $args)
     {
         $class = self::instance(sysconf('storage_type'));
-        return call_user_func_array([$class, $name], $arguments);
+        return call_user_func_array([$class, $method], $args);
     }
 
     /**
@@ -78,10 +72,10 @@ abstract class Storage
 
     /**
      * 获取文件相对名称
-     * @param string $url 文件链接
-     * @param string $ext 文件后缀
-     * @param string $pre 文件前缀（需要以/结尾）
-     * @param string $fun 文件名生成方法
+     * @param string $url 文件访问链接
+     * @param string $ext 文件后缀名称
+     * @param string $pre 文件存储前缀
+     * @param string $fun 名称规则方法
      * @return string
      */
     public static function name($url, $ext = '', $pre = '', $fun = 'md5')
