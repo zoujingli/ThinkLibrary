@@ -67,6 +67,13 @@ abstract class Queue
         return Db::name('SystemQueue')->insert($queue) !== false;
     }
 
-    abstract function execute(Input $input, Output $output, array $data);
+    /**
+     * 执行任务内容
+     * @param Input $input 输入对象
+     * @param Output $output 输出对象
+     * @param array $data 任务参数
+     * @return mixed
+     */
+    abstract function execute(Input $input, Output $output, array $data = []);
 
 }
