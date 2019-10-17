@@ -62,7 +62,7 @@ abstract class Queue
         if (empty($queue)) return false;
         $queue['time'] = time() + $wait;
         $queue['times'] = $queue['times'] + 1;
-        $queue['title'] .= " - 来自任务{$this->jobid} 重发任务";
+        $queue['title'] .= " - 来自任务{$this->jobid}重发任务";
         unset($queue['id'], $queue['create_at'], $queue['desc']);
         return Db::name('SystemQueue')->insert($queue) !== false;
     }
