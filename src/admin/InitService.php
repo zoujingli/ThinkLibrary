@@ -29,30 +29,27 @@ class InitService extends BaseService
     {
         // 注册访问跨域中间键
         $this->app->middleware->add(function (Request $request, \Closure $next, $header = []) {
-            dump(func_get_args());
+            if (($origin = $request->header('origin', '*')) !== '*') {
+                $header['Access-Control-Allow-Origin'] = $origin;
+                $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
+                $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
+                $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
+            }
+            if ($request->isOptions()) {
+                return response()->code(204)->header($header);
+            } else {
+                return $next($request)->header($header);
+            }
         });
-//        $this->app->middleware->add(function (Request $request, \Closure $next, $header = []) {
-//            if (($origin = $request->header('origin', '*')) !== '*') {
-//                $header['Access-Control-Allow-Origin'] = $origin;
-//                $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
-//                $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
-//                $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
-//            }
-//            if ($request->isOptions()) {
-//                return response()->code(204)->header($header);
-//            } else {
-//                return $next($request)->header($header);
-//            }
-//        });
         // 注册系统任务指令
-//        $this->app->console->addCommands([
-//            'library\process\Work',
-//            'library\process\Stop',
-//            'library\process\State',
-//            'library\process\Start',
-//            'library\process\Query',
-//            'library\process\Listen',
-//        ]);
+        $this->app->console->addCommands([
+            'library\process\Work',
+            'library\process\Stop',
+            'library\process\State',
+            'library\process\Start',
+            'library\process\Query',
+            'library\process\Listen',
+        ]);
 //        // 动态加载模块配置
 ////        if (function_exists('Composer\Autoload\includeFile')) {
 ////            $root = rtrim(app()->getAppPath(), '\\/');
