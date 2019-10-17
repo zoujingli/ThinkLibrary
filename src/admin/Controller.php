@@ -203,7 +203,7 @@ class Controller extends \stdClass
      * 快捷表单逻辑器
      * @param string|\think\db\Query $dbQuery
      * @param string $tpl 模板名称
-     * @param string $pkField 指定数据对象主键
+     * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
      * @return array|boolean
@@ -211,9 +211,9 @@ class Controller extends \stdClass
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function _form($dbQuery, $tpl = '', $pkField = '', $where = [], $data = [])
+    protected function _form($dbQuery, $tpl = '', $field = '', $where = [], $data = [])
     {
-        return (new FormHelper($this, $dbQuery, $tpl, $pkField, $where, $data))->init();
+        return (new FormHelper($this, $dbQuery, $tpl, $field, $where, $data))->init();
     }
 
     /**
@@ -233,14 +233,14 @@ class Controller extends \stdClass
     /**
      * 快捷删除逻辑器
      * @param string|\think\db\Query $dbQuery
-     * @param string $pkField 数据对象主键
+     * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean|null
      * @throws \think\db\exception\DbException
      */
-    protected function _delete($dbQuery, $pkField = '', $where = [])
+    protected function _delete($dbQuery, $field = '', $where = [])
     {
-        return (new DeleteHelper($this, $dbQuery, $pkField, $where))->init();
+        return (new DeleteHelper($this, $dbQuery, $field, $where))->init();
     }
 
 }
