@@ -155,7 +155,7 @@ class Controller extends \stdClass
     {
         if (is_callable($name)) return call_user_func($name, $this, $one, $two);
         foreach ([$name, "_{$this->request->action()}{$name}"] as $method) {
-            if (method_exists($this, $method)) if (false === $this->$method($one, $two)) {
+            if (method_exists($this, $method) && false === $this->$method($one, $two)) {
                 return false;
             }
         }
