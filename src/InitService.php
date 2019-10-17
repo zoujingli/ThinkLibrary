@@ -42,21 +42,21 @@ class InitService extends BaseService
             }
         });
         // 注册系统任务指令
-        $this->app->console->addCommands([
-            'think\admin\queue\Work',
-            'think\admin\queue\Stop',
-            'think\admin\queue\State',
-            'think\admin\queue\Start',
-            'think\admin\queue\Query',
-            'think\admin\queue\Listen',
-        ]);
+//        $this->app->console->addCommands([
+//            'think\admin\queue\Work',
+//            'think\admin\queue\Stop',
+//            'think\admin\queue\State',
+//            'think\admin\queue\Start',
+//            'think\admin\queue\Query',
+//            'think\admin\queue\Listen',
+//        ]);
 //        // 动态加载模块配置
-////        if (function_exists('Composer\Autoload\includeFile')) {
-////            $root = rtrim(app()->getAppPath(), '\\/');
-////            foreach (glob("{$root}/*/sys.php") as $file) {
-////                \Composer\Autoload\includeFile($file);
-////            }
-////        }
+//        if (function_exists('Composer\Autoload\includeFile')) {
+//            $root = rtrim(app()->getAppPath(), '\\/');
+//            foreach (glob("{$root}/*/sys.php") as $file) {
+//                \Composer\Autoload\includeFile($file);
+//            }
+//        }
     }
 
 }

@@ -20,11 +20,11 @@
   },
   "autoload": {
     "files": [
-      "src/admin/common.php"
+      "src/common.php"
     ],
     "psr-4": {
       "app\\": "app",
-      "think\\admin\\": "src/admin"
+      "think\\admin\\": "src"
     }
   },
   "extra": {
