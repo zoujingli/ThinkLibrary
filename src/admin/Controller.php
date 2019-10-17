@@ -202,7 +202,7 @@ class Controller extends \stdClass
     /**
      * 快捷表单逻辑器
      * @param string|\think\db\Query $dbQuery
-     * @param string $tpl 模板名称
+     * @param string $template 模板名称
      * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
@@ -211,9 +211,9 @@ class Controller extends \stdClass
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function _form($dbQuery, $tpl = '', $field = '', $where = [], $data = [])
+    protected function _form($dbQuery, $template = '', $field = '', $where = [], $data = [])
     {
-        return (new FormHelper($this, $dbQuery, $tpl, $field, $where, $data))->init();
+        return (new FormHelper($this, $dbQuery, $template, $field, $where, $data))->init();
     }
 
     /**
