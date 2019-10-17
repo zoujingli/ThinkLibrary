@@ -25,13 +25,6 @@ use think\db\Query;
  */
 class FormHelper extends Helper
 {
-
-    /**
-     * 表单模板文件
-     * @var string
-     */
-    protected $tpl;
-
     /**
      * 表单扩展数据
      * @var array
@@ -57,6 +50,12 @@ class FormHelper extends Helper
     protected $pkValue;
 
     /**
+     * 表单模板文件
+     * @var string
+     */
+    protected $template;
+
+    /**
      * Form constructor.
      * @param Controller $controller
      * @param string|Query $dbQuery
@@ -69,7 +68,7 @@ class FormHelper extends Helper
     {
         $this->controller = $controller;
         $this->query = $this->buildQuery($dbQuery);
-        list($this->tpl, $this->where, $this->data) = [$template, $where, $data];
+        list($this->template, $this->where, $this->data) = [$template, $where, $data];
         $this->pkField = empty($field) ? ($this->query->getPk() ? $this->query->getPk() : 'id') : $field;;
         $this->pkValue = input($this->pkField, isset($data[$this->pkField]) ? $data[$this->pkField] : null);
     }
@@ -92,7 +91,7 @@ class FormHelper extends Helper
             }
             $data = array_merge($data, $this->data);
             if (false !== $this->controller->callback('_form_filter', $data)) {
-                return $this->controller->fetch($this->tpl, ['vo' => $data]);
+                return $this->controller->fetch($this->template, ['vo' => $data]);
             }
             return $data;
         }
