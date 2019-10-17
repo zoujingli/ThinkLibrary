@@ -15,7 +15,7 @@
 
 namespace think\admin\queue;
 
-use library\Process;
+use think\admin\Process;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
