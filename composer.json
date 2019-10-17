@@ -4,21 +4,45 @@
   "license": "MIT",
   "homepage": "http://framework.thinkadmin.top",
   "description": "ThinkPHP v6.0 Basic Development Library",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
   "require": {
-    "php": ">=5.4",
+    "php": ">=7.1.0",
     "ext-json": "*",
     "ext-curl": "*",
     "ext-iconv": "*",
-    "ext-openssl": "*",
-    "topthink/framework": "6.0.x-dev"
+    "topthink/framework": "6.0.x-dev",
+    "topthink/think-trace": "dev-master"
   },
   "autoload": {
     "files": [
-      "src/common.php"
+      "src/admin/common.php"
     ],
     "psr-4": {
-      "library\\": "src"
+      "app\\": "app",
+      "think\\admin\\": "src/admin"
     }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "think\\admin\\InitService"
+      ]
+    }
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "preferred-install": "dist"
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "@php think service:discover",
+      "@php think vendor:publish"
+    ]
   },
   "repositories": {
     "packagist": {

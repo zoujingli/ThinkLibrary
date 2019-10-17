@@ -13,17 +13,23 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\helper;
+namespace think\admin\helper;
 
-use library\Controller;
+use think\admin\Controller;
+use think\db\Query;
 
 /**
- * 通用删除管理器
- * Class Delete
+ * 数据更新管理器
+ * Class Save
  * @package library\logic
  */
-class DeleteHelper extends Helper
+class SaveHelper extends Helper
 {
+    /**
+     * 表单扩展数据
+     * @var array
+     */
+    protected $data;
 
     /**
      * 表单额外更新条件
@@ -33,7 +39,7 @@ class DeleteHelper extends Helper
 
     /**
      * 数据对象主键名称
-     * @var string
+     * @var array|string
      */
     protected $pkField;
 
@@ -44,51 +50,50 @@ class DeleteHelper extends Helper
     protected $pkValue;
 
     /**
-     * Delete constructor.
-     * @param string|QueryHelper $dbQuery
-     * @param string $pkField 数据对象主键
+     * Save constructor.
+     * @param Controller $controller
+     * @param string|Query $dbQuery
+     * @param array $data 表单扩展数据
+     * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      */
-    public function __construct($dbQuery, $pkField = '', $where = [])
+    public function __construct(Controller $controller, $dbQuery, $data = [], $field = '', $where = [])
     {
+        $this->controller = $controller;
         $this->where = $where;
         $this->query = $this->buildQuery($dbQuery);
-        $this->pkField = empty($pkField) ? $this->query->getPk() : $pkField;
-        $this->pkValue = request()->post($this->pkField, null);
+        $this->pkField = empty($field) ? $this->query->getPk() : $field;
+        $this->data = empty($data) ? $this->controller->request->post() : $data;
+        $this->pkValue = $this->controller->request->post($this->pkField, null);
     }
 
     /**
      * 逻辑器初始化
-     * @param Controller $controller
-     * @return boolean|null
+     * @return boolean
      * @throws \think\db\exception\DbException
      */
-    public function init(Controller $controller)
+    public function init()
     {
-        $this->controller = $controller;
         // 主键限制处理
         if (!isset($this->where[$this->pkField]) && is_string($this->pkValue)) {
             $this->query->whereIn($this->pkField, explode(',', $this->pkValue));
+            if (isset($this->data)) unset($this->data[$this->pkField]);
         }
         // 前置回调处理
-        if (false === $this->controller->callback('_delete_filter', $this->query, $where)) {
-            return null;
+        if (false === $this->controller->callback('_save_filter', $this->query, $this->data)) {
+            return false;
         }
-        // 执行删除操作
-        if (method_exists($this->query, 'getTableFields') && in_array('is_deleted', $this->query->getTableFields())) {
-            $result = $this->query->where($this->where)->update(['is_deleted' => '1']);
-        } else {
-            $result = $this->query->where($this->where)->delete();
-        }
+        // 执行更新操作
+        $result = $this->query->where($this->where)->update($this->data) !== false;
         // 结果回调处理
-        if (false === $this->controller->callback('_delete_result', $result)) {
+        if (false === $this->controller->callback('_save_result', $result)) {
             return $result;
         }
         // 回复前端结果
         if ($result !== false) {
-            $this->controller->success('数据删除成功！', '');
+            $this->controller->success('数据更新成功!', '');
         } else {
-            $this->controller->error('数据删除失败, 请稍候再试！');
+            $this->controller->error('数据更新失败, 请稍候再试!');
         }
     }
 

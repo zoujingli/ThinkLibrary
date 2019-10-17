@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace library;
+namespace think\admin;
 
 use think\console\Input;
 use think\console\Output;

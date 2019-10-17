@@ -13,14 +13,15 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library;
+namespace think\admin;
 
-use library\helper\CsrfHelper;
-use library\helper\DeleteHelper;
-use library\helper\FormHelper;
-use library\helper\PageHelper;
-use library\helper\QueryHelper;
-use library\helper\SaveHelper;
+use think\admin\helper\CsrfHelper;
+use think\admin\helper\DeleteHelper;
+use think\admin\helper\FormHelper;
+use think\admin\helper\PageHelper;
+use think\admin\helper\QueryHelper;
+use think\admin\helper\SaveHelper;
+use think\App;
 use think\exception\HttpResponseException;
 
 /**
@@ -30,6 +31,12 @@ use think\exception\HttpResponseException;
  */
 class Controller extends \stdClass
 {
+
+    /**
+     * 当前应用对象
+     * @var App
+     */
+    public $app;
 
     /**
      * 当前请求对象
@@ -51,26 +58,23 @@ class Controller extends \stdClass
 
     /**
      * Controller constructor.
+     * @param App $app
      */
-    public function __construct()
+    public function __construct(App $app)
     {
-        $this->request = request();
+        $this->app = $app;
+        $this->request = $this->app->request;
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
+        $this->initialize();
     }
 
     /**
-     * Controller destruct
+     * 控制器初始化
      */
-    public function __destruct()
+    protected function initialize()
     {
-        $this->request = request();
-        $action = $this->request->action();
-        $method = strtolower($this->request->method());
-        if (method_exists($this, $callback = "_{$action}_{$method}")) {
-            call_user_func_array([$this, $callback], $this->request->route());
-        }
     }
 
     /**
@@ -94,7 +98,7 @@ class Controller extends \stdClass
     public function success($info, $data = [], $code = 1)
     {
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if ($this->csrf_state) (new CsrfHelper())->clear();
+        if ($this->csrf_state) (new CsrfHelper($this))->clear();
         throw new HttpResponseException(json($result));
     }
 
@@ -118,7 +122,7 @@ class Controller extends \stdClass
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
         if ($this->csrf_state) {
-            (new CsrfHelper())->fetchTemplate($tpl, $vars, $node);
+            (new CsrfHelper($this))->fetchTemplate($tpl, $vars, $node);
         } else {
             throw new HttpResponseException(view($tpl, $vars));
         }
@@ -165,7 +169,7 @@ class Controller extends \stdClass
      */
     protected function _csrf($return = false)
     {
-        return (new CsrfHelper())->init($this, $return);
+        return (new CsrfHelper($this))->init($return);
     }
 
     /**
@@ -175,7 +179,7 @@ class Controller extends \stdClass
      */
     protected function _query($dbQuery)
     {
-        return (new QueryHelper($dbQuery))->init($this);
+        return (new QueryHelper($this, $dbQuery))->init();
     }
 
     /**
@@ -186,13 +190,13 @@ class Controller extends \stdClass
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @return array
-     * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     protected function _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
-        return (new PageHelper($dbQuery, $isPage, $isDisplay, $total, $limit))->init($this);
+        return (new PageHelper($this, $dbQuery, $isPage, $isDisplay, $total, $limit))->init();
     }
 
     /**
@@ -209,7 +213,7 @@ class Controller extends \stdClass
      */
     protected function _form($dbQuery, $tpl = '', $pkField = '', $where = [], $data = [])
     {
-        return (new FormHelper($dbQuery, $tpl, $pkField, $where, $data))->init($this);
+        return (new FormHelper($this, $dbQuery, $tpl, $pkField, $where, $data))->init();
     }
 
     /**
@@ -223,7 +227,7 @@ class Controller extends \stdClass
      */
     protected function _save($dbQuery, $data = [], $field = '', $where = [])
     {
-        return (new SaveHelper($dbQuery, $data, $field, $where))->init($this);
+        return (new SaveHelper($this, $dbQuery, $data, $field, $where))->init();
     }
 
     /**
@@ -236,7 +240,7 @@ class Controller extends \stdClass
      */
     protected function _delete($dbQuery, $pkField = '', $where = [])
     {
-        return (new DeleteHelper($dbQuery, $pkField, $where))->init($this);
+        return (new DeleteHelper($this, $dbQuery, $pkField, $where))->init();
     }
 
 }

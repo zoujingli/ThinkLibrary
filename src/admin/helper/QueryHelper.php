@@ -13,9 +13,9 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\helper;
+namespace think\admin\helper;
 
-use library\Controller;
+use think\admin\Controller;
 
 /**
  * 搜索条件处理器
@@ -29,10 +29,12 @@ class QueryHelper extends Helper
 
     /**
      * Query constructor.
+     * @param Controller $controller
      * @param \think\db\Query|string $dbQuery
      */
-    public function __construct($dbQuery)
+    public function __construct(Controller $controller, $dbQuery)
     {
+        $this->controller = $controller;
         $this->query = $this->buildQuery($dbQuery);
     }
 
@@ -52,12 +54,10 @@ class QueryHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param Controller $controller
      * @return $this
      */
-    public function init(Controller $controller)
+    public function init()
     {
-        $this->controller = $controller;
         return $this;
     }
 
@@ -224,12 +224,12 @@ class QueryHelper extends Helper
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @return mixed
-     * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function page($isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
-        return (new PageHelper($this->query, $isPage, $isDisplay, $total, $limit))->init($this->controller);
+        return (new PageHelper($this->controller, $this->query, $isPage, $isDisplay, $total, $limit))->init();
     }
 }

@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library;
+namespace think\admin;
 
 use library\storage\LocalStorage;
 use library\storage\QiniuStorage;

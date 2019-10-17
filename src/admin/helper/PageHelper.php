@@ -13,9 +13,9 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\helper;
+namespace think\admin\helper;
 
-use library\Controller;
+use think\admin\Controller;
 use think\Db;
 
 /**
@@ -51,14 +51,16 @@ class PageHelper extends Helper
 
     /**
      * Page constructor.
+     * @param Controller $controller
      * @param string $dbQuery 数据库查询对象
      * @param boolean $isPage 是否启用分页
      * @param boolean $isDisplay 是否渲染模板
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      */
-    public function __construct($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
+    public function __construct(Controller $controller, $dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
+        $this->controller = $controller;
         $this->total = $total;
         $this->limit = $limit;
         $this->isPage = $isPage;
@@ -68,17 +70,13 @@ class PageHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param Controller $controller
      * @return array
-     * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
      */
-    public function init(Controller $controller)
+    public function init()
     {
-        $this->controller = $controller;
         // 列表排序操作
         if ($this->controller->request->isPost()) $this->_sort();
         // 未配置 order 规则时自动按 sort 字段排序

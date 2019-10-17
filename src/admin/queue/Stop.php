@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace library\queue;
+namespace think\admin\queue;
 
 use library\Process;
 use think\console\Command;
@@ -21,32 +21,34 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 查询正在执行中的进程PID信息
- * Class Query
- * @package library\process
+ * 平滑停止异步任务守护的主进程
+ * Class Stop
+ * @package app\admin\queue\task
  */
-class Query extends Command
+class Stop extends Command
 {
+
     /**
      * 指令属性配置
      */
     protected function configure()
     {
-        $this->setName('xtask:query')->setDescription('[控制]查询正在执行的所有任务进程');
+        $this->setName('xtask:stop')->setDescription('[控制]平滑停止所有的异步任务进程');
     }
 
     /**
-     * 执行相关进程查询
+     * 停止所有任务执行
      * @param Input $input
      * @param Output $output
      */
     protected function execute(Input $input, Output $output)
     {
-        $result = Process::query(Process::think("xtask:"));
-        if (count($result) > 0) foreach ($result as $item) {
-            $output->writeln("{$item['pid']}\t{$item['cmd']}");
-        } else {
-            $output->writeln('没有查询到相关任务进程');
+        $command = Process::think('xtask:');
+        if (count($result = Process::query($command)) < 1) {
+            $output->writeln("没有需要结束的任务进程哦！");
+        } else foreach ($result as $item) {
+            Process::close($item['pid']);
+            $output->writeln("发送结束任务进程{$item['pid']}指令成功！");
         }
     }
 }

@@ -13,10 +13,10 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\storage;
+namespace think\admin\storage;
 
-use library\Http;
-use library\Storage;
+use think\admin\Http;
+use think\admin\Storage;
 
 /**
  * 七牛云存储支持

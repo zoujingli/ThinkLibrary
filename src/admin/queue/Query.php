@@ -13,41 +13,40 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace library\queue;
+namespace think\admin\queue;
 
 use library\Process;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
 
-
 /**
- * 查看异步任务监听的主进程状态
- * Class State
+ * 查询正在执行中的进程PID信息
+ * Class Query
  * @package library\process
  */
-class State extends Command
+class Query extends Command
 {
     /**
      * 指令属性配置
      */
     protected function configure()
     {
-        $this->setName('xtask:state')->setDescription('[控制]查看异步任务监听主进程状态');
+        $this->setName('xtask:query')->setDescription('[控制]查询正在执行的所有任务进程');
     }
 
     /**
-     * 指令执行状态
+     * 执行相关进程查询
      * @param Input $input
      * @param Output $output
      */
     protected function execute(Input $input, Output $output)
     {
-        $command = Process::think('xtask:listen');
-        if (count($result = Process::query($command)) > 0) {
-            $output->info("异步任务监听主进程{$result[0]['pid']}正在运行...");
+        $result = Process::query(Process::think("xtask:"));
+        if (count($result) > 0) foreach ($result as $item) {
+            $output->writeln("{$item['pid']}\t{$item['cmd']}");
         } else {
-            $output->error("异步任务监听主进程没有运行哦!");
+            $output->writeln('没有查询到相关任务进程');
         }
     }
 }

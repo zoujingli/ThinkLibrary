@@ -13,10 +13,9 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\helper;
+namespace think\admin\helper;
 
-use library\Controller;
-use library\tools\Data;
+use think\admin\Controller;
 use think\db\Query;
 
 /**
@@ -26,6 +25,7 @@ use think\db\Query;
  */
 class FormHelper extends Helper
 {
+
     /**
      * 表单模板文件
      * @var string
@@ -58,14 +58,16 @@ class FormHelper extends Helper
 
     /**
      * Form constructor.
-     * @param string|QueryHelper $dbQuery
+     * @param Controller $controller
+     * @param string|Query $dbQuery
      * @param string $template 模板名称
      * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
      */
-    public function __construct($dbQuery, $template = '', $field = '', $where = [], $data = [])
+    public function __construct(Controller $controller, $dbQuery, $template = '', $field = '', $where = [], $data = [])
     {
+        $this->controller = $controller;
         $this->query = $this->buildQuery($dbQuery);
         list($this->tpl, $this->where, $this->data) = [$template, $where, $data];
         $this->pkField = empty($field) ? ($this->query->getPk() ? $this->query->getPk() : 'id') : $field;;
@@ -74,16 +76,14 @@ class FormHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param Controller $controller
      * @param array $data
      * @return array|boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function init(Controller $controller, $data = [])
+    public function init($data = [])
     {
-        $this->controller = $controller;
         // GET请求, 获取数据并显示表单页面
         if ($this->controller->request->isGet()) {
             if ($this->pkValue !== null) {

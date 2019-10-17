@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace library\queue;
+namespace think\admin\queue;
 
 use library\Process;
 use think\console\Command;
@@ -21,11 +21,11 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 平滑停止异步任务守护的主进程
- * Class Stop
+ * 检查并创建异步任务监听主进程
+ * Class Start
  * @package app\admin\queue\task
  */
-class Stop extends Command
+class Start extends Command
 {
 
     /**
@@ -33,22 +33,28 @@ class Stop extends Command
      */
     protected function configure()
     {
-        $this->setName('xtask:stop')->setDescription('[控制]平滑停止所有的异步任务进程');
+        $this->setName('xtask:start')->setDescription('[控制]创建异步任务守护监听主进程');
     }
 
     /**
-     * 停止所有任务执行
+     * 执行启动操作
      * @param Input $input
      * @param Output $output
      */
     protected function execute(Input $input, Output $output)
     {
-        $command = Process::think('xtask:');
-        if (count($result = Process::query($command)) < 1) {
-            $output->writeln("没有需要结束的任务进程哦！");
-        } else foreach ($result as $item) {
-            Process::close($item['pid']);
-            $output->writeln("发送结束任务进程{$item['pid']}指令成功！");
+        Db::name('SystemQueue')->count();
+        $command = Process::think("xtask:listen");
+        if (count($result = Process::query($command)) > 0) {
+            $output->info("异步任务监听主进程{$result['0']['pid']}已经启动！");
+        } else {
+            Process::create($command);
+            sleep(1);
+            if (count($result = Process::query($command)) > 0) {
+                $output->info("异步任务监听主进程{$result['0']['pid']}启动成功！");
+            } else {
+                $output->error('异步任务监听主进程创建失败！');
+            }
         }
     }
 }

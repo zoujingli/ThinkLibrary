@@ -13,9 +13,9 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace library\helper;
+namespace think\admin\helper;
 
-use library\Controller;
+use think\admin\Controller;
 use think\Db;
 
 /**
@@ -26,23 +26,22 @@ use think\Db;
 abstract class Helper
 {
     /**
-     * 数据库操作对象
+     * 数据库实例
      * @var \think\db\Query
      */
     protected $query;
 
     /**
-     * 当前操作控制器引用
-     * @var \library\Controller
+     * 当前控制器实例
+     * @var Controller
      */
     public $controller;
 
     /**
      * 逻辑器初始化
-     * @param Controller $controller
      * @return mixed
      */
-    abstract public function init(Controller $controller);
+    abstract public function init();
 
     /**
      * 获取数据库查询对象

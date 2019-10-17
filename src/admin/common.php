@@ -13,12 +13,10 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-use library\Http;
-use library\Tools;
+use think\admin\Http;
+use think\admin\Tools;
 use think\facade\Cache;
 use think\facade\Db;
-use think\facade\Request;
-use think\Response;
 
 if (!function_exists('p')) {
     /**
@@ -165,60 +163,5 @@ if (!function_exists('decode')) {
             $chars .= chr(intval(base_convert($char, 36, 10)));
         }
         return iconv('GBK//TRANSLIT', 'UTF-8', $chars);
-    }
-}
-
-if (!function_exists('safe_base64_encode')) {
-    /**
-     * URL安全BASE64编码
-     * @param string $content
-     * @return string
-     */
-    function safe_base64_encode($content)
-    {
-        return rtrim(strtr(base64_encode($content), '+/', '-_'), '=');
-    }
-}
-
-if (!function_exists('safe_base64_decode')) {
-    /**
-     * URL安全BASE64解码
-     * @param string $content
-     * @return string
-     */
-    function safe_base64_decode($content)
-    {
-        return base64_decode(str_pad(strtr($content, '-_', '+/'), strlen($content) % 4, '=', STR_PAD_RIGHT));
-    }
-}
-
-// 注册前置中间键
-$GLOBALS['ThinkAdminMiddleware'][] = function (Request $request, \Closure $next, $header = []) {
-    if (($origin = $request->header('origin', '*')) !== '*') {
-        $header['Access-Control-Allow-Origin'] = $origin;
-        $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
-        $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
-        $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
-    }
-    if ($request->isOptions()) {
-        return Response::create()->code(204)->header($header);
-    } else {
-        return $next($request)->header($header);
-    }
-};
-
-// 注册前置系统指令
-$GLOBALS['ThinkAdminConsole'][] = 'library\process\Listen';
-$GLOBALS['ThinkAdminConsole'][] = 'library\process\Query';
-$GLOBALS['ThinkAdminConsole'][] = 'library\process\Start';
-$GLOBALS['ThinkAdminConsole'][] = 'library\process\State';
-$GLOBALS['ThinkAdminConsole'][] = 'library\process\Stop';
-$GLOBALS['ThinkAdminConsole'][] = 'library\process\Work';
-
-// 动态加载模块配置
-if (function_exists('Composer\Autoload\includeFile')) {
-    $root = rtrim(app()->getAppPath(), '\\/');
-    foreach (glob("{$root}/*/sys.php") as $file) {
-        \Composer\Autoload\includeFile($file);
     }
 }
