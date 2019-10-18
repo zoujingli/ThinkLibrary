@@ -62,7 +62,7 @@ class Tools
     /**
      * 设置写入CSV文件头部
      * @param string $filename 导出文件
-     * @param array $headers CSV 头部(一级数组)
+     * @param array $headers CSV 头部(一维数组)
      */
     public static function setCsvHeader($filename, array $headers)
     {
