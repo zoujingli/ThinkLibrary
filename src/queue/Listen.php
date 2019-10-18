@@ -48,8 +48,8 @@ class Listen extends Command
     {
         Db::name('SystemQueue')->count();
         $output->comment('============ 异步任务监听中 ============');
-        if (Process::iswin() && function_exists('cli_set_process_title')) {
-            cli_set_process_title("ThinkAdmin " . Process::version() . " 异步任务监听主进程");
+        if (Process::iswin()) {
+            $this->setProcessTitle("ThinkAdmin " . Process::version() . " 异步任务监听主进程");
         }
         while (true) {
             $where = [['status', 'eq', '1'], ['exec_time', '<=', time()]];
