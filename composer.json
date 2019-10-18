@@ -30,7 +30,7 @@
   "extra": {
     "think": {
       "services": [
-        "think\\admin\\InitService"
+        "think\\admin\\ThinkLibrary"
       ]
     }
   },

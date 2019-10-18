@@ -19,11 +19,11 @@ use think\facade\Request;
 use \think\Service as BaseService;
 
 /**
- * 应用注册服务
- * Class Service
- * @package library
+ * 模块注册服务
+ * Class ThinkLibrary
+ * @package think\admin
  */
-class InitService extends BaseService
+class ThinkLibrary extends BaseService
 {
     public function register()
     {

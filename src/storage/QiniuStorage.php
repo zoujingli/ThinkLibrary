@@ -17,6 +17,7 @@ namespace think\admin\storage;
 
 use think\admin\Http;
 use think\admin\Storage;
+use think\App;
 
 /**
  * 七牛云存储支持
@@ -25,6 +26,7 @@ use think\admin\Storage;
  */
 class QiniuStorage extends Storage
 {
+    private $app;
     private $bucket;
     private $domain;
     private $accessKey;

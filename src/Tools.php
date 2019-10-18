@@ -61,13 +61,13 @@ class Tools
 
     /**
      * 设置写入CSV文件头部
-     * @param string $filename 导出文件
-     * @param array $headers CSV 头部(一维数组)
+     * @param string $name 导出文件名称
+     * @param array $headers 表格头部(一维数组)
      */
-    public static function setCsvHeader($filename, array $headers)
+    public static function setCsvHeader($name, array $headers)
     {
         header('Content-Type: application/octet-stream');
-        header("Content-Disposition: attachment; filename=" . iconv('utf-8', 'gbk//TRANSLIT', $filename));
+        header("Content-Disposition: attachment; filename=" . iconv('utf-8', 'gbk//TRANSLIT', $name));
         $handle = fopen('php://output', 'w');
         foreach ($headers as $key => $value) $headers[$key] = iconv("utf-8", "gbk//TRANSLIT", $value);
         fputcsv($handle, $headers);
@@ -76,7 +76,7 @@ class Tools
 
     /**
      * 设置写入CSV文件内容
-     * @param array $list 数据列表(二维数组或多维数组)
+     * @param array $list 数据列表(二维数组)
      * @param array $rules 数据规则(一维数组)
      */
     public static function setCsvBody(array $list, array $rules)
@@ -239,7 +239,7 @@ class Tools
      * @param integer $length
      * @return string
      */
-    public static function uniqidNumberCode($length = 10)
+    public static function uniqidNumberCode($length = 12)
     {
         $time = time() . '';
         if ($length < 10) $length = 10;
@@ -253,7 +253,7 @@ class Tools
      * @param integer $length
      * @return string
      */
-    public static function uniqidDateCode($length = 14)
+    public static function uniqidDateCode($length = 16)
     {
         if ($length < 14) $length = 14;
         $string = date('Ymd') . (date('H') + date('i')) . date('s');
