@@ -60,11 +60,11 @@ abstract class Queue
         if (empty($this->jobid)) return false;
         $queue = Db::name('SystemQueue')->where(['id' => $this->jobid])->find();
         if (empty($queue)) return false;
-        $queue['time'] = time() + $wait;
-        $queue['times'] = $queue['times'] + 1;
-        $queue['title'] .= " - 来自任务{$this->jobid}重发任务";
-        unset($queue['id'], $queue['create_at'], $queue['desc']);
-        return Db::name('SystemQueue')->insert($queue) !== false;
+        $queue['status'] = '1';
+        $queue['exec_time'] = time() + $wait;
+        $queue['attempts'] = $queue['attempts'] + 1;
+        unset($queue['id'], $queue['create_at'], $queue['exec_desc']);
+        return Db::name('SystemQueue')->where(['id' => $this->jobid])->update($queue) !== false;
     }
 
     /**
