@@ -50,7 +50,8 @@ class Storage
     public function __call($method, $args)
     {
         $class = self::instance(sysconf('storage_type'));
-        return call_user_func_array([$class, $method], $args);
+        if (method_exists($class, $method)) return call_user_func_array([$class, $method], $args);
+        throw new \think\Exception("method not exists: " . get_class($class) . "::{$method}()");
     }
 
     /**
