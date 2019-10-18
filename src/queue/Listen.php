@@ -52,19 +52,18 @@ class Listen extends Command
             cli_set_process_title("ThinkAdmin " . Process::version() . " 异步任务监听主进程");
         }
         while (true) {
-            $where = [['status', 'eq', '1'], ['time', '<=', time()]];
-            foreach (Db::name('SystemQueue')->where($where)->order('time asc')->select() as $vo) {
+            $where = [['status', 'eq', '1'], ['exec_time', '<=', time()]];
+            foreach (Db::name('SystemQueue')->where($where)->order('exec_time asc')->select() as $vo) {
                 try {
-                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '2', 'start_at' => date('Y-m-d H:i:s')]);
-                    $command = Process::think("xtask:_work {$vo['id']} -");
-                    if (Process::query($command)) {
+                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '2', 'start_time' => time(), 'attempts' => Db::raw('attempts+1')]);
+                    if (Process::query($command = Process::think("xtask:_work {$vo['id']} -"))) {
                         $output->comment("任务正在执行 --> [{$vo['id']}] {$vo['title']}");
                     } else {
                         Process::create($command);
                         $output->info("任务创建成功 --> [{$vo['id']}] {$vo['title']}");
                     }
                 } catch (\Exception $e) {
-                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '4', 'desc' => $e->getMessage()]);
+                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '4', 'done_time' => time(), 'exec_desc' => $e->getMessage()]);
                     $output->error("任务创建失败 --> [{$vo['id']}] {$vo['title']}，{$e->getMessage()}");
                 }
             }

@@ -55,7 +55,7 @@ abstract class Queue
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function redo($wait = 0)
+    protected function reset($wait = 0)
     {
         if (empty($this->jobid)) return false;
         $queue = Db::name('SystemQueue')->where(['id' => $this->jobid])->find();
@@ -65,6 +65,35 @@ abstract class Queue
         $queue['title'] .= " - 来自任务{$this->jobid}重发任务";
         unset($queue['id'], $queue['create_at'], $queue['desc']);
         return Db::name('SystemQueue')->insert($queue) !== false;
+    }
+
+    /**
+     * 创建异步处理任务
+     * @param string $title 任务名称
+     * @param string $command 执行内容
+     * @param integer $later 延时执行时间
+     * @param array $data 任务附加数据
+     * @param integer $double 任务多开
+     * @return boolean
+     * @throws \think\Exception
+     */
+    public static function add($title, $command, $later = 0, $data = [], $double = 1)
+    {
+        $map = [['title', 'eq', $title], ['status', 'in', ['1', '2']]];
+        if (empty($double) && Db::name('SystemQueue')->where($map)->count() > 0) {
+            throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
+        }
+        $result = Db::name('SystemQueue')->insert([
+            'title'      => $title,
+            'command'    => $command,
+            'attempts'   => '0',
+            'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'exec_time'  => $later > 0 ? time() + $later : time(),
+            'start_time' => '0',
+            'done_time'  => '0',
+            'double'     => intval($double),
+        ]);
+        return $result !== false;
     }
 
     /**

@@ -33,21 +33,30 @@ class Tools
      */
     public static function express($code, $number)
     {
-        if (in_array($code, ['debangkuaidi'])) $code = 'debangwuliu';
-        list($microtime, $clientIp, $list) = [time(), request()->ip(), []];
-        $options = ['header' => ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $clientIp, 'X-FORWARDED-FOR' => $clientIp], 'cookie_file' => env('runtime_path') . 'temp/cookie'];
-        $location = "https://sp0.baidu.com/9_Q4sjW91Qh3otqbppnN2DJv/pae/channel/data/asyncqury?cb=callback&appid=4001&com={$code}&nu={$number}&vcode=&token=&_={$microtime}";
-        $result = json_decode(str_replace('/**/callback(', '', trim(http_get($location, [], $options), ')')), true);
-        if (empty($result['data']['info']['context'])) { // 第一次可能失败，这里尝试第二次查询
-            $result = json_decode(str_replace('/**/callback(', '', trim(http_get($location, [], $options), ')')), true);
-            if (empty($result['data']['info']['context'])) {
+        $list = [];
+        for ($i = 0; $i < 6; $i++) if (is_array($result = self::doExpress($code, $number))) {
+            if (!empty($result['data']['info']['context'])) {
+                foreach ($result['data']['info']['context'] as $vo) $list[] = [
+                    'time' => date('Y-m-d H:i:s', $vo['time']), 'context' => $vo['desc'],
+                ];
                 return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $list];
             }
         }
-        foreach ($result['data']['info']['context'] as $vo) $list[] = [
-            'time' => date('Y-m-d H:i:s', $vo['time']), 'ftime' => date('Y-m-d H:i:s', $vo['time']), 'context' => $vo['desc'],
-        ];
         return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $list];
+    }
+
+    /**
+     * 执行百度快递100应用查询请求
+     * @param string $code 快递公司编号
+     * @param string $number 快递单单号
+     * @return mixed
+     */
+    private static function doExpress($code, $number)
+    {
+        list($microtime, $clientIp) = [time(), app()->request->ip()];
+        $url = "https://sp0.baidu.com/9_Q4sjW91Qh3otqbppnN2DJv/pae/channel/data/asyncqury?cb=callback&appid=4001&com={$code}&nu={$number}&vcode=&token=&_={$microtime}";
+        $options = ['cookie_file' => app()->getRuntimePath() . 'temp/cookie', 'headers' => ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $clientIp, 'X-FORWARDED-FOR' => $clientIp],];
+        return json_decode(str_replace('/**/callback(', '', trim(http_get($url, [], $options), ')')), true);
     }
 
     /**

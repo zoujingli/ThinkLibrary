@@ -71,17 +71,17 @@ class Work extends Command
                 cli_set_process_title("ThinkAdmin " . Process::version() . " 异步任务执行子进程 - {$queue['title']}");
             }
             // 执行任务内容
-            if (class_exists($queue['preload'])) {
-                if (method_exists($class = new $queue['preload'], 'execute')) {
+            if (class_exists($queue['command'])) {
+                if (method_exists($class = new $queue['command'], 'execute')) {
                     $data = json_decode($queue['data'], true);
                     if (isset($class->jobid)) $class->jobid = $this->id;
                     if (isset($class->title)) $class->title = $queue['title'];
                     $this->update('3', $class->execute($input, $output, is_array($data) ? $data : []));
                 } else {
-                    throw new \think\Exception("任务处理类 {$queue['preload']} 未定义 execute 入口！");
+                    throw new \think\Exception("任务处理类 {$queue['command']} 未定义 execute 入口！");
                 }
             } else {
-                $this->update('3', Console::call($queue['preload'], [], 'console'));
+                $this->update('3', Console::call($queue['command'], [], 'console'));
             }
         } catch (\Exception $e) {
             $this->update('4', $e->getMessage());
@@ -98,7 +98,9 @@ class Work extends Command
     protected function update($status, $message)
     {
         $result = Db::name('SystemQueue')->where(['id' => $this->id])->update([
-            'status' => $status, 'end_at' => date('Y-m-d H:i:s'), 'desc' => is_string($message) ? $message : '',
+            'status'    => $status,
+            'done_time' => date('Y-m-d H:i:s'),
+            'exec_desc' => is_string($message) ? $message : '',
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         return $result !== false;
