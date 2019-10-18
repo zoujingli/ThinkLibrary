@@ -47,10 +47,10 @@ class Listen extends Command
     protected function execute(Input $input, Output $output)
     {
         Db::name('SystemQueue')->count();
-        $output->comment('============ 异步任务监听中 ============');
         if (Process::iswin()) {
             $this->setProcessTitle("ThinkAdmin " . Process::version() . " 异步任务监听主进程");
         }
+        $output->comment('============ 异步任务监听中 ============');
         while (true) {
             $where = [['status', 'eq', '1'], ['exec_time', '<=', time()]];
             foreach (Db::name('SystemQueue')->where($where)->order('exec_time asc')->select() as $vo) {
