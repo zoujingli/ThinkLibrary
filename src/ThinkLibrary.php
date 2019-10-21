@@ -15,7 +15,7 @@
 
 namespace think\admin;
 
-use think\facade\Request;
+use think\Request;
 use \think\Service as BaseService;
 
 /**
