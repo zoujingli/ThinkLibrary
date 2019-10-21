@@ -28,7 +28,8 @@ class ThinkLibrary extends Service
     public function register()
     {
         // 注册访问跨域中间键
-        $this->app->middleware->add(function (Request $request, \Closure $next, $header = []) {
+        $this->app->middleware->add(function (Request $request, \Closure $next) {
+            $header = [];
             if (($origin = $request->header('origin', '*')) !== '*') {
                 $header['Access-Control-Allow-Origin'] = $origin;
                 $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
