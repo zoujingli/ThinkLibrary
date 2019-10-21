@@ -16,14 +16,14 @@
 namespace think\admin;
 
 use think\Request;
-use \think\Service as BaseService;
+use think\Service;
 
 /**
  * 模块注册服务
  * Class ThinkLibrary
  * @package think\admin
  */
-class ThinkLibrary extends BaseService
+class ThinkLibrary extends Service
 {
     public function register()
     {
