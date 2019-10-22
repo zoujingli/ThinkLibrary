@@ -114,7 +114,7 @@ class Process
      */
     private static function _space($content, $char = ' ')
     {
-        return preg_replace('|\s+|', $char, trim($content));
+        return preg_replace('|\s+|', $char, strtr(trim($content), '\\', '/'));
     }
 
     /**
