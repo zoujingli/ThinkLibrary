@@ -19,6 +19,7 @@ use think\admin\Process;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
+use think\facade\Db;
 
 /**
  * 检查并创建异步任务监听主进程
