@@ -15,7 +15,6 @@
 
 use think\admin\Http;
 use think\admin\Tools;
-use think\facade\Cache;
 use think\facade\Db;
 
 if (!function_exists('p')) {
@@ -55,38 +54,28 @@ if (!function_exists('sysconf')) {
     /**
      * 设备或配置系统参数
      * @param string $name 参数名称
-     * @param boolean $value 无值为获取
+     * @param string $value 参数内容
+     * @param string $type 配置类型
      * @return string|boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    function sysconf($name, $value = null)
+    function sysconf($name = '', $value = null, $type = 'base')
     {
         static $data = [];
-        list($field, $raw) = explode('|', "{$name}|");
-        $key = md5(config('database.hostname') . '#' . config('database.database'));
-        if ($value !== null) {
-            Cache::tag('system')->rm("_sysconfig_{$key}");
-            list($row, $data) = [['name' => $field, 'value' => $value], []];
-            return Tools::dataSave('SystemConfig', $row, 'name');
+        list($field, $filter) = explode('|', "{$name}|");
+        if (!empty($field) && !empty($value)) {
+            list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
+            return Tools::dataSave('SystemConfig', $row, 'name', ['type' => $type]);
         }
-        if (empty($data)) {
-            $data = Cache::tag('system')->get("_sysconfig_{$key}", []);
-            if (empty($data)) {
-                $data = Db::name('SystemConfig')->column('name,value');
-                Cache::tag('system')->set("_sysconfig_{$key}", $data, 60);
-            }
+        if (empty($data)) foreach (Db::name('SystemConfig')->select() as $vo) {
+            $data[$vo['type']][$vo['name']] = $vo['value'];
         }
-        if (isset($data[$field])) {
-            if (strtolower($raw) === 'raw') {
-                return $data[$field];
-            } else {
-                return htmlspecialchars($data[$field]);
-            }
-        } else {
-            return '';
-        }
+        if (empty($name)) return isset($data[$type]) ? [] : $data[$type];
+        if (isset($data[$type]) && isset($data[$type][$field])) {
+            return strtolower($filter) === 'raw' ? $data[$type][$field] : htmlspecialchars($data[$type][$field]);
+        } else return '';
     }
 }
 
