@@ -52,7 +52,7 @@ class ListenQueue extends Command
         }
         $output->comment('============ 异步任务监听中 ============');
         while (true) {
-            $where = [['status', 'eq', '1'], ['exec_time', '<=', time()]];
+            $where = [['status', '=', '1'], ['exec_time', '<=', time()]];
             foreach (Db::name('SystemQueue')->where($where)->order('exec_time asc')->select() as $vo) {
                 try {
                     Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '2', 'start_time' => time(), 'attempts' => $vo['attempts'] + 1]);
