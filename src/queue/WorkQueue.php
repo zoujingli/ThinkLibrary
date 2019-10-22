@@ -25,10 +25,10 @@ use think\facade\Db;
 
 /**
  * 启动指定独立执行的任务子进程
- * Class Work
- * @package library\process
+ * Class WorkQueue
+ * @package think\admin\queue
  */
-class Work extends Command
+class WorkQueue extends Command
 {
 
     /**

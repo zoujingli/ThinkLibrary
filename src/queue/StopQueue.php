@@ -22,10 +22,10 @@ use think\console\Output;
 
 /**
  * 平滑停止异步任务守护的主进程
- * Class Stop
- * @package app\admin\queue\task
+ * Class StopQueue
+ * @package think\admin\queue
  */
-class Stop extends Command
+class StopQueue extends Command
 {
 
     /**

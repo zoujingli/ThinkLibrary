@@ -23,10 +23,10 @@ use think\facade\Db;
 
 /**
  * 启动监听异步任务守护的主进程
- * Class Listen
- * @package library\process
+ * Class ListenQueue
+ * @package think\admin\queue
  */
-class Listen extends Command
+class ListenQueue extends Command
 {
     /**
      * 配置指定信息

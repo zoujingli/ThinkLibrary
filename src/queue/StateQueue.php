@@ -21,40 +21,32 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 检查并创建异步任务监听主进程
- * Class Start
- * @package app\admin\queue\task
+ * 查看异步任务监听的主进程状态
+ * Class StateQueue
+ * @package think\admin\queue
  */
-class Start extends Command
+class StateQueue extends Command
 {
-
     /**
      * 指令属性配置
      */
     protected function configure()
     {
-        $this->setName('xtask:start')->setDescription('[控制]创建异步任务守护监听主进程');
+        $this->setName('xtask:state')->setDescription('[控制]查看异步任务监听主进程状态');
     }
 
     /**
-     * 执行启动操作
+     * 指令执行状态
      * @param Input $input
      * @param Output $output
      */
     protected function execute(Input $input, Output $output)
     {
-        Db::name('SystemQueue')->count();
-        $command = Process::think("xtask:listen");
+        $command = Process::think('xtask:listen');
         if (count($result = Process::query($command)) > 0) {
-            $output->info("异步任务监听主进程{$result['0']['pid']}已经启动！");
+            $output->info("异步任务监听主进程{$result[0]['pid']}正在运行...");
         } else {
-            Process::create($command);
-            sleep(1);
-            if (count($result = Process::query($command)) > 0) {
-                $output->info("异步任务监听主进程{$result['0']['pid']}启动成功！");
-            } else {
-                $output->error('异步任务监听主进程创建失败！');
-            }
+            $output->error("异步任务监听主进程没有运行哦!");
         }
     }
 }
