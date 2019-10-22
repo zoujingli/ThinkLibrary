@@ -3,7 +3,7 @@
   "name": "zoujingli/think-library",
   "license": "MIT",
   "homepage": "http://framework.thinkadmin.top",
-  "description": "ThinkPHP v6.0 Basic Development Library",
+  "description": "ThinkPHP v6.0 Development Library",
   "authors": [
     {
       "name": "Anyon",
@@ -23,7 +23,6 @@
       "src/common.php"
     ],
     "psr-4": {
-      "app\\": "app",
       "think\\admin\\": "src"
     }
   },
@@ -32,22 +31,6 @@
       "services": [
         "think\\admin\\ThinkLibrary"
       ]
-    }
-  },
-  "minimum-stability": "dev",
-  "config": {
-    "preferred-install": "dist"
-  },
-  "scripts": {
-    "post-autoload-dump": [
-      "@php think service:discover",
-      "@php think vendor:publish"
-    ]
-  },
-  "repositories": {
-    "packagist": {
-      "type": "composer",
-      "url": "https://mirrors.aliyun.com/composer"
     }
   }
 }
