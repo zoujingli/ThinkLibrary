@@ -25,6 +25,19 @@ use think\Service;
  */
 class ThinkLibrary extends Service
 {
+    public function boot()
+    {
+        // 注册系统任务指令
+        $this->commands([
+            'think\admin\queue\WorkQueue',
+            'think\admin\queue\StopQueue',
+            'think\admin\queue\StateQueue',
+            'think\admin\queue\StartQueue',
+            'think\admin\queue\QueryQueue',
+            'think\admin\queue\ListenQueue',
+        ]);
+    }
+
     public function register()
     {
         // 注册访问跨域中间键
@@ -42,22 +55,6 @@ class ThinkLibrary extends Service
                 return $next($request)->header($header);
             }
         });
-        // 注册系统任务指令
-        $this->app->console->addCommands([
-            'think\admin\queue\WorkQueue',
-            'think\admin\queue\StopQueue',
-            'think\admin\queue\StateQueue',
-            'think\admin\queue\StartQueue',
-            'think\admin\queue\QueryQueue',
-            'think\admin\queue\ListenQueue',
-        ]);
-//        // 动态加载模块配置
-//        if (function_exists('Composer\Autoload\includeFile')) {
-//            $root = rtrim(app()->getAppPath(), '\\/');
-//            foreach (glob("{$root}/*/sys.php") as $file) {
-//                \Composer\Autoload\includeFile($file);
-//            }
-//        }
     }
 
 }
