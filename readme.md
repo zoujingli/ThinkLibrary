@@ -84,13 +84,13 @@ CREATE TABLE `system_queue` (
   `enter_time` bigint(20) DEFAULT '0' COMMENT '开始时间',
   `outer_time` bigint(20) DEFAULT '0' COMMENT '结束时间',
   `attempts` bigint(20) DEFAULT '0' COMMENT '执行次数',
-  `repeat` tinyint(1) DEFAULT '1' COMMENT '单例模式',
+  `rscript` tinyint(1) DEFAULT '1' COMMENT '单例模式',
   `status` tinyint(1) DEFAULT '1' COMMENT '任务状态(1新任务,2处理中,3成功,4失败)',
   `create_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `idx_system_queue_title` (`title`) USING BTREE,
   KEY `idx_system_queue_status` (`status`) USING BTREE,
-  KEY `idx_system_queue_repeat` (`repeat`) USING BTREE,
+  KEY `idx_system_queue_rscript` (`rscript`) USING BTREE,
   KEY `idx_system_queue_create_at` (`create_at`) USING BTREE,
   KEY `idx_system_queue_exec_time` (`exec_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-任务';

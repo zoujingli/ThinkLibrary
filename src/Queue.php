@@ -70,14 +70,14 @@ abstract class Queue
      * @param string $command 执行内容
      * @param integer $later 延时执行时间
      * @param array $data 任务附加数据
-     * @param integer $repeat 任务多开
+     * @param integer $rscript 任务多开
      * @return boolean
      * @throws \think\Exception
      */
-    public static function add($title, $command, $later = 0, $data = [], $repeat = 1)
+    public static function add($title, $command, $later = 0, $data = [], $rscript = 1)
     {
         $map = [['title', 'eq', $title], ['status', 'in', ['1', '2']]];
-        if (empty($repeat) && Db::name('SystemQueue')->where($map)->count() > 0) {
+        if (empty($rscript) && Db::name('SystemQueue')->where($map)->count() > 0) {
             throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
         }
         $result = Db::name('SystemQueue')->insert([
@@ -88,7 +88,7 @@ abstract class Queue
             'exec_time'  => $later > 0 ? time() + $later : time(),
             'enter_time' => '0',
             'outer_time' => '0',
-            'repeat'     => intval(boolval($repeat)),
+            'rscript'    => intval(boolval($rscript)),
         ]);
         return $result !== false;
     }
