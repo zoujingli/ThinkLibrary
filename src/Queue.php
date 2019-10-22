@@ -60,11 +60,8 @@ abstract class Queue
         if (empty($this->jobid)) return false;
         $queue = Db::name('SystemQueue')->where(['id' => $this->jobid])->find();
         if (empty($queue)) return false;
-        $queue['status'] = '1';
-        $queue['exec_time'] = time() + $wait;
-        $queue['attempts'] = $queue['attempts'] + 1;
-        unset($queue['id'], $queue['create_at'], $queue['exec_desc']);
-        return Db::name('SystemQueue')->where(['id' => $this->jobid])->update($queue) !== false;
+        $update = ['exec_time' => time() + $wait, 'attempts' => $queue['attempts'] + 1, 'status' => '1'];
+        return Db::name('SystemQueue')->where(['id' => $this->jobid])->update($update) !== false;
     }
 
     /**
@@ -73,14 +70,14 @@ abstract class Queue
      * @param string $command 执行内容
      * @param integer $later 延时执行时间
      * @param array $data 任务附加数据
-     * @param integer $double 任务多开
+     * @param integer $repeat 任务多开
      * @return boolean
      * @throws \think\Exception
      */
-    public static function add($title, $command, $later = 0, $data = [], $double = 1)
+    public static function add($title, $command, $later = 0, $data = [], $repeat = 1)
     {
         $map = [['title', 'eq', $title], ['status', 'in', ['1', '2']]];
-        if (empty($double) && Db::name('SystemQueue')->where($map)->count() > 0) {
+        if (empty($repeat) && Db::name('SystemQueue')->where($map)->count() > 0) {
             throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
         }
         $result = Db::name('SystemQueue')->insert([
@@ -89,9 +86,9 @@ abstract class Queue
             'attempts'   => '0',
             'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
             'exec_time'  => $later > 0 ? time() + $later : time(),
-            'start_time' => '0',
-            'done_time'  => '0',
-            'double'     => intval($double),
+            'enter_time' => '0',
+            'outer_time' => '0',
+            'repeat'     => intval(boolval($repeat)),
         ]);
         return $result !== false;
     }

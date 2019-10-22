@@ -20,12 +20,7 @@ ThinkLibrary 6.0 是针对 ThinkPHP 6.0 版本封装的一套工具类库，方�
 
 ## 参考项目
 
-#### framework - V1.0 / V2.0
-* Gitee 仓库 https://gitee.com/zoujingli/framework
-* Github 仓库 https://github.com/zoujingli/framework
-* 体验地址（账号密码都是admin）https://framework.thinkadmin.top
-
-#### ThinkAdmin - V4.0 / V4.1
+#### ThinkAdmin - V6.0
 * Gitee 仓库 https://gitee.com/zoujingli/ThinkAdmin
 * Github 仓库 https://github.com/zoujingli/ThinkAdmin
 * 体验地址（账号密码都是admin）https://demo.thinkadmin.top
@@ -41,12 +36,12 @@ ThinkLibrary 6.0 是针对 ThinkPHP 6.0 版本封装的一套工具类库，方�
 
 ## 使用说明
 * ThinkLibrary 需要 Composer 支持
-* 安装命令 ` composer require zoujingli/think-library 5.1.x-dev`
+* 安装命令 ` composer require zoujingli/think-library 6.0.x-dev`
 * 案例代码：
-控制器需要继承 `library\Controller`，然后`$this`就可能使用全部功能
+控制器需要继承 `think\admin\Controller`，然后`$this`就可能使用全部功能
 ```php
 // 定义 MyController 控制器
-class MyController extend \library\Controller {
+class MyController extend \think\admin\Controller {
 
     // 指定当前数据表名
     protected $dbQuery = '数据表名';
@@ -69,11 +64,36 @@ class MyController extend \library\Controller {
 ```sql
 CREATE TABLE `system_config` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) DEFAULT NULL COMMENT '配置名',
-  `value` varchar(500) DEFAULT NULL COMMENT '配置值',
+  `type` varchar(20) DEFAULT '' COMMENT '分类',
+  `name` varchar(100) DEFAULT '' COMMENT '配置名',
+  `value` varchar(500) DEFAULT '' COMMENT '配置值',
   PRIMARY KEY (`id`) USING BTREE,
-  KEY `index_system_config_name` (`name`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统配置';
+  KEY `idx_system_config_type` (`type`),
+  KEY `idx_system_config_name` (`name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COMMENT='系统-配置';
+```
+* 系统任务列队支持需要的数据表
+```sql
+CREATE TABLE `system_queue` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `title` varchar(50) NOT NULL DEFAULT '' COMMENT '任务名称',
+  `command` varchar(500) DEFAULT '' COMMENT '执行指令',
+  `exec_data` longtext COMMENT '执行参数',
+  `exec_time` bigint(20) unsigned DEFAULT '0' COMMENT '执行时间',
+  `exec_desc` varchar(500) DEFAULT '' COMMENT '状态描述',
+  `enter_time` bigint(20) DEFAULT '0' COMMENT '开始时间',
+  `outer_time` bigint(20) DEFAULT '0' COMMENT '结束时间',
+  `attempts` bigint(20) DEFAULT '0' COMMENT '执行次数',
+  `repeat` tinyint(1) DEFAULT '1' COMMENT '单例模式',
+  `status` tinyint(1) DEFAULT '1' COMMENT '任务状态(1新任务,2处理中,3成功,4失败)',
+  `create_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_system_queue_title` (`title`) USING BTREE,
+  KEY `idx_system_queue_status` (`status`) USING BTREE,
+  KEY `idx_system_queue_repeat` (`repeat`) USING BTREE,
+  KEY `idx_system_queue_create_at` (`create_at`) USING BTREE,
+  KEY `idx_system_queue_exec_time` (`exec_time`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-任务';
 ```
 
 #### 列表处理
