@@ -50,7 +50,7 @@ class Process
     public static function create($command)
     {
         if (self::iswin()) {
-            $command = __DIR__ . "queue/bin/ThinkAdmin.exe {$command}";
+            $command = __DIR__ . "/queue/bin/ThinkAdmin.exe {$command}";
             pclose(popen("wmic process call create \"{$command}\"", 'r'));
         } else {
             pclose(popen("{$command} &", 'r'));

@@ -105,7 +105,7 @@ $this->_page($dbQuery, $isPage, $isDisplay, $total);
 $this->_query($dbQuery)->like('name,title')->equal('status')->page();
 
 // 对列表查询器进行二次处理
-$query->_query($dbQuery)->like('name,title')->equal('status');
+$query = $this->_query($dbQuery)->like('name,title')->equal('status');
 $db = $query->db(); // @todo 这里可以对db进行操作
 $this->_page($db); // 显示列表分页
 ```
