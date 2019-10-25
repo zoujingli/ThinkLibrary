@@ -71,7 +71,7 @@ abstract class Queue
     }
 
     /**
-     * 创建异步处理任务
+     * 注册异步处理任务
      * @param string $title 任务名称
      * @param string $command 执行内容
      * @param integer $later 延时执行时间
@@ -80,7 +80,7 @@ abstract class Queue
      * @return boolean
      * @throws \think\Exception
      */
-    public static function add($title, $command, $later = 0, $data = [], $rscript = 1)
+    public static function register($title, $command, $later = 0, $data = [], $rscript = 1)
     {
         $map = [['title', 'eq', $title], ['status', 'in', ['1', '2']]];
         if (empty($rscript) && Db::name('SystemQueue')->where($map)->count() > 0) {
