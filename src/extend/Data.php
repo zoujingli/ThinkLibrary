@@ -19,7 +19,7 @@ use think\Db;
 use think\db\Query;
 
 /**
- * 数据操作扩展
+ * 数据处理扩展
  * Class Data
  * @package think\admin\extend
  */

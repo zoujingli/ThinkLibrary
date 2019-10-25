@@ -16,7 +16,7 @@
 namespace think\admin\extend;
 
 /**
- * 进程基础管理扩展
+ * 系统进程管理扩展
  * Class Process
  * @package library
  */
