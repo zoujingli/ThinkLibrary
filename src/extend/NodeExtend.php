@@ -42,9 +42,9 @@ class NodeExtend
                 foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignores)) continue;
                     list($prefix, $suffix) = explode('\\controller\\', $refection->getName());
-                    $node = strtr("{$prefix}/" . self::classTolower($suffix) . "/{$method->getName()}", '\\', '/');
+                    $space = strtr("{$prefix}/" . self::classTolower($suffix) . "/{$method->getName()}", '\\', '/');
                     $comment = strtr($method->getDocComment(), "\n", ' ');
-                    $data[substr($node, stripos($node, '/') + 1)][$method->getName()] = [
+                    $data[substr($space, stripos($space, '/') + 1)][$method->getName()] = [
                         'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
                         'isauth' => intval(preg_match('/@auth\s*true/i', $comment)),
                         'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
