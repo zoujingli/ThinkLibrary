@@ -15,6 +15,7 @@
 
 namespace think\admin;
 
+use think\admin\extend\Process;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
@@ -48,9 +49,9 @@ abstract class Queue
      * 判断是否WIN环境
      * @return boolean
      */
-    protected function isWin()
+    protected function iswin()
     {
-        return PATH_SEPARATOR === ';';
+        return Process::iswin();
     }
 
     /**
