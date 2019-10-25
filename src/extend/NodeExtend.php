@@ -39,7 +39,7 @@ class NodeExtend
                     $refection = new \ReflectionClass($classname);
                     foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                         list($prex, $class) = explode('\\controller\\', $classname);
-                        $node = strtr($prex . '/' . self::classToLowerName($class), '\\', '/');
+                        $node = strtr($prex . '/' . self::classTolower($class), '\\', '/');
                         $comment = strtr($method->getDocComment(), "\n", ' ');
                         $data[$node][$method->getName()] = [
                             'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
@@ -58,7 +58,7 @@ class NodeExtend
      * @param string $class 节点名称
      * @return string
      */
-    public static function classToLowerName($class)
+    public static function classTolower($class)
     {
         $dots = [];
         foreach (explode('\\', $class) as $dot) {
