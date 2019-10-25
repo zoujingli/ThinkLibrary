@@ -54,6 +54,16 @@ class NodeExtend
     }
 
     /**
+     * 获取当前控制器
+     * @return string
+     * @todo 
+     */
+    public static function current()
+    {
+        return app()->getNamespace() . '\\' . self::classTolower(app()->request->controller()) . '\\' . app()->request->action();
+    }
+
+    /**
      * 驼峰转下划线规则
      * @param string $name
      * @return string
