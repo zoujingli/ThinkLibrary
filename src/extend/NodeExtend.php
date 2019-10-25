@@ -56,7 +56,7 @@ class NodeExtend
     /**
      * 获取当前控制器
      * @return string
-     * @todo 
+     * @todo
      */
     public static function current()
     {
