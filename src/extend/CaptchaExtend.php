@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace app\admin\extend;
+namespace think\admin\extend;
 
 /**
  * 图形验证码扩展
