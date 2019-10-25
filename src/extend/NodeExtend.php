@@ -55,13 +55,13 @@ class NodeExtend
 
     /**
      * 驼峰转下划线规则
-     * @param string $class 节点名称
+     * @param string $name
      * @return string
      */
-    public static function classTolower($class)
+    public static function classTolower($name)
     {
         $dots = [];
-        foreach (explode('\\', $class) as $dot) {
+        foreach (explode('\\', $name) as $dot) {
             $dots[] = trim(preg_replace("/[A-Z]/", "_\\0", $dot), "_");
         }
         return strtolower(join('.', $dots));
