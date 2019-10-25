@@ -20,7 +20,7 @@ namespace think\admin\extend;
  * Class Http
  * @package think\admin\extend
  */
-class Http
+class HttpExtend
 {
     /**
      * 以get模拟网络请求

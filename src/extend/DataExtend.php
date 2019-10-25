@@ -20,10 +20,10 @@ use think\db\Query;
 
 /**
  * 数据处理扩展
- * Class Data
+ * Class DataExtend
  * @package think\admin\extend
  */
-class Data
+class DataExtend
 {
     /**
      * 数据增量保存

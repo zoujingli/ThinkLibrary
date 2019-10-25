@@ -15,7 +15,7 @@
 
 namespace think\admin;
 
-use think\admin\extend\Process;
+use think\admin\extend\ProcessExtend;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
@@ -51,7 +51,7 @@ abstract class Queue
      */
     protected function iswin()
     {
-        return Process::iswin();
+        return ProcessExtend::iswin();
     }
 
     /**

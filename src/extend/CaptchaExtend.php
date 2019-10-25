@@ -17,10 +17,10 @@ namespace app\admin\extend;
 
 /**
  * 图形验证码扩展
- * Class Captcha
+ * Class CaptchaExtend
  * @package app\admin\service
  */
-class Captcha
+class CaptchaExtend
 {
     private $code; // 验证码
     private $uniqid; // 唯一序号

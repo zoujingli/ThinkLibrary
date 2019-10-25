@@ -15,7 +15,7 @@
 
 namespace think\admin\queue;
 
-use think\admin\extend\Process;
+use think\admin\extend\ProcessExtend;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -42,8 +42,8 @@ class StateQueue extends Command
      */
     protected function execute(Input $input, Output $output)
     {
-        $command = Process::think('xtask:listen');
-        if (count($result = Process::query($command)) > 0) {
+        $command = ProcessExtend::think('xtask:listen');
+        if (count($result = ProcessExtend::query($command)) > 0) {
             $output->info("异步任务监听主进程{$result[0]['pid']}正在运行...");
         } else {
             $output->error("异步任务监听主进程没有运行哦!");

@@ -15,7 +15,7 @@
 
 namespace think\admin\queue;
 
-use think\admin\extend\Process;
+use think\admin\extend\ProcessExtend;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -43,11 +43,11 @@ class StopQueue extends Command
      */
     protected function execute(Input $input, Output $output)
     {
-        $command = Process::think('xtask:');
-        if (count($result = Process::query($command)) < 1) {
+        $command = ProcessExtend::think('xtask:');
+        if (count($result = ProcessExtend::query($command)) < 1) {
             $output->writeln("没有需要结束的任务进程哦！");
         } else foreach ($result as $item) {
-            Process::close($item['pid']);
+            ProcessExtend::close($item['pid']);
             $output->writeln("发送结束任务进程{$item['pid']}指令成功！");
         }
     }

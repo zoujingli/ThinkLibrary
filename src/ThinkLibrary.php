@@ -34,7 +34,7 @@ class ThinkLibrary extends Service
     {
         // 图形验证码路由绑定
         $route->get('think/admin/captcha', function () {
-            $image = new \app\admin\extend\Captcha();
+            $image = new \app\admin\extend\CaptchaExtend();
             return json(['code' => '1', 'info' => '生成验证码', 'data' => [
                 'uniqid' => $image->getUniqid(), 'image' => $image->getData(),
             ]]);

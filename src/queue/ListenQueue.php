@@ -15,7 +15,7 @@
 
 namespace think\admin\queue;
 
-use think\admin\extend\Process;
+use think\admin\extend\ProcessExtend;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -47,18 +47,18 @@ class ListenQueue extends Command
     protected function execute(Input $input, Output $output)
     {
         Db::name('SystemQueue')->count();
-        if (Process::iswin()) {
-            $this->setProcessTitle("ThinkAdmin 异步任务监听主进程 " . Process::version());
+        if (ProcessExtend::iswin()) {
+            $this->setProcessTitle("ThinkAdmin 异步任务监听主进程 " . ProcessExtend::version());
         }
         $output->comment('============ 异步任务监听中 ============');
         while (true) {
             foreach (Db::name('SystemQueue')->where([['status', '=', '1'], ['exec_time', '<=', time()]])->order('exec_time asc')->select() as $vo) {
                 try {
                     Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '2', 'enter_time' => time(), 'attempts' => $vo['attempts'] + 1]);
-                    if (Process::query($command = Process::think("xtask:_work {$vo['id']} -"))) {
+                    if (ProcessExtend::query($command = ProcessExtend::think("xtask:_work {$vo['id']} -"))) {
                         $output->comment("任务正在执行 --> [{$vo['id']}] {$vo['title']}");
                     } else {
-                        Process::create($command);
+                        ProcessExtend::create($command);
                         $output->info("任务创建成功 --> [{$vo['id']}] {$vo['title']}");
                     }
                 } catch (\Exception $e) {

@@ -17,10 +17,10 @@ namespace think\admin\extend;
 
 /**
  * 系统进程管理扩展
- * Class Process
- * @package library
+ * Class ProcessExtend
+ * @package think\admin\extend
  */
-class Process
+class ProcessExtend
 {
 
     /**

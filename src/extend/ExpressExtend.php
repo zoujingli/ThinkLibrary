@@ -17,10 +17,10 @@ namespace think\admin\extend;
 
 /**
  * 物流信息查询扩展
- * Class Express
+ * Class ExpressExtend
  * @package think\admin\extend
  */
-class Express
+class ExpressExtend
 {
     /**
      * 通过百度快递100应用查询物流信息

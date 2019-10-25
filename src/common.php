@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-use think\admin\extend\Http;
+use think\admin\extend\HttpExtend;
 use think\facade\Db;
 
 if (!function_exists('p')) {
@@ -66,7 +66,7 @@ if (!function_exists('sysconf')) {
         list($field, $filter) = explode('|', "{$name}|");
         if (!empty($field) && !empty($value)) {
             list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
-            return \think\admin\extend\Data::save('SystemConfig', $row, 'name', ['type' => $type]);
+            return \think\admin\extend\DataExtend::save('SystemConfig', $row, 'name', ['type' => $type]);
         }
         if (empty($data)) foreach (Db::name('SystemConfig')->select() as $vo) {
             $data[$vo['type']][$vo['name']] = $vo['value'];
@@ -88,7 +88,7 @@ if (!function_exists('http_get')) {
      */
     function http_get($url, $query = [], $options = [])
     {
-        return Http::get($url, $query, $options);
+        return HttpExtend::get($url, $query, $options);
     }
 }
 
@@ -102,7 +102,7 @@ if (!function_exists('http_post')) {
      */
     function http_post($url, $data, $options = [])
     {
-        return Http::post($url, $data, $options);
+        return HttpExtend::post($url, $data, $options);
     }
 }
 
@@ -120,7 +120,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
-        return \think\admin\extend\Data::save($dbQuery, $data, $key, $where);
+        return \think\admin\extend\DataExtend::save($dbQuery, $data, $key, $where);
     }
 }
 

@@ -17,10 +17,10 @@ namespace think\admin\extend;
 
 /**
  * 转出CSV文件扩展
- * Class Csv
+ * Class CsvExtend
  * @package think\admin\extend
  */
-class Csv
+class CsvExtend
 {
 
     /**

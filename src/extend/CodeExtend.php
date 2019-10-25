@@ -17,10 +17,10 @@ namespace think\admin\extend;
 
 /**
  * 随机数码管理扩展
- * Class Code
+ * Class CodeExtend
  * @package think\admin\extend
  */
-class Code
+class CodeExtend
 {
     /**
      * 获取随机字符串编码
