@@ -20,8 +20,8 @@ use think\db\Query;
 
 /**
  * 表单视图管理器
- * Class Form
- * @package library\logic
+ * Class FormHelper
+ * @package think\admin\helper
  */
 class FormHelper extends Helper
 {

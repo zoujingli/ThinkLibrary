@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace think\admin;
+namespace think\admin\extend;
 
 /**
  * 进程基础管理器

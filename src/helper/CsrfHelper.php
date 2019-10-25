@@ -21,7 +21,7 @@ use think\exception\HttpResponseException;
 /**
  * 表单令牌验证器
  * Class CsrfHelper
- * @package library\helper
+ * @package think\admin\helper
  */
 class CsrfHelper extends Helper
 {

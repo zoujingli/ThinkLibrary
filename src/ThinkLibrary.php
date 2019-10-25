@@ -16,6 +16,7 @@
 namespace think\admin;
 
 use think\Request;
+use think\Route;
 use think\Service;
 
 /**
@@ -25,21 +26,19 @@ use think\Service;
  */
 class ThinkLibrary extends Service
 {
-    public function boot()
+    /**
+     * 服务启动方法
+     * @param Route $route
+     */
+    public function boot(Route $route)
     {
-        // 注册系统任务指令
-        $this->commands([
-            'think\admin\queue\WorkQueue',
-            'think\admin\queue\StopQueue',
-            'think\admin\queue\StateQueue',
-            'think\admin\queue\StartQueue',
-            'think\admin\queue\QueryQueue',
-            'think\admin\queue\ListenQueue',
-        ]);
-    }
-
-    public function register()
-    {
+        // 图形验证码路由绑定
+        $route->get('think/admin/captcha', function () {
+            $image = new \app\admin\extend\Captcha();
+            return json(['code' => '1', 'info' => '生成验证码', 'data' => [
+                'uniqid' => $image->getUniqid(), 'image' => $image->getData(),
+            ]]);
+        });
         // 注册访问跨域中间键
         $this->app->middleware->add(function (Request $request, \Closure $next) {
             $header = [];
@@ -55,6 +54,15 @@ class ThinkLibrary extends Service
                 return $next($request)->header($header);
             }
         });
+        // 注册系统任务指令
+        $this->commands([
+            'think\admin\queue\WorkQueue',
+            'think\admin\queue\StopQueue',
+            'think\admin\queue\StateQueue',
+            'think\admin\queue\StartQueue',
+            'think\admin\queue\QueryQueue',
+            'think\admin\queue\ListenQueue',
+        ]);
     }
 
 }

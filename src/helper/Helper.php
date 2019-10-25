@@ -20,8 +20,8 @@ use think\Db;
 
 /**
  * 基础视图管理器
- * Class Logic
- * @package library\view
+ * Class Helper
+ * @package think\admin\helper
  */
 abstract class Helper
 {

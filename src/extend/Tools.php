@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace think\admin;
+namespace think\admin\extend;
 
 use think\Db;
 use think\db\Query;
@@ -21,7 +21,7 @@ use think\db\Query;
 /**
  * 扩展工具包
  * Class Tools
- * @package library
+ * @package think\admin\extend
  */
 class Tools
 {

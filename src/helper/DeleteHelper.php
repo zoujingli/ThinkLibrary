@@ -20,8 +20,8 @@ use think\db\Query;
 
 /**
  * 通用删除管理器
- * Class Delete
- * @package library\logic
+ * Class DeleteHelper
+ * @package think\admin\helper
  */
 class DeleteHelper extends Helper
 {

@@ -13,12 +13,12 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace think\admin;
+namespace think\admin\extend;
 
 /**
  * CURL数据请求管理器
  * Class Http
- * @package library
+ * @package think\admin\extend
  */
 class Http
 {

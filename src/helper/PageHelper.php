@@ -20,8 +20,8 @@ use think\Db;
 
 /**
  * 列表处理管理器
- * Class Page
- * @package library\logic
+ * Class PageHelper
+ * @package think\admin\helper
  */
 class PageHelper extends Helper
 {

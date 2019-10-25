@@ -19,8 +19,8 @@ use think\admin\Controller;
 
 /**
  * 搜索条件处理器
- * Class Query
- * @package library\logic
+ * Class QueryHelper
+ * @package think\admin\helper
  * @see \think\Db\Query
  * @mixin \think\Db\Query
  */

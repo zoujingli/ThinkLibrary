@@ -15,7 +15,7 @@
 
 namespace think\admin\queue;
 
-use think\admin\Process;
+use think\admin\extend\Process;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Argument;
@@ -98,9 +98,9 @@ class WorkQueue extends Command
     protected function update($status, $message)
     {
         $result = Db::name('SystemQueue')->where(['id' => $this->id])->update([
-            'status'    => $status,
+            'status'     => $status,
             'outer_time' => date('Y-m-d H:i:s'),
-            'exec_desc' => is_string($message) ? $message : '',
+            'exec_desc'  => is_string($message) ? $message : '',
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         return $result !== false;

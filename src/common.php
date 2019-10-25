@@ -13,8 +13,8 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-use think\admin\Http;
-use think\admin\Tools;
+use think\admin\extend\Http;
+use think\admin\extend\Tools;
 use think\facade\Db;
 
 if (!function_exists('p')) {

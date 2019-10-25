@@ -21,8 +21,14 @@ use think\admin\storage\QiniuStorage;
 /**
  * 文件存储引擎管理
  * Class Storage
- * @package library
- * @see LocalStorage
+ * @package think\admin
+ * @method array info($name, $safe = false) static 文件存储信息
+ * @method string get($name, $safe = false) static 读取文件内容
+ * @method string url($name, $safe = false) static 获取文件链接
+ * @method string set($name, $content, $safe = false) static 文件储存
+ * @method string path($name, $safe = false) static 文件存储路径
+ * @method boolean del($name, $safe = false) static 删除存储文件
+ * @method boolean has($name, $safe = false) static 检查文件是否存在
  */
 class Storage
 {
@@ -39,29 +45,34 @@ class Storage
     protected static $object = [];
 
     /**
-     * @param string $method
-     * @param array $args
+     * 静态访问
+     * @param string $method 方法名称
+     * @param array $arguments 调用参数
      * @return mixed
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function __call($method, $args)
+    public static function __callStatic($method, $arguments)
     {
-        $class = self::instance(sysconf('storage_type'));
-        if (method_exists($class, $method)) return call_user_func_array([$class, $method], $args);
+        $class = self::instance();
+        if (method_exists($class, $method)) return call_user_func_array([$class, $method], $arguments);
         throw new \think\Exception("method not exists: " . get_class($class) . "->{$method}()");
     }
 
     /**
      * 设置文件驱动名称
-     * @param string $name
+     * @param string $name 驱动名称
      * @return LocalStorage|QiniuStorage
      * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function instance($name)
+    public static function instance($name = null)
     {
+        if (is_null($name)) $name = sysconf('storage_type');
         if (isset(self::$object[$class = ucfirst(strtolower($name))])) {
             return self::$object[$class];
         }
