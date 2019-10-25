@@ -15,9 +15,7 @@
     "ext-gd": "*",
     "ext-curl": "*",
     "ext-json": "*",
-    "ext-iconv": "*",
-    "topthink/framework": "6.0.x-dev",
-    "topthink/think-trace": "dev-master"
+    "ext-iconv": "*"
   },
   "autoload": {
     "files": [
