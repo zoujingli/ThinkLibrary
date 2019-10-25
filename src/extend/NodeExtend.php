@@ -25,13 +25,46 @@ class NodeExtend
 
     /**
      * 控制器扫描处理
-     * @param callable $callable
+     * @param array $data
+     * @return array
+     * @throws \ReflectionException
      */
-    public static function eatchController($callable)
+    public static function getMethods($data = [])
     {
         foreach (self::scanDirectory(app()->getAppPath()) as $file) {
-            dump($file);
+            $content = preg_replace('|\s+|', ' ', file_get_contents($file));
+            preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', $content, $mathches);
+            if (isset($mathches[1]) && isset($mathches[2])) {
+                if (stripos($classname = "{$mathches[1]}\\{$mathches[2]}", '\\controller\\') !== false) {
+                    $refection = new \ReflectionClass($classname);
+                    foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                        list($prex, $class) = explode('\\controller\\', $classname);
+                        $node = strtr($prex . '/' . self::classToLowerName($class), '\\', '/');
+                        $comment = strtr($method->getDocComment(), "\n", ' ');
+                        $data[$node][$method->getName()] = [
+                            'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
+                            'isauth' => intval(preg_match('/@auth\s*true/i', $comment)),
+                            'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
+                        ];
+                    }
+                }
+            }
         }
+        return $data;
+    }
+
+    /**
+     * 驼峰转下划线规则
+     * @param string $class 节点名称
+     * @return string
+     */
+    public static function classToLowerName($class)
+    {
+        $dots = [];
+        foreach (explode('\\', $class) as $dot) {
+            $dots[] = trim(preg_replace("/[A-Z]/", "_\\0", $dot), "_");
+        }
+        return strtolower(join('.', $dots));
     }
 
     /**
