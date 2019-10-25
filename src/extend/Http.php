@@ -16,7 +16,7 @@
 namespace think\admin\extend;
 
 /**
- * CURL数据请求管理器
+ * CURL数据请求扩展
  * Class Http
  * @package think\admin\extend
  */

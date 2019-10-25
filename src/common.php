@@ -14,7 +14,6 @@
 // +----------------------------------------------------------------------
 
 use think\admin\extend\Http;
-use think\admin\extend\Tools;
 use think\facade\Db;
 
 if (!function_exists('p')) {
@@ -67,7 +66,7 @@ if (!function_exists('sysconf')) {
         list($field, $filter) = explode('|', "{$name}|");
         if (!empty($field) && !empty($value)) {
             list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
-            return Tools::dataSave('SystemConfig', $row, 'name', ['type' => $type]);
+            return \think\admin\extend\Data::save('SystemConfig', $row, 'name', ['type' => $type]);
         }
         if (empty($data)) foreach (Db::name('SystemConfig')->select() as $vo) {
             $data[$vo['type']][$vo['name']] = $vo['value'];
@@ -121,7 +120,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
-        return Tools::dataSave($dbQuery, $data, $key, $where);
+        return \think\admin\extend\Data::save($dbQuery, $data, $key, $where);
     }
 }
 

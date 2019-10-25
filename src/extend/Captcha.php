@@ -16,7 +16,7 @@
 namespace app\admin\extend;
 
 /**
- * 图形验证码服务
+ * 图形验证码扩展
  * Class Captcha
  * @package app\admin\service
  */
