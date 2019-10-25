@@ -91,11 +91,11 @@ abstract class Queue
             'title'      => $title,
             'command'    => $command,
             'attempts'   => '0',
+            'rscript'    => intval(boolval($rscript)),
             'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
             'exec_time'  => $later > 0 ? time() + $later : time(),
             'enter_time' => '0',
             'outer_time' => '0',
-            'rscript'    => intval(boolval($rscript)),
         ]);
         return $result !== false;
     }
