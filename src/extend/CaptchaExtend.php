@@ -126,6 +126,15 @@ class CaptchaExtend
     }
 
     /**
+     * 返回当前对象
+     * @return static
+     */
+    public static function instance()
+    {
+        return new static();
+    }
+
+    /**
      * 检查验证码是否正确
      * @param string $code 需要验证的值
      * @param string $uniqid 验证码编号
