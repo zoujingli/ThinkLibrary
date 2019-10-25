@@ -32,24 +32,25 @@ class NodeExtend
     {
         static $data = [];
         if (count($data) > 0) return $data;
-        $data = app()->cache->get('system_auth_node');
+        $data = app()->cache->get('system_auth_node', []);
         if (count($data) > 0) return $data;
         $ignores = get_class_methods('\think\admin\Controller');
         foreach (self::scanDirectory(app()->getAppPath()) as $file) {
-            preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', preg_replace('|\s+|', ' ', file_get_contents($file)), $mchs);
-            if (count($mchs) >= 3 && stripos($class = "{$mchs[1]}\\{$mchs[2]}", '\\controller\\') !== false) {
-                $refection = new \ReflectionClass($class);
+            if (stripos($file, '/controller/') === false) continue;
+            if (preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', strtr(file_get_contents($file), "\n", ' '), $mchs)) {
+                $refection = new \ReflectionClass("{$mchs[1]}\\{$mchs[2]}");
                 foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignores)) continue;
-                    list($prefix, $class) = explode('\\controller\\', $class);
-                    $node = strtr($prefix . '/' . self::classTolower($class), '\\', '/');
+                    list($prefix, $suffix) = explode('\\controller\\', $refection->getName());
+                    $node = strtr("{$prefix}/" . self::classTolower($suffix) . "/{$method->getName()}", '\\', '/');
                     $comment = strtr($method->getDocComment(), "\n", ' ');
-                    $data[$node][$method->getName()] = [
+                    $data[substr($node, stripos($node, '/') + 1)][$method->getName()] = [
                         'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
                         'isauth' => intval(preg_match('/@auth\s*true/i', $comment)),
                         'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
                     ];
                 }
+
             }
         }
         app()->cache->set('system_auth_node', $data);
