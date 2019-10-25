@@ -24,32 +24,35 @@ class NodeExtend
 {
 
     /**
-     * 控制器扫描处理
-     * @param array $data
+     * 控制器方法扫描处理
      * @return array
      * @throws \ReflectionException
      */
-    public static function getMethods($data = [])
+    public static function getMethods()
     {
+        static $data = [];
+        if (count($data) > 0) return $data;
+        $data = app()->cache->get('system_auth_node');
+        if (count($data) > 0) return $data;
+        $ignores = get_class_methods('\think\admin\Controller');
         foreach (self::scanDirectory(app()->getAppPath()) as $file) {
-            $content = preg_replace('|\s+|', ' ', file_get_contents($file));
-            preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', $content, $mathches);
-            if (isset($mathches[1]) && isset($mathches[2])) {
-                if (stripos($classname = "{$mathches[1]}\\{$mathches[2]}", '\\controller\\') !== false) {
-                    $refection = new \ReflectionClass($classname);
-                    foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                        list($prex, $class) = explode('\\controller\\', $classname);
-                        $node = strtr($prex . '/' . self::classTolower($class), '\\', '/');
-                        $comment = strtr($method->getDocComment(), "\n", ' ');
-                        $data[$node][$method->getName()] = [
-                            'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
-                            'isauth' => intval(preg_match('/@auth\s*true/i', $comment)),
-                            'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
-                        ];
-                    }
+            preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', preg_replace('|\s+|', ' ', file_get_contents($file)), $mchs);
+            if (count($mchs) >= 3 && stripos($class = "{$mchs[1]}\\{$mchs[2]}", '\\controller\\') !== false) {
+                $refection = new \ReflectionClass($class);
+                foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                    if (in_array($method->getName(), $ignores)) continue;
+                    list($prefix, $class) = explode('\\controller\\', $class);
+                    $node = strtr($prefix . '/' . self::classTolower($class), '\\', '/');
+                    $comment = strtr($method->getDocComment(), "\n", ' ');
+                    $data[$node][$method->getName()] = [
+                        'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
+                        'isauth' => intval(preg_match('/@auth\s*true/i', $comment)),
+                        'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
+                    ];
                 }
             }
         }
+        app()->cache->set('system_auth_node', $data);
         return $data;
     }
 
