@@ -74,6 +74,7 @@ class WorkQueue extends Command
             if (class_exists($queue['command'])) {
                 if (method_exists($class = new $queue['command'], 'execute')) {
                     $data = json_decode($queue['data'], true);
+                    if (isset($class->queue)) $class->queue = $queue;
                     if (isset($class->jobid)) $class->jobid = $this->id;
                     if (isset($class->title)) $class->title = $queue['title'];
                     $this->update('3', $class->execute($input, $output, is_array($data) ? $data : []));

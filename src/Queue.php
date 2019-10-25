@@ -39,6 +39,12 @@ abstract class Queue
     public $title = '';
 
     /**
+     * 当前任务内容
+     * @var array
+     */
+    public $queue = [];
+
+    /**
      * 判断是否WIN环境
      * @return boolean
      */
