@@ -16,18 +16,27 @@
 namespace think\admin\helper;
 
 use think\admin\Controller;
+use think\App;
 use think\Db;
+use think\db\Query;
 
 /**
- * 基础视图管理器
+ * 基础管理器
  * Class Helper
  * @package think\admin\helper
  */
-abstract class Helper
+class Helper
 {
+
+    /**
+     * 当前应用容器
+     * @var App
+     */
+    public $app;
+
     /**
      * 数据库实例
-     * @var \think\db\Query
+     * @var Query
      */
     protected $query;
 
@@ -38,19 +47,35 @@ abstract class Helper
     public $controller;
 
     /**
-     * 逻辑器初始化
-     * @return mixed
+     * Helper constructor.
+     * @param App $app
+     * @param Controller $controller
      */
-    abstract public function init();
+    public function __construct(Controller $controller, App $app)
+    {
+        $this->app = $app;
+        $this->controller = $controller;
+    }
 
     /**
      * 获取数据库查询对象
-     * @param string|\think\db\Query $dbQuery
-     * @return \think\db\Query
+     * @param string|Query $dbQuery
+     * @return Query
      */
     protected function buildQuery($dbQuery)
     {
         return is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
+    }
+
+    /**
+     * 实例对象反射
+     * @param Controller $controller
+     * @param App $app
+     * @return $this
+     */
+    public static function instance(Controller $controller, App $app)
+    {
+        return new static($controller, $app);
     }
 
 }

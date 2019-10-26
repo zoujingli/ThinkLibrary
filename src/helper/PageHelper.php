@@ -15,8 +15,8 @@
 
 namespace think\admin\helper;
 
-use think\admin\Controller;
 use think\Db;
+use think\db\Query;
 
 /**
  * 列表处理管理器
@@ -50,35 +50,27 @@ class PageHelper extends Helper
     protected $isDisplay;
 
     /**
-     * Page constructor.
-     * @param Controller $controller
-     * @param string $dbQuery 数据库查询对象
+     * 逻辑器初始化
+     * @param string|Query $dbQuery
      * @param boolean $isPage 是否启用分页
      * @param boolean $isDisplay 是否渲染模板
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
-     */
-    public function __construct(Controller $controller, $dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
-    {
-        $this->controller = $controller;
-        $this->total = $total;
-        $this->limit = $limit;
-        $this->isPage = $isPage;
-        $this->isDisplay = $isDisplay;
-        $this->query = $this->buildQuery($dbQuery);
-    }
-
-    /**
-     * 逻辑器初始化
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function init()
+    public function init($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
+
     {
+        $this->total = $total;
+        $this->limit = $limit;
+        $this->isPage = $isPage;
+        $this->isDisplay = $isDisplay;
+        $this->query = $this->buildQuery($dbQuery);
         // 列表排序操作
-        if ($this->controller->request->isPost()) $this->_sort();
+        if ($this->app->request->isPost()) $this->_sort();
         // 未配置 order 规则时自动按 sort 字段排序
         if (!$this->query->getOptions('order') && method_exists($this->query, 'getTableFields')) {
             if (in_array('sort', $this->query->getTableFields())) $this->query->order('sort desc');
@@ -86,14 +78,14 @@ class PageHelper extends Helper
         // 列表分页及结果集处理
         if ($this->isPage) {
             // 分页每页显示记录数
-            $limit = intval($this->controller->request->get('limit', cookie('page-limit')));
+            $limit = intval($this->app->request->get('limit', cookie('page-limit')));
             cookie('page-limit', $limit = $limit >= 10 ? $limit : 20);
             if ($this->limit > 0) $limit = $this->limit;
             $rows = [];
-            $page = $this->query->paginate($limit, $this->total, ['query' => ($query = $this->controller->request->get())]);
+            $page = $this->query->paginate($limit, $this->total, ['query' => ($query = $this->app->request->get())]);
             foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as $num) {
                 list($query['limit'], $query['page'], $selected) = [$num, '1', $limit === $num ? 'selected' : ''];
-                $url = url('@admin') . '#' . $this->controller->request->baseUrl() . '?' . urldecode(http_build_query($query));
+                $url = url('@admin') . '#' . $this->app->request->baseUrl() . '?' . urldecode(http_build_query($query));
                 array_push($rows, "<option data-num='{$num}' value='{$url}' {$selected}>{$num}</option>");
             }
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>" . join('', $rows) . "</select>";
@@ -115,9 +107,9 @@ class PageHelper extends Helper
      */
     protected function _sort()
     {
-        switch (strtolower($this->controller->request->post('action', ''))) {
+        switch (strtolower($this->app->request->post('action', ''))) {
             case 'resort':
-                foreach ($this->controller->request->post() as $key => $value) {
+                foreach ($this->app->request->post() as $key => $value) {
                     if (preg_match('/^_\d{1,}$/', $key) && preg_match('/^\d{1,}$/', $value)) {
                         list($where, $update) = [['id' => trim($key, '_')], ['sort' => $value]];
                         if (false === Db::table($this->query->getTable())->where($where)->update($update)) {
@@ -127,8 +119,8 @@ class PageHelper extends Helper
                 }
                 return $this->controller->success('排序成功, 正在刷新页面！', '');
             case 'sort':
-                $where = $this->controller->request->post();
-                $sort = intval($this->controller->request->post('sort'));
+                $where = $this->app->request->post();
+                $sort = intval($this->app->request->post('sort'));
                 unset($where['action'], $where['sort']);
                 if (Db::table($this->query->getTable())->where($where)->update(['sort' => $sort]) !== false) {
                     return $this->controller->success('排序参数修改成功！', '');

@@ -15,7 +15,7 @@
 
 namespace think\admin\helper;
 
-use think\admin\Controller;
+use think\admin\extend\NodeExtend;
 use think\exception\HttpResponseException;
 
 /**
@@ -39,25 +39,16 @@ class CsrfHelper extends Helper
     protected $token;
 
     /**
-     * CsrfHelper constructor.
-     * @param Controller $controller
-     */
-    public function __construct(Controller $controller)
-    {
-        $this->controller = $controller;
-        $this->node = $this->controller->request->controller(true) . '/' . $this->controller->request->action(true);
-        $this->token = $this->controller->request->header('User-Token-Csrf', input('_csrf_', ''));
-    }
-
-    /**
      * 初始化验证码器
-     * @param bool $return
-     * @return bool
+     * @param boolean $return
+     * @return boolean
      */
     public function init($return = false)
     {
+        $this->node = NodeExtend::getCurrent();
+        $this->token = $this->app->request->header('User-Token-Csrf', input('_csrf_', ''));
         $this->controller->csrf_state = true;
-        if ($this->controller->request->isPost() && $this->checkFormToken()) {
+        if ($this->app->request->isPost() && $this->checkFormToken()) {
             if ($return) return false;
             $this->controller->error($this->controller->csrf_message);
         } else {
@@ -79,7 +70,7 @@ class CsrfHelper extends Helper
      */
     private function checkFormToken()
     {
-        $cache = $this->controller->app->session->get($this->token);
+        $cache = $this->app->session->get($this->token);
         if (empty($cache['node']) || empty($cache['time']) || empty($cache['token'])) return false;
         if ($cache['token'] <> $this->token || $cache['time'] + 600 < time() || $cache['node'] <> $this->node) return false;
         return true;
@@ -91,7 +82,7 @@ class CsrfHelper extends Helper
      */
     private function clearFormToken($name = null)
     {
-        $this->controller->app->session->delete($name);
+        $this->app->session->delete($name);
     }
 
     /**
@@ -103,8 +94,8 @@ class CsrfHelper extends Helper
     {
         list($token, $time) = [uniqid('csrf'), time()];
         // if (is_null($node)) $node = Node::current();
-        $this->controller->app->session->set($token, ['node' => $node, 'token' => $token, 'time' => $time]);
-        foreach ($this->controller->app->session->all() as $key => $item) if (stripos($key, 'csrf') === 0 && isset($item['time'])) {
+        $this->app->session->set($token, ['node' => $node, 'token' => $token, 'time' => $time]);
+        foreach ($this->app->session->all() as $key => $item) if (stripos($key, 'csrf') === 0 && isset($item['time'])) {
             if ($item['time'] + 600 < $time) $this->clearFormToken($key);
         }
         return ['token' => $token, 'node' => $node, 'time' => $time];

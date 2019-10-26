@@ -22,6 +22,10 @@ use think\admin\helper\PageHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
 use think\App;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
+use think\db\Query;
 use think\exception\HttpResponseException;
 
 /**
@@ -37,12 +41,6 @@ class Controller extends \stdClass
      * @var App
      */
     public $app;
-
-    /**
-     * 当前请求对象
-     * @var \think\Request
-     */
-    public $request;
 
     /**
      * 表单CSRF验证状态
@@ -63,8 +61,7 @@ class Controller extends \stdClass
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->request = $this->app->request;
-        if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
+        if (in_array($this->app->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
         $this->initialize();
@@ -85,8 +82,9 @@ class Controller extends \stdClass
      */
     public function error($info, $data = [], $code = 0)
     {
-        $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        throw new HttpResponseException(json($result));
+        throw new HttpResponseException(json([
+            'code' => $code, 'info' => $info, 'data' => $data,
+        ]));
     }
 
     /**
@@ -97,9 +95,12 @@ class Controller extends \stdClass
      */
     public function success($info, $data = [], $code = 1)
     {
-        $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if ($this->csrf_state) (new CsrfHelper($this))->clear();
-        throw new HttpResponseException(json($result));
+        if ($this->csrf_state) {
+            CsrfHelper::instance($this, $this->app)->clear();
+        }
+        throw new HttpResponseException(json([
+            'code' => $code, 'info' => $info, 'data' => $data,
+        ]));
     }
 
     /**
@@ -122,7 +123,7 @@ class Controller extends \stdClass
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
         if ($this->csrf_state) {
-            (new CsrfHelper($this))->fetchTemplate($tpl, $vars, $node);
+            CsrfHelper::instance($this, $this->app)->fetchTemplate($tpl, $vars, $node);
         } else {
             throw new HttpResponseException(view($tpl, $vars));
         }
@@ -138,8 +139,12 @@ class Controller extends \stdClass
     {
         if (is_string($name)) {
             $this->$name = $value;
-        } elseif (is_array($name)) foreach ($name as $k => $v) {
-            if (is_string($k)) $this->$k = $v;
+        } elseif (is_array($name)) {
+            foreach ($name as $k => $v) {
+                if (is_string($k)) {
+                    $this->$k = $v;
+                }
+            }
         }
         return $this;
     }
@@ -154,7 +159,7 @@ class Controller extends \stdClass
     public function callback($name, &$one = [], &$two = [])
     {
         if (is_callable($name)) return call_user_func($name, $this, $one, $two);
-        foreach ([$name, "_{$this->request->action()}{$name}"] as $method) {
+        foreach ([$name, "_{$this->app->request->action()}{$name}"] as $method) {
             if (method_exists($this, $method) && false === $this->$method($one, $two)) {
                 return false;
             }
@@ -169,78 +174,78 @@ class Controller extends \stdClass
      */
     protected function _csrf($return = false)
     {
-        return (new CsrfHelper($this))->init($return);
+        return CsrfHelper::instance($this, $this->app)->init($return);
     }
 
     /**
      * 快捷查询逻辑器
-     * @param string|\think\db\Query $dbQuery
+     * @param string|Query $dbQuery
      * @return QueryHelper
      */
     protected function _query($dbQuery)
     {
-        return (new QueryHelper($this, $dbQuery))->init();
+        return QueryHelper::instance($this, $this->app)->init($dbQuery);
     }
 
     /**
      * 快捷分页逻辑器
-     * @param string|\think\db\Query $dbQuery
+     * @param string|Query $dbQuery
      * @param boolean $isPage 是否启用分页
      * @param boolean $isDisplay 是否渲染模板
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
-        return (new PageHelper($this, $dbQuery, $isPage, $isDisplay, $total, $limit))->init();
+        return PageHelper::instance($this, $this->app)->init($dbQuery, $isPage, $isDisplay, $total, $limit);
     }
 
     /**
      * 快捷表单逻辑器
-     * @param string|\think\db\Query $dbQuery
+     * @param string|Query $dbQuery
      * @param string $template 模板名称
      * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
      * @return array|boolean
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     protected function _form($dbQuery, $template = '', $field = '', $where = [], $data = [])
     {
-        return (new FormHelper($this, $dbQuery, $template, $field, $where, $data))->init();
+        return FormHelper::instance($this, $this->app)->init($dbQuery, $template, $field, $where, $data);
     }
 
     /**
      * 快捷更新逻辑器
-     * @param string|\think\db\Query $dbQuery
+     * @param string|Query $dbQuery
      * @param array $data 表单扩展数据
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     protected function _save($dbQuery, $data = [], $field = '', $where = [])
     {
-        return (new SaveHelper($this, $dbQuery, $data, $field, $where))->init();
+        return SaveHelper::instance($this, $this->app)->init($dbQuery, $data, $field, $where);
     }
 
     /**
      * 快捷删除逻辑器
-     * @param string|\think\db\Query $dbQuery
+     * @param string|Query $dbQuery
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean|null
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     protected function _delete($dbQuery, $field = '', $where = [])
     {
-        return (new DeleteHelper($this, $dbQuery, $field, $where))->init();
+        return DeleteHelper::instance($this, $this->app)->init($dbQuery, $field, $where);
     }
 
 }

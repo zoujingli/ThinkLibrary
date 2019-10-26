@@ -15,7 +15,6 @@
 
 namespace think\admin\helper;
 
-use think\admin\Controller;
 use think\db\Query;
 
 /**
@@ -50,30 +49,21 @@ class SaveHelper extends Helper
     protected $pkValue;
 
     /**
-     * Save constructor.
-     * @param Controller $controller
-     * @param string|Query $dbQuery
+     * 逻辑器初始化
+     * @param Query|string $dbQuery
      * @param array $data 表单扩展数据
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
-     */
-    public function __construct(Controller $controller, $dbQuery, $data = [], $field = '', $where = [])
-    {
-        $this->controller = $controller;
-        $this->where = $where;
-        $this->query = $this->buildQuery($dbQuery);
-        $this->pkField = empty($field) ? $this->query->getPk() : $field;
-        $this->data = empty($data) ? $this->controller->request->post() : $data;
-        $this->pkValue = $this->controller->request->post($this->pkField, null);
-    }
-
-    /**
-     * 逻辑器初始化
      * @return boolean
      * @throws \think\db\exception\DbException
      */
-    public function init()
+    public function init($dbQuery, $data = [], $field = '', $where = [])
     {
+        $this->where = $where;
+        $this->query = $this->buildQuery($dbQuery);
+        $this->pkField = empty($field) ? $this->query->getPk() : $field;
+        $this->data = empty($data) ? $this->app->request->post() : $data;
+        $this->pkValue = $this->app->request->post($this->pkField, null);
         // 主键限制处理
         if (!isset($this->where[$this->pkField]) && is_string($this->pkValue)) {
             $this->query->whereIn($this->pkField, explode(',', $this->pkValue));

@@ -23,6 +23,23 @@ namespace think\admin\extend;
 class NodeExtend
 {
 
+    public static function isAuth($node = '')
+    {
+        if (app()->session->get('admin_user') === 'admin') {
+            return true;
+        }
+        if (empty($node)) $node = self::getCurrent();
+        $count = count($attrs = explode('/', $node));
+        if ($count === 1) {
+            $node = self::getCurrent('namespace') . '//' . "//{$node}";
+        } elseif ($count === 2) {
+            $node = self::getCurrent('controller') . '//' . "//{$node}";
+        } else {
+            $attrs[1] = self::classTolower($attrs[1]);
+            $node = join('/', $attrs);
+        }
+    }
+
     /**
      * 控制器方法扫描处理
      * @return array
@@ -58,15 +75,19 @@ class NodeExtend
     }
 
     /**
-     * 获取当前控制器
+     * 获取当前节点名称
+     * @param string $type 获取类型
      * @return string
-     * @todo
      */
-    public static function current()
+    public static function getCurrent($type = '')
     {
         $app = app();
         $classname = self::classTolower($app->request->controller());
-        $namespace = "{$app->getNamespace()}\\{$classname}\\{$app->request->action()}";
+        if ($type === 'controller') {
+            $namespace = "{$app->getNamespace()}\\{$classname}";
+        } else {
+            $namespace = "{$app->getNamespace()}\\{$classname}\\{$app->request->action()}";
+        }
         return strtr(substr($namespace, stripos($namespace, '\\') + 1), '\\', '/');
     }
 

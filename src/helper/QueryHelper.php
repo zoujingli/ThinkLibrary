@@ -15,7 +15,7 @@
 
 namespace think\admin\helper;
 
-use think\admin\Controller;
+use think\db\Query;
 
 /**
  * 搜索条件处理器
@@ -26,17 +26,6 @@ use think\admin\Controller;
  */
 class QueryHelper extends Helper
 {
-
-    /**
-     * Query constructor.
-     * @param Controller $controller
-     * @param \think\db\Query|string $dbQuery
-     */
-    public function __construct(Controller $controller, $dbQuery)
-    {
-        $this->controller = $controller;
-        $this->query = $this->buildQuery($dbQuery);
-    }
 
     /**
      * Query call.
@@ -54,10 +43,12 @@ class QueryHelper extends Helper
 
     /**
      * 逻辑器初始化
+     * @param string|Query $dbQuery
      * @return $this
      */
-    public function init()
+    public function init($dbQuery)
     {
+        $this->query = $this->buildQuery($dbQuery);
         return $this;
     }
 
@@ -79,7 +70,7 @@ class QueryHelper extends Helper
      */
     public function like($fields, $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$input();
+        $data = $this->app->request->$input();
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             list($dk, $qk) = [$field, $field];
             if (stripos($field, $alias) !== false) {
@@ -101,7 +92,7 @@ class QueryHelper extends Helper
      */
     public function equal($fields, $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$input();
+        $data = $this->app->request->$input();
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             list($dk, $qk) = [$field, $field];
             if (stripos($field, $alias) !== false) {
@@ -124,7 +115,7 @@ class QueryHelper extends Helper
      */
     public function in($fields, $split = ',', $input = 'request', $alias = '#')
     {
-        $data = $this->controller->request->$input();
+        $data = $this->app->request->$input();
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             list($dk, $qk) = [$field, $field];
             if (stripos($field, $alias) !== false) {
@@ -199,7 +190,7 @@ class QueryHelper extends Helper
      */
     private function setBetweenWhere($fields, $split = ' ', $input = 'request', $alias = '#', $callback = null)
     {
-        $data = $this->controller->request->$input();
+        $data = $this->app->request->$input();
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             list($dk, $qk) = [$field, $field];
             if (stripos($field, $alias) !== false) {

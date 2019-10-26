@@ -16,6 +16,7 @@
 namespace think\admin\helper;
 
 use think\admin\Controller;
+use think\App;
 use think\db\Query;
 
 /**
@@ -56,35 +57,25 @@ class FormHelper extends Helper
     protected $template;
 
     /**
-     * Form constructor.
-     * @param Controller $controller
+     * 逻辑器初始化
      * @param string|Query $dbQuery
      * @param string $template 模板名称
-     * @param string $field 指定数据对象主键
+     * @param string $field 指定数据主键
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
-     */
-    public function __construct(Controller $controller, $dbQuery, $template = '', $field = '', $where = [], $data = [])
-    {
-        $this->controller = $controller;
-        $this->query = $this->buildQuery($dbQuery);
-        list($this->template, $this->where, $this->data) = [$template, $where, $data];
-        $this->pkField = empty($field) ? ($this->query->getPk() ? $this->query->getPk() : 'id') : $field;;
-        $this->pkValue = input($this->pkField, isset($data[$this->pkField]) ? $data[$this->pkField] : null);
-    }
-
-    /**
-     * 逻辑器初始化
-     * @param array $data
      * @return array|boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function init($data = [])
+    public function init($dbQuery, $template = '', $field = '', $where = [], $data = [])
     {
+        $this->query = $this->buildQuery($dbQuery);
+        list($this->template, $this->where, $this->data) = [$template, $where, $data];
+        $this->pkField = empty($field) ? ($this->query->getPk() ? $this->query->getPk() : 'id') : $field;;
+        $this->pkValue = input($this->pkField, isset($data[$this->pkField]) ? $data[$this->pkField] : null);
         // GET请求, 获取数据并显示表单页面
-        if ($this->controller->request->isGet()) {
+        if ($this->app->request->isGet()) {
             if ($this->pkValue !== null) {
                 $where = [$this->pkField => $this->pkValue];
                 $data = (array)$this->query->where($where)->where($this->where)->find();
@@ -96,8 +87,8 @@ class FormHelper extends Helper
             return $data;
         }
         // POST请求, 数据自动存库处理
-        if ($this->controller->request->isPost()) {
-            $data = array_merge($this->controller->request->post(), $this->data);
+        if ($this->app->request->isPost()) {
+            $data = array_merge($this->app->request->post(), $this->data);
             if (false !== $this->controller->callback('_form_filter', $data, $this->where)) {
                 $result = data_save($this->query, $data, $this->pkField, $this->where);
                 if (false !== $this->controller->callback('_form_result', $result, $data)) {
