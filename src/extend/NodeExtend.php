@@ -50,7 +50,6 @@ class NodeExtend
                         'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
                     ];
                 }
-
             }
         }
         app()->cache->set('system_auth_node', $data);
