@@ -50,6 +50,7 @@ class NodeExtend
                         'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
                     ];
                 }
+
             }
         }
         app()->cache->set('system_auth_node', $data);
@@ -63,7 +64,10 @@ class NodeExtend
      */
     public static function current()
     {
-        return app()->getNamespace() . '\\' . self::classTolower(app()->request->controller()) . '\\' . app()->request->action();
+        $app = app();
+        $classname = self::classTolower($app->request->controller());
+        $namespace = "{$app->getNamespace()}\\{$classname}\\{$app->request->action()}";
+        return strtr(substr($namespace, stripos($namespace, '\\') + 1), '\\', '/');
     }
 
     /**
@@ -74,7 +78,7 @@ class NodeExtend
     public static function classTolower($name)
     {
         $dots = [];
-        foreach (explode('\\', $name) as $dot) {
+        foreach (explode('.', $name) as $dot) {
             $dots[] = trim(preg_replace("/[A-Z]/", "_\\0", $dot), "_");
         }
         return strtolower(join('.', $dots));
