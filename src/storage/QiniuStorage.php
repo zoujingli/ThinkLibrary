@@ -15,7 +15,7 @@
 
 namespace think\admin\storage;
 
-use think\admin\Http;
+use think\admin\extend\HttpExtend;
 use think\admin\Storage;
 
 /**
@@ -82,7 +82,7 @@ class QiniuStorage extends Storage
         $attrs[] = "";
         $attrs[] = $content;
         $attrs[] = "--{$frontier}--";
-        return json_decode(Http::post($this->getRegion(), join("\r\n", $attrs), [
+        return json_decode(HttpExtend::post($this->getRegion(), join("\r\n", $attrs), [
             'headers' => ["Content-type:multipart/form-data;boundary={$frontier}"],
         ]), true);
     }
@@ -111,7 +111,7 @@ class QiniuStorage extends Storage
     public function del($name, $safe = false)
     {
         list($EncodedEntryURI, $AccessToken) = $this->getAccessToken($name, 'delete');
-        $data = json_decode(Http::post("http://rs.qiniu.com/delete/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
+        $data = json_decode(HttpExtend::post("http://rs.qiniu.com/delete/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
         return empty($data['error']);
     }
 
@@ -157,7 +157,7 @@ class QiniuStorage extends Storage
     public function info($name, $safe = false)
     {
         list($EncodedEntryURI, $AccessToken) = $this->getAccessToken($name);
-        $data = json_decode(Http::post("http://rs.qiniu.com/stat/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
+        $data = json_decode(HttpExtend::post("http://rs.qiniu.com/stat/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
         if (isset($data['md5'])) return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name] : [];
     }
 
