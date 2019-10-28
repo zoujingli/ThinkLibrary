@@ -29,6 +29,7 @@ use think\admin\storage\QiniuStorage;
  * @method boolean del($name, $safe = false) static 删除存储文件
  * @method boolean has($name, $safe = false) static 检查文件是否存在
  * @method string set($name, $content, $safe = false) static 文件储存
+ * @method string upload() static 上传目录地址
  */
 class Storage
 {

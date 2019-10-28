@@ -130,4 +130,13 @@ class LocalStorage extends Storage
         ] : [];
     }
 
+    /**
+     * 获取文件上传地址
+     * @return string
+     */
+    public function upload()
+    {
+        return url('@')->build() . '?s=admin/plugs/upload';
+    }
+
 }

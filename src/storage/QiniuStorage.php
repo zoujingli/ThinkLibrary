@@ -65,11 +65,7 @@ class QiniuStorage extends Storage
      */
     public function set($name, $content, $safe = false)
     {
-        $policy = $this->safeBase64(json_encode([
-            "deadline"   => time() + 3600, "scope" => "{$this->bucket}:{$name}",
-            'returnBody' => json_encode(['filename' => '$(key)', 'url' => "{$this->prefix}/$(key)"], JSON_UNESCAPED_UNICODE),
-        ]));
-        $token = "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
+        $token = $this->buildUploadToken($name);
         list($attrs, $frontier) = [[], uniqid()];
         foreach (['key' => $name, 'token' => $token, 'fileName' => $name] as $key => $value) {
             $attrs[] = "--{$frontier}";
@@ -82,7 +78,7 @@ class QiniuStorage extends Storage
         $attrs[] = "";
         $attrs[] = $content;
         $attrs[] = "--{$frontier}--";
-        return json_decode(HttpExtend::post($this->getRegion(), join("\r\n", $attrs), [
+        return json_decode(HttpExtend::post($this->upload(), join("\r\n", $attrs), [
             'headers' => ["Content-type:multipart/form-data;boundary={$frontier}"],
         ]), true);
     }
@@ -184,28 +180,44 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取七牛云存储区域
+     * 获取文件上传地址
      * @return string
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    private function getRegion()
+    public function upload()
     {
+        $protocol = request()->isSsl() ? 'https' : 'http';
         switch (sysconf('storage_qiniu_region')) {
             case '华东':
-                return 'https://up.qiniup.com';
+                return "{$protocol}://up.qiniup.com";
             case '华北':
-                return 'https://up-z1.qiniup.com';
+                return "{$protocol}://up-z1.qiniup.com";
             case '华南':
-                return 'https://up-z2.qiniup.com';
+                return "{$protocol}://up-z2.qiniup.com";
             case '北美':
-                return 'https://up-na0.qiniup.com';
+                return "{$protocol}://up-na0.qiniup.com";
             case '东南亚':
-                return 'https://up-as0.qiniup.com';
+                return "{$protocol}://up-as0.qiniup.com";
             default:
                 throw new \think\Exception('未配置七牛云空间区域哦');
         }
+    }
+
+    /**
+     * 获取文件上传令牌
+     * @param string $name 文件名称
+     * @param integer $expires 有效时间
+     * @return string
+     */
+    public function buildUploadToken($name = null, $expires = 3600)
+    {
+        $policy = $this->safeBase64(json_encode([
+            "deadline"   => time() + $expires, "scope" => "{$this->bucket}:{$name}",
+            'returnBody' => json_encode(['uploaded' => true, 'filename' => '$(key)', 'url' => "{$this->prefix}/$(key)"], JSON_UNESCAPED_UNICODE),
+        ]));
+        return "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
     }
 }
