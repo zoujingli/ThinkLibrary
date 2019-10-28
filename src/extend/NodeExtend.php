@@ -23,7 +23,14 @@ namespace think\admin\extend;
 class NodeExtend
 {
 
-    public static function isAuth($node = '')
+    /**
+     * 检查指定节点授权
+     * --- 需要读取缓存或扫描所有节点
+     * @param string $node
+     * @return boolean
+     * @throws \ReflectionException
+     */
+    public static function checkAuth($node = '')
     {
         if (app()->session->get('admin_user') === 'admin') {
             return true;
@@ -31,13 +38,13 @@ class NodeExtend
         if (empty($node)) $node = self::getCurrent();
         $count = count($attrs = explode('/', $node));
         if ($count === 1) {
-            $node = self::getCurrent('namespace') . '//' . "//{$node}";
-        } elseif ($count === 2) {
-            $node = self::getCurrent('controller') . '//' . "//{$node}";
+            $node = self::getCurrent('controller') . "/{$node}";
         } else {
             $attrs[1] = self::classTolower($attrs[1]);
             $node = join('/', $attrs);
         }
+        if (empty(self::getMethods()[$node]['isauth'])) return true;
+        return in_array($node, app()->session->get('admin_user.nodes', []));
     }
 
     /**
