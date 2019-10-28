@@ -47,7 +47,7 @@ class Controller extends \stdClass
      * 请求对象
      * @var Request
      */
-    public $req;
+    public $request;
 
     /**
      * 表单CSRF验证状态
@@ -68,6 +68,7 @@ class Controller extends \stdClass
     public function __construct(App $app)
     {
         $this->app = $app;
+        $this->request = $app->request;
         if (in_array($this->app->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
