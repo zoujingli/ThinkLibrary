@@ -17,7 +17,6 @@ namespace think\admin\helper;
 
 use think\admin\Controller;
 use think\App;
-use think\Db;
 use think\db\Query;
 
 /**
@@ -64,7 +63,7 @@ class Helper
      */
     protected function buildQuery($dbQuery)
     {
-        return is_string($dbQuery) ? Db::name($dbQuery) : $dbQuery;
+        return is_string($dbQuery) ? $this->app->db->name($dbQuery) : $dbQuery;
     }
 
     /**
