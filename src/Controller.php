@@ -198,8 +198,8 @@ class Controller extends \stdClass
     /**
      * 快捷分页逻辑器
      * @param string|Query $dbQuery
-     * @param boolean $isPage 是否启用分页
-     * @param boolean $isDisplay 是否渲染模板
+     * @param boolean $page 是否启用分页
+     * @param boolean $display 是否渲染模板
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @return array
@@ -207,9 +207,9 @@ class Controller extends \stdClass
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    protected function _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
+    protected function _page($dbQuery, $page = true, $display = true, $total = false, $limit = 0)
     {
-        return PageHelper::instance($this, $this->app)->init($dbQuery, $isPage, $isDisplay, $total, $limit);
+        return PageHelper::instance($this, $this->app)->init($dbQuery, $page, $display, $total, $limit);
     }
 
     /**
