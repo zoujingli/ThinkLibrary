@@ -14,6 +14,7 @@
 // +----------------------------------------------------------------------
 
 use think\admin\extend\HttpExtend;
+use think\admin\extend\TokenExtend;
 use think\facade\Db;
 
 if (!function_exists('p')) {
@@ -28,6 +29,19 @@ if (!function_exists('p')) {
         if (is_null($file)) $file = env('runtime_path') . date('Ymd') . '.txt';
         $str = (is_string($data) ? $data : (is_array($data) || is_object($data)) ? print_r($data, true) : var_export($data, true)) . PHP_EOL;
         $force ? file_put_contents($file, $str) : file_put_contents($file, $str, FILE_APPEND);
+    }
+}
+
+
+if (!function_exists('systoken')) {
+    /**
+     * 生成 CSRF-TOKEN 参数
+     * @param string $node
+     * @return string
+     */
+    function systoken($node = null)
+    {
+        return TokenExtend::buildFormToken($node)['token'];
     }
 }
 

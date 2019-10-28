@@ -15,7 +15,7 @@
 
 namespace think\admin\helper;
 
-use think\admin\extend\NodeExtend;
+use think\admin\extend\TokenExtend;
 use think\exception\HttpResponseException;
 
 /**
@@ -45,10 +45,10 @@ class CsrfHelper extends Helper
      */
     public function init($return = false)
     {
-        $this->node = NodeExtend::getCurrent();
+        $this->node = TokenExtend::getCurrent();
         $this->token = $this->app->request->header('User-Token-Csrf', input('_csrf_', ''));
         $this->controller->csrf_state = true;
-        if ($this->app->request->isPost() && $this->checkFormToken()) {
+        if ($this->app->request->isPost() && TokenExtend::checkFormToken($this->token)) {
             if ($return) return false;
             $this->controller->error($this->controller->csrf_message);
         } else {
@@ -61,44 +61,7 @@ class CsrfHelper extends Helper
      */
     public function clear()
     {
-        $this->clearFormToken($this->token);
-    }
-
-    /**
-     * 检查表单CSRF验证
-     * @return boolean
-     */
-    private function checkFormToken()
-    {
-        $cache = $this->app->session->get($this->token);
-        if (empty($cache['node']) || empty($cache['time']) || empty($cache['token'])) return false;
-        if ($cache['token'] <> $this->token || $cache['time'] + 600 < time() || $cache['node'] <> $this->node) return false;
-        return true;
-    }
-
-    /**
-     * 清理表单CSRF信息
-     * @param string $name
-     */
-    private function clearFormToken($name = null)
-    {
-        $this->app->session->delete($name);
-    }
-
-    /**
-     * 生成表单CSRF信息
-     * @param null|string $node
-     * @return array
-     */
-    private function buildFormToken($node = null)
-    {
-        list($token, $time) = [uniqid('csrf'), time()];
-        // if (is_null($node)) $node = Node::current();
-        $this->app->session->set($token, ['node' => $node, 'token' => $token, 'time' => $time]);
-        foreach ($this->app->session->all() as $key => $item) if (stripos($key, 'csrf') === 0 && isset($item['time'])) {
-            if ($item['time'] + 600 < $time) $this->clearFormToken($key);
-        }
-        return ['token' => $token, 'node' => $node, 'time' => $time];
+        TokenExtend::clearFormToken($this->token);
     }
 
     /**
@@ -111,7 +74,7 @@ class CsrfHelper extends Helper
     {
         throw new HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
             return preg_replace_callback('/<\/form>/i', function () use ($node) {
-                $csrf = $this->buildFormToken($node);
+                $csrf = TokenExtend::buildFormToken($node);
                 return "<input type='hidden' name='_csrf_' value='{$csrf['token']}'></form>";
             }, $html);
         }));
