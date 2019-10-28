@@ -109,26 +109,13 @@ class PageHelper extends Helper
      */
     protected function _sort()
     {
-        switch (strtolower($this->app->request->post('action', ''))) {
-            case 'resort':
-                foreach ($this->app->request->post() as $key => $value) {
-                    if (preg_match('/^_\d{1,}$/', $key) && preg_match('/^\d{1,}$/', $value)) {
-                        list($where, $update) = [['id' => trim($key, '_')], ['sort' => $value]];
-                        if (false === Db::table($this->query->getTable())->where($where)->update($update)) {
-                            return $this->controller->error('排序失败, 请稍候再试！');
-                        }
-                    }
-                }
-                return $this->controller->success('排序成功, 正在刷新页面！', '');
-            case 'sort':
-                $where = $this->app->request->post();
-                $sort = intval($this->app->request->post('sort'));
-                unset($where['action'], $where['sort']);
-                if (Db::table($this->query->getTable())->where($where)->update(['sort' => $sort]) !== false) {
-                    return $this->controller->success('排序参数修改成功！', '');
-                }
-                return $this->controller->error('排序参数修改失败，请稍候再试！');
+        $map = $this->app->request->post();
+        $sort = intval($this->app->request->post('sort'));
+        unset($map['action'], $map['sort']);
+        if (Db::table($this->query->getTable())->where($map)->update(['sort' => $sort]) !== false) {
+            return $this->controller->success('排序参数修改成功！', '');
         }
+        return $this->controller->error('排序参数修改失败，请稍候再试！');
     }
 
 }
