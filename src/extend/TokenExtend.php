@@ -44,9 +44,9 @@ class TokenExtend
     public static function getCurrent($type = '')
     {
         $prefix = app()->getNamespace();
-        $classname = self::nameTolower(app()->request->controller());
+        $middle = '\\' . self::nameTolower(app()->request->controller());
         $suffix = ($type === 'controller') ? '' : ('\\' . app()->request->action());
-        return strtr(substr($prefix, stripos($prefix, '\\') + 1) . '\\' . $classname . $suffix, '\\', '/');
+        return strtr(substr($prefix, stripos($prefix, '\\') + 1) . $middle . $suffix, '\\', '/');
     }
 
     /**
