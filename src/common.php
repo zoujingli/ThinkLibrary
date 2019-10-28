@@ -15,7 +15,6 @@
 
 use think\admin\extend\HttpExtend;
 use think\admin\extend\TokenExtend;
-use think\facade\Db;
 
 if (!function_exists('p')) {
     /**
