@@ -68,7 +68,6 @@ class Controller extends \stdClass
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->req = $this->app->request;
         if (in_array($this->app->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }

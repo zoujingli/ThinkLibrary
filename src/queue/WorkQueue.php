@@ -64,7 +64,7 @@ class WorkQueue extends Command
         try {
             $this->id = trim($input->getArgument('id')) ?: 0;
             if (empty($this->id)) throw new \think\Exception("执行任务需要指定任务编号！");
-            $queue = Db::name('SystemQueue')->where(['id' => $this->id, 'status' => '2'])->find();
+            $queue = $this->app->db->name('SystemQueue')->where(['id' => $this->id, 'status' => '2'])->find();
             if (empty($queue)) throw new \think\Exception("执行任务{$this->id}的信息或状态异常！");
             // 设置进程标题
             if (ProcessExtend::iswin() && function_exists('cli_set_process_title')) {
@@ -82,7 +82,7 @@ class WorkQueue extends Command
                     throw new \think\Exception("任务处理类 {$queue['command']} 未定义 execute 入口！");
                 }
             } else {
-                $this->update('3', Console::call($queue['command'], [], 'console'));
+                $this->update('3', $this->app->console->call($queue['command'], [], 'console'));
             }
         } catch (\Exception $e) {
             $this->update('4', $e->getMessage());
@@ -98,10 +98,8 @@ class WorkQueue extends Command
      */
     protected function update($status, $message)
     {
-        $result = Db::name('SystemQueue')->where(['id' => $this->id])->update([
-            'status'     => $status,
-            'outer_time' => date('Y-m-d H:i:s'),
-            'exec_desc'  => is_string($message) ? $message : '',
+        $result = $this->app->db->name('SystemQueue')->where(['id' => $this->id])->update([
+            'status' => $status, 'outer_time' => date('Y-m-d H:i:s'), 'exec_desc' => is_string($message) ? $message : '',
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         return $result !== false;

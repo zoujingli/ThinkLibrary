@@ -15,7 +15,6 @@
 
 namespace think\admin\helper;
 
-use think\Db;
 use think\db\Query;
 
 /**
@@ -74,7 +73,7 @@ class PageHelper extends Helper
             $post = $this->app->request->post();
             $sort = intval(isset($post['sort']) ? $post['sort'] : 0);
             unset($post['action'], $post['sort']);
-            if (Db::table($this->query->getTable())->where($post)->update(['sort' => $sort]) !== false) {
+            if ($this->app->db->table($this->query->getTable())->where($post)->update(['sort' => $sort]) !== false) {
                 return $this->class->success('排序参数修改成功！', '');
             }
             return $this->class->error('排序参数修改失败，请稍候再试！');

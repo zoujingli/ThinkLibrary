@@ -19,7 +19,6 @@ use think\admin\extend\ProcessExtend;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-use think\facade\Db;
 
 /**
  * 启动监听异步任务守护的主进程
@@ -46,15 +45,15 @@ class ListenQueue extends Command
      */
     protected function execute(Input $input, Output $output)
     {
-        Db::name('SystemQueue')->count();
+        $this->app->db->name('SystemQueue')->count();
         if (ProcessExtend::iswin()) {
             $this->setProcessTitle("ThinkAdmin 异步任务监听主进程 " . ProcessExtend::version());
         }
         $output->comment('============ 异步任务监听中 ============');
         while (true) {
-            foreach (Db::name('SystemQueue')->where([['status', '=', '1'], ['exec_time', '<=', time()]])->order('exec_time asc')->select() as $vo) {
+            foreach ($this->app->db->name('SystemQueue')->where([['status', '=', '1'], ['exec_time', '<=', time()]])->order('exec_time asc')->select() as $vo) {
                 try {
-                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '2', 'enter_time' => time(), 'attempts' => $vo['attempts'] + 1]);
+                    $this->app->db->name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '2', 'enter_time' => time(), 'attempts' => $vo['attempts'] + 1]);
                     if (ProcessExtend::query($command = ProcessExtend::think("xtask:_work {$vo['id']} -"))) {
                         $output->comment("任务正在执行 --> [{$vo['id']}] {$vo['title']}");
                     } else {
@@ -62,7 +61,7 @@ class ListenQueue extends Command
                         $output->info("任务创建成功 --> [{$vo['id']}] {$vo['title']}");
                     }
                 } catch (\Exception $e) {
-                    Db::name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
+                    $this->app->db->name('SystemQueue')->where(['id' => $vo['id']])->update(['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
                     $output->error("任务创建失败 --> [{$vo['id']}] {$vo['title']}，{$e->getMessage()}");
                 }
             }

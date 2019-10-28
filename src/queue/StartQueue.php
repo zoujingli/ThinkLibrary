@@ -44,7 +44,7 @@ class StartQueue extends Command
      */
     protected function execute(Input $input, Output $output)
     {
-        Db::name('SystemQueue')->count();
+        $this->app->db->name('SystemQueue')->count();
         $command = ProcessExtend::think("xtask:listen");
         if (count($result = ProcessExtend::query($command)) > 0) {
             $output->info("异步任务监听主进程{$result['0']['pid']}已经启动！");
