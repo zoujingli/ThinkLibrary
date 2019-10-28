@@ -27,6 +27,14 @@ use think\Service;
 class ThinkLibrary extends Service
 {
     /**
+     * 依赖服务注册
+     */
+    public function register()
+    {
+        $this->app->middleware->add(\think\middleware\SessionInit::class);
+    }
+
+    /**
      * 服务启动方法
      * @param Route $route
      */
