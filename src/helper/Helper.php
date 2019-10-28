@@ -43,7 +43,7 @@ class Helper
      * 当前控制器实例
      * @var Controller
      */
-    public $controller;
+    public $class;
 
     /**
      * Helper constructor.
@@ -53,7 +53,7 @@ class Helper
     public function __construct(Controller $controller, App $app)
     {
         $this->app = $app;
-        $this->controller = $controller;
+        $this->class = $controller;
     }
 
     /**

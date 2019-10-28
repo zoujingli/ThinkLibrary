@@ -63,7 +63,7 @@ class DeleteHelper extends Helper
             $this->query->whereIn($this->pkField, explode(',', $this->pkValue));
         }
         // 前置回调处理
-        if (false === $this->controller->callback('_delete_filter', $this->query, $where)) {
+        if (false === $this->class->callback('_delete_filter', $this->query, $where)) {
             return null;
         }
         // 执行删除操作
@@ -73,14 +73,14 @@ class DeleteHelper extends Helper
             $result = $this->query->where($this->where)->delete();
         }
         // 结果回调处理
-        if (false === $this->controller->callback('_delete_result', $result)) {
+        if (false === $this->class->callback('_delete_result', $result)) {
             return $result;
         }
         // 回复前端结果
         if ($result !== false) {
-            $this->controller->success('数据删除成功！', '');
+            $this->class->success('数据删除成功！', '');
         } else {
-            $this->controller->error('数据删除失败, 请稍候再试！');
+            $this->class->error('数据删除失败, 请稍候再试！');
         }
     }
 
