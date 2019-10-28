@@ -31,6 +31,9 @@ class DataExtend
      * @param string $key 条件主键限制
      * @param array $where 其它的where条件
      * @return boolean|integer
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function save($dbQuery, $data, $key = 'id', $where = [])
     {
@@ -38,7 +41,7 @@ class DataExtend
         $db = is_string($dbQuery) ? $app->name($dbQuery) : $dbQuery;
         list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
         $map = isset($where[$key]) ? [] : (is_string($value) ? [[$key, 'in', explode(',', $value)]] : [$key => $value]);
-        if (is_array($info = $app->table($table)->master()->where($where)->where($map)->find()) && !empty($info)) {
+        if (is_array($info = $app->db->table($table)->master()->where($where)->where($map)->find()) && !empty($info)) {
             if ($app->table($table)->strict(false)->where($where)->where($map)->update($data) !== false) {
                 return isset($info[$key]) ? $info[$key] : true;
             } else {

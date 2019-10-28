@@ -82,7 +82,7 @@ if (!function_exists('sysconf')) {
             list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
             return \think\admin\extend\DataExtend::save('SystemConfig', $row, 'name', ['type' => $type]);
         }
-        if (empty($data)) foreach (Db::name('SystemConfig')->select() as $vo) {
+        if (empty($data)) foreach (app()->db->name('SystemConfig')->select() as $vo) {
             $data[$vo['type']][$vo['name']] = $vo['value'];
         }
         if (empty($name)) return isset($data[$type]) ? [] : $data[$type];
