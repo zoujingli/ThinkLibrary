@@ -27,6 +27,7 @@ use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 use think\exception\HttpResponseException;
+use think\Request;
 
 /**
  * 标准控制器基类
@@ -37,10 +38,16 @@ class Controller extends \stdClass
 {
 
     /**
-     * 当前应用对象
+     * 应用容器
      * @var App
      */
     public $app;
+
+    /**
+     * 请求对象
+     * @var Request
+     */
+    public $req;
 
     /**
      * 表单CSRF验证状态
@@ -49,7 +56,7 @@ class Controller extends \stdClass
     public $csrf_state = false;
 
     /**
-     * 表单CSRF验证失败提示消息
+     * 表单CSRF验证失败提示
      * @var string
      */
     public $csrf_message = '表单令牌验证失败，请刷新页面再试！';
@@ -61,6 +68,7 @@ class Controller extends \stdClass
     public function __construct(App $app)
     {
         $this->app = $app;
+        $this->req = $this->app->request;
         if (in_array($this->app->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
