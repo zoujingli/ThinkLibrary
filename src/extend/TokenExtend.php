@@ -22,7 +22,6 @@ namespace think\admin\extend;
  */
 class TokenExtend
 {
-
     /**
      * 驼峰转下划线规则
      * @param string $name
@@ -36,7 +35,6 @@ class TokenExtend
         }
         return strtolower(join('.', $dots));
     }
-
 
     /**
      * 获取当前节点内容
@@ -61,9 +59,10 @@ class TokenExtend
         if (empty($node)) return self::getCurrent();
         if (count($attrs = explode('/', $node)) === 1) {
             return self::getCurrent('controller') . "/{$node}";
+        } else {
+            $attrs[1] = self::nameTolower($attrs[1]);
+            return join('/', $attrs);
         }
-        $attrs[1] = self::nameTolower($attrs[1]);
-        return join('/', $attrs);
     }
 
     /**
