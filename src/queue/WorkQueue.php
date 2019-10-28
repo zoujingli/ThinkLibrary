@@ -73,10 +73,11 @@ class WorkQueue extends Command
             // 执行任务内容
             if (class_exists($queue['command'])) {
                 if (method_exists($class = new $queue['command'], 'execute')) {
-                    $data = json_decode($queue['data'], true);
+                    if (isset($class->app)) $class->app = $this->app;
                     if (isset($class->queue)) $class->queue = $queue;
                     if (isset($class->jobid)) $class->jobid = $this->id;
                     if (isset($class->title)) $class->title = $queue['title'];
+                    $data = json_decode($queue['data'], true);
                     $this->update('3', $class->execute($input, $output, is_array($data) ? $data : []));
                 } else {
                     throw new \think\Exception("任务处理类 {$queue['command']} 未定义 execute 入口！");

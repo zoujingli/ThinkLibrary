@@ -42,7 +42,7 @@ class DataExtend
         list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
         $map = isset($where[$key]) ? [] : (is_string($value) ? [[$key, 'in', explode(',', $value)]] : [$key => $value]);
         if (is_array($info = $app->db->table($table)->master()->where($where)->where($map)->find()) && !empty($info)) {
-            if ($app->table($table)->strict(false)->where($where)->where($map)->update($data) !== false) {
+            if ($app->db->table($table)->strict(false)->where($where)->where($map)->update($data) !== false) {
                 return isset($info[$key]) ? $info[$key] : true;
             } else {
                 return false;

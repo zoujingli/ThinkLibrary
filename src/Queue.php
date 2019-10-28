@@ -16,6 +16,7 @@
 namespace think\admin;
 
 use think\admin\extend\ProcessExtend;
+use think\App;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
@@ -27,6 +28,11 @@ use think\Db;
  */
 abstract class Queue
 {
+    /**
+     * @var App
+     */
+    public $app;
+
     /**
      * 当前任务ID
      * @var integer
