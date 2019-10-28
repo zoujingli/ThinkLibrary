@@ -25,10 +25,10 @@ use think\admin\storage\QiniuStorage;
  * @method array info($name, $safe = false) static 文件存储信息
  * @method string get($name, $safe = false) static 读取文件内容
  * @method string url($name, $safe = false) static 获取文件链接
- * @method string set($name, $content, $safe = false) static 文件储存
  * @method string path($name, $safe = false) static 文件存储路径
  * @method boolean del($name, $safe = false) static 删除存储文件
  * @method boolean has($name, $safe = false) static 检查文件是否存在
+ * @method string set($name, $content, $safe = false) static 文件储存
  */
 class Storage
 {
