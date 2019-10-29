@@ -44,7 +44,7 @@ class ProcessExtend
     }
 
     /**
-     * 创建消息任务进程
+     * 创建异步进程
      * @param string $command 任务指令
      */
     public static function create($command)
@@ -58,6 +58,16 @@ class ProcessExtend
     }
 
     /**
+     * 立即执行指令
+     * @param string $command 执行指令
+     * @return string
+     */
+    public static function exec($command)
+    {
+        return self::exec($command);
+    }
+
+    /**
      * 查询相关进程列表
      * @param string $command 任务指令
      * @return array
@@ -66,13 +76,13 @@ class ProcessExtend
     {
         $list = [];
         if (self::iswin()) {
-            $result = shell_exec('wmic process where name="php.exe" get processid,CommandLine');
+            $result = self::exec('wmic process where name="php.exe" get processid,CommandLine');
             foreach (explode("\n", $result) as $line) if (self::_issub($line, $command) !== false) {
                 $attr = explode(' ', self::_space($line));
                 $list[] = ['pid' => array_pop($attr), 'cmd' => join(' ', $attr)];
             }
         } else {
-            $result = shell_exec('ps ax|grep -v grep|grep "' . $command . '"');
+            $result = self::exec('ps ax|grep -v grep|grep "' . $command . '"');
             foreach (explode("\n", $result) as $line) if (self::_issub($line, $command) !== false) {
                 $attr = explode(' ', self::_space($line));
                 list($pid) = [array_shift($attr), array_shift($attr), array_shift($attr), array_shift($attr)];
@@ -90,9 +100,9 @@ class ProcessExtend
     public static function close($pid)
     {
         if (self::iswin()) {
-            shell_exec("wmic process {$pid} call terminate");
+            self::exec("wmic process {$pid} call terminate");
         } else {
-            shell_exec("kill -9 {$pid}");
+            self::exec("kill -9 {$pid}");
         }
         return true;
     }
