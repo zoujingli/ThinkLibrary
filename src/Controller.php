@@ -180,7 +180,7 @@ class Controller extends \stdClass
      * @param boolean $return 是否返回结果
      * @return boolean
      */
-    protected function _token($return = false)
+    protected function _applyFormToken($return = false)
     {
         return TokenHelper::instance($this, $this->app)->init($return);
     }

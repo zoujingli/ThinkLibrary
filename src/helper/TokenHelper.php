@@ -20,7 +20,7 @@ use think\exception\HttpResponseException;
 
 /**
  * 表单令牌验证器
- * Class CsrfHelper
+ * Class TokenHelper
  * @package think\admin\helper
  */
 class TokenHelper extends Helper
