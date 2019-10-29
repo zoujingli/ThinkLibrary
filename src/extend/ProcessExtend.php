@@ -64,7 +64,7 @@ class ProcessExtend
      */
     public static function exec($command)
     {
-        return self::exec($command);
+        return shell_exec($command);
     }
 
     /**
