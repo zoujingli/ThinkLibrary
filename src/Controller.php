@@ -15,7 +15,7 @@
 
 namespace think\admin;
 
-use think\admin\helper\CsrfHelper;
+use think\admin\helper\TokenHelper;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\PageHelper;
@@ -104,7 +104,7 @@ class Controller extends \stdClass
     public function success($info, $data = [], $code = 1)
     {
         if ($this->csrf_state) {
-            CsrfHelper::instance($this, $this->app)->clear();
+            TokenHelper::instance($this, $this->app)->clear();
         }
         throw new HttpResponseException(json([
             'code' => $code, 'info' => $info, 'data' => $data,
@@ -131,7 +131,7 @@ class Controller extends \stdClass
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
         if ($this->csrf_state) {
-            CsrfHelper::instance($this, $this->app)->fetchTemplate($tpl, $vars, $node);
+            TokenHelper::instance($this, $this->app)->fetchTemplate($tpl, $vars, $node);
         } else {
             throw new HttpResponseException(view($tpl, $vars));
         }
@@ -180,9 +180,9 @@ class Controller extends \stdClass
      * @param boolean $return 是否返回结果
      * @return boolean
      */
-    protected function _csrf($return = false)
+    protected function _token($return = false)
     {
-        return CsrfHelper::instance($this, $this->app)->init($return);
+        return TokenHelper::instance($this, $this->app)->init($return);
     }
 
     /**

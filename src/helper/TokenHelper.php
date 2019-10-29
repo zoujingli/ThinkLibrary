@@ -23,7 +23,7 @@ use think\exception\HttpResponseException;
  * Class CsrfHelper
  * @package think\admin\helper
  */
-class CsrfHelper extends Helper
+class TokenHelper extends Helper
 {
     /**
      * 获取当前令牌值
@@ -39,7 +39,7 @@ class CsrfHelper extends Helper
     public function init($return = false)
     {
         $this->class->csrf_state = true;
-        $this->token = $this->app->request->header('User-Token-Csrf', input('_csrf_', ''));
+        $this->token = $this->app->request->header('user-form-token', input('_csrf_', ''));
         if ($this->app->request->isPost() && !TokenExtend::checkFormToken($this->token)) {
             if ($return) return false;
             $this->class->error($this->class->csrf_message);
@@ -53,7 +53,8 @@ class CsrfHelper extends Helper
      */
     public function clear()
     {
-        TokenExtend::clearFormToken($this->token);
+        $this->token = $this->app->request->header('user-form-token', input('_csrf_', ''));
+        if (!empty($this->token)) TokenExtend::clearFormToken($this->token);
     }
 
     /**
@@ -67,7 +68,7 @@ class CsrfHelper extends Helper
         throw new HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
             return preg_replace_callback('/<\/form>/i', function () use ($node) {
                 $csrf = TokenExtend::buildFormToken($node);
-                return "<input type='hidden' name='_csrf_' value='{$csrf['token']}'></form>";
+                return "<input type='hidden' name='_token_' value='{$csrf['token']}'></form>";
             }, $html);
         }));
     }
