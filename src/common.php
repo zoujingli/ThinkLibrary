@@ -13,6 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+use think\admin\extend\DataExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\extend\TokenExtend;
 
@@ -79,7 +80,7 @@ if (!function_exists('sysconf')) {
         list($field, $filter) = explode('|', "{$name}|");
         if (!empty($field) && !empty($value)) {
             list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
-            return \think\admin\extend\DataExtend::save('SystemConfig', $row, 'name', ['type' => $type]);
+            return DataExtend::save('SystemConfig', $row, 'name', ['type' => $type]);
         }
         if (empty($data)) foreach (app()->db->name('SystemConfig')->select() as $vo) {
             $data[$vo['type']][$vo['name']] = $vo['value'];
@@ -133,7 +134,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
-        return \think\admin\extend\DataExtend::save($dbQuery, $data, $key, $where);
+        return DataExtend::save($dbQuery, $data, $key, $where);
     }
 }
 
