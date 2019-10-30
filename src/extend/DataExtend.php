@@ -38,7 +38,7 @@ class DataExtend
     public static function save($dbQuery, $data, $key = 'id', $where = [])
     {
         $app = app();
-        $db = is_string($dbQuery) ? $app->name($dbQuery) : $dbQuery;
+        $db = is_string($dbQuery) ? $app->db->name($dbQuery) : $dbQuery;
         list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
         $map = isset($where[$key]) ? [] : (is_string($value) ? [[$key, 'in', explode(',', $value)]] : [$key => $value]);
         if (is_array($info = $app->db->table($table)->master()->where($where)->where($map)->find()) && !empty($info)) {
