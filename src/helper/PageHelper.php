@@ -102,7 +102,7 @@ class PageHelper extends Helper
             $this->class->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $html));
             $result = ['page' => ['limit' => intval($limit), 'total' => intval($paginate->total()), 'pages' => intval($paginate->lastPage()), 'current' => intval($paginate->currentPage())], 'list' => $paginate->items()];
         } else {
-            $result = ['list' => $this->query->select()];
+            $result = ['list' => $this->query->select()->toArray()];
         }
         if (false !== $this->class->callback('_page_filter', $result['list']) && $this->display) {
             return $this->class->fetch('', $result);
