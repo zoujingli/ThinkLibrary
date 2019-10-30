@@ -22,48 +22,7 @@ namespace think\admin\extend;
  */
 class TokenExtend
 {
-    /**
-     * 驼峰转下划线规则
-     * @param string $name
-     * @return string
-     */
-    public static function nameTolower($name)
-    {
-        $dots = [];
-        foreach (explode('.', $name) as $dot) {
-            $dots[] = trim(preg_replace("/[A-Z]/", "_\\0", $dot), "_");
-        }
-        return strtolower(join('.', $dots));
-    }
 
-    /**
-     * 获取当前节点内容
-     * @param string $type
-     * @return string
-     */
-    public static function getCurrent($type = '')
-    {
-        $prefix = app()->getNamespace();
-        $middle = '\\' . self::nameTolower(app()->request->controller());
-        $suffix = ($type === 'controller') ? '' : ('\\' . app()->request->action());
-        return strtr(substr($prefix, stripos($prefix, '\\') + 1) . $middle . $suffix, '\\', '/');
-    }
-
-    /**
-     * 检查并完整节点内容
-     * @param string $node
-     * @return string
-     */
-    public static function fullnode($node)
-    {
-        if (empty($node)) return self::getCurrent();
-        if (count($attrs = explode('/', $node)) === 1) {
-            return self::getCurrent('controller') . "/{$node}";
-        } else {
-            $attrs[1] = self::nameTolower($attrs[1]);
-            return join('/', $attrs);
-        }
-    }
 
     /**
      * 验证表单令牌是否有效
@@ -72,8 +31,7 @@ class TokenExtend
      */
     public static function checkFormToken($token)
     {
-        $node = TokenExtend::getCurrent();
-        $cache = app()->session->get($token);
+        list($node, $cache) = [NodeExtend::getCurrent(), app()->session->get($token, [])];
         if (empty($cache['node']) || empty($cache['time']) || empty($cache['token'])) return false;
         if ($cache['token'] !== $token || $cache['time'] + 600 < time() || $cache['node'] !== $node) return false;
         return true;
@@ -101,7 +59,7 @@ class TokenExtend
                 if ($item['time'] + 600 < $time) self::clearFormToken($key);
             }
         }
-        $data = ['node' => self::fullnode($node), 'token' => $token, 'time' => $time];
+        $data = ['node' => NodeExtend::fullnode($node), 'token' => $token, 'time' => $time];
         app()->session->set($token, $data);
         return $data;
     }

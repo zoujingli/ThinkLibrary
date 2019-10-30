@@ -15,12 +15,12 @@
 
 namespace think\admin;
 
-use think\admin\helper\TokenHelper;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\PageHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
+use think\admin\helper\TokenHelper;
 use think\App;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -31,8 +31,8 @@ use think\Request;
 
 /**
  * 标准控制器基类
- * --------------------------------
  * Class Controller
+ * @package think\admin
  */
 class Controller extends \stdClass
 {
@@ -176,16 +176,6 @@ class Controller extends \stdClass
     }
 
     /**
-     * 检查表单令牌验证
-     * @param boolean $return 是否返回结果
-     * @return boolean
-     */
-    protected function _applyFormToken($return = false)
-    {
-        return TokenHelper::instance($this, $this->app)->init($return);
-    }
-
-    /**
      * 快捷查询逻辑器
      * @param string|Query $dbQuery
      * @return QueryHelper
@@ -254,6 +244,16 @@ class Controller extends \stdClass
     protected function _delete($dbQuery, $field = '', $where = [])
     {
         return DeleteHelper::instance($this, $this->app)->init($dbQuery, $field, $where);
+    }
+
+    /**
+     * 检查表单令牌验证
+     * @param boolean $return 是否返回结果
+     * @return boolean
+     */
+    protected function _applyFormToken($return = false)
+    {
+        return TokenHelper::instance($this, $this->app)->init($return);
     }
 
 }

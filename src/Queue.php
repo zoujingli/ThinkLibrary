@@ -19,7 +19,6 @@ use think\admin\extend\ProcessExtend;
 use think\App;
 use think\console\Input;
 use think\console\Output;
-use think\Db;
 
 /**
  * 基础任务基类
@@ -71,10 +70,10 @@ abstract class Queue
     protected function reset($wait = 0)
     {
         if (empty($this->jobid)) return false;
-        $queue = Db::name('SystemQueue')->where(['id' => $this->jobid])->find();
+        $queue = app()->db->name('SystemQueue')->where(['id' => $this->jobid])->find();
         if (empty($queue)) return false;
         $update = ['exec_time' => time() + $wait, 'attempts' => $queue['attempts'] + 1, 'status' => '1'];
-        return Db::name('SystemQueue')->where(['id' => $this->jobid])->update($update) !== false;
+        return app()->db->name('SystemQueue')->where(['id' => $this->jobid])->update($update) !== false;
     }
 
     /**
@@ -90,10 +89,10 @@ abstract class Queue
     public static function register($title, $command, $later = 0, $data = [], $rscript = 1)
     {
         $map = [['title', 'eq', $title], ['status', 'in', ['1', '2']]];
-        if (empty($rscript) && Db::name('SystemQueue')->where($map)->count() > 0) {
+        if (empty($rscript) && app()->db->name('SystemQueue')->where($map)->count() > 0) {
             throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
         }
-        $result = Db::name('SystemQueue')->insert([
+        $result = app()->db->name('SystemQueue')->insert([
             'title'      => $title,
             'command'    => $command,
             'attempts'   => '0',
