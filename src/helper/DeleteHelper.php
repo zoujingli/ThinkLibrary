@@ -15,8 +15,6 @@
 
 namespace think\admin\helper;
 
-use think\admin\Controller;
-use think\App;
 use think\db\Query;
 
 /**
