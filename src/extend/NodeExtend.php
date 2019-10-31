@@ -83,7 +83,7 @@ class NodeExtend
             $data = [];
         }
         $ignores = get_class_methods('\think\admin\Controller');
-        foreach (self::scanDirectory(app()->getAppPath()) as $file) {
+        foreach (self::scanDirectory(dirname(app()->getAppPath())) as $file) {
             if (stripos($file, '/controller/') === false) continue;
             if (preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', strtr(file_get_contents($file), "\n", ' '), $mchs)) {
                 $class = new \ReflectionClass("{$mchs[1]}\\{$mchs[2]}");

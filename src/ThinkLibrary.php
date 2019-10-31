@@ -16,7 +16,6 @@
 namespace think\admin;
 
 use think\Request;
-use think\Route;
 use think\Service;
 
 /**
