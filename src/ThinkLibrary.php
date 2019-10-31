@@ -36,17 +36,9 @@ class ThinkLibrary extends Service
 
     /**
      * 服务启动方法
-     * @param Route $route
      */
-    public function boot(Route $route)
+    public function boot()
     {
-        // 图形验证码路由绑定
-        $route->get('think/admin/captcha', function () {
-            $image = \think\admin\extend\CaptchaExtend::instance();
-            return json(['code' => '1', 'info' => '生成验证码', 'data' => [
-                'uniqid' => $image->getUniqid(), 'image' => $image->getData(),
-            ]]);
-        });
         // 注册访问跨域中间键
         $this->app->middleware->add(function (Request $request, \Closure $next) {
             $header = [];
