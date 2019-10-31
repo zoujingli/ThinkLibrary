@@ -82,20 +82,25 @@ if (!function_exists('sysconf')) {
         }
         list($field, $filter) = explode('|', "{$name}|");
         if (!empty($field) && !empty($value)) {
-            list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
-            return DataExtend::save('SystemConfig', $row, 'name', ['type' => $type]);
-        }
-        if (empty($data)) foreach (app()->db->name('SystemConfig')->select()->toArray() as $vo) {
-            $data[$vo['type']][$vo['name']] = $vo['value'];
-        }
-        if (empty($name)) {
-            return empty($data[$type]) ? [] : (strtolower($filter) === 'raw' ? $data[$type] : array_map(function ($value) {
-                return htmlspecialchars($value);
-            }, $data[$type]));
+            if (is_array($value)) {
+                foreach ($value as $k => $v) sysconf("{$field}.{$k}", $v);
+            } else {
+                list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
+                return DataExtend::save('SystemConfig', $row, 'name', ['type' => $type]);
+            }
         } else {
-            if (isset($data[$type]) && isset($data[$type][$field])) {
-                return strtolower($filter) === 'raw' ? $data[$type][$field] : htmlspecialchars($data[$type][$field]);
-            } else return '';
+            if (empty($data)) foreach (app()->db->name('SystemConfig')->select()->toArray() as $vo) {
+                $data[$vo['type']][$vo['name']] = $vo['value'];
+            }
+            if (empty($name)) {
+                return empty($data[$type]) ? [] : (strtolower($filter) === 'raw' ? $data[$type] : array_map(function ($value) {
+                    return htmlspecialchars($value);
+                }, $data[$type]));
+            } else {
+                if (isset($data[$type]) && isset($data[$type][$field])) {
+                    return strtolower($filter) === 'raw' ? $data[$type][$field] : htmlspecialchars($data[$type][$field]);
+                } else return '';
+            }
         }
     }
 }
