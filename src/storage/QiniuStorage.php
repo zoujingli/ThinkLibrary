@@ -40,12 +40,12 @@ class QiniuStorage extends Storage
     public function __construct()
     {
         // 读取配置文件
-        $this->bucket = sysconf('storage_qiniu_bucket');
-        $this->accessKey = sysconf('storage_qiniu_access_key');
-        $this->secretKey = sysconf('storage_qiniu_secret_key');
-        $this->domain = strtolower(sysconf('storage_qiniu_domain'));
+        $this->bucket = sysconf('storage.qiniu_bucket');
+        $this->accessKey = sysconf('storage.qiniu_access_key');
+        $this->secretKey = sysconf('storage.qiniu_secret_key');
+        $this->domain = strtolower(sysconf('storage.qiniu_http_domain'));
         // 计算前置链接
-        $type = strtolower(sysconf('storage_qiniu_is_https'));
+        $type = strtolower(sysconf('storage.qiniu_http_protocol'));
         if ($type === 'auto') $this->prefix = "//{$this->domain}/";
         elseif ($type === 'http') $this->prefix = "http://{$this->domain}/";
         elseif ($type === 'https') $this->prefix = "https://{$this->domain}/";
@@ -107,7 +107,9 @@ class QiniuStorage extends Storage
     public function del($name, $safe = false)
     {
         list($EncodedEntryURI, $AccessToken) = $this->getAccessToken($name, 'delete');
-        $data = json_decode(HttpExtend::post("http://rs.qiniu.com/delete/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
+        $data = json_decode(HttpExtend::post("http://rs.qiniu.com/delete/{$EncodedEntryURI}", [], [
+            'headers' => ["Authorization:QBox {$AccessToken}"],
+        ]), true);
         return empty($data['error']);
     }
 
@@ -153,8 +155,10 @@ class QiniuStorage extends Storage
     public function info($name, $safe = false)
     {
         list($EncodedEntryURI, $AccessToken) = $this->getAccessToken($name);
-        $data = json_decode(HttpExtend::post("http://rs.qiniu.com/stat/{$EncodedEntryURI}", [], ['headers' => ["Authorization:QBox {$AccessToken}"]]), true);
-        if (isset($data['md5'])) return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name] : [];
+        $data = json_decode(HttpExtend::post("http://rs.qiniu.com/stat/{$EncodedEntryURI}", [], [
+            'headers' => ["Authorization:QBox {$AccessToken}"],
+        ]), true);
+        return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name] : [];
     }
 
     /**
@@ -190,7 +194,7 @@ class QiniuStorage extends Storage
     public function upload()
     {
         $protocol = request()->isSsl() ? 'https' : 'http';
-        switch (sysconf('storage_qiniu_region')) {
+        switch (sysconf('storage.qiniu_region')) {
             case '华东':
                 return "{$protocol}://up.qiniup.com";
             case '华北':
