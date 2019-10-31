@@ -34,16 +34,16 @@ class Helper
     public $app;
 
     /**
-     * 数据库实例
-     * @var Query
-     */
-    protected $query;
-
-    /**
      * 当前控制器实例
      * @var Controller
      */
     public $class;
+
+    /**
+     * 数据库实例
+     * @var Query
+     */
+    protected $query;
 
     /**
      * Helper constructor.

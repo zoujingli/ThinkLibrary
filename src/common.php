@@ -16,6 +16,7 @@
 use think\admin\extend\DataExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\extend\TokenExtend;
+use think\db\Query;
 
 if (!function_exists('p')) {
     /**
@@ -115,7 +116,7 @@ if (!function_exists('http_get')) {
 
 if (!function_exists('http_post')) {
     /**
-     * 以get模拟网络请求
+     * 以post模拟网络请求
      * @param string $url HTTP请求URL地址
      * @param array|string $data POST请求数据
      * @param array $options CURL参数
@@ -130,7 +131,7 @@ if (!function_exists('http_post')) {
 if (!function_exists('data_save')) {
     /**
      * 数据增量保存
-     * @param \think\db\Query|string $dbQuery 数据查询对象
+     * @param Query|string $dbQuery
      * @param array $data 需要保存或更新的数据
      * @param string $key 条件主键限制
      * @param array $where 其它的where条件
