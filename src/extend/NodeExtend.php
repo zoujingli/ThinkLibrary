@@ -87,22 +87,36 @@ class NodeExtend
             if (stripos($file, '/controller/') === false) continue;
             if (preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', strtr(file_get_contents($file), "\n", ' '), $mchs)) {
                 $refection = new \ReflectionClass("{$mchs[1]}\\{$mchs[2]}");
+                list($prefix, $suffix) = explode('\\controller\\', $refection->getName());
+                $space = strtr("{$prefix}/" . self::nameTolower($suffix), '\\', '/');
+                $controller = substr($space, stripos($space, '/') + 1);
+                $data[$controller] = self::parseComment($refection->getDocComment());
                 foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignores)) continue;
-                    list($prefix, $suffix) = explode('\\controller\\', $refection->getName());
-                    $space = strtr("{$prefix}/" . self::nameTolower($suffix) . "/{$method->getName()}", '\\', '/');
-                    $comment = strtr($method->getDocComment(), "\n", ' ');
-                    $data[substr($space, stripos($space, '/') + 1)] = [
-                        'title'  => preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $comment) ?: $method->getName(),
-                        'isauth' => intval(preg_match('/@auth\s*true/i', $comment)),
-                        'ismenu' => intval(preg_match('/@menu\s*true/i', $comment)),
-                    ];
+                    $data["{$controller}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
                 }
-
             }
         }
         app()->cache->set('system_auth_node', $data);
         return $data;
+    }
+
+    /**
+     * 解析硬节点属性
+     * @param string $comment
+     * @param string $default
+     * @return array
+     */
+    private static function parseComment($comment, $default = '')
+    {
+        $text = strtr($comment, "\n", ' ');
+        $title = preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $text);
+        return [
+            'title'   => $title ? $title : $default,
+            'isauth'  => intval(preg_match('/@auth\s*true/i', $text)),
+            'ismenu'  => intval(preg_match('/@menu\s*true/i', $text)),
+            'islogin' => intval(preg_match('/@login\s*true/i', $text)),
+        ];
     }
 
     /**
