@@ -62,6 +62,10 @@ class ThinkLibrary extends Service
             'think\admin\queue\QueryQueue',
             'think\admin\queue\ListenQueue',
         ]);
+        // 动态加入应用函数
+        foreach (glob(dirname($this->app->getAppPath()) . '/*/sys.php') as $file) {
+            \Composer\Autoload\includeFile($file);
+        }
     }
 
 }
