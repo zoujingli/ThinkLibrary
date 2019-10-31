@@ -67,15 +67,18 @@ if (!function_exists('sysconf')) {
      * 设备或配置系统参数
      * @param string $name 参数名称
      * @param string $value 参数内容
-     * @param string $type 配置类型
-     * @return string|boolean
+     * @return mixed
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    function sysconf($name = '', $value = null, $type = 'base')
+    function sysconf($name = '', $value = null)
     {
+        $type = 'base';
         static $data = [];
+        if (stripos($name, '.') !== false) {
+            list($type, $name) = explode('.', $name);
+        }
         list($field, $filter) = explode('|', "{$name}|");
         if (!empty($field) && !empty($value)) {
             list($row, $data) = [['name' => $field, 'value' => $value, 'type' => $type], []];
@@ -84,10 +87,15 @@ if (!function_exists('sysconf')) {
         if (empty($data)) foreach (app()->db->name('SystemConfig')->select()->toArray() as $vo) {
             $data[$vo['type']][$vo['name']] = $vo['value'];
         }
-        if (empty($name)) return isset($data[$type]) ? [] : $data[$type];
-        if (isset($data[$type]) && isset($data[$type][$field])) {
-            return strtolower($filter) === 'raw' ? $data[$type][$field] : htmlspecialchars($data[$type][$field]);
-        } else return '';
+        if (empty($name)) {
+            return empty($data[$type]) ? [] : (strtolower($filter) === 'raw' ? $data[$type] : array_map(function ($value) {
+                return htmlspecialchars($value);
+            }, $data[$type]));
+        } else {
+            if (isset($data[$type]) && isset($data[$type][$field])) {
+                return strtolower($filter) === 'raw' ? $data[$type][$field] : htmlspecialchars($data[$type][$field]);
+            } else return '';
+        }
     }
 }
 
