@@ -30,7 +30,12 @@ class ThinkLibrary extends Service
      */
     public function register()
     {
+        // 注册会话中间键
         $this->app->middleware->add(\think\middleware\SessionInit::class);
+        // 动态加入应用函数
+        foreach (glob($this->app->getAppPath() . '*/sys.php') as $file) {
+            \Composer\Autoload\includeFile($file);
+        }
     }
 
     /**
@@ -62,10 +67,6 @@ class ThinkLibrary extends Service
             'think\admin\queue\QueryQueue',
             'think\admin\queue\ListenQueue',
         ]);
-        // 动态加入应用函数
-        foreach (glob(dirname($this->app->getAppPath()) . '/*/sys.php') as $file) {
-            \Composer\Autoload\includeFile($file);
-        }
     }
 
 }
