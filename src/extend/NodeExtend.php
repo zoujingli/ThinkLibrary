@@ -86,14 +86,13 @@ class NodeExtend
         foreach (self::scanDirectory(dirname(app()->getAppPath())) as $file) {
             if (preg_match("|/(\w+)/(\w+)/controller/(.+)\.php$|i", $file, $matches)) {
                 if (count($matches) !== 4) continue;
-                list(, $namespace, $application, $classname) = $matches;
-                $controller = strtr("{$namespace}/{$application}/controller/{$classname}", '/', '\\');
-                $classname = strtr("{$application}/" . self::nameTolower($classname), '\\', '/');
-                $reflection = new \ReflectionClass($controller);
-                $data[$classname] = self::parseComment($reflection->getDocComment());
-                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                list(, $namespace, $application, $baseclass) = $matches;
+                $class = new \ReflectionClass(strtr("{$namespace}/{$application}/controller/{$baseclass}", '/', '\\'));
+                $prefix = strtr("{$application}/" . self::nameTolower($baseclass), '\\', '/');
+                $data[$prefix] = self::parseComment($class->getDocComment(), $baseclass);
+                foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignore)) continue;
-                    $data["{$classname}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
+                    $data["{$prefix}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
                 }
             }
         }
