@@ -74,24 +74,24 @@ class NodeExtend
      */
     public static function getMethods($force = false)
     {
+        static $data = [];
         if (empty($force)) {
-            $data = [];
             if (count($data) > 0) return $data;
             $data = app()->cache->get('system_auth_node', []);
             if (count($data) > 0) return $data;
         } else {
-            static $data = [];
+            $data = [];
         }
         $ignores = get_class_methods('\think\admin\Controller');
         foreach (self::scanDirectory(app()->getAppPath()) as $file) {
             if (stripos($file, '/controller/') === false) continue;
             if (preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', strtr(file_get_contents($file), "\n", ' '), $mchs)) {
-                $refection = new \ReflectionClass("{$mchs[1]}\\{$mchs[2]}");
-                list($prefix, $suffix) = explode('\\controller\\', $refection->getName());
+                $class = new \ReflectionClass("{$mchs[1]}\\{$mchs[2]}");
+                list($prefix, $suffix) = explode('\\controller\\', $class->getName());
                 $space = strtr("{$prefix}/" . self::nameTolower($suffix), '\\', '/');
                 $controller = substr($space, stripos($space, '/') + 1);
-                $data[$controller] = self::parseComment($refection->getDocComment());
-                foreach ($refection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                $data[$controller] = self::parseComment($class->getDocComment());
+                foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignores)) continue;
                     $data["{$controller}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
                 }
