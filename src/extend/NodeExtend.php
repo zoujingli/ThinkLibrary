@@ -85,7 +85,6 @@ class NodeExtend
         $ignore = get_class_methods('\think\admin\Controller');
         foreach (self::scanDirectory(dirname(app()->getAppPath())) as $file) {
             if (preg_match("|/(\w+)/(\w+)/controller/(.+)\.php$|i", $file, $matches)) {
-                if (count($matches) !== 4) continue;
                 list(, $namespace, $application, $baseclass) = $matches;
                 $class = new \ReflectionClass(strtr("{$namespace}/{$application}/controller/{$baseclass}", '/', '\\'));
                 $prefix = strtr("{$application}/" . self::nameTolower($baseclass), '\\', '/');
