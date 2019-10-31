@@ -219,7 +219,7 @@ class QiniuStorage extends Storage
     public function buildUploadToken($name = null, $expires = 3600)
     {
         $policy = $this->safeBase64(json_encode([
-            "deadline"   => time() + $expires, "scope" => "{$this->bucket}:{$name}",
+            "deadline"   => time() + $expires, "scope" => is_null($name) ? $this->bucket : "{$this->bucket}:{$name}",
             'returnBody' => json_encode(['uploaded' => true, 'filename' => '$(key)', 'url' => "{$this->prefix}/$(key)"], JSON_UNESCAPED_UNICODE),
         ]));
         return "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
