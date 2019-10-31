@@ -82,7 +82,7 @@ class NodeExtend
         } else {
             $data = [];
         }
-        $ignores = get_class_methods('\think\admin\Controller');
+        $ignore = get_class_methods('\think\admin\Controller');
         foreach (self::scanDirectory(dirname(app()->getAppPath())) as $file) {
             if (stripos($file, '/controller/') === false) continue;
             if (preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', strtr(file_get_contents($file), "\n", ' '), $mchs)) {
@@ -92,7 +92,7 @@ class NodeExtend
                 $controller = substr($space, stripos($space, '/') + 1);
                 $data[$controller] = self::parseComment($class->getDocComment());
                 foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    if (in_array($method->getName(), $ignores)) continue;
+                    if (in_array($method->getName(), $ignore)) continue;
                     $data["{$controller}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
                 }
             }
