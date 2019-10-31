@@ -31,7 +31,7 @@ class NodeExtend
     public static function nameTolower($name)
     {
         $dots = [];
-        foreach (explode('.', $name) as $dot) {
+        foreach (explode('.', strtr($name, '/', '.')) as $dot) {
             $dots[] = trim(preg_replace("/[A-Z]/", "_\\0", $dot), "_");
         }
         return strtolower(join('.', $dots));
@@ -84,16 +84,16 @@ class NodeExtend
         }
         $ignore = get_class_methods('\think\admin\Controller');
         foreach (self::scanDirectory(dirname(app()->getAppPath())) as $file) {
-            if (stripos($file, '/controller/') === false) continue;
-            if (preg_match('|namespace\s+(.*?);.*?\s+class\s+(.*?)\s+|xi', strtr(file_get_contents($file), "\n", ' '), $mchs)) {
-                $class = new \ReflectionClass("{$mchs[1]}\\{$mchs[2]}");
-                list($prefix, $suffix) = explode('\\controller\\', $class->getName());
-                $space = strtr("{$prefix}/" . self::nameTolower($suffix), '\\', '/');
-                $controller = substr($space, stripos($space, '/') + 1);
-                $data[$controller] = self::parseComment($class->getDocComment());
-                foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            if (preg_match("|/(\w+)/(\w+)/controller/(.+)\.php$|i", $file, $matches)) {
+                if (count($matches) !== 4) continue;
+                list(, $namespace, $application, $classname) = $matches;
+                $controller = strtr("{$namespace}/{$application}/controller/{$classname}", '/', '\\');
+                $classname = strtr("{$application}/" . self::nameTolower($classname), '\\', '/');
+                $reflection = new \ReflectionClass($controller);
+                $data[$classname] = self::parseComment($reflection->getDocComment());
+                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignore)) continue;
-                    $data["{$controller}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
+                    $data["{$classname}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
                 }
             }
         }
