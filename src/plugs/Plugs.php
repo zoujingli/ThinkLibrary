@@ -49,7 +49,18 @@ class Plugs extends Command
         $output->comment("=== 准备从代码仓库下载更新{$extend->getVersion()}版本文件 ===");
         $data = $extend->grenerateDifference($this->rules, $this->ignore);
         if (empty($data)) $output->info('--- 本地文件与线上文件一致，无需更新文件');
-        else foreach ($data as $file) $extend->fileSynchronization($file);
+        else foreach ($data as $file) {
+            list($state, $mode, $name) = $extend->fileSynchronization($file);
+            if ($state) {
+                if ($mode === 'add') $this->output->info("--- 下载 {$name} 添加成功");
+                if ($mode === 'mod') $this->output->info("--- 下载 {$name} 更新成功");
+                if ($mode === 'del') $this->output->info("--- 删除 {$name} 文件成功");
+            } else {
+                if ($mode === 'add') $this->output->error("--- 下载 {$name} 添加失败");
+                if ($mode === 'mod') $this->output->error("--- 下载 {$name} 更新失败");
+                if ($mode === 'del') $this->output->error("--- 删除 {$name} 文件失败");
+            }
+        }
         $output->comment("=== 从代码仓库下载{$extend->getVersion()}版本同步更新成功 ===");
         $this->install();
     }
