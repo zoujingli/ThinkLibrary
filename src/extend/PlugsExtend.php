@@ -112,24 +112,25 @@ class PlugsExtend
     }
 
     /**
-     * 同步指定文件
+     * 同步更新文件
      * @param array $file
+     * @return array
      */
     public function fileSynchronization($file)
     {
         if (in_array($file['type'], ['add', 'mod'])) {
             if ($this->downloadFile(encode($file['name']))) {
-                $this->output->writeln("--- 下载 {$file['name']} 更新成功");
+                return [true, $file['type'], $file['name']];
             } else {
-                $this->output->writeln("--- 下载 {$file['name']} 更新失败");
+                return [false, $file['type'], $file['name']];
             }
         } elseif (in_array($file['type'], ['del'])) {
             $real = $this->path . $file['name'];
             if (is_file($real) && unlink($real)) {
                 $this->removeEmptyDirectory(dirname($real));
-                $this->output->writeln("--- 删除 {$file['name']} 文件成功");
+                return [true, $file['type'], $file['name']];
             } else {
-                $this->output->error("--- 删除 {$file['name']} 文件失败");
+                return [false, $file['type'], $file['name']];
             }
         }
     }
