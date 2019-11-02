@@ -220,11 +220,12 @@ class PlugsExtend
     {
         // 扫描规则文件
         foreach ($rules as $key => $rule) {
-            $data = array_merge($data, $this->scanFileList(strtr("{$this->path}{$rule}", '\\', '/')));
+            $name = strtr(trim($rule, '\\/'), '\\', '/');
+            $data = array_merge($data, $this->scanFileList("{$this->path}{$name}"));
         }
         // 清除忽略文件
-        foreach ($data as $key => $map) foreach ($ignore as $ingore) {
-            if (stripos($map['name'], $ingore) === 0) unset($data[$key]);
+        foreach ($data as $key => $item) foreach ($ignore as $ingore) {
+            if (stripos($item['name'], $ingore) === 0) unset($data[$key]);
         }
         return ['rules' => $rules, 'ignore' => $ignore, 'list' => $data];
     }
