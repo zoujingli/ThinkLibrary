@@ -15,7 +15,8 @@
 
 use think\admin\extend\DataExtend;
 use think\admin\extend\HttpExtend;
-use think\admin\extend\TokenExtend;
+use think\admin\service\AuthService;
+use think\admin\service\TokenService;
 use think\db\Query;
 
 if (!function_exists('p')) {
@@ -33,6 +34,19 @@ if (!function_exists('p')) {
     }
 }
 
+if (!function_exists('auth')) {
+    /**
+     * 访问权限检查
+     * @param string $node
+     * @return boolean
+     * @throws ReflectionException
+     */
+    function auth($node)
+    {
+        return AuthService::instance()->check($node);
+    }
+}
+
 if (!function_exists('systoken')) {
     /**
      * 生成 CSRF-TOKEN 参数
@@ -41,7 +55,7 @@ if (!function_exists('systoken')) {
      */
     function systoken($node = null)
     {
-        return TokenExtend::buildFormToken($node)['token'];
+        return TokenService::instance()->buildFormToken($node)['token'];
     }
 }
 
