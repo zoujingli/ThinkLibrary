@@ -13,7 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace think\admin\install;
+namespace think\admin\command;
 
 use think\admin\service\InstallService;
 use think\console\Command;
@@ -26,7 +26,7 @@ use think\console\Output;
  * Class CommandInstall
  * @package think\admin\install
  */
-class CommandInstall extends Command
+class InstallCommand extends Command
 {
     /**
      * 查询规则
