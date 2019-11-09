@@ -62,7 +62,7 @@ class ThinkLibrary extends Service
             } elseif (AuthService::instance($this->app)->isLogin()) {
                 return json(['code' => 0, 'msg' => '抱歉，没有访问该操作的权限！'])->header($header);
             } else {
-                return json(['code' => 0, 'msg' => '抱歉，需要登录获取访问权限！', 'url' => url('@admin/login')])->header($header);
+                return json(['code' => 0, 'msg' => '抱歉，需要登录获取访问权限！', 'url' => url('@admin/login')->build()])->header($header);
             }
         }, 'route');
         // 注册系统任务指令
