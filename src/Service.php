@@ -34,7 +34,7 @@ abstract class Service
      * 实例缓存
      * @var $this
      */
-    protected static $cache;
+    protected static $cache = [];
 
     /**
      * Service constructor.
@@ -60,12 +60,11 @@ abstract class Service
      */
     public static function instance(App $app = null)
     {
-        if (is_null($app)) {
-            $app = app();
+        if (is_null($app)) $app = app();
+        $key = md5(get_called_class());
+        if (!isset(self::$cache[$key])) {
+            self::$cache[$key] = new static($app);
         }
-        if (empty(self::$cache)) {
-            self::$cache = new static($app);
-        }
-        return self::$cache;
+        return self::$cache[$key];
     }
 }
