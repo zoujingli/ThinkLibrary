@@ -57,7 +57,7 @@ class TokenService extends Service
         list($token, $time) = [uniqid('csrf'), time()];
         foreach ($this->app->session->all() as $key => $item) {
             if (stripos($key, 'csrf') === 0 && isset($item['time'])) {
-                if ($item['time'] + 600 < $time) self::clearFormToken($key);
+                if ($item['time'] + 600 < $time) $this->clearFormToken($key);
             }
         }
         $data = ['node' => NodeService::instance($this->app)->fullnode($node), 'token' => $token, 'time' => $time];

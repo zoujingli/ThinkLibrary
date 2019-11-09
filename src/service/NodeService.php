@@ -46,7 +46,7 @@ class NodeService extends Service
     public function getCurrent($type = '')
     {
         $prefix = $this->app->getNamespace();
-        $middle = '\\' . self::nameTolower($this->app->request->controller());
+        $middle = '\\' . $this->nameTolower($this->app->request->controller());
         $suffix = ($type === 'controller') ? '' : ('\\' . $this->app->request->action());
         return strtr(substr($prefix, stripos($prefix, '\\') + 1) . $middle . $suffix, '\\', '/');
     }
@@ -58,11 +58,11 @@ class NodeService extends Service
      */
     public function fullnode($node)
     {
-        if (empty($node)) return self::getCurrent();
+        if (empty($node)) return $this->getCurrent();
         if (count($attrs = explode('/', $node)) === 1) {
-            return self::getCurrent('controller') . "/{$node}";
+            return $this->getCurrent('controller') . "/{$node}";
         } else {
-            $attrs[1] = self::nameTolower($attrs[1]);
+            $attrs[1] = $this->nameTolower($attrs[1]);
             return join('/', $attrs);
         }
     }
@@ -84,15 +84,15 @@ class NodeService extends Service
             $data = [];
         }
         $ignore = get_class_methods('\think\admin\Controller');
-        foreach (self::scanDirectory(dirname($this->app->getAppPath())) as $file) {
+        foreach ($this->scanDirectory(dirname($this->app->getAppPath())) as $file) {
             if (preg_match("|/(\w+)/(\w+)/controller/(.+)\.php$|i", $file, $matches)) {
                 list(, $namespace, $application, $baseclass) = $matches;
                 $class = new \ReflectionClass(strtr("{$namespace}/{$application}/controller/{$baseclass}", '/', '\\'));
-                $prefix = strtr("{$application}/" . self::nameTolower($baseclass), '\\', '/');
-                $data[$prefix] = self::parseComment($class->getDocComment(), $baseclass);
+                $prefix = strtr("{$application}/" . $this->nameTolower($baseclass), '\\', '/');
+                $data[$prefix] = $this->parseComment($class->getDocComment(), $baseclass);
                 foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($method->getName(), $ignore)) continue;
-                    $data["{$prefix}/{$method->getName()}"] = self::parseComment($method->getDocComment(), $method->getName());
+                    $data["{$prefix}/{$method->getName()}"] = $this->parseComment($method->getDocComment(), $method->getName());
                 }
             }
         }
@@ -129,7 +129,7 @@ class NodeService extends Service
     {
         foreach (glob("{$path}*") as $item) {
             if (is_dir($item)) {
-                $data = array_merge($data, self::scanDirectory("{$item}/"));
+                $data = array_merge($data, $this->scanDirectory("{$item}/"));
             } elseif (is_file($item) && pathinfo($item, PATHINFO_EXTENSION) === $ext) {
                 $data[] = strtr($item, '\\', '/');
             }

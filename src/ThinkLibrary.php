@@ -64,7 +64,7 @@ class ThinkLibrary extends Service
             } else {
                 return json(['code' => 0, 'msg' => '抱歉，需要登录获取访问权限！', 'url' => url('@admin/login')])->header($header);
             }
-        });
+        }, 'controller');
         // 注册系统任务指令
         $this->commands([
             'think\admin\queue\WorkQueue',
