@@ -65,7 +65,7 @@ class Storage
     /**
      * 设置文件驱动名称
      * @param string $name 驱动名称
-     * @return LocalStorage|QiniuStorage
+     * @return LocalStorage|QiniuStorage|static
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
