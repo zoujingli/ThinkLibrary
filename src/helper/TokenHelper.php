@@ -15,6 +15,7 @@
 
 namespace think\admin\helper;
 
+use think\admin\Helper;
 use think\admin\service\TokenService;
 use think\exception\HttpResponseException;
 
