@@ -56,7 +56,7 @@ abstract class Service
     /**
      * 静态实例对象
      * @param App $app
-     * @return $this
+     * @return static
      */
     public static function instance(App $app = null)
     {
