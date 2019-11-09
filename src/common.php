@@ -55,7 +55,8 @@ if (!function_exists('systoken')) {
      */
     function systoken($node = null)
     {
-        return TokenService::instance()->buildFormToken($node)['token'];
+        $result = TokenService::instance()->buildFormToken($node);
+        return isset($result['token']) ? $result['token'] : '';
     }
 }
 
