@@ -22,11 +22,11 @@ use think\console\input\Argument;
 use think\console\Output;
 
 /**
- * 插件基础指令类
- * Class CommandInstall
- * @package think\admin\install
+ * 插件更新安装指令
+ * Class Install
+ * @package think\admin\command
  */
-class InstallCommand extends Command
+class Install extends Command
 {
     /**
      * 查询规则
