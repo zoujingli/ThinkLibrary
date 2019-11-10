@@ -15,7 +15,7 @@
 
 namespace think\admin\queue;
 
-use think\admin\extend\ProcessExtend;
+use think\admin\service\ProcessService;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -42,7 +42,8 @@ class QueryQueue extends Command
      */
     protected function execute(Input $input, Output $output)
     {
-        $result = ProcessExtend::query(ProcessExtend::think("xtask:"));
+        $process = ProcessService::instance($this->app);
+        $result = $process->query($process->think("xtask:"));
         if (count($result) > 0) foreach ($result as $item) {
             $output->writeln("{$item['pid']}\t{$item['cmd']}");
         } else {

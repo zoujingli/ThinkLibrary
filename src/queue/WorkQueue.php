@@ -15,13 +15,11 @@
 
 namespace think\admin\queue;
 
-use think\admin\extend\ProcessExtend;
+use think\admin\service\ProcessService;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
-use think\facade\Console;
-use think\facade\Db;
 
 /**
  * 启动指定独立执行的任务子进程
@@ -62,13 +60,14 @@ class WorkQueue extends Command
     protected function execute(Input $input, Output $output)
     {
         try {
+            $process = ProcessService::instance($this->app);
             $this->id = trim($input->getArgument('id')) ?: 0;
             if (empty($this->id)) throw new \think\Exception("执行任务需要指定任务编号！");
             $queue = $this->app->db->name('SystemQueue')->where(['id' => $this->id, 'status' => '2'])->find();
             if (empty($queue)) throw new \think\Exception("执行任务{$this->id}的信息或状态异常！");
             // 设置进程标题
-            if (ProcessExtend::iswin() && function_exists('cli_set_process_title')) {
-                cli_set_process_title("ThinkAdmin " . ProcessExtend::version() . " 异步任务执行子进程 - {$queue['title']}");
+            if ($process->iswin() && function_exists('cli_set_process_title')) {
+                cli_set_process_title("ThinkAdmin " . $process->version() . " 异步任务执行子进程 - {$queue['title']}");
             }
             // 执行任务内容
             if (class_exists($queue['command'])) {

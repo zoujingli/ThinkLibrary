@@ -15,7 +15,7 @@
 
 namespace think\admin;
 
-use think\admin\extend\ProcessExtend;
+use think\admin\service\ProcessService;
 use think\App;
 use think\console\Input;
 use think\console\Output;
@@ -23,11 +23,12 @@ use think\console\Output;
 /**
  * 基础任务基类
  * Class Queue
- * @package library
+ * @package think\admin
  */
 abstract class Queue
 {
     /**
+     * 应用实例
      * @var App
      */
     public $app;
@@ -56,7 +57,7 @@ abstract class Queue
      */
     protected function iswin()
     {
-        return ProcessExtend::iswin();
+        return ProcessService::instance($this->app)->iswin();
     }
 
     /**
@@ -70,10 +71,10 @@ abstract class Queue
     protected function reset($wait = 0)
     {
         if (empty($this->jobid)) return false;
-        $queue = app()->db->name('SystemQueue')->where(['id' => $this->jobid])->find();
+        $queue = $this->app->db->name('SystemQueue')->where(['id' => $this->jobid])->find();
         if (empty($queue)) return false;
         $update = ['exec_time' => time() + $wait, 'attempts' => $queue['attempts'] + 1, 'status' => '1'];
-        return app()->db->name('SystemQueue')->where(['id' => $this->jobid])->update($update) !== false;
+        return $this->app->db->name('SystemQueue')->where(['id' => $this->jobid])->update($update) !== false;
     }
 
     /**

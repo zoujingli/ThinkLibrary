@@ -15,11 +15,10 @@
 
 namespace think\admin\queue;
 
-use think\admin\extend\ProcessExtend;
+use think\admin\service\ProcessService;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-use think\facade\Db;
 
 /**
  * 检查并创建异步任务监听主进程
@@ -45,13 +44,14 @@ class StartQueue extends Command
     protected function execute(Input $input, Output $output)
     {
         $this->app->db->name('SystemQueue')->count();
-        $command = ProcessExtend::think("xtask:listen");
-        if (count($result = ProcessExtend::query($command)) > 0) {
+        $process = ProcessService::instance($this->app);
+        $command = $process->think("xtask:listen");
+        if (count($result = $process->query($command)) > 0) {
             $output->info("异步任务监听主进程{$result['0']['pid']}已经启动！");
         } else {
-            ProcessExtend::create($command);
+            $process->create($command);
             sleep(1);
-            if (count($result = ProcessExtend::query($command)) > 0) {
+            if (count($result = $process->query($command)) > 0) {
                 $output->info("异步任务监听主进程{$result['0']['pid']}启动成功！");
             } else {
                 $output->error('异步任务监听主进程创建失败！');

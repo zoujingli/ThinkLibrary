@@ -1,7 +1,7 @@
 <?php
 
 // +----------------------------------------------------------------------
-// | Library for ThinkAdmin
+// | ThinkAdmin
 // +----------------------------------------------------------------------
 // | 版权所有 2014~2019 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
 // +----------------------------------------------------------------------
@@ -9,18 +9,20 @@
 // +----------------------------------------------------------------------
 // | 开源协议 ( https://mit-license.org )
 // +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
+// | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+// | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace think\admin\extend;
+namespace think\admin\service;
+
+use think\admin\Service;
 
 /**
- * 系统进程管理扩展
- * Class ProcessExtend
- * @package think\admin\extend
+ * 系统进程管理服务
+ * Class ProcessService
+ * @package think\admin\service
  */
-class ProcessExtend
+class ProcessService extends Service
 {
 
     /**
@@ -28,9 +30,9 @@ class ProcessExtend
      * @param string $args 指定参数
      * @return string
      */
-    public static function think($args = '')
+    public function think($args = '')
     {
-        $root = app()->getRootPath();
+        $root = $this->app->getRootPath();
         return trim("php {$root}think {$args}");
     }
 
@@ -38,18 +40,18 @@ class ProcessExtend
      * 获取当前应用版本
      * @return string
      */
-    public static function version()
+    public function version()
     {
-        return app()->config->get('app.thinkadmin_ver', 'v4');
+        return $this->app->config->get('app.thinkadmin_ver', 'v4');
     }
 
     /**
      * 创建异步进程
      * @param string $command 任务指令
      */
-    public static function create($command)
+    public function create($command)
     {
-        if (self::iswin()) {
+        if ($this->iswin()) {
             $command = __DIR__ . "/bin/console.exe {$command}";
             pclose(popen("wmic process call create \"{$command}\"", 'r'));
         } else {
@@ -58,33 +60,23 @@ class ProcessExtend
     }
 
     /**
-     * 立即执行指令
-     * @param string $command 执行指令
-     * @return string
-     */
-    public static function exec($command)
-    {
-        return shell_exec($command);
-    }
-
-    /**
      * 查询相关进程列表
      * @param string $command 任务指令
      * @return array
      */
-    public static function query($command)
+    public function query($command)
     {
         $list = [];
-        if (self::iswin()) {
-            $result = self::exec('wmic process where name="php.exe" get processid,CommandLine');
-            foreach (explode("\n", $result) as $line) if (self::_issub($line, $command) !== false) {
-                $attr = explode(' ', self::_space($line));
+        if ($this->iswin()) {
+            $result = $this->exec('wmic process where name="php.exe" get processid,CommandLine');
+            foreach (explode("\n", $result) as $line) if ($this->_issub($line, $command) !== false) {
+                $attr = explode(' ', $this->_space($line));
                 $list[] = ['pid' => array_pop($attr), 'cmd' => join(' ', $attr)];
             }
         } else {
-            $result = self::exec('ps ax|grep -v grep|grep "' . $command . '"');
-            foreach (explode("\n", $result) as $line) if (self::_issub($line, $command) !== false) {
-                $attr = explode(' ', self::_space($line));
+            $result = $this->exec("ps ax|grep -v grep|grep \"{$command}\"");
+            foreach (explode("\n", $result) as $line) if ($this->_issub($line, $command) !== false) {
+                $attr = explode(' ', $this->_space($line));
                 list($pid) = [array_shift($attr), array_shift($attr), array_shift($attr), array_shift($attr)];
                 $list[] = ['pid' => $pid, 'cmd' => join(' ', $attr)];
             }
@@ -97,21 +89,31 @@ class ProcessExtend
      * @param integer $pid 进程号
      * @return boolean
      */
-    public static function close($pid)
+    public function close($pid)
     {
-        if (self::iswin()) {
-            self::exec("wmic process {$pid} call terminate");
+        if ($this->iswin()) {
+            $this->exec("wmic process {$pid} call terminate");
         } else {
-            self::exec("kill -9 {$pid}");
+            $this->exec("kill -9 {$pid}");
         }
         return true;
+    }
+
+    /**
+     * 立即执行指令
+     * @param string $command 执行指令
+     * @return string
+     */
+    public function exec($command)
+    {
+        return shell_exec($command);
     }
 
     /**
      * 判断系统类型
      * @return boolean
      */
-    public static function iswin()
+    public function iswin()
     {
         return PATH_SEPARATOR === ';';
     }
@@ -119,12 +121,12 @@ class ProcessExtend
     /**
      * 消息空白字符过滤
      * @param string $content
-     * @param string $char
+     * @param string $tochar
      * @return string
      */
-    private static function _space($content, $char = ' ')
+    private function _space($content, $tochar = ' ')
     {
-        return preg_replace('|\s+|', $char, strtr(trim($content), '\\', '/'));
+        return preg_replace('|\s+|', $tochar, strtr(trim($content), '\\', '/'));
     }
 
     /**
@@ -133,9 +135,8 @@ class ProcessExtend
      * @param string $substr
      * @return boolean
      */
-    private static function _issub($content, $substr)
+    private function _issub($content, $substr)
     {
-        return stripos(self::_space($content), self::_space($substr)) !== false;
+        return stripos($this->_space($content), $this->_space($substr)) !== false;
     }
-
 }
