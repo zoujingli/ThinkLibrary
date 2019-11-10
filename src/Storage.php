@@ -17,6 +17,7 @@ namespace think\admin;
 
 use think\admin\storage\LocalStorage;
 use think\admin\storage\QiniuStorage;
+use think\App;
 
 /**
  * 文件存储引擎管理
@@ -34,6 +35,12 @@ use think\admin\storage\QiniuStorage;
 class Storage
 {
     /**
+     * 应用实例
+     * @var App
+     */
+    protected $app;
+
+    /**
      * 存储域名前缀
      * @var string
      */
@@ -44,6 +51,22 @@ class Storage
      * @var array
      */
     protected static $object = [];
+
+    /**
+     * Storage constructor.
+     */
+    public function __construct()
+    {
+        $this->app = app();
+        $this->initialize();
+    }
+
+    /**
+     * 存储初始化
+     */
+    protected function initialize()
+    {
+    }
 
     /**
      * 静态访问

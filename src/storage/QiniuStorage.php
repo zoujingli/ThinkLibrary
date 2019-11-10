@@ -31,13 +31,13 @@ class QiniuStorage extends Storage
     private $secretKey;
 
     /**
-     * QiniuStorage constructor.
+     * 存储引擎初始化
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function __construct()
+    protected function initialize()
     {
         // 读取配置文件
         $this->bucket = sysconf('storage.qiniu_bucket');

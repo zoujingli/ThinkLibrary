@@ -24,13 +24,12 @@ use think\admin\Storage;
  */
 class LocalStorage extends Storage
 {
-
     /**
-     * LocalStorage constructor.
+     * 存储引擎初始化
      */
-    public function __construct()
+    protected function initialize()
     {
-        $this->prefix = rtrim(app()->getRootPath(), '\\/');
+        $this->prefix = rtrim($this->app->getRootPath(), '\\/');
     }
 
     /**
@@ -100,7 +99,7 @@ class LocalStorage extends Storage
     public function url($name, $safe = false)
     {
         if ($safe) return null;
-        $root = rtrim(dirname(request()->basefile(true)), '\\/');
+        $root = rtrim(dirname($this->app->request->basefile(true)), '\\/');
         return "{$root}/upload/{$name}";
     }
 
