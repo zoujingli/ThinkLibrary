@@ -96,7 +96,7 @@ class Storage
      */
     public static function instance($name = null)
     {
-        if (is_null($name)) $name = sysconf('storage_type');
+        if (is_null($name)) $name = sysconf('storage.type');
         if (isset(self::$object[$class = ucfirst(strtolower($name))])) {
             return self::$object[$class];
         }
