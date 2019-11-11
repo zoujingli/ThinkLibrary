@@ -76,7 +76,7 @@ class WorkQueue extends Command
                     $data = json_decode($queue['data'], true) ?: [];
                     $this->update('3', $command::instance($this->app, $this->id)->execute($input, $output, $data));
                 } else {
-                    throw new \think\Exception("任务处理类 {$command} 未继承 \\think\\admin\\Queue 类");
+                    throw new \think\Exception("任务处理类 {$command} 未继承 think\\admin\\Queue");
                 }
             } else {
                 $this->update('3', $this->app->console->call($queue['command'], [], 'console'));
