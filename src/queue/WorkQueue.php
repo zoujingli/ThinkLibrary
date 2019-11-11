@@ -61,13 +61,12 @@ class WorkQueue extends Command
     protected function execute(Input $input, Output $output)
     {
         try {
-            $process = ProcessService::instance($this->app);
             $this->id = trim($input->getArgument('id')) ?: 0;
             if (empty($this->id)) throw new \think\Exception("执行任务需要指定任务编号！");
             $queue = $this->app->db->name('SystemQueue')->where(['id' => $this->id, 'status' => '2'])->find();
-            if (empty($queue)) throw new \think\Exception("执行任务{$this->id}的信息或状态异常！");
+            if (empty($queue)) throw new \think\Exception("执行任务{$this->id}的信息或状态异常！");;
             // 设置进程标题
-            if ($process->iswin()) {
+            if (($process = ProcessService::instance($this->app))->iswin()) {
                 $this->setProcessTitle("ThinkAdmin {$process->version()} 执行任务 - {$queue['title']}");
             }
             // 执行任务内容
