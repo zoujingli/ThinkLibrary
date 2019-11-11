@@ -15,6 +15,7 @@
 
 namespace think\admin\queue;
 
+use think\admin\Queue;
 use think\admin\service\ProcessService;
 use think\console\Command;
 use think\console\Input;
@@ -66,20 +67,16 @@ class WorkQueue extends Command
             $queue = $this->app->db->name('SystemQueue')->where(['id' => $this->id, 'status' => '2'])->find();
             if (empty($queue)) throw new \think\Exception("执行任务{$this->id}的信息或状态异常！");
             // 设置进程标题
-            if ($process->iswin() && function_exists('cli_set_process_title')) {
-                cli_set_process_title("ThinkAdmin " . $process->version() . " 异步任务执行子进程 - {$queue['title']}");
+            if ($process->iswin()) {
+                $this->setProcessTitle("ThinkAdmin {$process->version()} 执行任务 - {$queue['title']}");
             }
             // 执行任务内容
-            if (class_exists($queue['command'])) {
-                if (method_exists($class = new $queue['command'], 'execute')) {
-                    if (isset($class->app)) $class->app = $this->app;
-                    if (isset($class->queue)) $class->queue = $queue;
-                    if (isset($class->jobid)) $class->jobid = $this->id;
-                    if (isset($class->title)) $class->title = $queue['title'];
-                    $data = json_decode($queue['data'], true);
-                    $this->update('3', $class->execute($input, $output, is_array($data) ? $data : []));
+            if (class_exists($command = $queue['command'])) {
+                if ($command instanceof Queue) {
+                    $data = json_decode($queue['data'], true) ?: [];
+                    $this->update('3', $command::instance($this->app, $this->id)->execute($input, $output, $data));
                 } else {
-                    throw new \think\Exception("任务处理类 {$queue['command']} 未定义 execute 入口！");
+                    throw new \think\Exception("任务处理类 {$command} 未继承 \\think\\admin\\Queue 类");
                 }
             } else {
                 $this->update('3', $this->app->console->call($queue['command'], [], 'console'));

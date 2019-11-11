@@ -25,7 +25,7 @@ use think\console\Output;
  * Class Queue
  * @package think\admin
  */
-abstract class Queue
+class Queue
 {
     /**
      * 应用实例
@@ -52,6 +52,55 @@ abstract class Queue
     public $queue = [];
 
     /**
+     * Queue constructor.
+     * @param App $app
+     * @param int $jobid
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function __construct(App $app, $jobid = 0)
+    {
+        $this->app = $app;
+        if ($jobid > 0) $this->init($jobid);
+    }
+
+    /**
+     * 静态获取实例
+     * @param App $app
+     * @param int $jobid
+     * @return static
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public static function instance(App $app, $jobid = 0)
+    {
+        return new static($app, $jobid);
+    }
+
+    /**
+     * 数据初始化
+     * @param integer $jobid
+     * @return Queue
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function init($jobid = 0)
+    {
+        if ($jobid > 0) {
+            $this->queue = $this->app->db->name('SystemQueue')->where(['id' => $this->jobid])->find();
+            if (empty($this->queue)) throw new \think\Exception("Queue {$jobid} Not found.");
+            $this->title = $this->queue['title'];
+        }
+        return $this;
+    }
+
+    /**
      * 判断是否WIN环境
      * @return boolean
      */
@@ -63,18 +112,19 @@ abstract class Queue
     /**
      * 重发异步任务
      * @param integer $wait 等待时间
-     * @return boolean
+     * @return Queue
+     * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function reset($wait = 0)
+    public function reset($wait = 0)
     {
-        if (empty($this->jobid)) return false;
-        $queue = $this->app->db->name('SystemQueue')->where(['id' => $this->jobid])->find();
-        if (empty($queue)) return false;
-        $update = ['exec_time' => time() + $wait, 'attempts' => $queue['attempts'] + 1, 'status' => '1'];
-        return $this->app->db->name('SystemQueue')->where(['id' => $this->jobid])->update($update) !== false;
+        if (empty($this->queue)) throw new \think\Exception('Queue data cannot be empty!');
+        $this->app->db->name('SystemQueue')->where(['id' => $this->jobid])->failException(true)->update([
+            'exec_time' => time() + $wait, 'attempts' => $this->queue['attempts'] + 1, 'status' => '1',
+        ]);
+        return $this->init($this->jobid);
     }
 
     /**
@@ -84,16 +134,19 @@ abstract class Queue
      * @param integer $later 延时执行时间
      * @param array $data 任务附加数据
      * @param integer $rscript 任务多开
-     * @return boolean
+     * @return Queue
      * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function register($title, $command, $later = 0, $data = [], $rscript = 1)
+    public function register($title, $command, $later = 0, $data = [], $rscript = 1)
     {
         $map = [['title', 'eq', $title], ['status', 'in', ['1', '2']]];
-        if (empty($rscript) && app()->db->name('SystemQueue')->where($map)->count() > 0) {
+        if (empty($rscript) && $this->app->db->name('SystemQueue')->where($map)->count() > 0) {
             throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
         }
-        $result = app()->db->name('SystemQueue')->insert([
+        $this->jobid = $this->app->db->name('SystemQueue')->failException(true)->insertGetId([
             'title'      => $title,
             'command'    => $command,
             'attempts'   => '0',
@@ -103,7 +156,7 @@ abstract class Queue
             'enter_time' => '0',
             'outer_time' => '0',
         ]);
-        return $result !== false;
+        return $this->init($this->jobid);
     }
 
     /**
@@ -113,6 +166,8 @@ abstract class Queue
      * @param array $data 任务参数
      * @return mixed
      */
-    abstract function execute(Input $input, Output $output, array $data = []);
+    public function execute(Input $input, Output $output, array $data = [])
+    {
+    }
 
 }
