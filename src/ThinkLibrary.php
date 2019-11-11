@@ -46,25 +46,26 @@ class ThinkLibrary extends Service
     public function boot()
     {
         // 注册访问中间键
-        $this->app->middleware->add(function (Request $request, \Closure $next) {
-            $header = [];
-            if (($origin = $request->header('origin', '*')) !== '*') {
-                $header['Access-Control-Allow-Origin'] = $origin;
-                $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
-                $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
-                $header['Access-Control-Expose-Headers'] = 'User-Form-Token';
-            }
-            // 访问模式及访问权限检查
-            if ($request->isOptions()) {
-                return response()->code(204)->header($header);
-            } elseif (AuthService::instance($this->app)->check()) {
-                return $next($request)->header($header);
-            } elseif (AuthService::instance($this->app)->isLogin()) {
-                return json(['code' => 0, 'msg' => '抱歉，没有访问该操作的权限！'])->header($header);
-            } else {
-                return json(['code' => 0, 'msg' => '抱歉，需要登录获取访问权限！', 'url' => url('@admin/login')->build()])->header($header);
-            }
-        }, 'route');
+        if (in_array($this->app->request->method(), ['get', 'post', 'options'])) {
+            $this->app->middleware->add(function (Request $request, \Closure $next, $header = []) {
+                if (($origin = $request->header('origin', '*')) !== '*') {
+                    $header['Access-Control-Allow-Origin'] = $origin;
+                    $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
+                    $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
+                    $header['Access-Control-Expose-Headers'] = 'User-Form-Token';
+                }
+                // 访问模式及访问权限检查
+                if ($request->isOptions()) {
+                    return response()->code(204)->header($header);
+                } elseif (AuthService::instance($this->app)->check()) {
+                    return $next($request)->header($header);
+                } elseif (AuthService::instance($this->app)->isLogin()) {
+                    return json(['code' => 0, 'msg' => '抱歉，没有访问该操作的权限！'])->header($header);
+                } else {
+                    return json(['code' => 0, 'msg' => '抱歉，需要登录获取访问权限！', 'url' => url('@admin/login')->build()])->header($header);
+                }
+            }, 'route');
+        }
         // 注册系统任务指令
         $this->commands([
             'think\admin\queue\WorkQueue',
