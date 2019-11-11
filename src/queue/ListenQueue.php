@@ -46,8 +46,7 @@ class ListenQueue extends Command
     protected function execute(Input $input, Output $output)
     {
         $this->app->db->name('SystemQueue')->count();
-        $process = ProcessService::instance($this->app);
-        if ($process->iswin()) {
+        if (($process = ProcessService::instance($this->app))->iswin()) {
             $this->setProcessTitle("ThinkAdmin 异步任务监听主进程 {$process->version()}");
         }
         $output->comment('============ 异步任务监听中 ============');
