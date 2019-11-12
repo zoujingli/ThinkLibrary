@@ -90,9 +90,8 @@ class PageHelper extends Helper
             cookie('page-limit', $limit = $limit >= 10 ? $limit : 20);
             if ($this->limit > 0) $limit = $this->limit;
             $rows = [];
-            // $paginate = $this->query->paginate($limit, $this->total, ['query' => ($query = $this->app->request->get())]);
             $query = $this->app->request->get();
-            $paginate = $this->query->paginate($limit, $this->total);
+            $paginate = $this->query->paginate(['list_rows' => $limit, 'query' => $query], $this->total);
             foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as $num) {
                 list($query['limit'], $query['page'], $selected) = [$num, '1', $limit === $num ? 'selected' : ''];
                 $url = url('@admin') . '#' . $this->app->request->baseUrl() . '?' . urldecode(http_build_query($query));
