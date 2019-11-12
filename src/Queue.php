@@ -100,7 +100,7 @@ class Queue
             $this->queue = $this->app->db->name('SystemQueue')->where(['id' => $this->jobid])->find();
             if (empty($this->queue)) throw new \think\Exception("Queue {$jobid} Not found.");
             $this->title = $this->queue['title'];
-            $this->data = json_decode($this->queue['data'], true) ?: [];
+            $this->data = json_decode($this->queue['exec_data'], true) ?: [];
         }
         return $this;
     }
@@ -147,7 +147,7 @@ class Queue
      */
     public function register($title, $command, $later = 0, $data = [], $rscript = 1)
     {
-        $map = [['title', 'eq', $title], ['status', 'in', ['1', '2']]];
+        $map = [['title', '=', $title], ['status', 'in', ['1', '2']]];
         if (empty($rscript) && $this->app->db->name('SystemQueue')->where($map)->count() > 0) {
             throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
         }
