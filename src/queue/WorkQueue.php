@@ -78,7 +78,8 @@ class WorkQueue extends Command
                     throw new \think\Exception("任务处理类 {$command} 未继承 think\\admin\\Queue");
                 }
             } else {
-                $this->update('3', $this->app->console->call($queue['command'], [], 'console'));
+                $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $queue['command'])));
+                $this->update('3', $this->app->console->call(array_shift($attr), $attr, 'console'));
             }
         } catch (\Exception $e) {
             $this->update('4', $e->getMessage());
@@ -94,8 +95,9 @@ class WorkQueue extends Command
      */
     protected function update($status, $message)
     {
+        $desc = explode("\n", trim(is_string($message) ? $message : ''));
         $result = $this->app->db->name('SystemQueue')->where(['id' => $this->id])->update([
-            'status' => $status, 'outer_time' => time(), 'exec_desc' => is_string($message) ? $message : '',
+            'status' => $status, 'outer_time' => time(), 'exec_desc' => $desc[0],
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         return $result !== false;
