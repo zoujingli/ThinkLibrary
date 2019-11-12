@@ -95,7 +95,7 @@ class WorkQueue extends Command
     protected function update($status, $message)
     {
         $result = $this->app->db->name('SystemQueue')->where(['id' => $this->id])->update([
-            'status' => $status, 'outer_time' => date('Y-m-d H:i:s'), 'exec_desc' => is_string($message) ? $message : '',
+            'status' => $status, 'outer_time' => time(), 'exec_desc' => is_string($message) ? $message : '',
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         return $result !== false;
