@@ -56,7 +56,7 @@ class WorkQueue extends Command
      * 任务执行
      * @param Input $input
      * @param Output $output
-     * @throws \Exception
+     * @throws \think\db\exception\DbException
      */
     protected function execute(Input $input, Output $output)
     {
