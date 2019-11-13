@@ -54,7 +54,7 @@ class ExpressService extends Service
     {
         list($microtime, $clientIp) = [time(), $this->app->request->ip()];
         $url = "https://sp0.baidu.com/9_Q4sjW91Qh3otqbppnN2DJv/pae/channel/data/asyncqury?cb=callback&appid=4001&com={$code}&nu={$number}&vcode=&token=&_={$microtime}";
-        $options = ['cookie_file' => $this->app->getRuntimePath() . 'temp/cookie.txt', 'headers' => ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $clientIp, 'X-FORWARDED-FOR' => $clientIp],];
+        $options = ['cookie_file' => $this->app->getRuntimePath() . 'express_cookie.txt', 'headers' => ['Host' => 'www.kuaidi100.com', 'CLIENT-IP' => $clientIp, 'X-FORWARDED-FOR' => $clientIp],];
         return json_decode(str_replace('/**/callback(', '', trim(http_get($url, [], $options), ')')), true);
     }
 
