@@ -31,7 +31,7 @@ class WorkQueue extends Command
 {
 
     /**
-     * 当前任务ID
+     * 当前任务编号
      * @var integer
      */
     protected $code;
@@ -63,7 +63,7 @@ class WorkQueue extends Command
         try {
             $this->code = trim($input->getArgument('code'));
             if (empty($this->code)) throw new \think\Exception("执行任务需要指定任务编号！");
-            $queue = $this->app->db->name('SystemQueue')->where(['id' => $this->code, 'status' => '2'])->find();
+            $queue = $this->app->db->name('SystemQueue')->where(['code' => $this->code, 'status' => '2'])->find();
             if (empty($queue)) throw new \think\Exception("执行任务{$this->code}的信息或状态异常！");;
             // 设置进程标题
             if (($process = ProcessService::instance($this->app))->iswin()) {
