@@ -235,7 +235,6 @@ if (!function_exists('emoji_clear')) {
 // 注册跨域中间键
 if (PHP_SAPI !== 'cli') {
     Middleware::add(function (Request $request, \Closure $next, $header = []) {
-
         if (($origin = $request->header('origin', '*')) !== '*') {
             $header['Access-Control-Allow-Origin'] = $origin;
             $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
