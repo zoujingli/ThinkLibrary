@@ -248,18 +248,20 @@ if (PHP_SAPI !== 'cli') Middleware::add(function (Request $request, \Closure $ne
 });
 
 // 注册系统常用指令
-Console::addDefaultCommands([
-    'library\command\Sess',
-    'library\command\task\Stop',
-    'library\command\task\State',
-    'library\command\task\Start',
-    // 'library\command\task\Reset',
-    'library\command\sync\Admin',
-    'library\command\sync\Plugs',
-    'library\command\sync\Config',
-    'library\command\sync\Wechat',
-    'library\command\sync\Service',
-]);
+if (class_exists('think\Console', false)) {
+    Console::addDefaultCommands([
+        'library\command\Sess',
+        'library\command\task\Stop',
+        'library\command\task\State',
+        'library\command\task\Start',
+        // 'library\command\task\Reset',
+        'library\command\sync\Admin',
+        'library\command\sync\Plugs',
+        'library\command\sync\Config',
+        'library\command\sync\Wechat',
+        'library\command\sync\Service',
+    ]);
+}
 
 // 动态加载模块配置
 if (function_exists('think\__include_file')) {
