@@ -233,19 +233,21 @@ if (!function_exists('emoji_clear')) {
 }
 
 // 注册跨域中间键
-if (PHP_SAPI !== 'cli') Middleware::add(function (Request $request, \Closure $next, $header = []) {
-    if (($origin = $request->header('origin', '*')) !== '*') {
-        $header['Access-Control-Allow-Origin'] = $origin;
-        $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
-        $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
-        $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
-    }
-    if ($request->isOptions()) {
-        return Response::create()->code(204)->header($header);
-    } else {
-        return $next($request)->header($header);
-    }
-});
+if (PHP_SAPI !== 'cli') {
+    Middleware::add(function (Request $request, \Closure $next, $header = []) {
+        if (($origin = $request->header('origin', '*')) !== '*') {
+            $header['Access-Control-Allow-Origin'] = $origin;
+            $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
+            $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
+            $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
+        }
+        if ($request->isOptions()) {
+            return Response::create()->code(204)->header($header);
+        } else {
+            return $next($request)->header($header);
+        }
+    });
+}
 
 // 注册系统常用指令
 if (class_exists('think\Console', false)) {
@@ -254,7 +256,6 @@ if (class_exists('think\Console', false)) {
         'library\command\task\Stop',
         'library\command\task\State',
         'library\command\task\Start',
-        // 'library\command\task\Reset',
         'library\command\sync\Admin',
         'library\command\sync\Plugs',
         'library\command\sync\Config',
