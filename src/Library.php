@@ -46,7 +46,7 @@ class Library extends Service
     public function boot()
     {
         // 注册访问中间键
-        if (stripos('get,post,options', $this->app->request->method()) !== false) {
+        if (!$this->app->request->isCli()) {
             $this->app->middleware->add(function (Request $request, \Closure $next) {
                 $header = [];
                 if (($origin = $request->header('origin', '*')) !== '*') {
