@@ -46,7 +46,7 @@ class Library extends Service
     public function boot()
     {
         // 注册访问中间键
-        if (!$this->app->request->isCli()) {
+        if (PHP_SAPI !== 'cli') {
             $this->app->middleware->add(function (Request $request, \Closure $next) {
                 $header = [];
                 if (($origin = $request->header('origin', '*')) !== '*') {
