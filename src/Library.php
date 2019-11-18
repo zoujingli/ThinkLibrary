@@ -45,6 +45,16 @@ class Library extends Service
      */
     public function boot()
     {
+        // 注册系统任务指令
+        $this->commands([
+            'think\admin\queue\WorkQueue',
+            'think\admin\queue\StopQueue',
+            'think\admin\queue\StateQueue',
+            'think\admin\queue\StartQueue',
+            'think\admin\queue\QueryQueue',
+            'think\admin\queue\ListenQueue',
+            'think\admin\command\Install',
+        ]);
         // 注册访问中间键
         if (PHP_SAPI !== 'cli') {
             $this->app->middleware->add(function (Request $request, \Closure $next) {
@@ -67,16 +77,6 @@ class Library extends Service
                 }
             }, 'route');
         }
-        // 注册系统任务指令
-        $this->commands([
-            'think\admin\queue\WorkQueue',
-            'think\admin\queue\StopQueue',
-            'think\admin\queue\StateQueue',
-            'think\admin\queue\StartQueue',
-            'think\admin\queue\QueryQueue',
-            'think\admin\queue\ListenQueue',
-            'think\admin\command\Install',
-        ]);
     }
 
 }
