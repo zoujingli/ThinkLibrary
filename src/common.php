@@ -15,7 +15,7 @@
 
 use think\admin\extend\HttpExtend;
 use think\admin\service\AuthService;
-use think\admin\service\SysconfService;
+use think\admin\service\SystemService;
 use think\admin\service\TokenService;
 use think\db\Query;
 
@@ -60,9 +60,9 @@ if (!function_exists('sysconf')) {
     function sysconf($name = '', $value = null)
     {
         if (is_null($value) && is_string($name)) {
-            return SysconfService::instance()->get($name);
+            return SystemService::instance()->get($name);
         } else {
-            return SysconfService::instance()->set($name, $value);
+            return SystemService::instance()->set($name, $value);
         }
     }
 }
@@ -152,7 +152,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
-        return SysconfService::instance()->save($dbQuery, $data, $key, $where);
+        return SystemService::instance()->save($dbQuery, $data, $key, $where);
     }
 }
 

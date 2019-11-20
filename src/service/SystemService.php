@@ -20,10 +20,10 @@ use think\db\Query;
 
 /**
  * 系统参数管理服务
- * Class SysconfService
+ * Class SystemService
  * @package think\admin\service
  */
-class SysconfService extends Service
+class SystemService extends Service
 {
 
     /**
@@ -36,7 +36,7 @@ class SysconfService extends Service
      * 设置配置数据
      * @param string $name 配置名称
      * @param string $value 配置内容
-     * @return SysconfService
+     * @return SystemService
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
