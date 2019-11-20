@@ -250,7 +250,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 // 注册系统常用指令
-if (class_exists('think\Console', false)) {
+if (class_exists('think\Console', true)) {
     Console::addDefaultCommands([
         'library\command\Sess',
         'library\command\task\Stop',
