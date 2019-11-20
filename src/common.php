@@ -232,8 +232,8 @@ if (!function_exists('emoji_clear')) {
     }
 }
 
-// 注册跨域中间键
 try {
+    // 注册跨域中间键
     if (PHP_SAPI !== 'cli') {
         Middleware::add(function (Request $request, \Closure $next, $header = []) {
             if (($origin = $request->header('origin', '*')) !== '*') {
@@ -262,7 +262,6 @@ try {
         'library\command\sync\Service',
     ]);
 } catch (\Exception $exception) {
-    
 }
 
 // 动态加载模块配置
