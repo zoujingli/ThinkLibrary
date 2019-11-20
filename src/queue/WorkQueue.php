@@ -21,7 +21,6 @@ use think\console\Command;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
-use think\Container;
 
 /**
  * 启动独立执行进程

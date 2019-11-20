@@ -16,9 +16,10 @@
 namespace think\admin\service;
 
 use think\admin\Service;
+use think\db\Query;
 
 /**
- * 系统配置服务
+ * 系统参数管理服务
  * Class SysconfService
  * @package think\admin\service
  */
@@ -35,7 +36,7 @@ class SysconfService extends Service
      * 设置配置数据
      * @param string $name 配置名称
      * @param string $value 配置内容
-     * @return boolean
+     * @return SysconfService
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -47,9 +48,10 @@ class SysconfService extends Service
             foreach ($value as $k => $v) $this->set("{$field}.{$k}", $v);
         } else {
             $this->data = [];
-            $row = ['name' => $field, 'value' => $value, 'type' => $type];
-            return data_save('SystemConfig', $row, 'name', ['type' => $type]);
+            $data = ['name' => $field, 'value' => $value, 'type' => $type];
+            $this->save('SystemConfig', $data, 'name', ['type' => $type]);
         }
+        return $this;
     }
 
     /**
@@ -78,12 +80,39 @@ class SysconfService extends Service
     }
 
     /**
+     * 数据增量保存
+     * @param Query|string $dbQuery 数据查询对象
+     * @param array $data 需要保存或更新的数据
+     * @param string $key 条件主键限制
+     * @param array $where 其它的where条件
+     * @return bool|int|mixed|string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function save($dbQuery, $data, $key = 'id', $where = [])
+    {
+        $db = is_string($dbQuery) ? $this->app->db->name($dbQuery) : $dbQuery;
+        list($table, $value) = [$db->getTable(), isset($data[$key]) ? $data[$key] : null];
+        $map = isset($where[$key]) ? [] : (is_string($value) ? [[$key, 'in', explode(',', $value)]] : [$key => $value]);
+        if (is_array($info = $this->app->db->table($table)->master()->where($where)->where($map)->find()) && !empty($info)) {
+            if ($this->app->db->table($table)->strict(false)->where($where)->where($map)->update($data) !== false) {
+                return isset($info[$key]) ? $info[$key] : true;
+            } else {
+                return false;
+            }
+        } else {
+            return $this->app->db->table($table)->strict(false)->insertGetId($data);
+        }
+    }
+
+    /**
      * 解析缓存名称
      * @param string $rule 配置名称
      * @param string $type 配置类型
      * @return array
      */
-    protected function parse($rule, $type = 'base')
+    private function parse($rule, $type = 'base')
     {
         if (stripos($rule, '.') !== false) {
             list($rule, $type) = explode('.', $rule);

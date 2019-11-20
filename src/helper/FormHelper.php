@@ -15,7 +15,6 @@
 
 namespace think\admin\helper;
 
-use think\admin\extend\DataExtend;
 use think\admin\Helper;
 use think\db\Query;
 
@@ -90,7 +89,7 @@ class FormHelper extends Helper
         if ($this->app->request->isPost()) {
             $data = array_merge($this->app->request->post(), $this->data);
             if (false !== $this->class->callback('_form_filter', $data, $this->where)) {
-                $result = DataExtend::save($this->query, $data, $this->pkField, $this->where);
+                $result = data_save($this->query, $data, $this->pkField, $this->where);
                 if (false !== $this->class->callback('_form_result', $result, $data)) {
                     if ($result !== false) $this->class->success('恭喜, 数据保存成功!', '');
                     $this->class->error('数据保存失败, 请稍候再试!');

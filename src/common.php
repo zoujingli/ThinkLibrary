@@ -13,7 +13,6 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-use think\admin\extend\DataExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\service\AuthService;
 use think\admin\service\SysconfService;
@@ -153,7 +152,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, $data, $key = 'id', $where = [])
     {
-        return DataExtend::save($dbQuery, $data, $key, $where);
+        return SysconfService::instance()->save($dbQuery, $data, $key, $where);
     }
 }
 
