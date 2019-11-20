@@ -233,24 +233,23 @@ if (!function_exists('emoji_clear')) {
 }
 
 // 注册跨域中间键
-if (PHP_SAPI !== 'cli') {
-    Middleware::add(function (Request $request, \Closure $next, $header = []) {
-        if (($origin = $request->header('origin', '*')) !== '*') {
-            $header['Access-Control-Allow-Origin'] = $origin;
-            $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
-            $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
-            $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
-        }
-        if ($request->isOptions()) {
-            return Response::create()->code(204)->header($header);
-        } else {
-            return $next($request)->header($header);
-        }
-    });
-}
-
-// 注册系统常用指令
-if (class_exists('think\Console')) {
+try {
+    if (PHP_SAPI !== 'cli') {
+        Middleware::add(function (Request $request, \Closure $next, $header = []) {
+            if (($origin = $request->header('origin', '*')) !== '*') {
+                $header['Access-Control-Allow-Origin'] = $origin;
+                $header['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE';
+                $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With';
+                $header['Access-Control-Expose-Headers'] = 'User-Token-Csrf';
+            }
+            if ($request->isOptions()) {
+                return Response::create()->code(204)->header($header);
+            } else {
+                return $next($request)->header($header);
+            }
+        });
+    }
+    // 注册系统常用指令
     Console::addDefaultCommands([
         'library\command\Sess',
         'library\command\task\Stop',
@@ -262,6 +261,8 @@ if (class_exists('think\Console')) {
         'library\command\sync\Wechat',
         'library\command\sync\Service',
     ]);
+} catch (\Exception $exception) {
+    
 }
 
 // 动态加载模块配置
