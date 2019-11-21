@@ -48,7 +48,7 @@ class TokenHelper extends Helper
      */
     public function clear()
     {
-        TokenService::instance($this->app)->clearFormToken();
+        TokenService::instance()->clearFormToken();
     }
 
     /**
@@ -61,7 +61,7 @@ class TokenHelper extends Helper
     {
         throw new HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
             return preg_replace_callback('/<\/form>/i', function () use ($node) {
-                $csrf = TokenService::instance($this->app)->buildFormToken($node);
+                $csrf = TokenService::instance()->buildFormToken($node);
                 return "<input type='hidden' name='_token_' value='{$csrf['token']}'></form>";
             }, $html);
         }));
