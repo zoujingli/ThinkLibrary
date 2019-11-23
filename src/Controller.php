@@ -234,9 +234,9 @@ class Controller extends \stdClass
             if (stripos($name, '.') === false) {
                 $data[$name] = empty($alias) ? $name : $alias;
             } else {
+                list($_rgx) = explode(':', $name);
                 list($_key, $_rule) = explode('.', $name);
-                list($_sub,) = explode(':', $_rule);
-                $info["{$_key}.{$_sub}"] = $message;
+                $info[$_rgx] = $message;
                 $data[$_key] = empty($alias) ? $_key : $alias;
                 $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
             }
