@@ -228,10 +228,14 @@ class Controller extends \stdClass
     {
         list($data, $rule, $info) = [[], [], []];
         foreach ($rules as $name => $message) {
-            list($_key, $_rule) = explode('.', $name);
-            list($_val,) = explode(':', $_rule);
-            $rule[$_key][] = $_rule;
-            $info["{$_key}.{$_val}"] = $message;
+            if (stripos($name, '.') === false) {
+                $data[$name] = input("{$type}.{$name}", $message);
+            } else {
+                list($_key, $_rule) = explode('.', $name);
+                list($_val,) = explode(':', $_rule);
+                $rule[$_key][] = $_rule;
+                $info["{$_key}.{$_val}"] = $message;
+            }
         }
         foreach ($rule as $key => $item) {
             $rule[$key] = join('|', $item);
