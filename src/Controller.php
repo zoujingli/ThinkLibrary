@@ -237,7 +237,7 @@ class Controller extends \stdClass
                 list($_key, $_rule) = explode('.', $name);
                 list($_val,) = explode(':', $_rule);
                 $info["{$_key}.{$_val}"] = $message;
-                $data[$_key] = empty($alias) ? $name : $alias;
+                $data[$_key] = empty($alias) ? $_key : $alias;
                 $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
             }
         }
