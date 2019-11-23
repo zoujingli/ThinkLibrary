@@ -32,7 +32,7 @@ class Library extends Service
      */
     public function register()
     {
-        if (PHP_SAPI === 'cli') {
+        if ($this->app->request->isCli()) {
             if (empty($_SERVER['REQUEST_URI']) && isset($_SERVER['argv'][1])) {
                 $this->app->request->setPathinfo($_SERVER['argv'][1]);
             }
