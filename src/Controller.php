@@ -219,6 +219,22 @@ class Controller extends \stdClass
     }
 
     /**
+     * 快捷输入验证
+     * @param array $data 验证数据
+     * @param array $rule 验证规则
+     * @param array $info 验证消息
+     * @return array
+     */
+    protected function _vali(array $data, array $rule = [], array $info = [])
+    {
+        if ($this->app->validate->rule($rule)->message($info)->check($data)) {
+            return $data;
+        } else {
+            $this->error($this->app->validate->getError());
+        }
+    }
+
+    /**
      * 快捷更新逻辑器
      * @param string|Query $dbQuery
      * @param array $data 表单扩展数据
