@@ -177,23 +177,19 @@ class SystemService extends Service
     }
 
     /**
-     * 是否为本地模式
+     * 判断运行环境
+     * @param string $type 运行模式（deve|demo|local）
      * @return boolean
      */
-    public function isLocalMode()
+    public function isRunMode($type = 'deve')
     {
         $domain = $this->app->request->host(true);
-        return in_array($domain, ['127.0.0.1', 'localhost']);
-    }
-
-    /**
-     * 是否为演示模式
-     * @return boolean
-     */
-    public function isDemoMode()
-    {
-        $domain = $this->app->request->host(true);
-        return is_numeric(stripos($domain, 'thinkadmin.top'));
+        $isDemo = is_numeric(stripos($domain, 'thinkadmin.top'));
+        $isLocal = in_array($domain, ['127.0.0.1', 'localhost']);
+        if ($type === 'demo') return $isDemo;
+        if ($type === 'local') return $isLocal;
+        if ($type === 'deve') return $isLocal || $isDemo;
+        return false;
     }
 
 }
