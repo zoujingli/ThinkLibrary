@@ -43,8 +43,9 @@ abstract class Service
     /**
      * 服务初始化
      */
-    protected function initialize()
+    public function initialize(): Service
     {
+        return $this;
     }
 
     /**
@@ -54,7 +55,6 @@ abstract class Service
     public static function instance()
     {
         $service = Container::getInstance()->make(static::class);
-        $service->initialize();
-        return $service;
+        return $service->initialize();
     }
 }
