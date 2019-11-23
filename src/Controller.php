@@ -219,7 +219,7 @@ class Controller extends \stdClass
     }
 
     /**
-     * 快捷输入并验证
+     * 快捷输入并验证（ 支持输入别名 ）
      * @param array $rules 验证规则（ 验证信息数组 ）
      * @param string $type 输入方式 ( post. 或 get. )
      * @return array
@@ -228,19 +228,21 @@ class Controller extends \stdClass
     {
         list($data, $rule, $info) = [[], [], []];
         foreach ($rules as $name => $message) {
+            if (stripos($name, '#') !== false) {
+                list($name, $alias) = explode('#', $name);
+            }
             if (stripos($name, '.') === false) {
-                $data[$name] = input("{$type}.{$name}", $message);
+                $data[$name] = empty($alias) ? $name : $alias;
             } else {
                 list($_key, $_rule) = explode('.', $name);
                 list($_val,) = explode(':', $_rule);
                 $rule[$_key][] = $_rule;
                 $info["{$_key}.{$_val}"] = $message;
+                $data[$_key] = empty($alias) ? $name : $alias;
             }
         }
-        foreach ($rule as $key => $item) {
-            $rule[$key] = join('|', $item);
-            $data[$key] = input("{$type}{$key}");
-        }
+        foreach ($rule as $key => $item) $rule[$key] = join('|', $item);
+        foreach ($data as $key => $name) $data[$key] = input("{$type}{$name}");
         if ($this->app->validate->rule($rule)->message($info)->check($data)) {
             return $data;
         } else {
