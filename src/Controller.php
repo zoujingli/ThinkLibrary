@@ -236,9 +236,9 @@ class Controller extends \stdClass
             } else {
                 list($_key, $_rule) = explode('.', $name);
                 list($_val,) = explode(':', $_rule);
-                $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
                 $info["{$_key}.{$_val}"] = $message;
                 $data[$_key] = empty($alias) ? $name : $alias;
+                $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
             }
         }
         foreach ($data as $key => $name) $data[$key] = input("{$type}{$name}");
