@@ -236,12 +236,11 @@ class Controller extends \stdClass
             } else {
                 list($_key, $_rule) = explode('.', $name);
                 list($_val,) = explode(':', $_rule);
-                $rule[$_key][] = $_rule;
+                $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
                 $info["{$_key}.{$_val}"] = $message;
                 $data[$_key] = empty($alias) ? $name : $alias;
             }
         }
-        foreach ($rule as $key => $item) $rule[$key] = join('|', $item);
         foreach ($data as $key => $name) $data[$key] = input("{$type}{$name}");
         if ($this->app->validate->rule($rule)->message($info)->check($data)) {
             return $data;
