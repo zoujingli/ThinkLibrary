@@ -220,13 +220,23 @@ class Controller extends \stdClass
 
     /**
      * 快捷输入验证
-     * @param array $data 验证数据
-     * @param array $rule 验证规则
-     * @param array $info 验证消息
+     * @param array $rules 验证规则
+     * @param string $type 输入方式
      * @return array
      */
-    protected function _vali(array $data, array $rule = [], array $info = [])
+    protected function _vali(array $rules, $type = '')
     {
+        list($data, $rule, $info) = [[], [], []];
+        foreach ($rules as $key => $message) {
+            list($_key, $_rule) = explode('.', $key);
+            list($_val,) = explode(':', $_rule);
+            $rule[$_key][] = $_rule;
+            $info["{$_key}.{$_val}"] = $message;
+        }
+        foreach ($rule as $key => $item) {
+            $rule[$key] = join('|', $item);
+            $data[$key] = input("{$type}{$key}");
+        }
         if ($this->app->validate->rule($rule)->message($info)->check($data)) {
             return $data;
         } else {
