@@ -70,7 +70,7 @@ class Controller extends \stdClass
         $this->app = $app;
         $this->request = $app->request;
         $this->app->bind('think\admin\Controller', $this);
-        if (in_array($this->app->request->action(), get_class_methods(__CLASS__))) {
+        if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
         $this->initialize();
