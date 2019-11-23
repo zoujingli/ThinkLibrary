@@ -219,7 +219,7 @@ class Controller extends \stdClass
     }
 
     /**
-     * 快捷输入并验证（ 支持 # 别名 ）
+     * 快捷输入并验证（ 支持 规则 # 别名 ）
      * @param array $rules 验证规则（ 验证信息数组 ）
      * @param string $type 输入方式 ( post. 或 get. )
      * @return array
