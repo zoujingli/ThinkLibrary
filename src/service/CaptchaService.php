@@ -38,7 +38,7 @@ class CaptchaService extends Service
     /**
      * 服务初始化
      * @param array $config
-     * @return CaptchaService
+     * @return static
      */
     public function initialize($config = []): Service
     {

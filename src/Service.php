@@ -42,6 +42,7 @@ abstract class Service
 
     /**
      * 服务初始化
+     * @return static
      */
     public function initialize(): Service
     {
@@ -52,9 +53,8 @@ abstract class Service
      * 静态实例对象
      * @return static
      */
-    public static function instance()
+    public static function instance(): Service
     {
-        $service = Container::getInstance()->make(static::class);
-        return $service->initialize();
+        return Container::getInstance()->make(static::class)->initialize();
     }
 }

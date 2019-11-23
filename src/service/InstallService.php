@@ -57,7 +57,7 @@ class InstallService extends Service
 
     /**
      * 服务初始化
-     * @return InstallService
+     * @return static
      */
     public function initialize(): Service
     {

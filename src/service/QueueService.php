@@ -53,7 +53,7 @@ class QueueService extends Service
     /**
      * 数据初始化
      * @param integer $code
-     * @return $this
+     * @return static
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
