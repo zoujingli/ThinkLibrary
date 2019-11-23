@@ -227,8 +227,8 @@ class Controller extends \stdClass
     protected function _vali(array $rules, $type = '')
     {
         list($data, $rule, $info) = [[], [], []];
-        foreach ($rules as $key => $message) {
-            list($_key, $_rule) = explode('.', $key);
+        foreach ($rules as $name => $message) {
+            list($_key, $_rule) = explode('.', $name);
             list($_val,) = explode(':', $_rule);
             $rule[$_key][] = $_rule;
             $info["{$_key}.{$_val}"] = $message;
