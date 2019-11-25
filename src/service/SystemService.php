@@ -89,8 +89,8 @@ class SystemService extends Service
 
     /**
      * 保存数据内容
-     * @param string $name
-     * @param mixed $value
+     * @param string $name 数据名称
+     * @param mixed $value 数据内容
      * @return boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -104,8 +104,8 @@ class SystemService extends Service
 
     /**
      * 读取数据内容
-     * @param string $name
-     * @param mixed $default
+     * @param string $name 数据名称
+     * @param mixed $default 默认值
      * @return mixed
      */
     public function getData($name, $default = null)
