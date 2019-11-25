@@ -16,6 +16,7 @@
 namespace library\service;
 
 use library\Service;
+use library\tools\Data;
 
 /**
  * 系统菜单管理服务
@@ -50,8 +51,8 @@ class MenuService extends Service
      */
     public function getTree()
     {
-        $result = $this->app->db->name('SystemMenu')->where(['status' => '1'])->order('sort desc,id asc')->select();
-        return $this->buildData(DataExtend::arr2tree($result->toArray()), NodeService::instance()->getMethods());
+        $result = Db::name('SystemMenu')->where(['status' => '1'])->order('sort desc,id asc')->select();
+        return $this->buildData(Data::arr2tree($result), NodeService::instance()->getMethods());
     }
 
     /**
