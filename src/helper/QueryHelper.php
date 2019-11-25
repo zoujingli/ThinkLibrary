@@ -21,7 +21,8 @@ use think\db\Query;
 /**
  * Class QueryHelper
  * @package library\helper
- * @see \think\db\Query
+ * @see Query
+ * @mixin Query
  */
 class QueryHelper extends Helper
 {
@@ -52,7 +53,7 @@ class QueryHelper extends Helper
 
     /**
      * 获取当前Db操作对象
-     * @return \think\db\Query
+     * @return Query
      */
     public function db()
     {
