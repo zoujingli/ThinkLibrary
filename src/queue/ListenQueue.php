@@ -54,18 +54,18 @@ class ListenQueue extends Command
         }
         $output->comment('============ 任务监听中 ============');
         while (true) {
-            foreach (Db::name('SystemQueue')->where([['status', '=', '1'], ['exec_time', '<=', time()]])->order('exec_time asc')->limit(100)->select() as $vo) {
+            foreach (Db::name('SystemQueue')->where([['status', 'eq', '1'], ['time', '<=', time()]])->order('time asc')->select() as $item) {
                 try {
-                    Db::name('SystemQueue')->where(['code' => $vo['code']])->update(['status' => '2', 'enter_time' => time(), 'exec_desc' => '', 'attempts' => $vo['attempts'] + 1]);
-                    if ($process->query($command = $process->think("xtask:_work {$vo['code']} -"))) {
-                        $output->comment("正在执行 -> [{$vo['code']}] {$vo['title']}");
+                    Db::name('SystemQueue')->where(['id' => $item['id']])->update(['status' => '2', 'start_at' => date('Y-m-d H:i:s')]);
+                    if ($process->query($command = $process->think("xtask:_work {$item['id']} -"))) {
+                        $output->comment("正在执行 -> [{$item['id']}] {$item['title']}");
                     } else {
                         $process->create($command);
-                        $output->info("创建成功 -> [{$vo['code']}] {$vo['title']}");
+                        $output->info("创建成功 -> [{$item['id']}] {$item['title']}");
                     }
                 } catch (\Exception $e) {
-                    Db::name('SystemQueue')->where(['code' => $vo['code']])->update(['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
-                    $output->error("创建失败 -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
+                    Db::name('SystemQueue')->where(['id' => $item['id']])->update(['status' => '4', 'desc' => $e->getMessage()]);
+                    $output->error("创建处理任务的子进程失败 --> [{$item['id']}] {$item['title']}，{$e->getMessage()}");
                 }
             }
             sleep(1);
