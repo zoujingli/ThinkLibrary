@@ -44,15 +44,7 @@ class SystemService extends Service
      */
     public function set($name, $value = '')
     {
-        list($type, $field) = $this->parse($name);
-        if (is_array($value)) {
-            foreach ($value as $k => $v) $this->set("{$field}.{$k}", $v);
-        } else {
-            $this->data = [];
-            $data = ['name' => $field, 'value' => $value, 'type' => $type];
-            $this->save('SystemConfig', $data, 'name', ['type' => $type]);
-        }
-        return $this;
+      
     }
 
     /**
@@ -65,19 +57,7 @@ class SystemService extends Service
      */
     public function get($name)
     {
-        list($type, $field, $outer) = $this->parse($name);
-        if (empty($this->data)) foreach (Db::name('SystemConfig')->select() as $vo) {
-            $this->data[$vo['type']][$vo['name']] = $vo['value'];
-        }
-        if (empty($name)) {
-            return empty($this->data[$type]) ? [] : ($outer === 'raw' ? $this->data[$type] : array_map(function ($value) {
-                return htmlspecialchars($value);
-            }, $this->data[$type]));
-        } else {
-            if (isset($this->data[$type]) && isset($this->data[$type][$field])) {
-                return $outer === 'raw' ? $this->data[$type][$field] : htmlspecialchars($this->data[$type][$field]);
-            } else return '';
-        }
+
     }
 
     /**
@@ -105,21 +85,6 @@ class SystemService extends Service
         } else {
             return Db::table($table)->strict(false)->insertGetId($data);
         }
-    }
-
-    /**
-     * 解析缓存名称
-     * @param string $rule 配置名称
-     * @param string $type 配置类型
-     * @return array
-     */
-    private function parse($rule, $type = 'base')
-    {
-        if (stripos($rule, '.') !== false) {
-            list($type, $rule) = explode('.', $rule);
-        }
-        list($field, $outer) = explode('|', "{$rule}|");
-        return [$type, $field, strtolower($outer)];
     }
 
     /**
@@ -156,11 +121,11 @@ class SystemService extends Service
      */
     public function setOplog($action, $content)
     {
-        return Db::name('SystemOplog')->insert([
+        return Db::name('SystemLog')->insert([
             'node'     => NodeService::instance()->getCurrent(),
             'action'   => $action, 'content' => $content,
             'geoip'    => $this->app->request->isCli() ? '127.0.0.1' : $this->app->request->ip(),
-            'username' => $this->app->request->isCli() ? 'cli' : $this->app->session->get('user.username', ''),
+            'username' => $this->app->request->isCli() ? 'cli' : $this->app->session->get('user.username'),
         ]);
     }
 

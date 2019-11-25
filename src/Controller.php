@@ -206,6 +206,11 @@ class Controller extends \stdClass
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @return array
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
      */
     protected function _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
     {
@@ -220,6 +225,9 @@ class Controller extends \stdClass
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
      * @return array|boolean
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function _form($dbQuery, $tpl = '', $pkField = '', $where = [], $data = [])
     {
@@ -233,6 +241,8 @@ class Controller extends \stdClass
      * @param string $pkField 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
      */
     protected function _save($dbQuery, $data = [], $pkField = '', $where = [])
     {
@@ -268,6 +278,9 @@ class Controller extends \stdClass
      * @param string $pkField 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean|null
+     * @return boolean|null
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
      */
     protected function _delete($dbQuery, $pkField = '', $where = [])
     {
