@@ -17,6 +17,7 @@ namespace library\service;
 
 use library\Service;
 use library\tools\Data;
+use think\Db;
 
 /**
  * 系统菜单管理服务
@@ -46,8 +47,8 @@ class MenuService extends Service
      * @return array
      * @throws \ReflectionException
      * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function getTree()
     {
