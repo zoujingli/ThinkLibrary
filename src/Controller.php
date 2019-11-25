@@ -22,11 +22,11 @@ use library\helper\PageHelper;
 use library\helper\QueryHelper;
 use library\helper\SaveHelper;
 use library\helper\TokenHelper;
+use library\helper\ValidateHelper;
 use think\App;
 use think\Container;
 use think\db\Query;
 use think\exception\HttpResponseException;
-use think\Validate;
 
 /**
  * 标准控制器基类
@@ -247,28 +247,7 @@ class Controller extends \stdClass
      */
     protected function _vali(array $rules, $type = '')
     {
-        list($data, $rule, $info) = [[], [], []];
-        foreach ($rules as $name => $message) {
-            if (stripos($name, '#') !== false) {
-                list($name, $alias) = explode('#', $name);
-            }
-            if (stripos($name, '.') === false) {
-                $data[$name] = empty($alias) ? $name : $alias;
-            } else {
-                list($_rgx) = explode(':', $name);
-                list($_key, $_rule) = explode('.', $name);
-                $info[$_rgx] = $message;
-                $data[$_key] = empty($alias) ? $_key : $alias;
-                $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
-            }
-        }
-        foreach ($data as $key => $name) $data[$key] = input("{$type}{$name}");
-        $validate = Validate::make($rule, $info);
-        if ($validate->check($data)) {
-            return $this->data;
-        } else {
-            $this->error($validate->getError());
-        }
+        return ValidateHelper::instance()->init($rules, $type);
     }
 
     /**
