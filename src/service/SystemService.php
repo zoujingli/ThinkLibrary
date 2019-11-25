@@ -44,7 +44,7 @@ class SystemService extends Service
      */
     public function set($name, $value = '')
     {
-      
+
     }
 
     /**
@@ -90,7 +90,7 @@ class SystemService extends Service
     /**
      * 保存数据内容
      * @param string $name
-     * @param array $value
+     * @param mixed $value
      * @return boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -98,19 +98,20 @@ class SystemService extends Service
      */
     public function setData($name, $value)
     {
-        $data = ['name' => $name, 'value' => json_encode($value, 256)];
+        $data = ['name' => $name, 'value' => serialize($value)];
         return $this->save('SystemData', $data, 'name');
     }
 
     /**
      * 读取数据内容
      * @param string $name
+     * @param mixed $default
      * @return mixed
      */
-    public function getData($name)
+    public function getData($name, $default = null)
     {
         $value = Db::name('SystemData')->where(['name' => $name])->value('value');
-        return empty($value) ? '' : json_encode($value, true);
+        return empty($value) ? $default : unserialize($value);
     }
 
     /**
