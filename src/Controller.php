@@ -191,7 +191,7 @@ class Controller extends \stdClass
     /**
      * 快捷查询逻辑器
      * @param string|Query $dbQuery
-     * @return Query
+     * @return QueryHelper
      */
     protected function _query($dbQuery)
     {
