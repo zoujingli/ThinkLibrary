@@ -33,7 +33,7 @@ use think\exception\HttpResponseException;
  * Class Controller
  * @package library
  */
-class Controller extends \stdClass
+abstract class Controller extends \stdClass
 {
 
     /**
