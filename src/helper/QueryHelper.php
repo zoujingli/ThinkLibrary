@@ -21,6 +21,7 @@ use think\db\Query;
 /**
  * Class QueryHelper
  * @package library\helper
+ * @see \think\db\Query
  */
 class QueryHelper extends Helper
 {
