@@ -36,7 +36,7 @@ abstract class Helper
      * 数据库实例
      * @var Query
      */
-    protected $query;
+    public $query;
 
     /**
      * 当前控制器实例
