@@ -209,8 +209,8 @@ class QueryHelper extends Helper
 
     /**
      * 实例化分页管理器
-     * @param boolean $isPage 是否启用分页
-     * @param boolean $isDisplay 是否渲染模板
+     * @param boolean $page 是否启用分页
+     * @param boolean $display 是否渲染模板
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @return mixed
@@ -220,8 +220,8 @@ class QueryHelper extends Helper
      * @throws \think\exception\DbException
      * @throws \think\exception\PDOException
      */
-    public function page($isPage = true, $isDisplay = true, $total = false, $limit = 0)
+    public function page($page = true, $display = true, $total = false, $limit = 0)
     {
-        return PageHelper::instance()->init($this->query, $isPage, $isDisplay, $total, $limit);
+        return PageHelper::instance()->init($this->query, $page, $display, $total, $limit);
     }
 }
