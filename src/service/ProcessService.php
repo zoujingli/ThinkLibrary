@@ -13,7 +13,7 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
 // +----------------------------------------------------------------------
 
-namespace library\Service;
+namespace library\service;
 
 use library\Service;
 
