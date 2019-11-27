@@ -54,7 +54,7 @@ class ListenQueue extends Command
             $where = [['status', '=', '1'], ['exec_time', '<=', time()]];
             $this->app->db->name('SystemQueue')->where($where)->order('exec_time asc')->limit(100)->select()->each(function ($vo) use ($process, $output) {
                 try {
-                    $this->app->db->name('SystemQueue')->where(['code' => $vo['code']])->update(['status' => '2', 'enter_time' => time(), 'exec_desc' => '', 'attempts' => $vo['attempts'] + 1]);
+                    $this->update($vo['code'], ['status' => '2', 'enter_time' => time(), 'exec_desc' => '', 'attempts' => $vo['attempts'] + 1]);
                     if ($process->query($command = $process->think("xtask:_work {$vo['code']} -"))) {
                         $output->writeln("正在执行 -> [{$vo['code']}] {$vo['title']}");
                     } else {
@@ -62,12 +62,24 @@ class ListenQueue extends Command
                         $output->writeln("创建成功 -> [{$vo['code']}] {$vo['title']}");
                     }
                 } catch (\Exception $e) {
-                    $this->app->db->name('SystemQueue')->where(['code' => $vo['code']])->update(['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
+                    $this->update($vo['code'], ['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
                     $output->writeln("创建失败 -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
                 }
             });
             sleep(1);
         }
+    }
+
+    /**
+     * 更新任务数据
+     * @param mixed $code 任务编号
+     * @param mixed $data 任务数据
+     * @return boolean
+     * @throws \think\db\exception\DbException
+     */
+    protected function update($code, array $data = [])
+    {
+        return $this->app->db->name('SystemQueue')->where(['code' => $code])->update($data);
     }
 
 }
