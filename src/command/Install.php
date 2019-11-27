@@ -56,8 +56,13 @@ class Install extends Command
             'ignore' => [],
         ],
         'static' => [
-            'rules'  => ['public/static'],
-            'ignore' => ['public/static/self'],
+            'rules'  => [
+                'public/static/plugs',
+                'public/static/theme',
+                'public/static/admin.js',
+                'public/static/login.js',
+            ],
+            'ignore' => [],
         ],
     ];
 
