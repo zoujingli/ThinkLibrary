@@ -82,7 +82,8 @@ abstract class Controller extends \stdClass
                     call_user_func_array([$this, $method], $this->request->route());
                 } catch (HttpResponseException $exception) {
                     $end = $exception->getResponse();
-                    $response->code($end->getCode())->header($end->getHeader())->content($response->getContent() . $end->getContent());
+                    $response->code($end->getCode())->content($response->getContent() . $end->getContent());
+                    foreach ($end->getHeader() as $name => $value) if (!empty($name) && is_string($name)) $response->header($name, $value);
                 } catch (\Exception $exception) {
                     throw $exception;
                 }
