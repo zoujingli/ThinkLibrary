@@ -76,10 +76,6 @@ class Install extends Command
         $this->addArgument('name', Argument::OPTIONAL, '模块名称', '');
     }
 
-    /**
-     * @param Input $input
-     * @param Output $output
-     */
     protected function execute(Input $input, Output $output)
     {
         $this->name = trim($input->getArgument('name'));
