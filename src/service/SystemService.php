@@ -88,8 +88,12 @@ class SystemService extends Service
      */
     public function getData($name, $default = [])
     {
-        $value = Db::name('SystemData')->where(['name' => $name])->value('value');
-        return empty($value) ? $default : unserialize($value);
+        try {
+            $value = Db::name('SystemData')->where(['name' => $name])->value('value');
+            return empty($value) ? $default : unserialize($value);
+        } catch (\Exception $e) {
+            return [];
+        }
     }
 
     /**
