@@ -159,23 +159,15 @@ $this->_save($dbQuery, ['status'=>'1']);
 ```php
 
 // 配置默认存储方式    
-sysconf('storage_type','文件存储类型');
-
-// OSS存储配置
-sysconf('storage_oss_domain', '文件访问域名');
-sysconf('storage_oss_keyid', '接口授权AppId');
-sysconf('storage_oss_secret', '接口授权AppSecret');
-sysconf('storage_oss_bucket', '文件存储空间名称');
-sysconf('storage_oss_is_https', '文件HTTP访问协议');
-sysconf('storage_oss_endpoint', '文件存储节点域名');
+sysconf('storage.type','文件存储类型');
 
 // 七牛云存储配置
-sysconf('storage_qiniu_region', '文件存储节点');
-sysconf('storage_qiniu_domain', '文件访问域名');
-sysconf('storage_qiniu_bucket', '文件存储空间名称');
-sysconf('storage_qiniu_is_https', '文件HTTP访问协议');
-sysconf('storage_qiniu_access_key', '接口授权AccessKey');
-sysconf('storage_qiniu_secret_key', '接口授权SecretKey');
+sysconf('storage.qiniu_region', '文件存储节点');
+sysconf('storage.qiniu_domain', '文件访问域名');
+sysconf('storage.qiniu_bucket', '文件存储空间名称');
+sysconf('storage.qiniu_is_https', '文件HTTP访问协议');
+sysconf('storage.qiniu_access_key', '接口授权AccessKey');
+sysconf('storage.qiniu_secret_key', '接口授权SecretKey');
 
 
 // 生成文件名称(链接url或文件md5)
