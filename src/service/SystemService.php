@@ -124,7 +124,7 @@ class SystemService extends Service
     /**
      * 保存数据内容
      * @param string $name
-     * @param array $value
+     * @param mixed $value
      * @return boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
