@@ -144,8 +144,8 @@ class SystemService extends Service
      */
     public function getData($name, $default = null)
     {
-        $value = $this->app->db->name('SystemData')->where(['name' => $name])->value('value');
-        return empty($value) ? $default : unserialize($value);
+        $value = $this->app->db->name('SystemData')->where(['name' => $name])->value('value', null);
+        return is_null($value) ? $default : unserialize($value);
     }
 
     /**
