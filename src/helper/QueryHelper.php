@@ -22,8 +22,8 @@ use think\db\Query;
  * 搜索条件处理器
  * Class QueryHelper
  * @package think\admin\helper
- * @see \think\Db\Query
- * @mixin \think\Db\Query
+ * @see \think\db\Query
+ * @mixin \think\db\Query
  */
 class QueryHelper extends Helper
 {
