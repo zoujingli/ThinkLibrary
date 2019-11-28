@@ -132,19 +132,20 @@ class SystemService extends Service
      */
     public function setData($name, $value)
     {
-        $data = ['name' => $name, 'value' => json_encode($value, 256)];
+        $data = ['name' => $name, 'value' => serialize($value)];
         return $this->save('SystemData', $data, 'name');
     }
 
     /**
      * 读取数据内容
      * @param string $name
+     * @param string $default
      * @return mixed
      */
-    public function getData($name)
+    public function getData($name, $default = '')
     {
         $value = $this->app->db->name('SystemData')->where(['name' => $name])->value('value');
-        return empty($value) ? '' : json_encode($value, true);
+        return empty($value) ? $default : unserialize($value);
     }
 
     /**
