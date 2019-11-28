@@ -142,7 +142,7 @@ class SystemService extends Service
      * @param string $default
      * @return mixed
      */
-    public function getData($name, $default = '')
+    public function getData($name, $default = null)
     {
         $value = $this->app->db->name('SystemData')->where(['name' => $name])->value('value');
         return empty($value) ? $default : unserialize($value);
