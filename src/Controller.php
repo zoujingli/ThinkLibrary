@@ -104,7 +104,7 @@ abstract class Controller extends \stdClass
      */
     private function __mergeResponse(Response $response, Response $source)
     {
-        $response->code($source->getCode())->content($source->getContent() . $source->getContent());
+        $response->code($source->getCode())->content($response->getContent() . $source->getContent());
         foreach ($source->getHeader() as $name => $value) if (!empty($name) && is_string($name)) $response->header($name, $value);
         return $response;
     }
