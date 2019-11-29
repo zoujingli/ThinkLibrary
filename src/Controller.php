@@ -98,13 +98,15 @@ abstract class Controller extends \stdClass
 
     /**
      * 合并请求对象
-     * @param Response $target
-     * @param Response $source
+     * @param Response $target 目标响应对象
+     * @param Response $source 数据源响应对象
+     * @return Response
      */
     private function __mergeResponse(Response $target, Response $source)
     {
         $target->code($source->getCode())->content($source->getContent() . $source->getContent());
         foreach ($source->getHeader() as $name => $value) if (!empty($name) && is_string($name)) $target->header($name, $value);
+        return $target;
     }
 
     /**
