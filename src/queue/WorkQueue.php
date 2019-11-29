@@ -62,6 +62,7 @@ class WorkQueue extends Command
     protected function execute(Input $input, Output $output)
     {
         try {
+            set_time_limit(0);
             $this->code = trim($input->getArgument('code'));
             if (empty($this->code)) throw new Exception("执行任务需要指定任务编号！");
             $queue = $this->app->db->name('SystemQueue')->where(['code' => $this->code, 'status' => '2'])->find();
