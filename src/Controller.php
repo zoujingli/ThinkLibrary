@@ -68,6 +68,7 @@ abstract class Controller extends \stdClass
     {
         $this->app = $app;
         $this->request = $app->request;
+        // 控制器注入容器
         Container::set('library\Controller', $this);
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
@@ -93,11 +94,9 @@ abstract class Controller extends \stdClass
 
     /**
      * 控制器初始化
-     * @return $this
      */
     protected function initialize()
     {
-        return $this;
     }
 
     /**
