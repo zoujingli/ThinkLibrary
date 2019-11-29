@@ -78,7 +78,7 @@ abstract class Controller extends \stdClass
         $this->initialize();
         // 控制器后置操作
         if (method_exists($this, $method = "_{$this->request->action()}_{$this->request->method()}")) {
-            $this->app->hook->add('app_end', function (\think\Response $response) use ($method) {
+            $this->app->hook->add('app_end', function (Response $response) use ($method) {
                 try {
                     [ob_start(), ob_clean()];
                     $return = call_user_func_array([$this, $method], $this->request->route());
