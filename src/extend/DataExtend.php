@@ -70,7 +70,7 @@ class DataExtend
     /**
      * 获取数据树子ID
      * @param array $list 数据列表
-     * @param int $id 起始ID
+     * @param integer $id 起始ID
      * @param string $key ID_KEY
      * @param string $pkey PID_KEY
      * @return array
