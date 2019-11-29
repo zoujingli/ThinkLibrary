@@ -27,6 +27,7 @@ use think\App;
 use think\Container;
 use think\db\Query;
 use think\exception\HttpResponseException;
+use think\Response;
 
 /**
  * 标准控制器基类
@@ -80,16 +81,30 @@ abstract class Controller extends \stdClass
             $this->app->hook->add('app_end', function (\think\Response $response) use ($method) {
                 try {
                     [ob_start(), ob_clean()];
-                    call_user_func_array([$this, $method], $this->request->route());
+                    $return = call_user_func_array([$this, $method], $this->request->route());
+                    if (is_string($return)) {
+                        $response->content($response->getContent() . $return);
+                    } elseif ($return instanceof Response) {
+                        $this->__mergeResponse($response, $return);
+                    }
                 } catch (HttpResponseException $exception) {
-                    $end = $exception->getResponse();
-                    $response->code($end->getCode())->content($response->getContent() . $end->getContent());
-                    foreach ($end->getHeader() as $name => $value) if (!empty($name) && is_string($name)) $response->header($name, $value);
+                    $this->__mergeResponse($response, $exception->getResponse());
                 } catch (\Exception $exception) {
                     throw $exception;
                 }
             });
         }
+    }
+
+    /**
+     * 合并请求对象
+     * @param Response $target
+     * @param Response $source
+     */
+    private function __mergeResponse(Response $target, Response $source)
+    {
+        $target->code($source->getCode())->content($source->getContent() . $source->getContent());
+        foreach ($source->getHeader() as $name => $value) if (!empty($name) && is_string($name)) $target->header($name, $value);
     }
 
     /**
@@ -213,8 +228,8 @@ abstract class Controller extends \stdClass
     /**
      * 快捷分页逻辑器
      * @param string|Query $dbQuery
-     * @param boolean $isPage 是否启用分页
-     * @param boolean $isDisplay 是否渲染模板
+     * @param boolean $page 是否启用分页
+     * @param boolean $display 是否渲染模板
      * @param boolean $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @return array
@@ -224,16 +239,16 @@ abstract class Controller extends \stdClass
      * @throws \think\exception\DbException
      * @throws \think\exception\PDOException
      */
-    protected function _page($dbQuery, $isPage = true, $isDisplay = true, $total = false, $limit = 0)
+    protected function _page($dbQuery, $page = true, $display = true, $total = false, $limit = 0)
     {
-        return PageHelper::instance()->init($dbQuery, $isPage, $isDisplay, $total, $limit);
+        return PageHelper::instance()->init($dbQuery, $page, $display, $total, $limit);
     }
 
     /**
      * 快捷表单逻辑器
      * @param string|Query $dbQuery
-     * @param string $tpl 模板名称
-     * @param string $pkField 指定数据对象主键
+     * @param string $template 模板名称
+     * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件
      * @param array $data 表单扩展数据
      * @return array|boolean
@@ -243,24 +258,24 @@ abstract class Controller extends \stdClass
      * @throws \think\exception\DbException
      * @throws \think\exception\PDOException
      */
-    protected function _form($dbQuery, $tpl = '', $pkField = '', $where = [], $data = [])
+    protected function _form($dbQuery, $template = '', $field = '', $where = [], $data = [])
     {
-        return FormHelper::instance()->init($dbQuery, $tpl, $pkField, $where, $data);
+        return FormHelper::instance()->init($dbQuery, $template, $field, $where, $data);
     }
 
     /**
      * 快捷更新逻辑器
      * @param string|Query $dbQuery
      * @param array $data 表单扩展数据
-     * @param string $pkField 数据对象主键
+     * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
-    protected function _save($dbQuery, $data = [], $pkField = '', $where = [])
+    protected function _save($dbQuery, $data = [], $field = '', $where = [])
     {
-        return SaveHelper::instance()->init($dbQuery, $data, $pkField, $where);
+        return SaveHelper::instance()->init($dbQuery, $data, $field, $where);
     }
 
     /**
@@ -289,16 +304,16 @@ abstract class Controller extends \stdClass
     /**
      * 快捷删除逻辑器
      * @param string|Query $dbQuery
-     * @param string $pkField 数据对象主键
+     * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean|null
      * @return boolean|null
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
-    protected function _delete($dbQuery, $pkField = '', $where = [])
+    protected function _delete($dbQuery, $field = '', $where = [])
     {
-        return DeleteHelper::instance()->init($dbQuery, $pkField, $where);
+        return DeleteHelper::instance()->init($dbQuery, $field, $where);
     }
 
 }
