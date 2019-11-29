@@ -53,7 +53,6 @@ if (!function_exists('sysconf')) {
      * @param string $value 参数内容
      * @return mixed
      * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     function sysconf($name = '', $value = null)
