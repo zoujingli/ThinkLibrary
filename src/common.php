@@ -77,7 +77,6 @@ if (!function_exists('sysqueue')) {
      * @return QueueService
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     function sysqueue($title, $command, $later = 0, $data = [], $rscript = 1)
