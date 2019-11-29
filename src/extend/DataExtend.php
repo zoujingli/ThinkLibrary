@@ -26,18 +26,18 @@ class DataExtend
     /**
      * 一维数据数组生成数据树
      * @param array $list 数据列表
-     * @param string $id ID_KEY
-     * @param string $pid PID_KEY
-     * @param string $son 子数据名称
+     * @param string $key ID_KEY
+     * @param string $pkey PID_KEY
+     * @param string $skey 子数据名称
      * @return array
      */
-    public static function arr2tree($list, $id = 'id', $pid = 'pid', $son = 'sub')
+    public static function arr2tree($list, $key = 'id', $pkey = 'pid', $skey = 'sub')
     {
         list($tree, $map) = [[], []];
-        foreach ($list as $item) $map[$item[$id]] = $item;
-        foreach ($list as $item) if (isset($item[$pid]) && isset($map[$item[$pid]])) {
-            $map[$item[$pid]][$son][] = &$map[$item[$id]];
-        } else $tree[] = &$map[$item[$id]];
+        foreach ($list as $item) $map[$item[$key]] = $item;
+        foreach ($list as $item) if (isset($item[$pkey]) && isset($map[$item[$pkey]])) {
+            $map[$item[$pkey]][$skey][] = &$map[$item[$key]];
+        } else $tree[] = &$map[$item[$key]];
         unset($map);
         return $tree;
     }
