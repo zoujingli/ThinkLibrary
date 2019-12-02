@@ -56,39 +56,39 @@ class WorkQueue extends Command
     /**
      * @param Input $input 输入对象
      * @param Output $output 输出对象
-     * @return boolean
      * @throws \think\db\exception\DbException
      */
     protected function execute(Input $input, Output $output)
     {
-        try {
-            set_time_limit(0);
-            $this->code = trim($input->getArgument('code'));
-            if (empty($this->code)) throw new Exception("执行任务需要指定任务编号！");
+        set_time_limit(0);
+        $this->code = trim($input->getArgument('code'));
+        if (empty($this->code)) {
+            $this->output->error('执行任务需要指定任务编号！');
+        } else try {
             $queue = $this->app->db->name('SystemQueue')->where(['code' => $this->code, 'status' => '1'])->find();
             if (empty($queue)) {
-                $this->output->warning($message = "执行任务{$this->code}的信息或状态异常！");
-                return $message;
-            }
-            // 锁定任务状态
-            $this->app->db->name('SystemQueue')->where(['code' => $this->code])->update([
-                'status' => '2', 'enter_time' => time(), 'exec_desc' => '', 'attempts' => $this->app->db->raw('attempts+1'),
-            ]);
-            // 设置进程标题
-            if (($process = ProcessService::instance())->iswin()) {
-                $this->setProcessTitle("ThinkAdmin {$process->version()} 执行任务 - {$queue['title']}");
-            }
-            // 执行任务内容
-            if (class_exists($command = $queue['command'])) {
-                if ($command instanceof QueueService) {
-                    $data = json_decode($queue['data'], true) ?: [];
-                    $this->update('3', $command::instance()->initialize($this->code)->execute($data));
-                } else {
-                    throw new Exception("任务处理类 {$command} 未继承 think\\admin\\service\\QueueService");
-                }
+                $this->output->warning($message = "执行任务{$this->code}的或状态异常！");
             } else {
-                $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $queue['command'])));
-                $this->update('3', $this->app->console->call(array_shift($attr), $attr, 'console'));
+                // 锁定任务状态
+                $this->app->db->name('SystemQueue')->where(['code' => $this->code])->update([
+                    'status' => '2', 'enter_time' => time(), 'exec_desc' => '', 'attempts' => $this->app->db->raw('attempts+1'),
+                ]);
+                // 设置进程标题
+                if (($process = ProcessService::instance())->iswin()) {
+                    $this->setProcessTitle("ThinkAdmin {$process->version()} 执行任务 - {$queue['title']}");
+                }
+                // 执行任务内容
+                if (class_exists($command = $queue['command'])) {
+                    if ($command instanceof QueueService) {
+                        $data = json_decode($queue['data'], true) ?: [];
+                        $this->update('3', $command::instance()->initialize($this->code)->execute($data));
+                    } else {
+                        throw new Exception("任务处理类 {$command} 未继承 think\\admin\\service\\QueueService");
+                    }
+                } else {
+                    $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $queue['command'])));
+                    $this->update('3', $this->app->console->call(array_shift($attr), $attr, 'console'));
+                }
             }
         } catch (\Exception $e) {
             $this->update('4', $e->getMessage());
