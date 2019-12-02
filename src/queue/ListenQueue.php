@@ -60,11 +60,11 @@ class ListenQueue extends Command
                         $this->output->warning("正在执行 -> [{$vo['code']}] {$vo['title']}");
                     } else {
                         $process->create($command);
-                        $this->output->info("创建成功 -> [{$vo['code']}] {$vo['title']}");
+                        $this->output->info("开始执行 -> [{$vo['code']}] {$vo['title']}");
                     }
                 } catch (\Exception $e) {
                     $this->update($vo['code'], ['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
-                    $this->output->error("创建失败 -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
+                    $this->output->error("执行失败 -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
                 }
             });
             sleep(1);
