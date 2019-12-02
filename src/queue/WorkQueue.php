@@ -56,6 +56,7 @@ class WorkQueue extends Command
     /**
      * @param Input $input 输入对象
      * @param Output $output 输出对象
+     * @return boolean
      * @throws \think\db\exception\DbException
      */
     protected function execute(Input $input, Output $output)
@@ -65,7 +66,10 @@ class WorkQueue extends Command
             $this->code = trim($input->getArgument('code'));
             if (empty($this->code)) throw new Exception("执行任务需要指定任务编号！");
             $queue = $this->app->db->name('SystemQueue')->where(['code' => $this->code, 'status' => '1'])->find();
-            if (empty($queue)) throw new Exception("执行任务{$this->code}的信息或状态异常！");
+            if (empty($queue)) {
+                $this->output->warning($message = "执行任务{$this->code}的信息或状态异常！");
+                return $message;
+            }
             // 锁定任务状态
             $this->app->db->name('SystemQueue')->where(['code' => $this->code])->update([
                 'status' => '2', 'enter_time' => time(), 'exec_desc' => '', 'attempts' => $this->app->db->raw('attempts+1'),
