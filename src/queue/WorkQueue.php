@@ -67,6 +67,7 @@ class WorkQueue extends Command
         } else try {
             $queue = $this->app->db->name('SystemQueue')->where(['code' => $this->code, 'status' => '1'])->find();
             if (empty($queue)) {
+                // 这里不做任何处理（该任务可能在其它地方已经在执行）
                 $this->output->warning($message = "执行任务{$this->code}的或状态异常！");
             } else {
                 // 锁定任务状态
