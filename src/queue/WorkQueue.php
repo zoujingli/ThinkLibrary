@@ -80,7 +80,7 @@ class WorkQueue extends Command
                 }
                 // 执行任务内容
                 if (class_exists($command = $queue['command'])) {
-                    // 自定义服务，支持返回消息（支持异常结束）
+                    // 自定义服务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     if ($command instanceof QueueService) {
                         $data = json_decode($queue['data'], true) ?: [];
                         $this->update('3', $command::instance()->initialize($this->code)->execute($data));
@@ -88,13 +88,17 @@ class WorkQueue extends Command
                         throw new Exception("任务处理类 {$command} 未继承 think\\admin\\service\\QueueService");
                     }
                 } else {
-                    // 自定义指令，不支持返回消息（支持异常结束）
+                    // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $queue['command'])));
                     $this->update('3', $this->app->console->call(array_shift($attr), $attr, 'console'));
                 }
             }
         } catch (\Exception $e) {
-            $this->update('4', $e->getMessage());
+            if (in_array($e->getCode(), ['3', '4'])) {
+                $this->update($e->getCode(), $e->getMessage());
+            } else {
+                $this->update('4', $e->getMessage());
+            }
         }
     }
 
