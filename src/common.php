@@ -248,3 +248,22 @@ if (!function_exists('debase64url')) {
         return base64_decode(str_pad(strtr($string, '-_', '+/'), strlen($string) % 4, '=', STR_PAD_RIGHT));
     }
 }
+
+if (!function_exists('local_image')) {
+    /**
+     * 下载远程文件到本地
+     * @param string $url 远程图片地址
+     * @param boolean $force 是否强制重新下载
+     * @param integer $expire 强制本地存储时间
+     * @return string
+     */
+    function local_image($url, $force = false, $expire = 0)
+    {
+        $result = \think\admin\Storage::down($url, $force, $expire);
+        if (isset($result['url'])) {
+            return $result['url'];
+        } else {
+            return $url;
+        }
+    }
+}
