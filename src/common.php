@@ -18,6 +18,7 @@ use think\admin\service\AdminService;
 use think\admin\service\QueueService;
 use think\admin\service\SystemService;
 use think\admin\service\TokenService;
+use think\admin\Storage;
 use think\db\Query;
 
 if (!function_exists('p')) {
@@ -249,21 +250,17 @@ if (!function_exists('debase64url')) {
     }
 }
 
-if (!function_exists('local_image')) {
+if (!function_exists('down_file')) {
     /**
      * 下载远程文件到本地
-     * @param string $url 远程图片地址
+     * @param string $source 远程文件地址
      * @param boolean $force 是否强制重新下载
      * @param integer $expire 强制本地存储时间
      * @return string
      */
-    function local_image($url, $force = false, $expire = 0)
+    function down_file($source, $force = false, $expire = 0)
     {
-        $result = \think\admin\Storage::down($url, $force, $expire);
-        if (isset($result['url'])) {
-            return $result['url'];
-        } else {
-            return $url;
-        }
+        $result = Storage::down($source, $force, $expire);
+        return isset($result['url']) ? $result['url'] : $source;
     }
 }
