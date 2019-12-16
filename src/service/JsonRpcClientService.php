@@ -58,19 +58,16 @@ class JsonRpcClientService extends Service
      */
     public function __call($method, $params)
     {
-
         // check
         if (!is_scalar($method)) {
             throw new \think\Exception('Method name has no scalar value');
         }
-
         // check
         if (is_array($params)) {
             $params = array_values($params);
         } else {
             throw new \think\Exception('Params must be given as array');
         }
-
         // performs the HTTP POST
         $options = [
             'http' => [
@@ -86,7 +83,6 @@ class JsonRpcClientService extends Service
         } else {
             throw new \think\Exception("Unable to connect to {$this->proxy}");
         }
-
         // final checks and return
         if ($response['id'] != $this->requestid) {
             throw new \think\Exception("Incorrect response id (request id: {$this->requestid}, response id: {$response['id']}）");
