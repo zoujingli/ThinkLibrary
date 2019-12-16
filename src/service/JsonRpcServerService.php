@@ -41,7 +41,7 @@ class JsonRpcServerService extends Service
 
         // Reads the input data
         $request = json_decode(file_get_contents('php://input'), true);
-        if (empty($response['id'])) {
+        if (empty($request['id'])) {
             throw new \think\Exception('JsonRpc Request id cannot be empty');
         }
 
