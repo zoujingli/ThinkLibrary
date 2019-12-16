@@ -47,7 +47,7 @@ class JsonRpcServerService extends Service
 
         // Executes the task on local object
         try {
-            if ($result = call_user_func_array([$object, $request['method']], $request['params'])) {
+            if ($result = @call_user_func_array([$object, $request['method']], $request['params'])) {
                 $response = ['id' => $request['id'], 'result' => $result, 'error' => null];
             } else {
                 $response = ['id' => $request['id'], 'result' => null, 'error' => 'unknown method or incorrect parameters'];
