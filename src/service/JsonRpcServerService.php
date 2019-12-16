@@ -55,6 +55,7 @@ class JsonRpcServerService extends Service
         } catch (\Exception $e) {
             $response = ['id' => $request['id'], 'result' => null, 'error' => $e->getMessage()];
         }
+
         // Output the response
         throw new HttpResponseException(json($response)->contentType('text/javascript'));
     }
