@@ -44,8 +44,8 @@ class JsonRpcClientService extends Service
      */
     public function create($proxy)
     {
-        $this->proxy = $proxy;
         $this->requestid = CodeExtend::uniqidNumber();
+        $this->proxy = $proxy;
         return $this;
     }
 
