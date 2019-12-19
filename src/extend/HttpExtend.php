@@ -76,17 +76,11 @@ class HttpExtend
             curl_setopt($curl, CURLOPT_COOKIEJAR, $options['cookie_file']);
             curl_setopt($curl, CURLOPT_COOKIEFILE, $options['cookie_file']);
         }
-        if (strtolower($method) === 'put') {
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PUT');
-        }
-        if (strtolower($method) === 'post') {
-            curl_setopt($curl, CURLOPT_POST, true);
-        }
+        // 设置请求方式
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         if (strtolower($method) === 'head') {
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'HEAD');
             curl_setopt($curl, CURLOPT_NOBODY, 1);
         } else {
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($method));
             curl_setopt($curl, CURLOPT_POSTFIELDS, self::buildQueryData($options['data']));
         }
         // 请求超时设置
