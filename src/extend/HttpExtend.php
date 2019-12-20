@@ -80,7 +80,7 @@ class HttpExtend
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         if (strtolower($method) === 'head') {
             curl_setopt($curl, CURLOPT_NOBODY, 1);
-        } else {
+        } elseif (isset($options['data'])) {
             curl_setopt($curl, CURLOPT_POSTFIELDS, self::buildQueryData($options['data']));
         }
         // 请求超时设置

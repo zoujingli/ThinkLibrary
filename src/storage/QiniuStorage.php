@@ -32,7 +32,7 @@ class QiniuStorage extends Storage
 
     /**
      * 存储引擎初始化
-     * @return QiniuStorage
+     * @return $this
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -179,6 +179,7 @@ class QiniuStorage extends Storage
      * @return string
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     public function upload()
