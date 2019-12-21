@@ -31,7 +31,7 @@ class QiniuStorage extends Storage
     private $secretKey;
 
     /**
-     * 存储引擎初始化
+     * 初始化入口
      * @return $this
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
@@ -82,21 +82,10 @@ class QiniuStorage extends Storage
     public function set($name, $file, $safe = false)
     {
         $token = $this->buildUploadToken($name);
-        list($attrs, $frontier) = [[], uniqid()];
-        foreach (['key' => $name, 'token' => $token, 'fileName' => $name] as $key => $value) {
-            $attrs[] = "--{$frontier}";
-            $attrs[] = "Content-Disposition:form-data; name=\"{$key}\"";
-            $attrs[] = "";
-            $attrs[] = $value;
-        }
-        $attrs[] = "--{$frontier}";
-        $attrs[] = "Content-Disposition:form-data; name=\"file\"; filename=\"{$name}\"";
-        $attrs[] = "";
-        $attrs[] = $file;
-        $attrs[] = "--{$frontier}--";
-        return json_decode(HttpExtend::post($this->upload(), join("\r\n", $attrs), [
-            'headers' => ["Content-type:multipart/form-data;boundary={$frontier}"],
-        ]), true);
+        $data = ['key' => $name, 'token' => $token, 'fileName' => $name];
+        $file = ['field' => "file", 'name' => $name, 'content' => $file];
+        $result = HttpExtend::submit($this->upload(), $data, $file, [], 'POST', false);
+        return json_decode($result, true);
     }
 
 
