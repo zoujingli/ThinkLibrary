@@ -160,7 +160,7 @@ class QiniuStorage extends Storage
     {
         list($entry, $token) = $this->getAccessToken($name);
         $data = json_decode(HttpExtend::get("http://rs.qiniu.com/stat/{$entry}", [], ['headers' => ["Authorization: QBox {$token}"]]), true);
-        return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'hash' => $data['md5'], 'key' => $name] : [];
+        return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe), 'key' => $name] : [];
     }
 
     /**
@@ -200,7 +200,9 @@ class QiniuStorage extends Storage
     {
         $policy = $this->safeBase64(json_encode([
             "deadline"   => time() + $expires, "scope" => is_null($name) ? $this->bucket : "{$this->bucket}:{$name}",
-            'returnBody' => json_encode(['uploaded' => true, 'filename' => '$(key)', 'url' => "{$this->prefix}$(key)"], JSON_UNESCAPED_UNICODE),
+            'returnBody' => json_encode([
+                'uploaded' => true, 'filename' => '$(key)', 'file' => $name, 'url' => "{$this->prefix}$(key)", 'key' => $name,
+            ], JSON_UNESCAPED_UNICODE),
         ]));
         return "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
     }
