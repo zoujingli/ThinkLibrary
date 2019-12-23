@@ -104,11 +104,11 @@ class PageHelper extends Helper
                 }
                 $select .= "<option data-num='{$num}' value='{$url}' {$selected}>{$num}</option>";
             }
-            $html = "<div class='pagination-container nowrap'><span>共 {$paginate->total()} 条记录，每页显示 <select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>{$select}</select> 条，共 {$paginate->lastPage()} 页当前显示第 {$paginate->currentPage()} 页。</span>{$paginate->render()}</div>";
+            $pagehtml = "<div class='pagination-container nowrap'><span>共 {$paginate->total()} 条记录，每页显示 <select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>{$select}</select> 条，共 {$paginate->lastPage()} 页当前显示第 {$paginate->currentPage()} 页。</span>{$paginate->render()}</div>";
             if (stripos($this->app->request->get('spm', '-'), 'm-') === 0) {
-                $this->controller->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $html));
+                $this->controller->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $pagehtml));
             } else {
-                $this->controller->assign('pagehtml', $html);
+                $this->controller->assign('pagehtml', $pagehtml);
             }
             $result = ['page' => ['limit' => intval($limit), 'total' => intval($paginate->total()), 'pages' => intval($paginate->lastPage()), 'current' => intval($paginate->currentPage())], 'list' => $paginate->items()];
         } else {
@@ -116,8 +116,9 @@ class PageHelper extends Helper
         }
         if (false !== $this->controller->callback('_page_filter', $result['list']) && $this->display) {
             return $this->controller->fetch('', $result);
+        } else {
+            return $result;
         }
-        return $result;
     }
 
 }
