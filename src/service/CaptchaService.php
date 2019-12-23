@@ -60,6 +60,16 @@ class CaptchaService extends Service
     }
 
     /**
+     * 动态切换配置
+     * @param array $config
+     * @return $this|Service
+     */
+    public function config($config = [])
+    {
+        return $this->initialize($config);
+    }
+
+    /**
      * 获取验证码值
      * @return string
      */
