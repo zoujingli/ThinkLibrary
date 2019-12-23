@@ -90,8 +90,8 @@ class PageHelper extends Helper
             if ($this->limit > 0) {
                 $limit = intval($this->limit);
             } else {
-                $limit = $this->app->request->get('limit', $this->app->cookie->get('limits'));
-                $this->app->cookie->set('limits', $limit = intval($limit >= 10 ? $limit : 20));
+                $limit = $this->app->request->get('limit', $this->app->cookie->get('limit'));
+                $this->app->cookie->set('limit', $limit = intval($limit >= 10 ? $limit : 20));
             }
             list($select, $query) = ['', $this->app->request->get()];
             $paginate = $this->query->paginate(['list_rows' => $limit, 'query' => $query], $this->total);
