@@ -27,7 +27,7 @@ use think\admin\Service;
  *  CREATE TABLE `system_message_history` (
  *     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
  *     `phone` varchar(100) DEFAULT '' COMMENT '目标手机',
- *     `region` varchar(255) DEFAULT '' COMMENT '国家编号',
+ *     `region` varchar(100) DEFAULT '' COMMENT '国家编号',
  *     `result` varchar(100) DEFAULT '' COMMENT '返回结果',
  *     `content` varchar(512) DEFAULT '' COMMENT '短信内容',
  *     `create_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
