@@ -189,7 +189,7 @@ class MessageService extends Service
      * @param string $type 短信模板
      * @return boolean
      */
-    public function checkChinaSmsByCode($phone, $code, $type = 'sms_reg_template')
+    public function check($phone, $code, $type = 'sms_reg_template')
     {
         $cache = $this->app->cache->get($cachekey = "{$type}_{$phone}", []);
         return is_array($cache) && isset($cache['code']) && $cache['code'] == $code;
