@@ -154,7 +154,6 @@ class MessageService extends Service
 
     /**
      * 发送国内短信验证码
-     * @param string $mid 会员ID
      * @param string $phone 目标手机
      * @param integer $wait 等待时间
      * @param string $type 短信模板
@@ -163,7 +162,7 @@ class MessageService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function sendChinaSmsByCode($mid, $phone, $wait = 120, $type = 'sms_reg_template')
+    public function sendChinaSmsByCode($phone, $wait = 120, $type = 'sms_reg_template')
     {
         $cache = $this->app->cache->get($ckey = "{$type}_{$phone}", []);
         if (is_array($cache) && isset($cache['time']) && $cache['time'] > time() - $wait) {
@@ -175,7 +174,7 @@ class MessageService extends Service
             $content = '您的验证码为{code}，请在十分钟内完成操作！';
         }
         $this->app->cache->set($ckey, $cache = ['code' => $code, 'time' => time()], 600);
-        if ($this->sendChinaSms($mid, $phone, str_replace('{code}', $code, $content))) {
+        if ($this->sendChinaSms($phone, str_replace('{code}', $code, $content))) {
             $dtime = ($cache['time'] + $wait < time()) ? 0 : ($wait - time() + $cache['time']);
             return [1, '短信验证码发送成功！', ['time' => $dtime]];
         } else {
@@ -236,7 +235,6 @@ class MessageService extends Service
 
     /**
      * 发送国际短信内容
-     * @param string $mid 会员编号
      * @param string $code 国家代码
      * @param string $mobile 手机号码
      * @param string $content 发送内容
@@ -245,7 +243,7 @@ class MessageService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function sendGlobeSms($mid, $code, $mobile, $content)
+    public function sendGlobeSms($code, $mobile, $content)
     {
         $tkey = date("YmdHis");
         $result = HttpExtend::post('http://intl.zthysms.com/intSendSms.do', [
@@ -254,7 +252,7 @@ class MessageService extends Service
             'password' => md5(md5(sysconf('sms_zt_password2')) . $tkey),
         ]);
         $this->app->db->name($this->table)->insert([
-            'mid' => $mid, 'region' => $code, 'phone' => $mobile, 'content' => $content, 'result' => $result,
+            'region' => $code, 'phone' => $mobile, 'content' => $content, 'result' => $result,
         ]);
         return intval($result) === 1;
     }
