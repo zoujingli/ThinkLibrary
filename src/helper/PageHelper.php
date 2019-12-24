@@ -72,9 +72,10 @@ class PageHelper extends Helper
         // 数据列表排序处理
         if ($this->app->request->isPost()) {
             if (method_exists($this->query, 'getTableFields') && in_array('sort', $this->query->getTableFields())) {
-                list($post, $sort) = [$this->app->request->post(), intval(isset($post['sort']) ? $post['sort'] : 0)];
-                unset($post['action'], $post['sort']);
-                if ($this->app->db->table($this->query->getTable())->where($post)->update(['sort' => $sort]) !== false) {
+                $map = $this->app->request->post();
+                $update = ['sort' => intval(isset($map['sort']) ? $map['sort'] : 0)];
+                unset($map['action'], $map['sort']);
+                if ($this->app->db->table($this->query->getTable())->where($map)->update($update) !== false) {
                     return $this->controller->success('列表排序修改成功！', '');
                 } else {
                     return $this->controller->error('列表排序修改失败，请稍候再试！');
