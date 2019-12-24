@@ -33,7 +33,7 @@ use think\admin\Service;
  *     `create_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
  *     PRIMARY KEY (`id`) USING BTREE,
  *     KEY `idx_system_message_history_phone` (`phone`) USING BTREE
- *  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='短信-记录';
+ *  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='系统-短信';
  *
  * =================================
  * 发送国内短信需要给产品码 [productid]
