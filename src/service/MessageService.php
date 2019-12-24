@@ -24,7 +24,7 @@ use think\admin\Service;
  * @package app\store\service
  * =================================
  *
- *  CREATE TABLE `SystemMessageHistory` (
+ *  CREATE TABLE `system_message_history` (
  *     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
  *     `region` varchar(255) DEFAULT '0' COMMENT '国家编号',
  *     `phone` varchar(100) DEFAULT '' COMMENT '目标手机',
