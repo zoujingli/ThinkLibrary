@@ -40,7 +40,7 @@ class JsonRpcClientService extends Service
     /**
      * 创建连接对象
      * @param string $proxy
-     * @return $this
+     * @return mixed
      */
     public function create($proxy)
     {
