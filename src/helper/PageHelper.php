@@ -87,16 +87,16 @@ class PageHelper extends Helper
             [$options, $query] = ['', $this->app->request->get()];
             $pager = $this->query->paginate(['list_rows' => $limit, 'query' => $query], $this->total);
             foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as $num) {
-                [$query['limit'], $query['page'], $selected] = [$num, 1, $limit === $num ? 'selected' : ''];
+                [$query['limit'], $query['page'], $selects] = [$num, 1, $limit === $num ? 'selected' : ''];
                 if (stripos($this->app->request->get('spm', '-'), 'm-') === 0) {
                     $url = url('@admin') . '#' . $this->app->request->baseUrl() . '?' . urldecode(http_build_query($query));
                 } else {
                     $url = $this->app->request->baseUrl() . '?' . urldecode(http_build_query($query));
                 }
-                $options .= "<option data-num='{$num}' value='{$url}' {$selected}>{$num}</option>";
+                $options .= "<option data-num='{$num}' value='{$url}' {$selects}>{$num}</option>";
             }
-            $selected = "<select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>{$options}</select>";
-            $pagetext = lang('think_library_page_html', [$pager->total(), $selected, $pager->lastPage(), $pager->currentPage()]);
+            $selects = "<select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>{$options}</select>";
+            $pagetext = lang('think_library_page_html', [$pager->total(), $selects, $pager->lastPage(), $pager->currentPage()]);
             $pagehtml = "<div class='pagination-container nowrap'><span>{$pagetext}</span>{$pager->render()}</div>";
             if (stripos($this->app->request->get('spm', '-'), 'm-') === 0) {
                 $this->controller->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $pagehtml));
