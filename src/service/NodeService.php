@@ -111,6 +111,9 @@ class NodeService extends Service
     {
         $text = strtr($comment, "\n", ' ');
         $title = preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $text);
+        foreach (['@auth', '@menu', '@login'] as $find) if (stripos($title, $find) === 0) {
+            $title = $default;
+        }
         return [
             'title'   => $title ? $title : $default,
             'isauth'  => intval(preg_match('/@auth\s*true/i', $text)),
