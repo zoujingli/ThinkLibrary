@@ -62,7 +62,7 @@ class CaptchaService extends Service
     /**
      * 动态切换配置
      * @param array $config
-     * @return $this|Service
+     * @return $this
      */
     public function config($config = [])
     {
