@@ -65,7 +65,7 @@ class ListenQueue extends Command
                         $this->output->writeln("Already in progress -> [{$vo['code']}] {$vo['title']}");
                     } else {
                         $this->process->create($command);
-                        $this->output->writeln("Create a new process -> [{$vo['code']}] {$vo['title']}");
+                        $this->output->writeln("Created new process -> [{$vo['code']}] {$vo['title']}");
                     }
                 } catch (\Exception $exception) {
                     $this->update($vo['code'], ['status' => '4', 'outer_time' => time(), 'exec_desc' => $exception->getMessage()]);
