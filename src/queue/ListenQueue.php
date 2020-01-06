@@ -57,8 +57,8 @@ class ListenQueue extends Command
         }
         $output->writeln('============ LISTENING ============');
         while (true) {
-            $map = [['status', '=', '1'], ['exec_time', '<=', time()]];
-            $this->app->db->name('SystemQueue')->where($map)->order('exec_time asc')->chunk(100, function (Collection $list) {
+            $where = [['status', '=', '1'], ['exec_time', '<=', time()]];
+            $this->app->db->name('SystemQueue')->where($where)->order('exec_time asc')->chunk(100, function (Collection $list) {
                 foreach ($list as $vo) try {
                     $command = $this->process->think("xtask:_work {$vo['code']} -");
                     if (count($this->process->query($command)) > 0) {
