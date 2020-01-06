@@ -32,7 +32,7 @@ class ListenQueue extends Command
      */
     protected function configure()
     {
-        $this->setName('xtask:listen')->setDescription('[监听]启动任务监听主进程');
+        $this->setName('xtask:listen')->setDescription('Start task listening main process');
     }
 
     /**
@@ -48,23 +48,23 @@ class ListenQueue extends Command
         set_time_limit(0);
         $this->app->db->name('SystemQueue')->count();
         if (($process = ProcessService::instance())->iswin()) {
-            $this->setProcessTitle("ThinkAdmin 监听主进程 {$process->version()}");
+            $this->setProcessTitle("ThinkAdmin {$process->version()} Queue Listen");
         }
-        $output->writeln('============ 任务监听中 ============');
+        $output->writeln('============ LISTENING ============');
         while (true) {
             $where = [['status', '=', '1'], ['exec_time', '<=', time()]];
             $this->app->db->name('SystemQueue')->where($where)->order('exec_time asc')->limit(100)->select()->each(function ($vo) use ($process) {
                 try {
                     $command = $process->think("xtask:_work {$vo['code']} -");
                     if (count($process->query($command)) > 0) {
-                        $this->output->warning("正在执行 -> [{$vo['code']}] {$vo['title']}");
+                        $this->output->warning("Already in progress -> [{$vo['code']}] {$vo['title']}");
                     } else {
                         $process->create($command);
-                        $this->output->info("开始执行 -> [{$vo['code']}] {$vo['title']}");
+                        $this->output->info("Create a new process -> [{$vo['code']}] {$vo['title']}");
                     }
                 } catch (\Exception $e) {
                     $this->update($vo['code'], ['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
-                    $this->output->error("执行失败 -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
+                    $this->output->error("Process execution failed -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
                 }
             });
             sleep(1);
