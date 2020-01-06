@@ -31,7 +31,7 @@ class Version extends Command
     protected function configure()
     {
         $this->setName('xadmin:version');
-        $this->setDescription("View application framework version");
+        $this->setDescription("Query application framework version");
     }
 
     protected function execute(Input $input, Output $output)
