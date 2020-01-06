@@ -74,7 +74,7 @@ class Install extends Command
     protected function configure()
     {
         $this->setName('xadmin:install');
-        $this->setDescription("Install or update the specified module");
+        $this->setDescription("Install or update thinkamdin module");
         $this->addArgument('name', Argument::OPTIONAL, 'ModuleName', '');
     }
 
