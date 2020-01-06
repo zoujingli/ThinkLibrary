@@ -45,10 +45,10 @@ class StopQueue extends Command
     {
         $service = ProcessService::instance();
         if (count($result = $service->query($service->think('xtask:'))) < 1) {
-            $output->warning("There is no task process to finish!");
+            $output->warning("There is no task process to finish");
         } else foreach ($result as $item) {
             $service->close($item['pid']);
-            $output->info("Sending end process {$item['pid']} signal succeeded!");
+            $output->info("Sending end process {$item['pid']} signal succeeded");
         }
     }
 }

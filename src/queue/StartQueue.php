@@ -47,14 +47,14 @@ class StartQueue extends Command
         $service = ProcessService::instance();
         $command = $service->think("xtask:listen");
         if (count($result = $service->query($command)) > 0) {
-            $output->info("Listening main process {$result['0']['pid']} has started!");
+            $output->info("Listening main process {$result['0']['pid']} has started");
         } else {
             $service->create($command);
             sleep(1);
             if (count($result = $service->query($command)) > 0) {
-                $output->info("Listening main process {$result['0']['pid']} started successfully!");
+                $output->info("Listening main process {$result['0']['pid']} started successfully");
             } else {
-                $output->error('Failed to create listening main process!');
+                $output->error('Failed to create listening main process');
             }
         }
     }

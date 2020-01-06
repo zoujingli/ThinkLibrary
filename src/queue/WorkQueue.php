@@ -64,12 +64,12 @@ class WorkQueue extends Command
         set_time_limit(0);
         $this->code = trim($input->getArgument('code'));
         if (empty($this->code)) {
-            $this->output->error('Task number needs to be specified for task execution!');
+            $this->output->error('Task number needs to be specified for task execution');
         } else try {
             $queue = $this->app->db->name($this->table)->where(['code' => $this->code, 'status' => '1'])->find();
             if (empty($queue)) {
                 // 这里不做任何处理（该任务可能在其它地方已经在执行）
-                $this->output->warning($message = "The or status of task {$this->code} is abnormal!");
+                $this->output->warning($message = "The or status of task {$this->code} is abnormal");
             } else {
                 // 锁定任务状态
                 $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
@@ -118,7 +118,7 @@ class WorkQueue extends Command
             'status' => $status, 'outer_time' => microtime(true), 'exec_pid' => getmygid(), 'exec_desc' => $desc[0],
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
-        return $result !== false;
+        return $result == false;
     }
 
 }

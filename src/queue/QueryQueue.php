@@ -47,7 +47,7 @@ class QueryQueue extends Command
         if (count($result) > 0) foreach ($result as $item) {
             $output->writeln("{$item['pid']}\t{$item['cmd']}");
         } else {
-            $output->writeln('No related task process found.');
+            $output->writeln('No related task process found');
         }
     }
 }

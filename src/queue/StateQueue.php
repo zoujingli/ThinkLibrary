@@ -45,9 +45,9 @@ class StateQueue extends Command
         $service = ProcessService::instance();
         $command = $service->think('xtask:listen');
         if (count($result = $service->query($command)) > 0) {
-            $output->info("Listening for main process {$result[0]['pid']} running!");
+            $output->info("Listening for main process {$result[0]['pid']} running");
         } else {
-            $output->warning("The Listening main process is not running!");
+            $output->warning("The Listening main process is not running");
         }
     }
 }
