@@ -64,7 +64,7 @@ class ListenQueue extends Command
                     }
                 } catch (\Exception $e) {
                     $this->update($vo['code'], ['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
-                    $this->output->error("Process execution failed -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
+                    $this->output->error("Execution failed -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
                 }
             });
             sleep(1);
