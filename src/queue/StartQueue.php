@@ -33,7 +33,7 @@ class StartQueue extends Command
      */
     protected function configure()
     {
-        $this->setName('xtask:start')->setDescription('Create daemons to listen to the main process');
+        $this->setName('xtask:start')->setDescription('Create daemons to listening main process');
     }
 
     /**
