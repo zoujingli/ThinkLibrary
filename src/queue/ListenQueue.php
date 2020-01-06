@@ -67,9 +67,9 @@ class ListenQueue extends Command
                         $this->process->create($command);
                         $this->output->writeln("Create a new process -> [{$vo['code']}] {$vo['title']}");
                     }
-                } catch (\Exception $e) {
-                    $this->update($vo['code'], ['status' => '4', 'outer_time' => time(), 'exec_desc' => $e->getMessage()]);
-                    $this->output->error("Execution failed -> [{$vo['code']}] {$vo['title']}，{$e->getMessage()}");
+                } catch (\Exception $exception) {
+                    $this->update($vo['code'], ['status' => '4', 'outer_time' => time(), 'exec_desc' => $exception->getMessage()]);
+                    $this->output->error("Execution failed -> [{$vo['code']}] {$vo['title']}，{$exception->getMessage()}");
                 }
             });
             usleep(500000);
