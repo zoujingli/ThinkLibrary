@@ -40,7 +40,12 @@ class ValidateHelper extends Helper
             }
             if (stripos($name, '.') === false) {
                 if (is_numeric($name)) {
-                    $data[$message] = input("{$type}{$message}");
+                    $keys = $message;
+                    if (is_string($message) && stripos($message, '#') !== false) {
+                        list($name, $alias) = explode('#', $message);
+                        $keys = empty($alias) ? $name : $alias;
+                    }
+                    $data[$name] = input("{$type}{$keys}");
                 } else {
                     $data[$name] = $message;
                 }
