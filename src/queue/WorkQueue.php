@@ -133,7 +133,7 @@ class WorkQueue extends Command
                 json_decode($this->queue['exec_data'], true),
                 $this->queue['rscript'],
                 $this->queue['loops_time'],
-                $this->queue['attempts'] + 2
+                $this->queue['attempts'] + 1
             );
         } catch (\Exception $exception) {
             $this->app->log->error("Queue {$this->queue['code']} Loops Failed. {$exception->getMessage()}");
