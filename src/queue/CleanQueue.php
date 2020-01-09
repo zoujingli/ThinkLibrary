@@ -71,7 +71,7 @@ class CleanQueue extends Command
             $this->output->info("Failed {$count2} records without response after waiting for more than 1 hour");
             // 返回消息到任务状态描述
             if (defined('WorkQueueCall')) {
-                throw new \think\Exception("成功清理{$count1}条任务历史，修改{$count2}条超1小时无响应任务", 3);
+                throw new \think\Exception("成功清理{$count1}条任务，标志{$count2}条超1小时无响应的任务", 3);
             }
         }
     }

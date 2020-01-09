@@ -128,7 +128,7 @@ class WorkQueue extends Command
         if (isset($this->queue['loops_time']) && $this->queue['loops_time'] > 0) try {
             QueueService::instance()->register(
                 $this->queue['title'], $this->queue['command'], $this->queue['loops_time'],
-                json_decode($this->queue['data'], true), $this->queue['rscript'], $this->queue['loops_time']
+                json_decode($this->queue['exec_data'], true), $this->queue['rscript'], $this->queue['loops_time']
             );
         } catch (\Exception $exception) {
             $this->app->log->error("Queue {$this->queue['code']} Loops Failed. {$exception->getMessage()}");
