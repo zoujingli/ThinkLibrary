@@ -135,7 +135,7 @@ class QueueService extends Service
             'title'      => $title,
             'command'    => $command,
             'attempts'   => '0',
-            'rscript'    => intval(boolval($rscript)),
+            'rscript'    => $loops > 0 ? 3 : intval(boolval($rscript)),
             'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
             'exec_time'  => $later > 0 ? time() + $later : time(),
             'enter_time' => '0',
