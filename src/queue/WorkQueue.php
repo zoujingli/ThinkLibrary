@@ -90,8 +90,9 @@ class WorkQueue extends Command
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
+                    defined('QueueWorkCall') or define('QueueWorkCall', true);
                     $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $queue['command'])));
-                    $this->update('3', $this->app->console->call(array_shift($attr), $attr, 'console'));
+                    $this->update('3', $this->app->console->call(array_shift($attr), $attr)->fetch(), false);
                 }
             }
         } catch (\Exception $exception) {
@@ -107,12 +108,14 @@ class WorkQueue extends Command
      * 修改当前任务状态
      * @param integer $status 任务状态
      * @param string $message 消息内容
+     * @param boolean $split 是否分隔
      * @return boolean
      * @throws \think\db\exception\DbException
      */
-    protected function update($status, $message)
+    protected function update($status, $message, $split = true)
     {
-        $desc = explode("\n", trim(is_string($message) ? $message : ''));
+        $info = trim(is_string($message) ? $message : '');
+        $desc = $split ? explode("\n", $info) : [$message];
         $result = $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
             'status' => $status, 'outer_time' => microtime(true), 'exec_pid' => getmypid(), 'exec_desc' => $desc[0],
         ]);
