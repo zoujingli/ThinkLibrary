@@ -35,6 +35,12 @@ class CleanQueue extends Command
     protected $time;
 
     /**
+     * 绑定数据表
+     * @var string
+     */
+    protected $table = 'SystemQueue';
+
+    /**
      * 配置指定信息
      */
     protected function configure()
@@ -57,27 +63,16 @@ class CleanQueue extends Command
             $this->output->error('Wrong parameter, the deadline needs to be an integer');
         } else {
             $map = [['exec_time', '<', time() - $this->time]];
-            $count1 = $this->app->db->name('SystemQueue')->where($map)->delete();
+            $count1 = $this->app->db->name($this->table)->where($map)->delete();
             $this->output->info("Successfully cleaned up {$count1} history task records");
             // 重置超1小时无响应的记录
             $map = [['exec_time', '<', time() - 3600], ['status', '=', '2']];
-            $count2 = $this->app->db->name('SystemQueue')->where($map)->update(['status' => '4', 'exec_desc' => '执行等待超过1小时无响应']);
+            $count2 = $this->app->db->name($this->table)->where($map)->update(['status' => '4', 'exec_desc' => '执行等待超过1小时无响应']);
             $this->output->info("Failed {$count2} records without response after waiting for more than 1 hour");
             // 返回消息到任务状态描述
-            if (defined('QueueWorkCall')) {
+            if (defined('WorkQueueCall')) {
                 throw new \think\Exception("成功清理{$count1}条任务历史，修改{$count2}条超1小时无响应任务", 3);
             }
-        }
-    }
-
-    /**
-     * 重置清理任务
-     */
-    public function __destruct()
-    {
-        try {
-            QueueService::instance()->register('清理历史任务及执行超时任务', "xtask:clean {$this->time}", 3600, [], 0);
-        } catch (\Exception $exception) {
         }
     }
 }
