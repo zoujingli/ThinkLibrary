@@ -135,7 +135,7 @@ class QueueService extends Service
             'code'       => $this->code = CodeExtend::uniqidDate(16),
             'title'      => $title,
             'command'    => $command,
-            'attempts'   => '0',
+            'attempts'   => $attempts,
             'rscript'    => intval(boolval($rscript)),
             'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
             'exec_time'  => $later > 0 ? time() + $later : time(),
