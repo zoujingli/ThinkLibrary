@@ -118,13 +118,14 @@ class QueueService extends Service
      * @param array $data 任务附加数据
      * @param integer $rscript 任务类型(0单例,1多例)
      * @param integer $loops 循环等待时间
+     * @param integer $attempts 执行次数
      * @return $this
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function register($title, $command, $later = 0, $data = [], $rscript = 1, $loops = 0)
+    public function register($title, $command, $later = 0, $data = [], $rscript = 1, $loops = 0, $attempts = 0)
     {
         $map = [['title', '=', $title], ['status', 'in', ['1', '2']]];
         if (empty($rscript) && $this->app->db->name('SystemQueue')->where($map)->count() > 0) {
