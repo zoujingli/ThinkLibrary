@@ -116,7 +116,7 @@ class QueueService extends Service
      * @param string $command 执行内容
      * @param integer $later 延时时间
      * @param array $data 任务附加数据
-     * @param integer $rscript 任务多开
+     * @param integer $rscript 任务类型(0单例,1多例)
      * @param integer $loops 循环等待时间
      * @return $this
      * @throws \think\Exception
@@ -135,7 +135,7 @@ class QueueService extends Service
             'title'      => $title,
             'command'    => $command,
             'attempts'   => '0',
-            'rscript'    => $loops > 0 ? 3 : intval(boolval($rscript)),
+            'rscript'    => intval(boolval($rscript)),
             'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
             'exec_time'  => $later > 0 ? time() + $later : time(),
             'enter_time' => '0',
