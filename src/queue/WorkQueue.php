@@ -112,14 +112,14 @@ class WorkQueue extends Command
      * 修改当前任务状态
      * @param integer $status 任务状态
      * @param string $message 消息内容
-     * @param boolean $isSplit 是否分隔
+     * @param boolean $issplit 是否分隔
      * @throws \think\db\exception\DbException
      */
-    protected function update($status, $message, $isSplit = true)
+    protected function update($status, $message, $issplit = true)
     {
         // 更新当前任务
         $info = trim(is_string($message) ? $message : '');
-        $desc = $isSplit ? explode("\n", $info) : [$message];
+        $desc = $issplit ? explode("\n", $info) : [$message];
         $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
             'status' => $status, 'outer_time' => microtime(true), 'exec_pid' => getmypid(), 'exec_desc' => $desc[0],
         ]);
