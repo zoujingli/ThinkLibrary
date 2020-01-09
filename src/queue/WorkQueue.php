@@ -92,7 +92,7 @@ class WorkQueue extends Command
                         $data = json_decode($this->queue['data'], true) ?: [];
                         $this->update('3', $command::instance()->initialize($this->code)->execute($data));
                     } else {
-                        throw new \think\Exception("自定义 {$command} 未继承 think\\admin\\service\\QueueService");
+                        throw new \think\Exception("自定义 {$command} 未继承 QueueService");
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
