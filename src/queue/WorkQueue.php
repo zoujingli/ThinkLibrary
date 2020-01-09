@@ -92,7 +92,7 @@ class WorkQueue extends Command
                         $data = json_decode($this->queue['data'], true) ?: [];
                         $this->update('3', $command::instance()->initialize($this->code)->execute($data));
                     } else {
-                        throw new \think\Exception("Task processing class {$command} does not inherit class think\\admin\\service\\QueueService");
+                        throw new \think\Exception("自定义 {$command} 未继承 think\\admin\\service\\QueueService");
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
@@ -127,8 +127,13 @@ class WorkQueue extends Command
         // 注册循环任务
         if (isset($this->queue['loops_time']) && $this->queue['loops_time'] > 0) try {
             QueueService::instance()->register(
-                $this->queue['title'], $this->queue['command'], $this->queue['loops_time'],
-                json_decode($this->queue['exec_data'], true), $this->queue['rscript'], $this->queue['loops_time'], $this->queue['attempts'] + 2
+                $this->queue['title'],
+                $this->queue['command'],
+                $this->queue['loops_time'],
+                json_decode($this->queue['exec_data'], true),
+                $this->queue['rscript'],
+                $this->queue['loops_time'],
+                $this->queue['attempts'] + 2
             );
         } catch (\Exception $exception) {
             $this->app->log->error("Queue {$this->queue['code']} Loops Failed. {$exception->getMessage()}");
