@@ -125,14 +125,12 @@ class WorkQueue extends Command
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         // 注册循环任务
-        if (isset($this->queue['loops_time']) && $this->queue['loops_time'] > 0) try {
-            QueueService::instance()->register(
-                $this->queue['title'], $this->queue['command'], $this->queue['loops_time'],
-                json_decode($this->queue['exec_data'], true), $this->queue['rscript'], $this->queue['loops_time'],
-                $this->app->db->name($this->table)->where(['code' => $this->code])->value('attempts') + 1
-            );
-        } catch (\Exception $exception) {
-            $this->app->log->error("Queue {$this->queue['code']} Loops Failed. {$exception->getMessage()}");
+        if (isset($this->queue['loops_time']) && $this->queue['loops_time'] > 0) {
+            try {
+                QueueService::instance()->initialize($this->code)->reset($this->queue['loops_time']);
+            } catch (\Exception $exception) {
+                $this->app->log->error("Queue {$this->queue['code']} Loops Failed. {$exception->getMessage()}");
+            }
         }
     }
 
