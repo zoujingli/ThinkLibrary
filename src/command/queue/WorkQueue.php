@@ -13,11 +13,10 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace think\admin\queue;
+namespace think\admin\command\queue;
 
-use think\admin\service\ProcessService;
+use think\admin\command\Queue;
 use think\admin\service\QueueService;
-use think\console\Command;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
@@ -25,14 +24,14 @@ use think\console\Output;
 /**
  * 启动独立执行进程
  * Class WorkQueue
- * @package think\admin\queue
+ * @package think\admin\command\queue
  */
-class WorkQueue extends Command
+class WorkQueue extends Queue
 {
 
     /**
      * 当前任务编号
-     * @var integer
+     * @var string
      */
     protected $code;
 
@@ -41,12 +40,6 @@ class WorkQueue extends Command
      * @var array
      */
     protected $queue;
-
-    /**
-     * 绑定数据表
-     * @var string
-     */
-    protected $table = 'SystemQueue';
 
     /**
      * 配置指定信息
@@ -82,8 +75,8 @@ class WorkQueue extends Command
                     'outer_time' => '0', 'exec_pid' => getmypid(), 'exec_desc' => '', 'status' => '2',
                 ]);
                 // 设置进程标题
-                if (($process = ProcessService::instance())->iswin()) {
-                    $this->setProcessTitle("ThinkAdmin {$process->version()} Queue - {$this->queue['title']}");
+                if ($this->process->iswin()) {
+                    $this->setProcessTitle("ThinkAdmin {$this->process->version()} Queue - {$this->queue['title']}");
                 }
                 // 执行任务内容
                 if (class_exists($command = $this->queue['command'])) {

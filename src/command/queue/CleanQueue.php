@@ -13,32 +13,25 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-namespace think\admin\queue;
+namespace think\admin\command\queue;
 
-use think\admin\service\QueueService;
-use think\console\Command;
+use think\admin\command\Queue;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
 
 /**
- * 清理历史任务记录
+ * 清理任务历史记录
  * Class CleanQueue
- * @package think\admin\queue
+ * @package think\admin\command\queue
  */
-class CleanQueue extends Command
+class CleanQueue extends Queue
 {
     /**
      * 截止时间
      * @var integer
      */
     protected $time;
-
-    /**
-     * 绑定数据表
-     * @var string
-     */
-    protected $table = 'SystemQueue';
 
     /**
      * 配置指定信息
