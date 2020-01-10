@@ -94,7 +94,7 @@ class QueueService extends Service
     {
         if (empty($this->queue)) throw new \think\Exception('Queue data cannot be empty!');
         $this->app->db->name('SystemQueue')->where(['code' => $this->code])->strict(false)->failException(true)->update([
-            'exec_pid' => '0', 'exec_time' => time() + $wait, 'attempts' => $this->queue['attempts'] + 1, 'status' => '1',
+            'exec_pid' => '0', 'exec_time' => time() + $wait, 'attempts' => $this->app->db->raw('attempts+1'), 'status' => '1',
         ]);
         return $this->initialize($this->code);
     }
