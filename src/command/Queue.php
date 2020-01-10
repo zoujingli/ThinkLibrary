@@ -25,7 +25,7 @@ use think\console\Output;
  * Class Queue
  * @package think\admin\command
  */
-class Queue extends Command
+abstract class Queue extends Command
 {
     /**
      * 绑定数据表
