@@ -129,7 +129,7 @@ class QueueService extends Service
     {
         $map = [['title', '=', $title], ['status', 'in', ['1', '2']]];
         if (empty($rscript) && $this->app->db->name('SystemQueue')->where($map)->count() > 0) {
-            throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
+            throw new \think\Exception(lang('think_library_queue_exist'));
         }
         $this->app->db->name('SystemQueue')->strict(false)->failException(true)->insert([
             'code'       => $this->code = 'QE' . CodeExtend::uniqidDate(16),
