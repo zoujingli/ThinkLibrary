@@ -65,8 +65,8 @@ class QueueService extends Service
             $this->code = $code;
             $this->queue = $this->app->db->name('SystemQueue')->where(['code' => $this->code])->find();
             if (empty($this->queue)) {
-                $this->app->log->error(__METHOD__ . " Qeueu initialize failed, Queue {$code} not found.");
-                throw new \think\Exception("Queue {$code} not found.");
+                $this->app->log->error("Qeueu initialize failed, Queue {$code} not found.");
+                throw new \think\Exception("Qeueu initialize failed, Queue {$code} not found.");
             }
             $this->code = $this->queue['code'];
             $this->title = $this->queue['title'];
@@ -96,7 +96,7 @@ class QueueService extends Service
     public function reset($wait = 0)
     {
         if (empty($this->queue)) {
-            $this->app->log->error(__METHOD__ . " Qeueu reset failed, Queue {$this->code} data cannot be empty!");
+            $this->app->log->error("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
             throw new \think\Exception("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
         }
         $map = ['code' => $this->code];
