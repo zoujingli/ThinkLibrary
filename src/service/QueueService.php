@@ -61,7 +61,8 @@ class QueueService extends Service
      */
     public function initialize($code = 0): Service
     {
-        if ($code > 0) {
+        if (!empty($code)) {
+            $this->code = $code;
             $this->queue = $this->app->db->name('SystemQueue')->where(['code' => $this->code])->find();
             if (empty($this->queue)) throw new \think\Exception("Queue {$code} Not found.");
             $this->code = $this->queue['code'];
@@ -131,7 +132,7 @@ class QueueService extends Service
             throw new \think\Exception('该任务已经创建，请耐心等待处理完成！');
         }
         $this->app->db->name('SystemQueue')->strict(false)->failException(true)->insert([
-            'code'       => $this->code = CodeExtend::uniqidDate(16),
+            'code'       => $this->code = 'QE' . CodeExtend::uniqidDate(16),
             'title'      => $title,
             'command'    => $command,
             'attempts'   => '0',
