@@ -68,7 +68,7 @@ class CleanQueue extends Command
             // 重置超60分钟无响应的记录
             $map = [['exec_time', '<', time() - 3600], ['status', '=', '2']];
             $count2 = $this->app->db->name($this->table)->where($map)->update(['status' => '4', 'exec_desc' => '执行等待超过60分钟无响应']);
-            $this->output->info("Failed {$count2} records without response after waiting for more than 1 hour");
+            $this->output->info("Successfully processed {$count2} unresponsive records waiting for more than 1 hour");
             // 返回消息到任务状态描述
             if (defined('WorkQueueCall')) {
                 throw new \think\Exception("清理七天前{$count1}条记录，标志{$count2}条超60分钟无响应的任务", 3);
