@@ -24,13 +24,30 @@ use think\admin\Storage;
  */
 class LocalStorage extends Storage
 {
+
     /**
      * 初始化入口
      * @return LocalStorage
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function initialize(): Storage
     {
+        // 计算链接前缀
+        $type = strtolower(sysconf('storage.local_http_protocol'));
         $this->prefix = dirname($this->app->request->basefile(true));
+        list(, $prefix) = explode('://', $this->prefix);
+        if ($type === 'path') {
+            $file = $this->app->request->baseFile(false);
+            $this->prefix = dirname(strtr('\\', '/', $file));
+        } elseif ($type === 'auto') {
+            $this->prefix = "//{$prefix}";
+        } elseif ($type === 'http') {
+            $this->prefix = "http://{$prefix}";
+        } elseif ($type === 'https') {
+            $this->prefix = "https://{$prefix}";
+        }
         return $this;
     }
 
