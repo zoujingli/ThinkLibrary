@@ -36,17 +36,15 @@ class LocalStorage extends Storage
     {
         // 计算链接前缀
         $type = strtolower(sysconf('storage.local_http_protocol'));
-        $this->prefix = dirname($this->app->request->basefile(true));
-        list(, $prefix) = explode('://', $this->prefix);
         if ($type === 'path') {
             $file = $this->app->request->baseFile(false);
-            $this->prefix = dirname(strtr('\\', '/', $file));
-        } elseif ($type === 'auto') {
-            $this->prefix = "//{$prefix}";
-        } elseif ($type === 'http') {
-            $this->prefix = "http://{$prefix}";
-        } elseif ($type === 'https') {
-            $this->prefix = "https://{$prefix}";
+            $this->prefix = dirname(strtr($file, '\\', '/'));
+        } else {
+            $this->prefix = dirname($this->app->request->basefile(true));
+            list(, $domain) = explode('://', strtr($this->prefix, '\\', '/'));
+            if ($type === 'auto') $this->prefix = "//{$domain}";
+            elseif ($type === 'http') $this->prefix = "http://{$domain}";
+            elseif ($type === 'https') $this->prefix = "https://{$domain}";
         }
         return $this;
     }
