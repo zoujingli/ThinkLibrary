@@ -131,7 +131,7 @@ class LocalStorage extends Storage
      */
     public function url($name, $safe = false, $attname = null)
     {
-        return $safe ? $name : "{$this->prefix}/upload/{$this->delSuffix($name)}{$this->get($attname)}";
+        return $safe ? $name : "{$this->prefix}/upload/{$this->delSuffix($name)}{$this->getSuffix($attname)}";
     }
 
     /**
