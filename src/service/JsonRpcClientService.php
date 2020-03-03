@@ -17,6 +17,7 @@ namespace think\admin\service;
 
 use think\admin\extend\CodeExtend;
 use think\admin\Service;
+use think\App;
 
 /**
  * JsonRpc 客户端服务
@@ -38,15 +39,15 @@ class JsonRpcClientService extends Service
     private $proxy;
 
     /**
-     * 创建连接对象
+     * JsonRpcClientService constructor.
+     * @param App $app
      * @param string $proxy
-     * @return mixed
      */
-    public function create($proxy)
+    public function __construct(App $app, $proxy)
     {
+        parent::__construct($app);
         $this->id = CodeExtend::uniqidNumber();
         $this->proxy = $proxy;
-        return $this;
     }
 
     /**
