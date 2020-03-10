@@ -35,7 +35,7 @@ class ExpressService extends Service
      * 网络请求参数
      * @var array
      */
-    protected $httpOptions;
+    protected $options;
 
     /**
      * 快递服务初始化
@@ -44,12 +44,12 @@ class ExpressService extends Service
      */
     protected function initialize(): Service
     {
-        $clientip = $this->app->request->ip();
-        $this->token = $this->getExpressToken();
-        $this->httpOptions = [
+        $id = $this->app->request->ip();
+        $this->options = [
             'cookie_file' => $this->app->getRuntimePath() . '_express_kuaidi100_cookie.txt',
-            'headers'     => ['Host' => 'express.baidu.com', 'CLIENT-IP' => $clientip, 'X-FORWARDED-FOR' => $clientip],
+            'headers'     => ['Host' => 'express.baidu.com', 'CLIENT-IP' => $id, 'X-FORWARDED-FOR' => $id],
         ];
+        $this->token = $this->getExpressToken();
         return $this;
     }
 
@@ -58,7 +58,6 @@ class ExpressService extends Service
      * @param string $code 快递公司编辑
      * @param string $number 快递物流编号
      * @return array
-     * @throws \Exception
      */
     public function express($code, $number)
     {
@@ -83,7 +82,7 @@ class ExpressService extends Service
     private function doExpress($code, $number)
     {
         $url = "https://express.baidu.com/express/api/express?tokenV2={$this->token}&appid=4001&nu={$number}&com={$code}&qid=&new_need_di=1&source_xcx=0&vcode=&token=&sourceId=4155&cb=callback";
-        return json_decode(str_replace('/**/callback(', '', trim(HttpExtend::get($url, [], $this->httpOptions), ')')), true);
+        return json_decode(str_replace('/**/callback(', '', trim(HttpExtend::get($url, [], $this->options), ')')), true);
     }
 
     /**
@@ -115,16 +114,16 @@ class ExpressService extends Service
     }
 
     /**
-     * 获取百度WAP快递HTML
+     * 获取百度WAP快递HTML（用于后面的抓取关键值）
      * @return string
      */
     protected function getWapBaiduHtml()
     {
-        $content = $this->app->cache->get('express_baidu_100');
-        while (empty($content) || stristr($content, '百度安全验证') > -1 || stripos($content, 'tokenV2') < 0) {
-            $content = HttpExtend::get('https://m.baidu.com/s?word=73124161428372', [], $this->httpOptions);
+        $content = $this->app->cache->get('express_baidu_kuaidi_100');
+        while (empty($content) || stristr($content, '百度安全验证') > -1 || stripos($content, 'tokenV2') === -1) {
+            $content = HttpExtend::get('https://m.baidu.com/s?word=73124161428372', [], $this->options);
         }
-        $this->app->cache->set('express_baidu_100', $content, 3600);
+        $this->app->cache->set('express_baidu_kuaidi_100', $content, 3600);
         return $content;
     }
 
