@@ -61,12 +61,14 @@ class ExpressService extends Service
      */
     public function express($code, $number)
     {
-        $list = [];
+        list($list, $cache) = [[], $this->app->cache->get($ckey = md5($code . $number))];
+        if (!empty($cache)) return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $cache];
         for ($i = 0; $i < 6; $i++) if (is_array($result = $this->doExpress($code, $number))) {
             if (!empty($result['data']['info']['context'])) {
                 foreach ($result['data']['info']['context'] as $vo) $list[] = [
                     'time' => date('Y-m-d H:i:s', $vo['time']), 'context' => $vo['desc'],
                 ];
+                $this->app->cache->set($ckey, $list);
                 return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $list];
             }
         }
