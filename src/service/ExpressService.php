@@ -125,7 +125,7 @@ class ExpressService extends Service
         while (empty($content) || stristr($content, '百度安全验证') > -1 || stripos($content, 'tokenV2') === -1) {
             $content = HttpExtend::get('https://m.baidu.com/s?word=73124161428372', [], $this->options);
         }
-        $this->app->cache->set('express_baidu_kuaidi_100', $content, 3600);
+        $this->app->cache->set('express_baidu_kuaidi_100', $content, 30);
         return $content;
     }
 
