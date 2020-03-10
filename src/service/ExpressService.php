@@ -76,6 +76,20 @@ class ExpressService extends Service
     }
 
     /**
+     * 获取快递公司列表
+     * @return array
+     */
+    public function getExpressList()
+    {
+        $data = [];
+        if (preg_match('/"currentData":.*?\[(.*?)\],/', $this->getWapBaiduHtml(), $matches)) {
+            foreach (json_decode("[{$matches['1']}]") as $item) $data[$item->value] = $item->text;
+            unset($data['_auto']);
+        }
+        return $data;
+    }
+
+    /**
      * 执行百度快递100应用查询请求
      * @param string $code 快递公司编号
      * @param string $number 快递单单号
@@ -92,7 +106,7 @@ class ExpressService extends Service
      * @return string
      * @throws \think\Exception
      */
-    public function getExpressToken()
+    private function getExpressToken()
     {
         if (preg_match('/express\?tokenV2=(.*?)",/', $this->getWapBaiduHtml(), $matches)) {
             return $matches[1];
@@ -102,24 +116,10 @@ class ExpressService extends Service
     }
 
     /**
-     * 获取快递公司列表
-     * @return array
-     */
-    public function getExpressList()
-    {
-        $data = [];
-        if (preg_match('/"currentData":.*?\[(.*?)\],/', $this->getWapBaiduHtml(), $matches)) {
-            foreach (json_decode("[{$matches['1']}]") as $item) $data[$item->value] = $item->text;
-            unset($data['_auto']);
-        }
-        return $data;
-    }
-
-    /**
      * 获取百度WAP快递HTML（用于后面的抓取关键值）
      * @return string
      */
-    protected function getWapBaiduHtml()
+    private function getWapBaiduHtml()
     {
         $content = $this->app->cache->get('express_baidu_kuaidi_100');
         while (empty($content) || stristr($content, '百度安全验证') > -1 || stripos($content, 'tokenV2') === -1) {
