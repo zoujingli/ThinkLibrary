@@ -45,7 +45,7 @@ class ExpressService extends Service
     protected function initialize(): Service
     {
         $this->options = [
-            'cookie_file' => $this->app->getRuntimePath() . '_express_kuaidi_cookie.txt',
+            'cookie_file' => $this->app->getRuntimePath() . '_express_cookie.txt',
             'headers'     => ['Host' => 'express.baidu.com', 'X-FORWARDED-FOR' => $this->app->request->ip()],
         ];
         $this->token = $this->getExpressToken();
@@ -84,8 +84,11 @@ class ExpressService extends Service
         if (preg_match('/"currentData":.*?\[(.*?)\],/', $this->getWapBaiduHtml(), $matches)) {
             foreach (json_decode("[{$matches['1']}]") as $item) $data[$item->value] = $item->text;
             unset($data['_auto']);
+            return $data;
+        } else {
+            $this->app->cache->delete('express_kuaidi_html');
+            return $this->getExpressList();
         }
-        return $data;
     }
 
     /**
@@ -96,21 +99,22 @@ class ExpressService extends Service
      */
     private function doExpress($code, $number)
     {
-        $url = "https://express.baidu.com/express/api/express?tokenV2={$this->token}&appid=4001&nu={$number}&com={$code}&qid=&new_need_di=1&source_xcx=0&vcode=&token=&sourceId=4155&cb=callback";
+        $uniqid = strtr(uniqid(), '.', '');
+        $url = "https://express.baidu.com/express/api/express?tokenV2={$this->token}&appid=4001&nu={$number}&com={$code}&qid={$uniqid}&new_need_di=1&source_xcx=0&vcode=&token=&sourceId=4155&cb=callback";
         return json_decode(str_replace('/**/callback(', '', trim(HttpExtend::get($url, [], $this->options), ')')), true);
     }
 
     /**
      * 获取接口请求令牌
      * @return string
-     * @throws \think\Exception
      */
     private function getExpressToken()
     {
         if (preg_match('/express\?tokenV2=(.*?)",/', $this->getWapBaiduHtml(), $matches)) {
             return $matches[1];
         } else {
-            throw new \think\Exception('Failed to grab authorization token.');
+            $this->app->cache->delete('express_kuaidi_html');
+            return $this->getExpressToken();
         }
     }
 
@@ -120,11 +124,11 @@ class ExpressService extends Service
      */
     private function getWapBaiduHtml()
     {
-        $content = $this->app->cache->get('express_baidu_kuaidi_100');
+        $content = $this->app->cache->get('express_kuaidi_html');
         while (empty($content) || stristr($content, '百度安全验证') > -1 || stripos($content, 'tokenV2') === -1) {
-            $content = HttpExtend::get('https://m.baidu.com/s?word=73124161428372', [], $this->options);
+            $content = HttpExtend::get('https://m.baidu.com/s?word=73124161428372&rnd=' . uniqid(), [], $this->options);
         }
-        $this->app->cache->set('express_baidu_kuaidi_100', $content, 30);
+        $this->app->cache->set('express_kuaidi_html', $content, 30);
         return $content;
     }
 
