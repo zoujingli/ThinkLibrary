@@ -44,10 +44,9 @@ class ExpressService extends Service
      */
     protected function initialize(): Service
     {
-        $id = $this->app->request->ip();
         $this->options = [
             'cookie_file' => $this->app->getRuntimePath() . '_express_kuaidi_cookie.txt',
-            'headers'     => ['Host' => 'express.baidu.com', 'CLIENT-IP' => $id, 'X-FORWARDED-FOR' => $id],
+            'headers'     => ['Host' => 'express.baidu.com', 'X-FORWARDED-FOR' => $this->app->request->ip()],
         ];
         $this->token = $this->getExpressToken();
         return $this;
