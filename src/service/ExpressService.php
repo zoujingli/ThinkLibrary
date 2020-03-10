@@ -68,7 +68,7 @@ class ExpressService extends Service
                 foreach ($result['data']['info']['context'] as $vo) $list[] = [
                     'time' => date('Y-m-d H:i:s', $vo['time']), 'context' => $vo['desc'],
                 ];
-                $this->app->cache->set($ckey, $list);
+                $this->app->cache->set($ckey, $list, 10);
                 return ['message' => 'ok', 'com' => $code, 'nu' => $number, 'data' => $list];
             }
         }
