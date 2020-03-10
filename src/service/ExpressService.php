@@ -46,7 +46,7 @@ class ExpressService extends Service
     {
         $id = $this->app->request->ip();
         $this->options = [
-            'cookie_file' => $this->app->getRuntimePath() . '_express_kuaidi100_cookie.txt',
+            'cookie_file' => $this->app->getRuntimePath() . '_express_kuaidi_cookie.txt',
             'headers'     => ['Host' => 'express.baidu.com', 'CLIENT-IP' => $id, 'X-FORWARDED-FOR' => $id],
         ];
         $this->token = $this->getExpressToken();
