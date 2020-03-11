@@ -42,7 +42,7 @@ class ExpressService extends Service
      * @return Service
      * @throws \think\Exception
      */
-    protected function initialize(): Service
+    protected function initialize()
     {
         $this->options = [
             'cookie_file' => $this->app->getRuntimePath() . '_express_cookie.txt',

@@ -66,7 +66,7 @@ class MessageService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function initialize(): Service
+    protected function initialize()
     {
         $this->table = 'SystemMessageHistory';
         $this->china_username = sysconf('sms_zt.china_username');
