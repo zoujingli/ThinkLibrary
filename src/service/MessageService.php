@@ -119,7 +119,7 @@ class MessageService extends Service
      * @param array $params
      * @return string
      */
-    public function buildContent($content, array $params = []): string
+    public function buildContent($content, array $params = [])
     {
         foreach ($params as $key => $value) {
             $content = str_replace("{{$key}}", $value, $content);
