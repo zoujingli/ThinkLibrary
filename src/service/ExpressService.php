@@ -39,8 +39,7 @@ class ExpressService extends Service
 
     /**
      * 快递服务初始化
-     * @return Service
-     * @throws \think\Exception
+     * @return $this
      */
     protected function initialize()
     {
