@@ -109,7 +109,7 @@ class Express
     private static function getOption()
     {
         return [
-            'cookie_file' => runtime_path() . '_express_cookie.txt',
+            'cookie_file' => app()->getRuntimePath() . '_express_cookie.txt',
             'headers'     => ['Host' => 'express.baidu.com', 'X-FORWARDED-FOR' => request()->ip()],
         ];
     }
