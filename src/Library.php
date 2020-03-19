@@ -56,7 +56,7 @@ class Library extends Service
                     $header['Access-Control-Expose-Headers'] = 'User-Form-Token,User-Token,Token';
                 }
                 // 访问模式及访问权限检查
-                if ($request->isOptions()) {
+                if ($request->filter(['trim'])->isOptions()) {
                     return response()->code(204)->header($header);
                 } elseif (AdminService::instance()->check()) {
                     return $next($request)->code(200)->header($header);
