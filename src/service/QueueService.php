@@ -162,7 +162,7 @@ class QueueService extends Service
      * @param null $message
      * @param null $propress
      * @return mixed
-     * @todo 进度值 
+     * @todo 进度值
      */
     public function propress($code, $message = null, $propress = null)
     {
@@ -177,6 +177,8 @@ class QueueService extends Service
             $data['title'] = $message;
             $data['history'][] = ['message' => $message, 'propress' => $data['propress']];
         } elseif (is_string($message) && is_numeric($propress)) {
+            $data['title'] = $message;
+            $data['propress'] = $propress;
             $data['history'][] = ['message' => $message, 'propress' => $propress];
         }
         $this->app->cache->set($ckey, $data);
