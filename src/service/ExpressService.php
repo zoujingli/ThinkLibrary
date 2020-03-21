@@ -38,11 +38,22 @@ class ExpressService extends Service
     protected $options;
 
     /**
+     * 文件Cookie文件
+     * @var string
+     */
+    protected $cookies = '';
+
+    /**
      * 快递服务初始化
      * @return $this
      */
     protected function initialize()
     {
+        $this->cookies = $this->app->getRuntimePath() . '_express_cookie.txt';
+        if ($this->app->cache->get('_express_cookie_time', 0) + 10 < time()) {
+            if (file_exists($this->cookies)) @unlink($this->cookies);
+        }
+        $this->app->cache->set('_express_cookie_time', time());
         $this->options = [
             'cookie_file' => $this->app->getRuntimePath() . '_express_cookie.txt',
             'headers'     => ['Host' => 'express.baidu.com', 'X-FORWARDED-FOR' => $this->app->request->ip()],
