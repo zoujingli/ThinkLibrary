@@ -49,7 +49,7 @@ class ExpressService extends Service
      */
     protected function initialize()
     {
-        $this->cookies = $this->app->getRuntimePath() . '_express_cookie.txt';
+        $this->cookies = "{$this->app->getRuntimePath()}_express_cookie.txt";
         if ($this->app->cache->get('_express_cookie_time', 0) + 10 < time()) {
             if (file_exists($this->cookies)) @unlink($this->cookies);
         }
