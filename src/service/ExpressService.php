@@ -38,7 +38,7 @@ class ExpressService extends Service
     protected $options;
 
     /**
-     * 文件Cookie文件
+     * 会话Cookie文件
      * @var string
      */
     protected $cookies = '';
