@@ -15,8 +15,10 @@
 
 namespace think\admin\service;
 
+use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\Service;
+use think\exception\InvalidArgumentException;
 
 /**
  * 任务基础服务
@@ -108,6 +110,7 @@ class QueueService extends Service
 
     /**
      * 添加清理7天前的记录及超时任务
+     * @throws Exception
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -121,12 +124,13 @@ class QueueService extends Service
     /**
      * 注册异步处理任务
      * @param string $title 任务名称
-     * @param string $command 执行内容
+     * @param string $command 执行脚本
      * @param integer $later 延时时间
      * @param array $data 任务附加数据
      * @param integer $rscript 任务类型(0单例,1多例)
      * @param integer $loops 循环等待时间
      * @return $this
+     * @throws Exception
      * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -135,8 +139,8 @@ class QueueService extends Service
     public function register($title, $command, $later = 0, $data = [], $rscript = 1, $loops = 0)
     {
         $map = [['title', '=', $title], ['status', 'in', ['1', '2']]];
-        if (empty($rscript) && $this->app->db->name('SystemQueue')->where($map)->count() > 0) {
-            throw new \think\Exception(lang('think_library_queue_exist'));
+        if (empty($rscript) && ($queue = $this->app->db->name('SystemQueue')->where($map)->find())) {
+            throw new Exception(lang('think_library_queue_exist'), 0, $queue);
         }
         $this->app->db->name('SystemQueue')->strict(false)->failException(true)->insert([
             'code'       => $this->code = 'QE' . CodeExtend::uniqidDate(16),
@@ -151,6 +155,32 @@ class QueueService extends Service
             'loops_time' => $loops,
         ]);
         return $this->initialize($this->code);
+    }
+
+    /**
+     * @param $code
+     * @param null $message
+     * @param null $propress
+     * @return mixed
+     * @todo 进度值 
+     */
+    public function propress($code, $message = null, $propress = null)
+    {
+        $ckey = "queue_{$code}_propress";
+        $data = $this->app->cache->get($ckey, [
+            'code'     => $code,
+            'message'  => $message,
+            'propress' => $propress,
+            'history'  => [],
+        ]);
+        if (is_string($message) && is_null($propress)) {
+            $data['title'] = $message;
+            $data['history'][] = ['message' => $message, 'propress' => $data['propress']];
+        } elseif (is_string($message) && is_numeric($propress)) {
+            $data['history'][] = ['message' => $message, 'propress' => $propress];
+        }
+        $this->app->cache->set($ckey, $data);
+        return $data;
     }
 
     /**
