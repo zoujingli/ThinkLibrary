@@ -81,6 +81,8 @@ class WorkQueue extends Queue
                 }
                 // 执行任务内容
                 if (class_exists($command = $this->queue['command'])) {
+                    defined('WorkQueueCall') or define('WorkQueueCall', true);
+                    defined('WorkQueueCode') or define('WorkQueueCode', $this->code);
                     // 自定义服务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     if ($command instanceof QueueService) {
                         $data = json_decode($this->queue['data'], true) ?: [];
@@ -90,7 +92,6 @@ class WorkQueue extends Queue
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
-                    defined('WorkQueueCall') or define('WorkQueueCall', true);
                     $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $this->queue['command'])));
                     $this->update('3', $this->app->console->call(array_shift($attr), $attr)->fetch(), false);
                 }
