@@ -187,6 +187,9 @@ class QueueService extends Service
             'propress' => $propress,
             'history'  => [],
         ]);
+        if (is_numeric($propress)) {
+            $propress = sprintf("%.2f", $propress);
+        }
         if (is_string($message) && is_null($propress)) {
             $data['message'] = $message;
             $data['history'][] = ['message' => $message, 'propress' => $data['propress']];
