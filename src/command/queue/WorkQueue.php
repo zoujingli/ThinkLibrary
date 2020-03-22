@@ -120,7 +120,9 @@ class WorkQueue extends Queue
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         // 任务进度标记
-        QueueService::instance()->propress($this->code, $status, ">>> {$desc}");
+        if (!empty($desc[0])) {
+            QueueService::instance()->propress($this->code, $status, ">>> {$desc[0]}");
+        }
         if ($status == 3) {
             QueueService::instance()->propress($this->code, $status, '>>> 任务处理完成！', 100);
         } elseif ($status == 4) {
