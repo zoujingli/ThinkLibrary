@@ -166,6 +166,7 @@ class QueueService extends Service
             'outer_time' => '0',
             'loops_time' => $loops,
         ]);
+        $this->propress($this->code, 1, '任务创建成功！', 0.00);
         return $this->initialize($this->code);
     }
 
