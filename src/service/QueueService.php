@@ -190,12 +190,17 @@ class QueueService extends Service
         if (is_string($message) && is_null($propress)) {
             $data['title'] = $message;
             $data['history'][] = ['message' => $message, 'propress' => $data['propress']];
+        } elseif (is_null($message) && is_numeric($propress)) {
+            $data['propress'] = $propress;
+            $data['history'][] = ['message' => $data['message'], 'propress' => $propress];
         } elseif (is_string($message) && is_numeric($propress)) {
             $data['title'] = $message;
             $data['propress'] = $propress;
             $data['history'][] = ['message' => $message, 'propress' => $propress];
         }
-        $this->app->cache->set($ckey, $data);
+        if (is_string($message) || is_numeric($propress)) {
+            $this->app->cache->set($ckey, $data);
+        }
         return $data;
     }
 
