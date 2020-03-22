@@ -74,7 +74,7 @@ class WorkQueue extends Queue
                     'enter_time' => microtime(true), 'attempts' => $this->app->db->raw('attempts+1'),
                     'outer_time' => '0', 'exec_pid' => getmypid(), 'exec_desc' => '', 'status' => '2',
                 ]);
-                QueueService::instance()->propress($this->code, 2, '>>> 任务开始处理！', 0);
+                QueueService::instance()->propress($this->code, 2, '>>> 任务处理开始！', 0);
                 // 设置进程标题
                 if ($this->process->iswin()) {
                     $this->setProcessTitle("ThinkAdmin {$this->process->version()} Queue - {$this->queue['title']}");
