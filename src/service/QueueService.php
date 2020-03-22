@@ -188,13 +188,13 @@ class QueueService extends Service
             'history'  => [],
         ]);
         if (is_string($message) && is_null($propress)) {
-            $data['title'] = $message;
+            $data['message'] = $message;
             $data['history'][] = ['message' => $message, 'propress' => $data['propress']];
         } elseif (is_null($message) && is_numeric($propress)) {
             $data['propress'] = $propress;
             $data['history'][] = ['message' => $data['message'], 'propress' => $propress];
         } elseif (is_string($message) && is_numeric($propress)) {
-            $data['title'] = $message;
+            $data['message'] = $message;
             $data['propress'] = $propress;
             $data['history'][] = ['message' => $message, 'propress' => $propress];
         }
