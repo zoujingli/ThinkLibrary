@@ -172,15 +172,17 @@ class QueueService extends Service
     /**
      * 更新任务进度信息
      * @param string $code 任务编号
+     * @param integer $status 任务状态
      * @param null|string $message 进度消息
      * @param null|integer $propress 进度数值
      * @return array
      */
-    public function propress($code, $message = null, $propress = null)
+    public function propress($code, $status, $message = null, $propress = null)
     {
         $ckey = "queue_{$code}_propress";
         $data = $this->app->cache->get($ckey, [
             'code'     => $code,
+            'status'   => $status,
             'message'  => $message,
             'propress' => $propress,
             'history'  => [],
