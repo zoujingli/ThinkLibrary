@@ -30,7 +30,7 @@ class QueueService extends Service
 
     /**
      * 当前任务编号
-     * @var integer
+     * @var string
      */
     protected $code = 0;
 
@@ -75,6 +75,18 @@ class QueueService extends Service
             $this->data = json_decode($this->queue['exec_data'], true) ?: [];
         }
         return $this;
+    }
+
+    /**
+     * 获取当前对象值
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        if (isset($this->$name)) {
+            return $this->$name;
+        }
     }
 
     /**
@@ -143,7 +155,7 @@ class QueueService extends Service
             throw new Exception(lang('think_library_queue_exist'), 0, $queue);
         }
         $this->app->db->name('SystemQueue')->strict(false)->failException(true)->insert([
-            'code'       => $this->code = 'QE' . CodeExtend::uniqidDate(16),
+            'code'       => $this->code = CodeExtend::uniqidDate(16, 'Q'),
             'title'      => $title,
             'command'    => $command,
             'attempts'   => '0',
@@ -158,11 +170,11 @@ class QueueService extends Service
     }
 
     /**
-     * @param $code
-     * @param null $message
-     * @param null $propress
-     * @return mixed
-     * @todo 进度值
+     * 更新任务进度信息
+     * @param string $code 任务编号
+     * @param null|string $message 进度消息
+     * @param null|integer $propress 进度数值
+     * @return array
      */
     public function propress($code, $message = null, $propress = null)
     {
