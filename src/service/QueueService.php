@@ -166,7 +166,7 @@ class QueueService extends Service
             'outer_time' => '0',
             'loops_time' => $loops,
         ]);
-        $this->propress($this->code, 1, '任务创建成功！', 0.00);
+        $this->progress($this->code, 1, '任务创建成功！', 0.00);
         return $this->initialize($this->code);
     }
 
@@ -175,37 +175,37 @@ class QueueService extends Service
      * @param string $code 任务编号
      * @param null|integer $status 任务状态
      * @param null|string $message 进度消息
-     * @param null|integer $propress 进度数值
+     * @param null|integer $progress 进度数值
      * @return array
      */
-    public function propress($code, $status = null, $message = null, $propress = null)
+    public function progress($code, $status = null, $message = null, $progress = null)
     {
-        $ckey = "queue_{$code}_propress";
+        $ckey = "queue_{$code}_progress";
         $data = $this->app->cache->get($ckey, [
             'code'     => $code,
             'status'   => $status,
             'message'  => $message,
-            'propress' => $propress,
+            'progress' => $progress,
             'history'  => [],
         ]);
-        if (is_numeric($propress)) {
-            $propress = sprintf("%.2f", $propress);
+        if (is_numeric($progress)) {
+            $progress = sprintf("%.2f", $progress);
         }
-        if (is_string($message) && is_null($propress)) {
+        if (is_string($message) && is_null($progress)) {
             $data['message'] = $message;
-            $data['history'][] = ['message' => $message, 'propress' => $data['propress']];
-        } elseif (is_null($message) && is_numeric($propress)) {
-            $data['propress'] = $propress;
-            $data['history'][] = ['message' => $data['message'], 'propress' => $propress];
-        } elseif (is_string($message) && is_numeric($propress)) {
+            $data['history'][] = ['message' => $message, 'progress' => $data['progress']];
+        } elseif (is_null($message) && is_numeric($progress)) {
+            $data['progress'] = $progress;
+            $data['history'][] = ['message' => $data['message'], 'progress' => $progress];
+        } elseif (is_string($message) && is_numeric($progress)) {
             $data['message'] = $message;
-            $data['propress'] = $propress;
-            $data['history'][] = ['message' => $message, 'propress' => $propress];
+            $data['progress'] = $progress;
+            $data['history'][] = ['message' => $message, 'progress' => $progress];
         }
         if (is_numeric($status)) {
-            $data['status'] = $status;
+            $data['status'] = intval($status);
         }
-        if (is_string($message) || is_numeric($propress)) {
+        if (is_string($message) || is_numeric($progress)) {
             $this->app->cache->set($ckey, $data);
         }
         return $data;

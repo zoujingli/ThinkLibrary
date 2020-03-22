@@ -53,13 +53,13 @@ class Command extends ThinkCommand
      * 设置当前任务进度
      * @param null|integer $status 任务状态
      * @param null|string $message 进度消息
-     * @param null|integer $propress 进度数值
+     * @param null|integer $progress 进度数值
      * @return Command
      */
-    protected function setQueuePropress($status = null, $message = null, $propress = null)
+    protected function setQueuePropress($status = null, $message = null, $progress = null)
     {
         if (defined('WorkQueueCode')) {
-            $this->queue->propress(WorkQueueCode, $status, $message, $propress);
+            $this->queue->progress(WorkQueueCode, $status, $message, $progress);
         }
         return $this;
     }
