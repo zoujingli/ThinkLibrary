@@ -80,9 +80,9 @@ class WorkQueue extends Queue
                     $this->setProcessTitle("ThinkAdmin {$this->process->version()} Queue - {$this->queue['title']}");
                 }
                 // 执行任务内容
+                defined('WorkQueueCall') or define('WorkQueueCall', true);
+                defined('WorkQueueCode') or define('WorkQueueCode', $this->code);
                 if (class_exists($command = $this->queue['command'])) {
-                    defined('WorkQueueCall') or define('WorkQueueCall', true);
-                    defined('WorkQueueCode') or define('WorkQueueCode', $this->code);
                     // 自定义服务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     if ($command instanceof QueueService) {
                         $data = json_decode($this->queue['data'], true) ?: [];
