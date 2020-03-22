@@ -172,12 +172,12 @@ class QueueService extends Service
     /**
      * 更新任务进度信息
      * @param string $code 任务编号
-     * @param integer $status 任务状态
+     * @param null|integer $status 任务状态
      * @param null|string $message 进度消息
      * @param null|integer $propress 进度数值
      * @return array
      */
-    public function propress($code, $status, $message = null, $propress = null)
+    public function propress($code, $status = null, $message = null, $propress = null)
     {
         $ckey = "queue_{$code}_propress";
         $data = $this->app->cache->get($ckey, [
@@ -197,6 +197,9 @@ class QueueService extends Service
             $data['title'] = $message;
             $data['propress'] = $propress;
             $data['history'][] = ['message' => $message, 'propress' => $propress];
+        }
+        if (is_numeric($status)) {
+            $data['status'] = $status;
         }
         if (is_string($message) || is_numeric($propress)) {
             $this->app->cache->set($ckey, $data);
