@@ -120,13 +120,12 @@ class WorkQueue extends Queue
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
         // 任务进度标记
+        QueueService::instance()->propress($this->code, $status, ">>> {$desc}");
         if ($status == 3) {
             QueueService::instance()->propress($this->code, $status, '>>> 任务处理完成！', 100);
-        }
-        if ($status == 4) {
+        } elseif ($status == 4) {
             QueueService::instance()->propress($this->code, $status, '>>> 任务处理失败！');
         }
-        QueueService::instance()->propress($this->code, $status, ">>> {$desc}");
         // 注册循环任务
         if (isset($this->queue['loops_time']) && $this->queue['loops_time'] > 0) {
             try {
