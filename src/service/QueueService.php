@@ -163,7 +163,7 @@ class QueueService extends Service
             'outer_time' => '0',
             'loops_time' => $loops,
         ]);
-        $this->progress($this->code, 1, '>>> 任务创建成功！', 0.00);
+        $this->progress($this->code, 1, '>>> 任务创建成功 <<<', 0.00);
         return $this->initialize($this->code);
     }
 
@@ -177,11 +177,11 @@ class QueueService extends Service
      */
     public function progress($code, $status = null, $message = null, $progress = null)
     {
-        if (intval($status) === 3) {
+        if (is_numeric($status) && intval($status) === 3) {
             if (!is_numeric($progress)) $progress = '100.00';
             if (is_null($message)) $message = '>>> 任务已经完成 <<<';
         }
-        if (intval($status) === 4) {
+        if (is_numeric($status) && intval($status) === 4) {
             if (!is_numeric($progress)) $progress = '0.00';
             if (is_null($message)) $message = '>>> 任务执行失败 <<<';
         }
