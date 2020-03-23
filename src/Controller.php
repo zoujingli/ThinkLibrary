@@ -286,8 +286,8 @@ abstract class Controller extends \stdClass
     protected function _queue($title, $command, $later = 0, $data = [], $rscript = 1, $loops = 0)
     {
         try {
-            $code = QueueService::instance()->register($title, $command, $later, $data, $rscript, $loops);
-            $this->success('创建任务成功！', $code);
+            $queue = QueueService::instance()->register($title, $command, $later, $data, $rscript, $loops);
+            $this->success('创建任务成功！', $queue->code);
         } catch (Exception $exception) {
             $code = $exception->getData();
             if (is_string($code) && stripos($code, 'Q') === 0) {
