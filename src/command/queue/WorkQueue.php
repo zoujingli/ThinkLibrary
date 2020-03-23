@@ -84,11 +84,10 @@ class WorkQueue extends Queue
                 defined('WorkQueueCode') or define('WorkQueueCode', $this->code);
                 if (class_exists($command = $this->queue['command'])) {
                     // 自定义服务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
-                    if ($command instanceof QueueService) {
-                        $data = json_decode($this->queue['data'], true) ?: [];
-                        $this->update('3', $command::instance()->initialize($this->code)->execute($data));
+                    if (method_exists($command, 'instance') && ($class = $command::instance()) instanceof QueueService) {
+                        $this->update('3', $class->initialize($this->code)->execute(json_decode($this->queue['exec_data'], true) ?: []));
                     } else {
-                        throw new \think\Exception("自定义 {$command} 未继承 " . QueueService::class);
+                        throw new \think\Exception("自定义 {$command} 未继承 QueueService");
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
