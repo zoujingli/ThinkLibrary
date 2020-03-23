@@ -186,13 +186,13 @@ class QueueService extends Service
             if (is_null($message)) $message = '>>> 任务执行失败 <<<';
         }
         $ckey = "queue_{$code}_progress";
-        $data = $this->app->cache->get($ckey, [
-            'code'     => $code,
-            'status'   => $status,
-            'message'  => $message,
-            'progress' => $progress,
-            'history'  => [],
-        ]);
+        try {
+            $data = $this->app->cache->get($ckey, [
+                'code' => $code, 'status' => $status, 'message' => $message, 'progress' => $progress, 'history' => [],
+            ]);
+        } catch (\Exception $exception) {
+            return $this->progress($code, $status, $message, $progress);
+        }
         if (is_numeric($status)) $data['status'] = intval($status);
         if (is_numeric($progress)) $progress = sprintf("%.2f", $progress);
         if (is_string($message) && is_null($progress)) {
