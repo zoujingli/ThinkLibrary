@@ -15,6 +15,7 @@
 
 namespace think\admin;
 
+use think\admin\storage\AliossStorage;
 use think\admin\storage\LocalStorage;
 use think\admin\storage\QiniuStorage;
 use think\App;
@@ -64,7 +65,7 @@ abstract class Storage
 
     /**
      * 存储初始化
-     * @return Storage
+     * @return AliossStorage|LocalStorage|QiniuStorage
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
