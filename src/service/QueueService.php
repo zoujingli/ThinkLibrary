@@ -194,6 +194,9 @@ class QueueService extends Service
             $data['history'][] = ['message' => $message, 'progress' => $progress];
         }
         if (is_string($message) || is_numeric($progress)) {
+            if (count($data['history']) > 10) {
+                $data['history'] = array_slice($data['history'], -10);
+            }
             $this->app->cache->set($ckey, $data);
         }
         return $data;
