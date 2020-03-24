@@ -107,7 +107,7 @@ class QueueService extends Service
     }
 
     /**
-     * 添加清理定时清理任务
+     * 添加定时清理任务
      * @return $this
      * @throws \think\admin\Exception
      * @throws \think\db\exception\DataNotFoundException
@@ -116,7 +116,7 @@ class QueueService extends Service
      */
     public function addCleanQueue()
     {
-        return $this->register('清理7天前记录及执行超时的任务', "xtask:clean", 0, [], 0, 3600);
+        return $this->register('定时清理系统任务数据', "xtask:clean", 0, [], 0, 3600);
     }
 
     /**
