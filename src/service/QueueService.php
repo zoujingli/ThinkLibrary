@@ -183,14 +183,14 @@ class QueueService extends Service
         if (is_numeric($progress)) $progress = sprintf("%.2f", $progress);
         if (is_string($message) && is_null($progress)) {
             $data['message'] = $message;
-            $data['history'][] = ['message' => $message, 'progress' => $data['progress']];
+            $data['history'][] = ['message' => $message, 'progress' => $data['progress'], 'datetime' => date('Y-m-d H:i:s')];
         } elseif (is_null($message) && is_numeric($progress)) {
             $data['progress'] = $progress;
-            $data['history'][] = ['message' => $data['message'], 'progress' => $progress];
+            $data['history'][] = ['message' => $data['message'], 'progress' => $progress, 'datetime' => date('Y-m-d H:i:s')];
         } elseif (is_string($message) && is_numeric($progress)) {
             $data['message'] = $message;
             $data['progress'] = $progress;
-            $data['history'][] = ['message' => $message, 'progress' => $progress];
+            $data['history'][] = ['message' => $message, 'progress' => $progress, 'datetime' => date('Y-m-d H:i:s')];
         }
         if (is_string($message) || is_numeric($progress)) {
             if (count($data['history']) > 10) {
