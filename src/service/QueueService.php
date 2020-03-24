@@ -176,7 +176,7 @@ class QueueService extends Service
             $data = $this->app->cache->get("queue_{$this->code}_progress", [
                 'code' => $this->code, 'status' => $status, 'message' => $message, 'progress' => $progress, 'history' => [],
             ]);
-        } catch (\Exception|\TypeError $exception) {
+        } catch (\Exception|\Error $exception) {
             return $this->progress($status, $message, $progress);
         }
         if (is_numeric($status)) $data['status'] = intval($status);
