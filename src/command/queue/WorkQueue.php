@@ -102,7 +102,7 @@ class WorkQueue extends Queue
                     $this->update('3', $this->app->console->call(array_shift($attr), $attr)->fetch(), false);
                 }
             }
-        } catch (\Exception|\TypeError $exception) {
+        } catch (\Exception|\Error $exception) {
             $code = $exception->getCode();
             if (intval($code) !== 3) $code = 4;
             $this->update($code, $exception->getMessage());
