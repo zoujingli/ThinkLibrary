@@ -113,8 +113,8 @@ class Install extends Command
             list($state, $mode, $name) = InstallService::instance()->fileSynchronization($file);
             if ($state) {
                 if ($mode === 'add') $this->output->writeln("--- {$name} added successfully");
-                if ($mode === 'mod') $this->output->writeln("--- {$name} updated successfully");
-                if ($mode === 'del') $this->output->writeln("--- {$name} deleted successfully");
+                if ($mode === 'mod') $this->output->writeln("--- {$name} update successfully");
+                if ($mode === 'del') $this->output->writeln("--- {$name} delete successfully");
             } else {
                 if ($mode === 'add') $this->output->writeln("--- {$name} add failed");
                 if ($mode === 'mod') $this->output->writeln("--- {$name} update failed");
