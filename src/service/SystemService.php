@@ -204,8 +204,8 @@ class SystemService extends Service
      */
     public function debugMode($state = null)
     {
-        $lock = "{$this->app->getRootPath()}runtime/.devmode";
-        return is_null($state) ? file_exists($lock) : ($state ? touch($lock) : @unlink($lock));
+        $lock = "{$this->app->getRootPath()}runtime/.product_mode";
+        return is_null($state) ? file_exists($lock) : ($state ? @unlink($lock) : touch($lock));
     }
 
 }
