@@ -202,10 +202,10 @@ class SystemService extends Service
      * @param null|boolean $state
      * @return boolean
      */
-    public function debugMode($state = null)
+    public function productMode($state = null)
     {
         $lock = "{$this->app->getRootPath()}runtime/.product.mode";
-        return is_null($state) ? !file_exists($lock) : ($state ? @unlink($lock) : touch($lock));
+        return is_null($state) ? file_exists($lock) : ($state ? @unlink($lock) : touch($lock));
     }
 
 }
