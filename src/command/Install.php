@@ -69,6 +69,8 @@ class Install extends Command
                 'config/session.php',
                 'config/trace.php',
                 'config/view.php',
+                'public/index.php',
+                'public/router.php',
             ],
             'ignore' => [],
         ],
