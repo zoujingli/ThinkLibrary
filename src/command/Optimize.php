@@ -43,7 +43,7 @@ class Optimize extends Command
     protected function execute(Input $input, Output $output)
     {
         $tables = [];
-        $this->setQueueProgress(2, "正在获取需要优化数据表数量", 0);
+        $this->setQueueProgress(2, "正在获取需要优化的数据表", 0);
         foreach ($this->app->db->query("show tables") as $item) {
             $tables = array_merge($tables, array_values($item));
         }
