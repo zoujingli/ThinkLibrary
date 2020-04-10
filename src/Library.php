@@ -83,6 +83,7 @@ class Library extends Service
         $this->commands([
             'think\admin\command\Install',
             'think\admin\command\Version',
+            'think\admin\command\Optimize',
             'think\admin\command\queue\CleanQueue',
             'think\admin\command\queue\WorkQueue',
             'think\admin\command\queue\StopQueue',
