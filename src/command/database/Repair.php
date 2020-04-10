@@ -28,7 +28,7 @@ class Repair extends Command
 {
     protected function configure()
     {
-        $this->setName('xadmin:optimize');
+        $this->setName('xadmin:repair');
         $this->setDescription("Attempt to repair all data tables");
     }
 
