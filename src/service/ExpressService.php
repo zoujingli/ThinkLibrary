@@ -70,7 +70,7 @@ class ExpressService extends Service
                 return $result;
             }
         }
-        return ['message' => '还没有记录', 'status' => 1, 'express' => $code, 'number' => $number, 'data' => $list];
+        return ['message' => '暂无轨迹信息', 'status' => 1, 'express' => $code, 'number' => $number, 'data' => $list];
     }
 
     /**
