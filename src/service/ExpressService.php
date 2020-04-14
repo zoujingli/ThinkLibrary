@@ -34,15 +34,27 @@ class ExpressService extends Service
     protected $options;
 
     /**
+     *  当前COOKIE文件
+     * @var string
+     */
+    protected $cookies;
+
+    /**
      * 快递服务初始化
      * @return $this
      */
     protected function initialize()
     {
+        // 创建 CURL 请求模拟参数
         $clentip = $this->app->request->ip();
-        $cookies = "{$this->app->getRootPath()}runtime/.express.cookie";
-        $headers = ['Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}"];
-        $this->options = ['cookie_file' => $cookies, 'headers' => $headers];
+        $this->cookies = "{$this->app->getRootPath()}runtime/.express.cookie";
+        $this->options = ['cookie_file' => $this->cookies, 'headers' => [
+            'Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}",
+        ]];
+        // 每 10 秒重置 cookie 文件
+        if (file_exists($this->cookies) && filectime($this->cookies) + 10 < time()) {
+            @unlink($this->cookies);
+        }
         return $this;
     }
 
@@ -85,6 +97,7 @@ class ExpressService extends Service
             unset($data['_auto']);
             return $data;
         } else {
+            @unlink($this->cookies);
             $this->app->cache->delete('express_kuaidi_html');
             return $this->getExpressList();
         }
@@ -112,6 +125,7 @@ class ExpressService extends Service
         if (preg_match('/"expSearchApi":.*?"(.*?)",/', $this->getWapBaiduHtml(), $matches)) {
             return str_replace('\\', '', $matches[1]);
         } else {
+            @unlink($this->cookies);
             $this->app->cache->delete('express_kuaidi_html');
             return $this->getExpressQueryApi();
         }
@@ -128,7 +142,7 @@ class ExpressService extends Service
             $uniqid = str_replace('.', '', microtime(true));
             $content = HttpExtend::get("https://m.baidu.com/s?word=快递查询&rand={$uniqid}", [], $this->options);
         }
-        $this->app->cache->set('express_kuaidi_html', $content, 30);
+        $this->app->cache->set('express_kuaidi_html', $content, 10);
         return $content;
     }
 
