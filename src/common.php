@@ -45,6 +45,20 @@ if (!function_exists('auth')) {
         return AdminService::instance()->check($node);
     }
 }
+if (!function_exists('sysuri')) {
+    /**
+     * 生成最短URL地址
+     * @param string $url 路由地址
+     * @param array $vars 变量
+     * @param bool|string $suffix 生成的URL后缀
+     * @param bool|string $domain 域名
+     * @return string
+     */
+    function sysuri(string $url = '', array $vars = [], $suffix = false, $domain = false)
+    {
+        SystemService::instance()->sysuri($url, $vars, $suffix, $domain);
+    }
+}
 if (!function_exists('sysconf')) {
     /**
      * 获取或配置系统参数
