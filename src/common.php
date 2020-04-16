@@ -45,6 +45,23 @@ if (!function_exists('auth')) {
         return AdminService::instance()->check($node);
     }
 }
+if (!function_exists('sysuri')) {
+    /**
+     * 生成最短URL地址
+     * @param string $url 路由地址
+     * @param array $vars 变量
+     * @param boolean|string $suffix 后缀
+     * @param boolean|string $domain 域名
+     * @return string
+     */
+    function sysuri($url = '', array $vars = [], $suffix = false, $domain = false)
+    {
+        $app = app();
+        $location = $app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
+        list($d1, $d2, $d3) = [$app->config->get('app.default_app'), $app->config->get('route.default_controller'), $app->config->get('route.default_action')];
+        return preg_replace(["|^/{$d1}/{$d2}/{$d3}(\.html)?$|i", "|/{$d2}/{$d3}(\.html)?$|i", "|/{$d3}(\.html)?$|i"], '', $location);
+    }
+}
 if (!function_exists('sysconf')) {
     /**
      * 获取或配置系统参数
