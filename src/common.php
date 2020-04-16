@@ -56,10 +56,7 @@ if (!function_exists('sysuri')) {
      */
     function sysuri($url = '', array $vars = [], $suffix = false, $domain = false)
     {
-        $app = app();
-        $location = $app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
-        list($d1, $d2, $d3) = [$app->config->get('app.default_app'), $app->config->get('route.default_controller'), $app->config->get('route.default_action')];
-        return preg_replace(["|^/{$d1}/{$d2}/{$d3}(\.html)?$|i", "|/{$d2}/{$d3}(\.html)?$|i", "|/{$d3}(\.html)?$|i"], '', $location);
+        return SystemService::instance()->sysuri($url, $vars, $suffix, $domain);
     }
 }
 if (!function_exists('sysconf')) {

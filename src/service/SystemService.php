@@ -267,14 +267,15 @@ class SystemService extends Service
      * 生成最短URL地址
      * @param string $url 路由地址
      * @param array $vars 变量
-     * @param bool|string $suffix 生成的URL后缀
-     * @param bool|string $domain 域名
+     * @param boolean|string $suffix 后缀
+     * @param boolean|string $domain 域名
      * @return string
      */
-    public function sysuri(string $url = '', array $vars = [], $suffix = false, $domain = false)
+    public function sysuri($url = '', array $vars = [], $suffix = false, $domain = false)
     {
-        $buildUrl = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain);
-        return preg_replace('|index/index(\.html)?$|i', '', $buildUrl->build());
+        $location = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
+        list($d1, $d2, $d3) = [$this->app->config->get('app.default_app'), $this->app->config->get('route.default_controller'), $this->app->config->get('route.default_action'),];
+        return preg_replace(["|^/{$d1}/{$d2}/{$d3}(\.html)?$|i", "|/{$d2}/{$d3}(\.html)?$|i", "|/{$d3}(\.html)?$|i"], '', $location);
     }
 
 }
