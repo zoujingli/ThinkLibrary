@@ -221,9 +221,7 @@ class SystemService extends Service
     {
         $data = $this->getRuntime();
         if (is_array($map) && count($map) > 0 && count($data['app_map']) > 0) {
-            foreach ($data['app_map'] as $kk => $vv) foreach ($map as $oo) {
-                if ($oo === $vv) unset($data['app_map'][$kk]);
-            }
+            foreach ($data['app_map'] as $kk => $vv) if (in_array($vv, $map)) unset($data['app_map'][$kk]);
         }
         $file = "{$this->app->getRootPath()}runtime/config.json";
         $data['app_run'] = is_null($run) ? $data['app_run'] : $run;
