@@ -220,8 +220,10 @@ class SystemService extends Service
     public function setRuntime($map = [], $run = null)
     {
         $data = $this->getRuntime();
-        if (is_array($map)) foreach ($data['app_map'] as $kk => $vv) foreach ($map as $oo) {
-            if ($oo === $vv) unset($data['app_map'][$kk]);
+        if (is_array($map) && count($map) > 0 && count($data['app_map']) > 0) {
+            foreach ($data['app_map'] as $kk => $vv) foreach ($map as $oo) {
+                if ($oo === $vv) unset($data['app_map'][$kk]);
+            }
         }
         $file = "{$this->app->getRootPath()}runtime/config.json";
         $data['app_run'] = is_null($run) ? $data['app_run'] : $run;
