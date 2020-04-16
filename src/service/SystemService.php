@@ -206,7 +206,7 @@ class SystemService extends Service
     {
         if (is_null($state)) {
             $this->app->debug($this->getRuntime('app_run') !== 'product');
-            return $this->app->isDebug();
+            return !$this->app->isDebug();
         } else {
             return $this->setRuntime($state ? 'product' : 'developoer');
         }
