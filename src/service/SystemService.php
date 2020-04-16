@@ -205,9 +205,11 @@ class SystemService extends Service
     public function productMode($state = null)
     {
         if (is_null($state)) {
-            return $this->getRuntime('app_run') === 'product';
+            $this->app->debug($this->getRuntime('app_run') !== 'product');
+            return $this->app->isDebug();
+        } else {
+            return $this->setRuntime($state ? 'product' : 'developoer');
         }
-        return $this->setRuntime($state ? 'product' : 'developoer');
     }
 
     /**
