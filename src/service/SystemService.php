@@ -272,8 +272,10 @@ class SystemService extends Service
      */
     public function sysuri($url = '', array $vars = [], $suffix = false, $domain = false)
     {
+        $d1 = $this->app->config->get('app.default_app');
+        $d2 = $this->app->config->get('route.default_controller');
+        $d3 = $this->app->config->get('route.default_action');
         $location = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
-        [$d1, $d2, $d3] = [$this->app->config->get('app.default_app'), $this->app->config->get('route.default_controller'), $this->app->config->get('route.default_action'),];
         return preg_replace(["|^/{$d1}/{$d2}/{$d3}(\.html)?$|i", "|/{$d2}/{$d3}(\.html)?$|i", "|/{$d3}(\.html)?$|i"], '', $location);
     }
 
