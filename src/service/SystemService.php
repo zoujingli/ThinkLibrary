@@ -226,6 +226,7 @@ class SystemService extends Service
         $file = "{$this->app->getRootPath()}runtime/config.json";
         $data['app_run'] = is_null($run) ? $data['app_run'] : $run;
         $data['app_map'] = is_null($map) ? [] : array_merge($data['app_map'], $map);
+        foreach ($data['app_map'] as $kk => $vv) if ($kk === $vv) unset($data['app_map'][$kk]);
         return file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 
