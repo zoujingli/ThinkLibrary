@@ -263,4 +263,18 @@ class SystemService extends Service
         $this->app->debug($data['app_run'] !== 'product');
     }
 
+    /**
+     * 生成最短URL地址
+     * @param string $url 路由地址
+     * @param array $vars 变量
+     * @param bool|string $suffix 生成的URL后缀
+     * @param bool|string $domain 域名
+     * @return string
+     */
+    public function sysuri(string $url = '', array $vars = [], $suffix = false, $domain = false)
+    {
+        $buildUrl = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain);
+        return preg_replace('|index/index(\.html)?$|i', '', $buildUrl->build());
+    }
+
 }
