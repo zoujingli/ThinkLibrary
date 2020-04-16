@@ -226,7 +226,6 @@ class SystemService extends Service
         $file = "{$this->app->getRootPath()}runtime/config.json";
         $data['app_run'] = is_null($run) ? $data['app_run'] : $run;
         $data['app_map'] = is_null($map) ? [] : array_merge($data['app_map'], $map);
-        foreach ($data['app_map'] as $kk => $vv) if ($kk === $vv) unset($data['app_map'][$kk]);
         return file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 
@@ -254,6 +253,9 @@ class SystemService extends Service
         $data = $this->getRuntime();
         if (!empty($data['app_map'])) {
             $maps = $this->app->config->get('app.app_map', []);
+            if (is_array($maps) && count($maps) > 0 && count($data['app_map']) > 0) {
+                foreach ($data['app_map'] as $kk => $vv) if (in_array($vv, $maps)) unset($data['app_map'][$kk]);
+            }
             $this->app->config->set(['app_map' => array_merge($maps, $data['app_map'])], 'app');
         }
         // 动态设置当前运行模式
