@@ -101,7 +101,7 @@ class Install extends Command
             list($this->rules, $this->ignore) = [[], []];
             foreach ($this->bind as $bind) {
                 $this->rules = array_merge($this->rules, $bind['rules']);
-                $this->ignore = array_merge($this->rules, $bind['ignore']);
+                $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
             [$this->installFile(), $this->installData()];
         } elseif (isset($this->bind[$this->name])) {
