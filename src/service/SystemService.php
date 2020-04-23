@@ -248,7 +248,7 @@ class SystemService extends Service
         $data['app_run'] = is_null($run) ? $data['app_run'] : $run;
         $data['app_map'] = is_null($map) ? [] : array_merge($data['app_map'], $map);
         $data['app_uri'] = is_null($uri) ? [] : array_merge($data['app_uri'], $uri);
-        file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE));
         return $this->bindRuntime($data);
     }
 
