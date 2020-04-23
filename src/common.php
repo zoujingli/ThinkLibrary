@@ -49,7 +49,7 @@ if (!function_exists('sysuri')) {
     /**
      * 生成最短 URL 地址
      * @param string $url 路由地址
-     * @param array $vars PATH变量
+     * @param array $vars PATH 变量
      * @param boolean|string $suffix 后缀
      * @param boolean|string $domain 域名
      * @return string
