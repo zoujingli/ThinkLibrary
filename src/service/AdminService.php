@@ -119,7 +119,7 @@ class AdminService extends Service
      */
     public function apply($force = false)
     {
-        if ($force) $this->app->cache->delete('system_auth_node');
+        if ($force) $this->clearCache();
         if (($uid = $this->app->session->get('user.id'))) {
             $user = $this->app->db->name('SystemUser')->where(['id' => $uid])->find();
             if (($aids = $user['authorize'])) {
