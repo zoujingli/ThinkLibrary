@@ -89,11 +89,9 @@ class AdminService extends Service
      */
     public function getTree($checkeds = [])
     {
-        list($nodes, $pnodes) = [[], []];
-        $methods = array_reverse(NodeService::instance()->getMethods());
+        list($nodes, $pnodes, $methods) = [[], [], array_reverse(NodeService::instance()->getMethods())];
         foreach ($methods as $node => $method) {
-            $count = substr_count($node, '/');
-            $pnode = substr($node, 0, strripos($node, '/'));
+            list($count, $pnode) = [substr_count($node, '/'), substr($node, 0, strripos($node, '/'))];
             if ($count === 2 && !empty($method['isauth'])) {
                 in_array($pnode, $pnodes) or array_push($pnodes, $pnode);
                 $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
