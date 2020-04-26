@@ -27,12 +27,21 @@ class AdminService extends Service
 {
 
     /**
-     * 判断是否已经登录
+     * 是否已经登录
      * @return boolean
      */
     public function isLogin()
     {
         return $this->app->session->get('user.id') ? true : false;
+    }
+
+    /**
+     * 是否为超级用户
+     * @return boolean
+     */
+    public function isSuperUser()
+    {
+        return $this->getUserName() === 'admin';
     }
 
     /**
