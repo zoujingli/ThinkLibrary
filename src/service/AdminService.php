@@ -32,7 +32,7 @@ class AdminService extends Service
      */
     public function isLogin()
     {
-        return $this->app->session->get('user.id') ? true : false;
+        return $this->getUserId() > 0;
     }
 
     /**
