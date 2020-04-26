@@ -39,7 +39,7 @@ class AdminService extends Service
      * 是否为超级用户
      * @return boolean
      */
-    public function isSuperUser()
+    public function isSuper()
     {
         return $this->getUserName() === 'admin';
     }
