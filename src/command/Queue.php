@@ -15,7 +15,6 @@
 
 namespace think\admin\command;
 
-use Psr\Log\NullLogger;
 use think\admin\Command;
 use think\admin\service\ProcessService;
 use think\console\Input;
@@ -47,7 +46,6 @@ abstract class Queue extends Command
      */
     protected function initialize(Input $input, Output $output)
     {
-        $this->app->db->setLog(new NullLogger());
         $this->process = ProcessService::instance();
     }
 }
