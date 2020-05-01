@@ -85,7 +85,7 @@ class WorkQueue extends Queue
                 if (class_exists($command = $this->service->queue['command'])) {
                     // 自定义服务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     if (method_exists($command, 'instance') && ($class = $command::instance()) instanceof QueueService) {
-                        $this->update('3', $class->initialize($this->code)->execute(json_decode($this->service->queue['exec_data'], true) ?: []));
+                        $this->update('3', $class->initialize($this->code)->execute($this->service->data));
                     } else {
                         throw new \think\admin\Exception("自定义 {$command} 未继承 QueueService");
                     }
