@@ -70,4 +70,24 @@ abstract class Queue
      * @return mixed
      */
     abstract public function execute(array $data = []);
+
+    /**
+     * 设置成功的消息
+     * @param string $message 消息内容
+     * @throws Exception
+     */
+    protected function setQueueSuccessMessage($message)
+    {
+        throw new Exception($message, 3, $this->queue->code);
+    }
+
+    /**
+     * 设置失败的消息
+     * @param string $message 消息内容
+     * @throws Exception
+     */
+    protected function setQueueErrorMessage($message)
+    {
+        throw new Exception($message, 4, $this->queue->code);
+    }
 }
