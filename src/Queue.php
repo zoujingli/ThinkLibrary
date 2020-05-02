@@ -17,6 +17,7 @@ namespace think\admin;
 
 use think\admin\service\ProcessService;
 use think\admin\service\QueueService;
+use think\App;
 
 /**
  * 任务基础类
@@ -27,7 +28,7 @@ abstract class Queue
 {
     /**
      * 应用实例
-     * @var \think\App
+     * @var App
      */
     protected $app;
 
@@ -45,11 +46,13 @@ abstract class Queue
 
     /**
      * Queue constructor.
-     * @param \think\App $app
+     * @param App $app
+     * @param ProcessService $process
      */
-    public function __construct(\think\App $app)
+    public function __construct(App $app, ProcessService $process)
     {
         $this->app = $app;
+        $this->process = $process;
     }
 
     /**
@@ -60,7 +63,6 @@ abstract class Queue
     public function initialize(QueueService $queue)
     {
         $this->queue = $queue;
-        $this->process = ProcessService::instance();
         return $this;
     }
 
@@ -70,6 +72,18 @@ abstract class Queue
      * @return mixed
      */
     abstract public function execute(array $data = []);
+
+    /**
+     * 设置任务的进度
+     * @param null|string $message 进度消息
+     * @param null|integer $progress 进度数值
+     * @return Queue
+     */
+    protected function setQueueProgress($message = null, $progress = null)
+    {
+        $this->queue->progress(2, $message, $progress);
+        return $this;
+    }
 
     /**
      * 设置成功的消息

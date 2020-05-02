@@ -62,7 +62,7 @@ class Command extends ThinkCommand
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function setQueueProgress($status = null, $message = null, $progress = null)
+    protected function setQueueProgress($message = null, $progress = null)
     {
         if (defined('WorkQueueCode')) {
             if (!$this->queue instanceof QueueService) {
@@ -71,7 +71,7 @@ class Command extends ThinkCommand
             if ($this->queue->code !== WorkQueueCode) {
                 $this->queue->initialize(WorkQueueCode);
             }
-            $this->queue->progress($status, $message, $progress);
+            $this->queue->progress($message, $progress);
         } elseif (is_string($message)) {
             $this->output->writeln($message);
         }
