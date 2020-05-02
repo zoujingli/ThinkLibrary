@@ -15,7 +15,7 @@
 
 namespace think\admin\command\queue;
 
-use think\admin\command\Queue;
+use think\admin\Command;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
@@ -25,13 +25,19 @@ use think\console\Output;
  * Class CleanQueue
  * @package think\admin\command\queue
  */
-class CleanQueue extends Queue
+class CleanQueue extends Command
 {
     /**
      * 截止时间
      * @var integer
      */
     protected $time;
+
+    /**
+     * 绑定数据表
+     * @var string
+     */
+    protected $table = 'SystemQueue';
 
     /**
      * 配置指定信息
