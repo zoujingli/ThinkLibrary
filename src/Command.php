@@ -71,7 +71,7 @@ class Command extends ThinkCommand
             if ($this->queue->code !== WorkQueueCode) {
                 $this->queue->initialize(WorkQueueCode);
             }
-            $this->queue->progress($message, $progress);
+            $this->queue->progress(2, $message, $progress);
         } elseif (is_string($message)) {
             $this->output->writeln($message);
         }
