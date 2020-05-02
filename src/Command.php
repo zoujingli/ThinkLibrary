@@ -53,7 +53,6 @@ class Command extends ThinkCommand
 
     /**
      * 设置当前任务进度
-     * @param null|integer $status 任务状态
      * @param null|string $message 进度消息
      * @param null|integer $progress 进度数值
      * @return Command
@@ -79,23 +78,6 @@ class Command extends ThinkCommand
     }
 
     /**
-     * 结束任务并设置状态消息
-     * @param integer $status 任务状态
-     * @param string $message 消息内容
-     * @return Command
-     * @throws Exception
-     */
-    protected function setQueueMessage($status, $message)
-    {
-        if (defined('WorkQueueCode')) {
-            throw new Exception($message, $status, WorkQueueCode);
-        } elseif (is_string($message)) {
-            $this->output->writeln($message);
-        }
-        return $this;
-    }
-
-    /**
      * 设置成功的消息
      * @param string $message 消息内容
      * @return Command
@@ -103,7 +85,12 @@ class Command extends ThinkCommand
      */
     protected function setQueueSuccessMessage($message)
     {
-        return $this->setQueueMessage(3, $message);
+        if (defined('WorkQueueCode')) {
+            throw new Exception($message, 3, WorkQueueCode);
+        } elseif (is_string($message)) {
+            $this->output->writeln($message);
+        }
+        return $this;
     }
 
     /**
@@ -114,7 +101,12 @@ class Command extends ThinkCommand
      */
     protected function setQueueErrorMessage($message)
     {
-        return $this->setQueueMessage(4, $message);
+        if (defined('WorkQueueCode')) {
+            throw new Exception($message, 4, WorkQueueCode);
+        } elseif (is_string($message)) {
+            $this->output->writeln($message);
+        }
+        return $this;
     }
 
 }

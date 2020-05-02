@@ -61,17 +61,17 @@ class CleanQueue extends Command
     {
         $this->time = $input->getArgument('time');
         if (empty($this->time) || !is_numeric($this->time) || $this->time <= 0) {
-            $this->setQueueMessage(4, "参数错误，需要传入任务超时时间");
+            $this->setQueueErrorMessage("参数错误，需要传入任务超时时间");
         } else {
             $map = [['exec_time', '<', time() - $this->time]];
             $count1 = $this->app->db->name($this->table)->where($map)->delete();
-            $this->setQueueProgress(2, "清理 {$count1} 条历史任务成功", 50);
+            $this->setQueueProgress("清理 {$count1} 条历史任务成功", 50);
             // 重置超60分钟无响应的记录
             $map = [['exec_time', '<', time() - 3600], ['status', '=', '2']];
             $count2 = $this->app->db->name($this->table)->where($map)->update([
                 'status' => '4', 'exec_desc' => '任务执行超时，已自动标识为失败！',
             ]);
-            $this->setQueueProgress(2, "处理 {$count2} 条超时间任务成功", 100);
+            $this->setQueueProgress("处理 {$count2} 条超时间任务成功", 100);
         }
     }
 }
