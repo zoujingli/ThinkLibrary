@@ -32,20 +32,4 @@ abstract class Queue extends Command
      * @var string
      */
     protected $table = 'SystemQueue';
-
-    /**
-     * 进程服务对象
-     * @var ProcessService
-     */
-    protected $process;
-
-    /**
-     * 任务指令初始化
-     * @param Input $input
-     * @param Output $output
-     */
-    protected function initialize(Input $input, Output $output)
-    {
-        $this->process = ProcessService::instance();
-    }
 }
