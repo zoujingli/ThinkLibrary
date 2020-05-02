@@ -83,7 +83,7 @@ class Command extends ThinkCommand
      * @return Command
      * @throws Exception
      */
-    protected function setQueueSuccessMessage($message)
+    protected function setQueueSuccess($message)
     {
         if (defined('WorkQueueCode')) {
             throw new Exception($message, 3, WorkQueueCode);
@@ -99,7 +99,7 @@ class Command extends ThinkCommand
      * @return Command
      * @throws Exception
      */
-    protected function setQueueErrorMessage($message)
+    protected function setQueueError($message)
     {
         if (defined('WorkQueueCode')) {
             throw new Exception($message, 4, WorkQueueCode);

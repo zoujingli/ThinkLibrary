@@ -61,7 +61,7 @@ class CleanQueue extends Command
     {
         $this->time = $input->getArgument('time');
         if (empty($this->time) || !is_numeric($this->time) || $this->time <= 0) {
-            $this->setQueueErrorMessage("参数错误，需要传入任务超时时间");
+            $this->setQueueError("参数错误，需要传入任务超时时间");
         } else {
             $map = [['exec_time', '<', time() - $this->time]];
             $count1 = $this->app->db->name($this->table)->where($map)->delete();
