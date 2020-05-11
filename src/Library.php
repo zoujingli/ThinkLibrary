@@ -84,6 +84,7 @@ class Library extends Service
         SystemService::instance()->bindRuntime();
         // 注册系统任务指令
         $this->commands([
+            'think\admin\command\Queue',
             'think\admin\command\Install',
             'think\admin\command\Version',
             // 系统异步任务指令
