@@ -50,7 +50,6 @@ class Queue extends Command
         $this->setName('xadmin:queue');
         $this->addArgument('action', Argument::OPTIONAL, 'stop|start|status|query|listen|clean|dorun', 'listen');
         $this->addArgument('code', Argument::OPTIONAL, 'Taskcode');
-        $this->addArgument('spts', Argument::OPTIONAL, 'Separator');
         $this->addOption('daemon', 'd', Option::VALUE_NONE, 'Run the queue listen in daemon mode');
         $this->setDescription('Asynchronous Command Queue for ThinkAdmin');
     }
