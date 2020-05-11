@@ -48,7 +48,7 @@ class Queue extends Command
     public function configure()
     {
         $this->setName('xadmin:queue');
-        $this->addArgument('action', Argument::OPTIONAL, 'stop|start|status|listen|clean|dorun', 'listen');
+        $this->addArgument('action', Argument::OPTIONAL, 'stop|start|status|query|listen|clean|dorun', 'listen');
         $this->addArgument('code', Argument::OPTIONAL, 'Taskcode');
         $this->addArgument('spts', Argument::OPTIONAL, 'Separator');
         $this->addOption('daemon', 'd', Option::VALUE_NONE, 'Run the queue listen in daemon mode');
@@ -65,11 +65,11 @@ class Queue extends Command
     {
         $action = $this->input->hasOption('daemon') ? 'start' : $input->getArgument('action');
         if (method_exists($this, $method = "{$action}Action")) return $this->$method();
-        $this->output->error("Wrong operation, currently allow stop|start|status|listen|clean|dorun");
+        $this->output->error("Wrong operation, currently allow stop|start|status|query|listen|clean|dorun");
     }
 
     /**
-     * 停止任务
+     * 停止所有任务
      */
     protected function stopAction()
     {
@@ -83,7 +83,7 @@ class Queue extends Command
     }
 
     /**
-     * 启动任务
+     * 启动后台任务
      */
     protected function startAction()
     {
@@ -102,7 +102,40 @@ class Queue extends Command
     }
 
     /**
-     * 查询任务
+     * 查询所有任务
+     */
+    protected function queryAction()
+    {
+        $result = $this->process->query($this->process->think("xadmin:queue"));
+        if (count($result) > 0) foreach ($result as $item) {
+            $this->output->writeln("{$item['pid']}\t{$item['cmd']}");
+        } else {
+            $this->output->writeln('No related task process found');
+        }
+    }
+
+    /**
+     * 清理所有任务
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    protected function cleanAction()
+    {
+        $map = [['exec_time', '<', time() - 7 * 24 * 3600]];
+        $count1 = $this->app->db->name($this->table)->where($map)->delete();
+        $this->setQueueProgress("清理 {$count1} 条历史任务成功");
+        // 重置超60分钟无响应的记录
+        $map = [['exec_time', '<', time() - 3600], ['status', '=', '2']];
+        $count2 = $this->app->db->name($this->table)->where($map)->update([
+            'status' => '4', 'exec_desc' => '任务执行超时，已自动标识为失败！',
+        ]);
+        $this->setQueueProgress("处理 {$count2} 条超时间任务成功", 100);
+    }
+
+    /**
+     * 查询兼听状态
      */
     protected function statusAction()
     {
@@ -115,7 +148,7 @@ class Queue extends Command
     }
 
     /**
-     * 监听任务
+     * 立即监听任务
      */
     protected function listenAction()
     {
@@ -149,7 +182,7 @@ class Queue extends Command
     }
 
     /**
-     * 执行任务
+     * 执行任务内容
      * @throws \think\db\exception\DbException
      */
     protected function dorunAction()
