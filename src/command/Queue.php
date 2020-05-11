@@ -59,11 +59,12 @@ class Queue extends Command
      * 执行指令内容
      * @param Input $input
      * @param Output $output
+     * @return mixed
      */
     public function execute(Input $input, Output $output)
     {
         $action = $this->input->hasOption('daemon') ? 'start' : $input->getArgument('action');
-        if (method_exists($this, $method = "{$action}Action")) $this->$method();
+        if (method_exists($this, $method = "{$action}Action")) return $this->$method();
         $this->output->error("Wrong operation, currently allow stop|start|status|listen|dorun");
     }
 
