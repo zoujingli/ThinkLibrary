@@ -48,7 +48,7 @@ class Queue extends Command
     public function configure()
     {
         $this->setName('xadmin:queue');
-        $this->addArgument('action', Argument::OPTIONAL, 'stop|start|status|listen|dorun', 'listen');
+        $this->addArgument('action', Argument::OPTIONAL, 'stop|start|status|listen|clean|dorun', 'listen');
         $this->addArgument('code', Argument::OPTIONAL, 'Taskcode');
         $this->addArgument('spts', Argument::OPTIONAL, 'Separator');
         $this->addOption('daemon', 'd', Option::VALUE_NONE, 'Run the queue listen in daemon mode');
@@ -65,7 +65,7 @@ class Queue extends Command
     {
         $action = $this->input->hasOption('daemon') ? 'start' : $input->getArgument('action');
         if (method_exists($this, $method = "{$action}Action")) return $this->$method();
-        $this->output->error("Wrong operation, currently allow stop|start|status|listen|dorun");
+        $this->output->error("Wrong operation, currently allow stop|start|status|listen|clean|dorun");
     }
 
     /**
