@@ -125,7 +125,7 @@ class Queue extends Command
             $this->setProcessTitle("ThinkAdmin {$this->process->version()} Queue Listen");
         }
         $this->output->writeln("\tYou can exit with <info>`CTRL-C`</info>");
-        $this->output->writeln('============= LISTENING =============');
+        $this->output->writeln('============== LISTENING ==============');
         while (true) {
             $where = [['status', '=', '1'], ['exec_time', '<=', time()]];
             $this->app->db->name($this->table)->where($where)->order('exec_time asc')->chunk(100, function (Collection $result) {
