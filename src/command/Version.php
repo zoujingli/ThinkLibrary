@@ -20,7 +20,7 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 获取框架版本号
+ * 框架版本号指令
  * Class Version
  * @package think\admin\command
  */
@@ -29,9 +29,13 @@ class Version extends Command
     protected function configure()
     {
         $this->setName('xadmin:version');
-        $this->setDescription("Query application framework version");
+        $this->setDescription("ThinkLibrary and ThinkPHP Version for ThinkAdmin");
     }
 
+    /**
+     * @param Input $input
+     * @param Output $output
+     */
     protected function execute(Input $input, Output $output)
     {
         $output->writeln('ThinkLib ' . $this->process->version());
