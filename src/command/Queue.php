@@ -142,7 +142,7 @@ class Queue extends Command
                 ]);
             }
         });
-        return "清理 {$count} 条历史任务，标识 {$total} 条超时任务";
+        $this->setQueueSuccess("清理 {$count} 条历史任务，标识 {$total} 条超时任务");
     }
 
     /**
