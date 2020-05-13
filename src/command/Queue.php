@@ -134,7 +134,7 @@ class Queue extends Command
         $this->app->db->name($this->table)->where($map)->chunk(100, function (Collection $result) use ($total, &$used) {
             foreach ($result->toArray() as $item) {
                 $stridx = str_pad(++$used, strlen("{$total}"), '0', STR_PAD_LEFT) . "/{$total}";
-                $this->setQueueProgress("[{$stridx}] 正在处理任务 {$item['code']} 为超时", $used / $total * 100);
+                $this->setQueueProgress("[{$stridx}] 正在标记任务 {$item['code']} 超时", $used / $total * 100);
                 $item['loops_time'] > 0 ? $this->app->db->name($this->table)->where(['id' => $item['id']])->update([
                     'status' => 2, 'exec_desc' => '任务执行超时，已自动重置任务待！',
                 ]) : $this->app->db->name($this->table)->where(['id' => $item['id']])->update([
