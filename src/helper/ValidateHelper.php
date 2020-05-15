@@ -30,6 +30,11 @@ class ValidateHelper extends Helper
      * @param array $rules 验证规则（ 验证信息数组 ）
      * @param string $type 输入方式 ( post. 或 get. )
      * @return array
+     *  name.require => message
+     *  age.max:100 => message
+     *  name.between:1,120 => message
+     *  name.value => value
+     *  name.default => 100 // 获取并设置默认值
      */
     public function init(array $rules, $type = '')
     {
@@ -52,12 +57,15 @@ class ValidateHelper extends Helper
             } else {
                 list($_rgx) = explode(':', $name);
                 list($_key, $_rule) = explode('.', $name);
-                if (in_array($_rule, ['value'])) {
-                    $data[$_key] = $message;
-                    unset($info[$_rgx], $rule[$_key]);
+                if (in_array($_rule, ['value', 'default'])) {
+                    if ($_rule === 'value') {
+                        $data[$_key] = $message;
+                    } elseif ($_rule === 'default') {
+                        $data[$_key] = input($type . ($alias ?: $_key), $message);
+                    }
                 } else {
                     $info[$_rgx] = $message;
-                    $data[$_key] = input($type . (empty($alias) ? $_key : $alias));
+                    $data[$_key] = $data[$_key] ?? input($type . ($alias ?: $_key));
                     $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
                 }
             }
