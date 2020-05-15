@@ -33,29 +33,33 @@ class ValidateHelper extends Helper
      */
     public function init(array $rules, $type = '')
     {
-        list($data, $rule, $info) = [[], [], []];
+        list($data, $rule, $info, $alias) = [[], [], [], ''];
         foreach ($rules as $name => $message) {
             if (stripos($name, '#') !== false) {
                 list($name, $alias) = explode('#', $name);
             }
             if (stripos($name, '.') === false) {
                 if (is_numeric($name)) {
-                    $keys = $message;
+                    $field = $message;
                     if (is_string($message) && stripos($message, '#') !== false) {
                         list($name, $alias) = explode('#', $message);
-                        $keys = empty($alias) ? $name : $alias;
+                        $field = empty($alias) ? $name : $alias;
                     }
-                    $data[$name] = input("{$type}{$keys}");
+                    $data[$name] = input("{$type}{$field}");
                 } else {
                     $data[$name] = $message;
                 }
             } else {
                 list($_rgx) = explode(':', $name);
                 list($_key, $_rule) = explode('.', $name);
-                $keys = empty($alias) ? $_key : $alias;
-                $info[$_rgx] = $message;
-                $data[$_key] = input("{$type}{$keys}");
-                $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
+                if (in_array($_rule, ['value'])) {
+                    $data[$_key] = $message;
+                    unset($info[$_rgx], $rule[$_key]);
+                } else {
+                    $info[$_rgx] = $message;
+                    $data[$_key] = input($type . (empty($alias) ? $_key : $alias));
+                    $rule[$_key] = empty($rule[$_key]) ? $_rule : "{$rule[$_key]}|{$_rule}";
+                }
             }
         }
         $validate = new Validate();
@@ -65,5 +69,4 @@ class ValidateHelper extends Helper
             $this->controller->error($validate->getError());
         }
     }
-
 }
