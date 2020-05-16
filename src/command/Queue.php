@@ -192,9 +192,9 @@ class Queue extends Command
             foreach ($result->toArray() as $item) {
                 $stridx = str_pad(++$used, strlen("{$total}"), '0', STR_PAD_LEFT) . "/{$total}";
                 $this->setQueueProgress("[{$stridx}] 正在标记任务 {$item['code']} 超时", $used / $total * 100);
-                $item['loops_time'] > 0 ? $this->app->db->name($this->table)->where(['id' => $item['id']])->update([
+                $item['loops_time'] > 0 ? $this->app->db->name($this->table)->where(['id' => $item['id']])->updateQueue([
                     'status' => 2, 'exec_desc' => '任务执行超时，已自动重置任务待！',
-                ]) : $this->app->db->name($this->table)->where(['id' => $item['id']])->update([
+                ]) : $this->app->db->name($this->table)->where(['id' => $item['id']])->updateQueue([
                     'status' => 4, 'exec_desc' => '任务执行超时，已自动标识为失败！',
                 ]);
             }
@@ -240,7 +240,7 @@ class Queue extends Command
                         $this->output->writeln("Created new process -> [{$vo['code']}] {$vo['title']}");
                     }
                 } catch (\Exception $exception) {
-                    $this->app->db->name($this->table)->where(['code' => $vo['code']])->update([
+                    $this->app->db->name($this->table)->where(['code' => $vo['code']])->updateQueue([
                         'status' => '4', 'outer_time' => time(), 'exec_desc' => $exception->getMessage(),
                     ]);
                     $this->output->error("Execution failed -> [{$vo['code']}] {$vo['title']}，{$exception->getMessage()}");
@@ -252,7 +252,6 @@ class Queue extends Command
 
     /**
      * 执行任务内容
-     * @throws \think\db\exception\DbException
      */
     protected function doRunAction()
     {
@@ -267,7 +266,7 @@ class Queue extends Command
                 $this->output->warning($message = "The or status of task {$this->code} is abnormal");
             } else {
                 // 锁定任务状态，防止任务再次被执行
-                $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
+                $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->updateQueue([
                     'enter_time' => microtime(true), 'attempts' => $this->app->db->raw('attempts+1'),
                     'outer_time' => '0', 'exec_pid' => getmypid(), 'exec_desc' => '', 'status' => '2',
                 ]);
@@ -283,22 +282,22 @@ class Queue extends Command
                     // 自定义任务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     $class = $this->app->make($command, [], true);
                     if ($class instanceof \think\admin\Queue) {
-                        $this->update(3, $class->initialize($this->queue)->execute($this->queue->data));
+                        $this->updateQueue(3, $class->initialize($this->queue)->execute($this->queue->data));
                     } elseif ($class instanceof \think\admin\service\QueueService) {
-                        $this->update(3, $class->initialize($this->queue->code)->execute($this->queue->data));
+                        $this->updateQueue(3, $class->initialize($this->queue->code)->execute($this->queue->data));
                     } else {
                         throw new \think\admin\Exception("自定义 {$command} 未继承 Queue 或 QueueService");
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $this->queue->record['command'])));
-                    $this->update(3, $this->app->console->call(array_shift($attr), $attr)->fetch(), false);
+                    $this->updateQueue(3, $this->app->console->call(array_shift($attr), $attr)->fetch(), false);
                 }
             }
         } catch (\Exception|\Error $exception) {
             $code = $exception->getCode();
             if (intval($code) !== 3) $code = 4;
-            $this->update($code, $exception->getMessage());
+            $this->updateQueue($code, $exception->getMessage());
         }
     }
 
@@ -307,14 +306,13 @@ class Queue extends Command
      * @param integer $status 任务状态
      * @param string $message 消息内容
      * @param boolean $issplit 是否分隔
-     * @throws \think\db\exception\DbException
      */
     protected function updateQueue($status, $message, $issplit = true)
     {
         // 更新当前任务
         $info = trim(is_string($message) ? $message : '');
         $desc = $issplit ? explode("\n", $info) : [$message];
-        $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
+        $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->updateQueue([
             'status' => $status, 'outer_time' => microtime(true), 'exec_pid' => getmypid(), 'exec_desc' => $desc[0],
         ]);
         $this->output->writeln(is_string($message) ? $message : '');
