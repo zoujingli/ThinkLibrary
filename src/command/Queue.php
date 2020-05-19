@@ -78,7 +78,7 @@ class Queue extends Command
     {
         $root = "{$this->app->getRootPath()}public" . DIRECTORY_SEPARATOR;
         if (count($result = $this->process->query("-t {$root} {$root}router.php")) < 1) {
-            $this->output->warning("There is no WebServer process to finish");
+            $this->output->writeln("There are no WebServer processes to stop");
         } else foreach ($result as $item) {
             $this->process->close($item['pid']);
             $this->output->writeln("Successfully sent end signal to process {$item['pid']}");
