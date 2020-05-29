@@ -225,6 +225,15 @@ class SystemService extends Service
     }
 
     /**
+     * 判断实时运行模式
+     * @return boolean
+     */
+    public function isDebug()
+    {
+        return $this->getRuntime('app_run') !== 'product';
+    }
+
+    /**
      * 设置运行环境模式
      * @param null|boolean $state
      * @return boolean
@@ -286,7 +295,7 @@ class SystemService extends Service
     public function bindRuntime($data = [])
     {
         if (empty($data)) $data = $this->getRuntime();
-        // 动态绑定应用
+        // 动态设置应用绑定
         if (!empty($data['app_map'])) {
             $maps = $this->app->config->get('app.app_map', []);
             if (is_array($maps) && count($maps) > 0 && count($data['app_map']) > 0) {
@@ -294,7 +303,7 @@ class SystemService extends Service
             }
             $this->app->config->set(['app_map' => array_merge($maps, $data['app_map'])], 'app');
         }
-        // 动态绑定域名
+        // 动态设置域名绑定
         if (!empty($data['app_uri'])) {
             $uris = $this->app->config->get('app.domain_bind', []);
             if (is_array($uris) && count($uris) > 0 && count($data['app_uri']) > 0) {
@@ -307,12 +316,25 @@ class SystemService extends Service
     }
 
     /**
-     * 判断实时运行模式
-     * @return boolean
+     * 压缩发布项目
      */
-    public function isDebug()
+    public function pushRuntime()
     {
-        return $this->getRuntime('app_run') !== 'product';
+        $dbname = $this->app->db->getConnection()->getConfig('database');
+        $this->app->console->call("optimize:schema", ["--db={$dbname}"]);
+        foreach (NodeService::instance()->getModules() as $module) {
+            $this->app->console->call("optimize:route {$module}");
+        }
+    }
+
+    /**
+     * 清理运行缓存
+     */
+    public function clearRuntime()
+    {
+        $data = $this->getRuntime();
+        $this->app->console->call('clear');
+        $this->setRuntime($data['app_map'], $data['app_run']);
     }
 
     /**
