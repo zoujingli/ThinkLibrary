@@ -323,6 +323,8 @@ class SystemService extends Service
         $dbname = $this->app->db->getConnection()->getConfig('database');
         $this->app->console->call("optimize:schema", ["--db={$dbname}"]);
         foreach (NodeService::instance()->getModules() as $module) {
+            $path = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $module;
+            file_exists($path) or mkdir($path, 0755, true);
             $this->app->console->call("optimize:route {$module}");
         }
     }
