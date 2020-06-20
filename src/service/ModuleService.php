@@ -27,18 +27,18 @@ class ModuleService extends Service
 {
 
     /**
-     * 执行安装包解压安装
-     * @param ZipArchive $zip 安装包
+     * 安装应用模块
      * @param string $name 模块名称
+     * @param ZipArchive $file 安装包
      * @return array
      */
-    public function install(ZipArchive $zip, $name)
+    public function install($name, ZipArchive $file)
     {
         // 安装包检查
-        list($state, $message) = $this->check($zip, $name);
+        list($state, $message) = $this->check($name, $file);
         if (empty($state)) return [$state, $message];
         // 执行文件安装
-        if ($zip->extractTo($this->app->getBasePath() . $name)) {
+        if ($file->extractTo($this->app->getBasePath() . $name)) {
             return [1, '模块安装包安装成功'];
         } else {
             return [0, '模块安装包安装失败'];
@@ -46,17 +46,27 @@ class ModuleService extends Service
     }
 
     /**
+     * 移除应用模块
+     * @param string $name
+     */
+    public function remove($name)
+    {
+        $directory = $this->app->getBasePath() . $name;
+        $this->forceRemove($directory);
+    }
+
+    /**
      * 检测安装包是否正常
-     * @param ZipArchive $zip 安装包
      * @param string $name 模块名称
+     * @param ZipArchive $file 安装包
      * @return array
      */
-    private function check(ZipArchive $zip, $name)
+    private function check($name, ZipArchive $file)
     {
-        $directory = "{$zip->filename}.files";
+        $directory = "{$file->filename}.files";
         file_exists($directory) || mkdir($directory, 0755, true);
         // 尝试解压安装包
-        if ($zip->extractTo($directory) === false) {
+        if ($file->extractTo($directory) === false) {
             return [0, 'ZIP文件解压失败'];
         }
         // 检测模块配置文件
@@ -72,7 +82,7 @@ class ModuleService extends Service
      * 强制删除指定的目录
      * @param string $directory
      */
-    public function forceRemove($directory)
+    private function forceRemove($directory)
     {
         if (file_exists($directory) && is_dir($directory) && $handle = opendir($directory)) {
             while (false !== ($item = readdir($handle))) if (!in_array($item, ['.', '..'])) {
