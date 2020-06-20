@@ -28,8 +28,8 @@ class ModuleService extends Service
 
     /**
      * 执行安装包解压安装
-     * @param ZipArchive $zip
-     * @param string $name
+     * @param ZipArchive $zip 安装包
+     * @param string $name 模块名称
      * @return array
      */
     public function install(ZipArchive $zip, $name)
@@ -47,8 +47,8 @@ class ModuleService extends Service
 
     /**
      * 检测安装包是否正常
-     * @param ZipArchive $zip
-     * @param string $name
+     * @param ZipArchive $zip 安装包
+     * @param string $name 模块名称
      * @return array
      */
     private function check(ZipArchive $zip, $name)
