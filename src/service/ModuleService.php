@@ -35,7 +35,7 @@ class ModuleService extends Service
     public function install($name, ZipArchive $file)
     {
         // 安装包检查
-        list($state, $message) = $this->check($name, $file);
+        list($state, $message) = $this->checkInstall($name, $file);
         if (empty($state)) return [$state, $message];
         // 执行文件安装
         if ($file->extractTo($this->app->getBasePath() . $name)) {
@@ -61,7 +61,7 @@ class ModuleService extends Service
      * @param ZipArchive $file 安装包
      * @return array
      */
-    private function check($name, ZipArchive $file)
+    private function checkInstall($name, ZipArchive $file)
     {
         $directory = "{$file->filename}.files";
         file_exists($directory) || mkdir($directory, 0755, true);
