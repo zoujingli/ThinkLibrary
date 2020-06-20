@@ -40,8 +40,8 @@ class OpenService extends Service
 
     /**
      * 消息服务初始化
-     * @param string $appid
-     * @param string $appkey
+     * @param string $appid 接口账号
+     * @param string $appkey 接口密钥
      * @return OpenService
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
