@@ -65,17 +65,17 @@ class ModuleService extends Service
     {
         $directory = "{$file->filename}.files";
         file_exists($directory) || mkdir($directory, 0755, true);
-        // 尝试解压安装包
+        // 尝试解压应用安装包
         if ($file->extractTo($directory) === false) {
-            return [0, 'ZIP文件解压失败'];
+            return [0, '应用模块ZIP文件解压失败'];
         }
-        // 检测模块配置文件
+        // 检测应用模块配置文件
         $info = @include($directory . DIRECTORY_SEPARATOR . 'app.php');
         $this->forceRemove($directory);
-        // 返回模块检查结果
-        if (empty($info)) return [0, '未获取到模块配置信息'];
-        if ($info['name'] !== $name) return [0, '模块名称与注册名称不一致'];
-        return [1, '模块基础检查通过'];
+        // 返回应用模块检查结果
+        if (empty($info)) return [0, '未获取到应用模块配置信息'];
+        if ($info['name'] !== $name) return [0, '应用模块名称与注册名称不一致'];
+        return [1, '应用模块基础检查通过'];
     }
 
     /**
