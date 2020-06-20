@@ -17,6 +17,7 @@ namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
 use think\admin\Service;
+use think\App;
 
 /**
  * 楚才开放平台服务
@@ -38,19 +39,20 @@ class OpenService extends Service
     protected $appkey;
 
     /**
-     * 消息服务初始化
+     * 楚才开放平台初始化
+     * OpenService constructor.
+     * @param App $app
      * @param string $appid 接口账号
      * @param string $appkey 接口密钥
-     * @return OpenService
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function initialize($appid = '', $appkey = '')
+    public function __construct(App $app, $appid = '', $appkey = '')
     {
+        parent::__construct($app);
         $this->appid = $appid ?: sysconf('data.cuci_open_appid');
         $this->appkey = $appkey ?: sysconf('data.cuci_open_appkey');
-        return $this;
     }
 
     /**

@@ -39,9 +39,9 @@ class ModuleService extends Service
         if (empty($state)) return [$state, $message];
         // 执行文件安装
         if ($file->extractTo($this->app->getBasePath() . $name)) {
-            return [1, '模块安装包安装成功'];
+            return [1, '应用模块安装成功'];
         } else {
-            return [0, '模块安装包安装失败'];
+            return [0, '应用模块安装失败'];
         }
     }
 
@@ -67,7 +67,7 @@ class ModuleService extends Service
         file_exists($directory) || mkdir($directory, 0755, true);
         // 尝试解压应用安装包
         if ($file->extractTo($directory) === false) {
-            return [0, '应用模块ZIP文件解压失败'];
+            return [0, '应用模块压缩文件解压失败'];
         }
         // 检测应用模块配置文件
         $info = @include($directory . DIRECTORY_SEPARATOR . 'app.php');
