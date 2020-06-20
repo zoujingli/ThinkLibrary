@@ -15,6 +15,7 @@
 
 namespace think\admin\service;
 
+use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Service;
 
@@ -58,12 +59,16 @@ class OpenService extends Service
      * @param string $uri 接口地址
      * @param array $data 请求数据
      * @return array
+     * @throws Exception
      */
     public function doRequest(string $uri, array $data = [])
     {
         [$time, $nostr, $json] = [time(), uniqid(), json_encode($data)];
         $sign = md5($this->appid . '#' . $json . '#' . $time . '#' . $this->appkey . '#' . $nostr);
         $data = ['appid' => $this->appid, 'time' => $time, 'nostr' => $nostr, 'sign' => $sign, 'data' => $json];
-        return json_decode(HttpExtend::post("https://open.cuci.cc/{$uri}", $data), true);
+        $result = json_decode(HttpExtend::post("https://open.cuci.cc/{$uri}", $data), true);
+        if (empty($result)) throw new Exception('接口响应异常');
+        if (empty($result['code'])) throw new Exception($result['info']);
+        return $result['data'] ?? [];
     }
 }
