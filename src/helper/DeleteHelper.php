@@ -73,9 +73,9 @@ class DeleteHelper extends Helper
             if (in_array('is_deleted', $fields)) $data['is_deleted'] = 1;
         }
         if (empty($data)) {
-            $result = $this->query->where($this->map)->update($data);
-        } else {
             $result = $this->query->where($this->map)->delete();
+        } else {
+            $result = $this->query->where($this->map)->update($data);
         }
         // 结果回调处理
         if (false === $this->controller->callback('_delete_result', $result)) {
