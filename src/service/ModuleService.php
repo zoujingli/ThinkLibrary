@@ -32,7 +32,7 @@ class ModuleService extends Service
      * @param ZipArchive $file 安装包
      * @return array
      */
-    public function install(string $name, ZipArchive $file)
+    public function install(string $name, ZipArchive $file): array
     {
         // 安装包检查
         list($state, $message) = $this->checkInstall($name, $file);
@@ -50,7 +50,7 @@ class ModuleService extends Service
      * @param string $name 模块名称
      * @return array
      */
-    public function remove(string $name)
+    public function remove(string $name): array
     {
         $directory = $this->app->getBasePath() . $name;
         if (file_exists($directory) && is_dir($directory)) {
@@ -66,7 +66,7 @@ class ModuleService extends Service
      * @param ZipArchive $file 安装包
      * @return array
      */
-    private function checkInstall(string $name, ZipArchive $file)
+    private function checkInstall(string $name, ZipArchive $file): array
     {
         $directory = "{$file->filename}.files";
         file_exists($directory) || mkdir($directory, 0755, true);
