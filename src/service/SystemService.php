@@ -320,7 +320,7 @@ class SystemService extends Service
      */
     public function pushRuntime()
     {
-        $dbname = $this->app->db->getConnection()->getConfig('database');
+        $dbname = $this->app->db->connect()->getConfig('database');
         $this->app->console->call("optimize:schema", ["--db={$dbname}"]);
         foreach (NodeService::instance()->getModules() as $module) {
             $path = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $module;
