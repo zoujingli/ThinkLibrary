@@ -96,11 +96,19 @@ class PageHelper extends Helper
                 }
                 $options .= "<option data-num='{$num}' value='{$url}' {$selects}>{$num}</option>";
             }
-            $selects = "<select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>{$options}</select>";
+            if ($this->app->request->get('open_type') == 'modal') {
+                $selects = "<select onchange='$.msg.close($.msg.idx.pop());$.form.modal(this.options[this.selectedIndex].value)' data-auto-none>{$options}</select>";
+            } else {
+                $selects = "<select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>{$options}</select>";
+            }
             $pagetext = lang('think_library_page_html', [$pager->total(), $selects, $pager->lastPage(), $pager->currentPage()]);
             $pagehtml = "<div class='pagination-container nowrap'><span>{$pagetext}</span>{$pager->render()}</div>";
             if (stripos($this->app->request->get('spm', '-'), 'm-') === 0) {
-                $this->controller->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $pagehtml));
+                if ($this->app->request->get('open_type') == 'modal') {
+                    $this->controller->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-modal="$1"  onclick="$.msg.close($.msg.idx.pop());return false" href="$1"', $pagehtml));
+                } else {
+                    $this->controller->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $pagehtml));
+                }
             } else {
                 $this->controller->assign('pagehtml', $pagehtml);
             }
