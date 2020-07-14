@@ -98,6 +98,7 @@ class NodeService extends Service
                 }
             }
         }
+        $data = array_change_key_case($data, CASE_LOWER);
         $this->app->cache->set('system_auth_node', $data);
         return $data;
     }
