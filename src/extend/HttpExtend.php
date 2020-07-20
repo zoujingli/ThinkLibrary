@@ -67,8 +67,8 @@ class HttpExtend
 
     /**
      * 以 CURL 模拟网络请求
-     * @param string $method 请求方法
-     * @param string $location 请求地址
+     * @param string $method 模拟请求方式
+     * @param string $location 模拟请求地址
      * @param array $options 请求参数[headers,data,cookie,cookie_file,timeout,returnHeader]
      * @return boolean|string
      */
@@ -76,7 +76,8 @@ class HttpExtend
     {
         // GET 参数设置
         if (!empty($options['query'])) {
-            $location .= (strpos($location, '?') !== false ? '&' : '?') . http_build_query($options['query']);
+            $split = strpos($location, '?') !== false ? '&' : '?';
+            $location .= $split . http_build_query($options['query']);
         }
         $curl = curl_init();
         // Agent 代理设置
