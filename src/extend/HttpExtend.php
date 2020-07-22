@@ -32,7 +32,7 @@ class HttpExtend
     public static function get($location, $query = [], array $options = [])
     {
         $options['query'] = $query;
-        return self::request('get', $location, $options);
+        return static::request('get', $location, $options);
     }
 
     /**
@@ -45,7 +45,7 @@ class HttpExtend
     public static function post($location, $data = [], array $options = [])
     {
         $options['data'] = $data;
-        return self::request('post', $location, $options);
+        return static::request('post', $location, $options);
     }
 
     /**
@@ -60,9 +60,9 @@ class HttpExtend
      */
     public static function submit($url, array $data = [], array $file = [], array $header = [], $method = 'POST', $returnHeader = true)
     {
-        list($boundary, $content) = self::buildFormData($data, $file);
+        list($boundary, $content) = static::buildFormData($data, $file);
         $header[] = "Content-type:multipart/form-data;boundary={$boundary}";
-        return self::request($method, $url, ['data' => $content, 'returnHeader' => $returnHeader, 'headers' => $header]);
+        return static::request($method, $url, ['data' => $content, 'returnHeader' => $returnHeader, 'headers' => $header]);
     }
 
     /**
@@ -81,7 +81,7 @@ class HttpExtend
         }
         $curl = curl_init();
         // Agent 代理设置
-        curl_setopt($curl, CURLOPT_USERAGENT, self::getUserAgent());
+        curl_setopt($curl, CURLOPT_USERAGENT, static::getUserAgent());
         // CURL 头信息设置
         if (!empty($options['headers'])) {
             curl_setopt($curl, CURLOPT_HTTPHEADER, $options['headers']);

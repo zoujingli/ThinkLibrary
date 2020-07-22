@@ -141,13 +141,13 @@ abstract class Storage
     {
         try {
             $file = LocalStorage::instance();
-            $name = self::name($url, '', 'down/');
+            $name = static::name($url, '', 'down/');
             if (empty($force) && $file->has($name)) {
                 if ($expire < 1 || filemtime($file->path($name)) + $expire > time()) {
                     return $file->info($name);
                 }
             }
-            return $file->set($name, self::curlGet($url));
+            return $file->set($name, static::curlGet($url));
         } catch (\Exception $exception) {
             return ['url' => $url, 'hash' => md5($url), 'key' => $url, 'file' => $url];
         }
@@ -161,7 +161,7 @@ abstract class Storage
      */
     public static function mime($exts, $mime = [])
     {
-        $mimes = self::mimes();
+        $mimes = static::mimes();
         foreach (is_string($exts) ? explode(',', $exts) : $exts as $ext) {
             $mime[] = $mimes[strtolower($ext)] ?? 'application/octet-stream';
         }
