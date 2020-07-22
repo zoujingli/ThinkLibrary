@@ -60,9 +60,22 @@ class HttpExtend
      */
     public static function submit($url, array $data = [], array $file = [], array $header = [], $method = 'POST', $returnHeader = true)
     {
-        list($boundary, $content) = static::buildFormData($data, $file);
+        list($line, $boundary) = [[], CodeExtend::random(18)];
+        foreach ($data as $key => $value) {
+            $line[] = "--{$boundary}";
+            $line[] = "Content-Disposition: form-data; name=\"{$key}\"";
+            $line[] = "";
+            $line[] = $value;
+        }
+        if (is_array($file) && isset($file['field']) && isset($file['name'])) {
+            $line[] = "--{$boundary}";
+            $line[] = "Content-Disposition: form-data; name=\"{$file['field']}\"; filename=\"{$file['name']}\"";
+            $line[] = "";
+            $line[] = $file['content'];
+        }
+        $line[] = "--{$boundary}--";
         $header[] = "Content-type:multipart/form-data;boundary={$boundary}";
-        return static::request($method, $url, ['data' => $content, 'returnHeader' => $returnHeader, 'headers' => $header]);
+        return static::request($method, $url, ['data' => join("\r\n", $line), 'returnHeader' => $returnHeader, 'headers' => $header]);
     }
 
     /**
@@ -123,31 +136,6 @@ class HttpExtend
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
         [$content] = [curl_exec($curl), curl_close($curl)];
         return $content;
-    }
-
-    /**
-     * 生成 FormData 格式数据内容
-     * @param array $data 表单提交的数据
-     * @param array $file 表单上传的文件
-     * @return array
-     */
-    private static function buildFormData(array $data = [], array $file = [])
-    {
-        list($line, $boundary) = [[], CodeExtend::random(18)];
-        foreach ($data as $key => $value) {
-            $line[] = "--{$boundary}";
-            $line[] = "Content-Disposition: form-data; name=\"{$key}\"";
-            $line[] = "";
-            $line[] = $value;
-        }
-        if (is_array($file) && isset($file['field']) && isset($file['name'])) {
-            $line[] = "--{$boundary}";
-            $line[] = "Content-Disposition: form-data; name=\"{$file['field']}\"; filename=\"{$file['name']}\"";
-            $line[] = "";
-            $line[] = $file['content'];
-        }
-        $line[] = "--{$boundary}--";
-        return [$boundary, join("\r\n", $line)];
     }
 
     /**
