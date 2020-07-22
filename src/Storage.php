@@ -147,7 +147,7 @@ abstract class Storage
                     return $file->info($name);
                 }
             }
-            return $file->set($name, self::getCurl($url));
+            return $file->set($name, self::curlGet($url));
         } catch (\Exception $exception) {
             return ['url' => $url, 'hash' => md5($url), 'key' => $url, 'file' => $url];
         }
@@ -184,7 +184,7 @@ abstract class Storage
      * @param string $url
      * @return string
      */
-    public static function getCurl($url)
+    public static function curlGet($url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
