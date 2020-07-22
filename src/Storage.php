@@ -88,7 +88,7 @@ abstract class Storage
      */
     public static function __callStatic($method, $arguments)
     {
-        if (method_exists($class = self::instance(), $method)) {
+        if (method_exists($class = static::instance(), $method)) {
             return call_user_func_array([$class, $method], $arguments);
         } else {
             throw new Exception("method not exists: " . get_class($class) . "->{$method}()");
