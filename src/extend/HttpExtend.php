@@ -69,7 +69,7 @@ class HttpExtend
      * 以 CURL 模拟网络请求
      * @param string $method 模拟请求方式
      * @param string $location 模拟请求地址
-     * @param array $options 请求参数[headers,data,cookie,cookie_file,timeout,returnHeader]
+     * @param array $options 请求参数[headers,query,data,cookie,cookie_file,timeout,returnHeader]
      * @return boolean|string
      */
     public static function request($method, $location, array $options = [])
@@ -99,6 +99,7 @@ class HttpExtend
         if (strtolower($method) === 'head') {
             curl_setopt($curl, CURLOPT_NOBODY, 1);
         } elseif (isset($options['data'])) {
+            curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $options['data']);
         }
         // 请求超时设置
