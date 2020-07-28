@@ -35,7 +35,7 @@ class ValidateHelper extends Helper
      *  name.between:1,120 => message // 范围限定
      *  name.value => value // 固定字段数值内容
      *  name.default => 100 // 获取并设置默认值
-     *  更多规则参照 Tp 验证类
+     *  更多规则参照 ThinkPHP 官方的验证类
      */
     public function init(array $rules, $type = '')
     {
