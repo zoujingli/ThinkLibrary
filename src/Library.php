@@ -17,6 +17,7 @@ namespace think\admin;
 
 use think\admin\service\AdminService;
 use think\admin\service\SystemService;
+use think\middleware\LoadLangPack;
 use think\middleware\SessionInit;
 use think\Request;
 use think\Service;
@@ -61,6 +62,8 @@ class Library extends Service
                 $this->app->request->setPathinfo($_SERVER['argv'][1]);
             }
         } else {
+            // 注册语言包处理中间键
+            $this->app->middleware->add(LoadLangPack::class);
             // 注册会话初始化中间键
             if ($this->app->request->request('not_init_session', 0) == 0) {
                 $this->app->middleware->add(SessionInit::class);
