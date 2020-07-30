@@ -46,12 +46,12 @@ class Library extends Service
         $this->app->event->listen('HttpRun', function () {
             $this->app->middleware->add(App::class);
         });
+        // 替换 ThinkPHP 地址处理
+        $this->app->bind('think\route\Url', Url::class);
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class, 'clear' => Clear::class]);
         // 注册 ThinkAdmin 指令
         $this->commands([Queue::class, Install::class, Version::class, Database::class]);
-        // 动态绑定运行配置
-        $this->app->bind('think\route\Url', Url::class);
         // 动态应用配置参数
         SystemService::instance()->bindRuntime();
     }
