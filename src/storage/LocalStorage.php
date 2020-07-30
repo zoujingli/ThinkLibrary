@@ -35,25 +35,14 @@ class LocalStorage extends Storage
     protected function initialize()
     {
         $type = strtolower(sysconf('storage.local_http_protocol'));
-        if ($type === 'path') {
-            $this->prefix = trim(dirname($this->app->request->baseFile(false)), '\\/');
-        } else {
-            $domain = sysconf('storage.local_http_domain');
-            if (empty($domain)) {
-                $this->prefix = dirname($this->app->request->basefile(true));
-                if (stripos($this->prefix, '://') === false) {
-                    $this->prefix = trim(dirname($this->app->request->baseFile(false)), '\\/');
-                } else {
-                    list(, $domain) = explode('://', strtr($this->prefix, '\\', '/'));
-                }
-            }
-            if (!empty($domain)) {
-                if ($type === 'auto') $this->prefix = "//{$domain}";
-                elseif ($type === 'http') $this->prefix = "http://{$domain}";
-                elseif ($type === 'https') $this->prefix = "https://{$domain}";
-            }
+        if ($type === 'follow') $type = $this->app->request->scheme();
+        $this->prefix = trim(dirname($this->app->request->baseFile(false)), '\\/');
+        if ($type !== 'path') {
+            $domain = sysconf('storage.local_http_domain') ?: $this->app->request->host();
+            if ($type === 'auto') $this->prefix = "//{$domain}";
+            elseif ($type === 'http') $this->prefix = "http://{$domain}";
+            elseif ($type === 'https') $this->prefix = "https://{$domain}";
         }
-        // 初始化配置并返回当前实例
         return parent::initialize();
     }
 
