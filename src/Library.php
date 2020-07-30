@@ -17,6 +17,7 @@ namespace think\admin;
 
 use think\admin\command\Database;
 use think\admin\command\Install;
+use think\admin\command\Queue;
 use think\admin\command\Version;
 use think\admin\multiple\App;
 use think\admin\multiple\command\Build;
