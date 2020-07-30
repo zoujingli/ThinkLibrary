@@ -25,11 +25,6 @@
       "think\\admin\\": "src"
     }
   },
-  "scripts": {
-    "post-autoload-dump": [
-      "composer remove topthink/think-multi-app"
-    ]
-  },
   "extra": {
     "think": {
       "services": [
