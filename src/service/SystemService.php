@@ -348,7 +348,8 @@ class SystemService extends Service
      */
     public function doInit(\think\App $app): void
     {
-        $response = $app->debug($this->isDebug())->http->run();
+        $app->debug($this->isDebug());
+        $response = $app->http->run();
         $response->send();
         $app->http->end($response);
     }
