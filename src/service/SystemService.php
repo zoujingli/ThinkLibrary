@@ -298,10 +298,10 @@ class SystemService extends Service
         if (empty($data)) $data = $this->getRuntime();
         // 动态设置应用绑定
         if (isset($data['map']) && is_array($data['map']) && count($data['map']) > 0) $this->app->config->set([
-            'app_map' => array_unique(array_merge($this->app->config->get('app.app_map', []), $data['map'])),
+            'app_map' => array_unique(array_reverse(array_merge($this->app->config->get('app.app_map', []), $data['map']))),
         ], 'app');
         if (isset($data['uri']) && is_array($data['uri']) && count($data['uri']) > 0) $this->app->config->set([
-            'domain_bind' => array_unique(array_merge($this->app->config->get('app.domain_bind', []), $data['uri'])),
+            'domain_bind' => array_unique(array_reverse(array_merge($this->app->config->get('app.domain_bind', []), $data['uri']))),
         ], 'app');
         // 动态设置运行模式
         return $this->app->debug($data['run'] !== 'product')->isDebug();
