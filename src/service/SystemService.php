@@ -213,7 +213,7 @@ class SystemService extends Service
      * @param string $type 运行模式（dev|demo|local）
      * @return boolean
      */
-    public function checkRunMode($type = 'dev')
+    public function checkRunMode($type = 'dev'): bool
     {
         $domain = $this->app->request->host(true);
         $isDemo = is_numeric(stripos($domain, 'thinkadmin.top'));
@@ -228,7 +228,7 @@ class SystemService extends Service
      * 判断实时运行模式
      * @return boolean
      */
-    public function isDebug()
+    public function isDebug(): bool
     {
         return $this->getRuntime('run') !== 'product';
     }
@@ -238,7 +238,7 @@ class SystemService extends Service
      * @param null|boolean $state
      * @return boolean
      */
-    public function productMode($state = null)
+    public function productMode($state = null): bool
     {
         if (is_null($state)) {
             return $this->bindRuntime();
@@ -254,17 +254,15 @@ class SystemService extends Service
      * @param array|null $uri 域名映射
      * @return boolean 是否调试模式
      */
-    public function setRuntime(array $map = [], $run = null, array $uri = [])
+    public function setRuntime(array $map = [], $run = null, array $uri = []): bool
     {
         $data = $this->getRuntime();
-        $data['map'] = array_merge($data['map'], $map);
-        $data['uri'] = array_merge($data['uri'], $uri);
         $data['run'] = is_string($run) ? $run : $data['run'];
-        foreach ($data as $key => $item) if (is_array($item)) {
-            foreach ($item as $kk => $vv) if ($kk === $vv) unset($data[$key][$kk]);
-        }
-        $jsonfile = "{$this->app->getRootPath()}runtime/config.json";
-        file_put_contents($jsonfile, json_encode($data, JSON_UNESCAPED_UNICODE));
+        $data['map'] = array_unique(array_reverse(array_merge($data['map'], $map)));
+        $data['uri'] = array_unique(array_reverse(array_merge($data['uri'], $uri)));
+        foreach ($data['map'] as $kk => $vv) if ($kk === $vv) unset($data['map'][$kk]);
+        foreach ($data['uri'] as $kk => $vv) if ($kk === $vv) unset($data['uri'][$kk]);
+        file_put_contents("{$this->app->getRootPath()}runtime/config.json", json_encode($data, JSON_UNESCAPED_UNICODE));
         return $this->bindRuntime($data);
     }
 
@@ -292,25 +290,27 @@ class SystemService extends Service
      * @param array $data 配置数据
      * @return boolean 是否调试模式
      */
-    public function bindRuntime($data = [])
+    public function bindRuntime($data = []): bool
     {
         // 获取运行配置
         if (empty($data)) $data = $this->getRuntime();
         // 动态设置应用绑定
-        if (isset($data['map']) && is_array($data['map']) && count($data['map']) > 0) $this->app->config->set([
-            'app_map' => array_unique(array_reverse(array_merge($this->app->config->get('app.app_map', []), $data['map']))),
-        ], 'app');
-        if (isset($data['uri']) && is_array($data['uri']) && count($data['uri']) > 0) $this->app->config->set([
-            'domain_bind' => array_unique(array_reverse(array_merge($this->app->config->get('app.domain_bind', []), $data['uri']))),
-        ], 'app');
+        $config = ['app_map' => [], 'domain_bind' => []];
+        if (isset($data['map']) && is_array($data['map']) && count($data['map']) > 0) {
+            $config['app_map'] = array_unique(array_reverse(array_merge($this->app->config->get('app.app_map', []), $data['map'])));
+        }
+        if (isset($data['uri']) && is_array($data['uri']) && count($data['uri']) > 0) {
+            $config['domain_bind'] = array_unique(array_reverse(array_merge($this->app->config->get('app.domain_bind', []), $data['uri'])));
+        }
         // 动态设置运行模式
+        $this->app->config->set($config, 'app');
         return $this->app->debug($data['run'] !== 'product')->isDebug();
     }
 
     /**
      * 压缩发布项目
      */
-    public function pushRuntime()
+    public function pushRuntime(): void
     {
         $type = $this->app->db->getConfig('default');
         $this->app->console->call("optimize:schema", ["--connection={$type}"]);
@@ -324,7 +324,7 @@ class SystemService extends Service
     /**
      * 清理运行缓存
      */
-    public function clearRuntime()
+    public function clearRuntime(): void
     {
         $data = $this->getRuntime();
         $this->app->console->call('clear');
@@ -335,7 +335,7 @@ class SystemService extends Service
      * 初始化并运行应用
      * @param \think\App $app
      */
-    public function doInit(\think\App $app)
+    public function doInit(\think\App $app): void
     {
         $app->debug($this->isDebug());
         $response = $app->http->run();
