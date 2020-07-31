@@ -261,10 +261,10 @@ class SystemService extends Service
         $data['uri'] = array_merge($data['uri'], $uri);
         $data['run'] = is_string($run) ? $run : $data['run'];
         foreach ($data as $key => $item) if (is_array($item)) {
-            foreach ($item as $k => $v) if ($k === $v) unset($data[$key][$k]);
+            foreach ($item as $kk => $vv) if ($kk === $vv) unset($data[$key][$kk]);
         }
-        $filename = "{$this->app->getRootPath()}runtime/config.json";
-        file_put_contents($filename, json_encode($data, JSON_UNESCAPED_UNICODE));
+        $jsonfile = "{$this->app->getRootPath()}runtime/config.json";
+        file_put_contents($jsonfile, json_encode($data, JSON_UNESCAPED_UNICODE));
         return $this->bindRuntime($data);
     }
 
