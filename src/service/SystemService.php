@@ -254,37 +254,37 @@ class SystemService extends Service
      * @param array|null $uri 域名映射
      * @return boolean 是否调试模式
      */
-    public function setRuntime($map = [], $run = null, $uri = [])
+    public function setRuntime(array $map = [], $run = null, array $uri = [])
     {
         $data = $this->getRuntime();
-        if (is_array($map) && count($map) > 0 && count($data['map']) > 0) {
-            foreach ($data['map'] as $kk => $vv) if (in_array($vv, $map)) unset($data['map'][$kk]);
+        $data['map'] = array_merge($data['map'], $map);
+        $data['uri'] = array_merge($data['uri'], $uri);
+        $data['run'] = is_string($run) ? $run : $data['run'];
+        foreach ($data as $key => $item) if (is_array($item)) {
+            foreach ($item as $k => $v) if ($k === $v) unset($data[$key][$k]);
         }
-        if (is_array($uri) && count($uri) > 0 && count($data['uri']) > 0) {
-            foreach ($data['uri'] as $kk => $vv) if (in_array($vv, $uri)) unset($data['uri'][$kk]);
-        }
-        $file = "{$this->app->getRootPath()}runtime/config.json";
-        $data['run'] = is_null($run) ? $data['run'] : $run;
-        $data['map'] = is_null($map) ? [] : array_merge($data['map'], $map);
-        $data['uri'] = is_null($uri) ? [] : array_merge($data['uri'], $uri);
-        file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE));
+        $filename = "{$this->app->getRootPath()}runtime/config.json";
+        file_put_contents($filename, json_encode($data, JSON_UNESCAPED_UNICODE));
         return $this->bindRuntime($data);
     }
 
     /**
      * 获取实时运行配置
-     * @param null|string $key
+     * @param string $key
+     * @param array $default
      * @return array
      */
-    public function getRuntime($key = null)
+    public function getRuntime($key = null, $default = [])
     {
-        $file = "{$this->app->getRootPath()}runtime/config.json";
-        $data = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
+        $jsonfile = "{$this->app->getRootPath()}runtime/config.json";
+        if (file_exists($jsonfile) && is_file($jsonfile)) {
+            $data = json_decode(file_get_contents($jsonfile), true);
+        }
         if (empty($data) || !is_array($data)) $data = [];
         if (empty($data['map']) || !is_array($data['map'])) $data['map'] = [];
         if (empty($data['uri']) || !is_array($data['uri'])) $data['uri'] = [];
         if (empty($data['run']) || !is_string($data['run'])) $data['run'] = 'developer';
-        return is_null($key) ? $data : ($data[$key] ?? null);
+        return is_null($key) ? $data : ($data[$key] ?? $default);
     }
 
     /**
@@ -294,23 +294,15 @@ class SystemService extends Service
      */
     public function bindRuntime($data = [])
     {
+        // 获取运行配置
         if (empty($data)) $data = $this->getRuntime();
         // 动态设置应用绑定
-        if (!empty($data['map'])) {
-            $maps = $this->app->config->get('app.app_map', []);
-            if (is_array($maps) && count($maps) > 0 && count($data['map']) > 0) {
-                foreach ($maps as $kk => $vv) if (in_array($vv, $data['map'])) unset($maps[$kk]);
-            }
-            $this->app->config->set(['app_map' => array_merge($maps, $data['map'])], 'app');
-        }
-        // 动态设置域名绑定
-        if (!empty($data['uri'])) {
-            $uris = $this->app->config->get('app.domain_bind', []);
-            if (is_array($uris) && count($uris) > 0 && count($data['uri']) > 0) {
-                foreach ($uris as $kk => $vv) if (in_array($vv, $data['uri'])) unset($uris[$kk]);
-            }
-            $this->app->config->set(['domain_bind' => array_merge($uris, $data['uri'])], 'app');
-        }
+        if (isset($data['map']) && is_array($data['map']) && count($data['map']) > 0) $this->app->config->set([
+            'app_map' => array_unique(array_merge($this->app->config->get('app.app_map', []), $data['map'])),
+        ], 'app');
+        if (isset($data['uri']) && is_array($data['uri']) && count($data['uri']) > 0) $this->app->config->set([
+            'domain_bind' => array_unique(array_merge($this->app->config->get('app.domain_bind', []), $data['uri'])),
+        ], 'app');
         // 动态设置运行模式
         return $this->app->debug($data['run'] !== 'product')->isDebug();
     }
