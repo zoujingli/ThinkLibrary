@@ -74,10 +74,10 @@ class Library extends Service
             }
         } else {
             if ($this->app->request->request('not_init_session', 0) == 0) {
-                // 注册语言包处理中间键
-                $this->app->middleware->add(LoadLangPack::class);
                 // 注册会话初始化中间键
                 $this->app->middleware->add(SessionInit::class);
+                // 注册语言包处理中间键
+                $this->app->middleware->add(LoadLangPack::class);
             }
             // 注册访问处理中间键
             $this->app->middleware->add(function (Request $request, \Closure $next) {
