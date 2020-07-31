@@ -248,6 +248,25 @@ class SystemService extends Service
     }
 
     /**
+     * 获取实时运行配置
+     * @param string $key
+     * @param array $default
+     * @return array
+     */
+    public function getRuntime($key = null, $default = [])
+    {
+        $filename = "{$this->app->getRootPath()}runtime/config.json";
+        if (file_exists($filename) && is_file($filename)) {
+            $data = json_decode(file_get_contents($filename), true);
+        }
+        if (empty($data) || !is_array($data)) $data = [];
+        if (empty($data['map']) || !is_array($data['map'])) $data['map'] = [];
+        if (empty($data['uri']) || !is_array($data['uri'])) $data['uri'] = [];
+        if (empty($data['run']) || !is_string($data['run'])) $data['run'] = 'developer';
+        return is_null($key) ? $data : ($data[$key] ?? $default);
+    }
+
+    /**
      * 设置实时运行配置
      * @param array|null $map 应用映射
      * @param string|null $run 支持模式
@@ -258,31 +277,11 @@ class SystemService extends Service
     {
         $data = $this->getRuntime();
         $data['run'] = is_string($run) ? $run : $data['run'];
-        $data['map'] = array_unique(array_reverse(array_merge($data['map'], $map)));
-        $data['uri'] = array_unique(array_reverse(array_merge($data['uri'], $uri)));
-        foreach ($data['map'] as $kk => $vv) if ($kk === $vv) unset($data['map'][$kk]);
-        foreach ($data['uri'] as $kk => $vv) if ($kk === $vv) unset($data['uri'][$kk]);
-        file_put_contents("{$this->app->getRootPath()}runtime/config.json", json_encode($data, JSON_UNESCAPED_UNICODE));
+        $data['map'] = $this->uniqueArray($data['map'], $map);
+        $data['uri'] = $this->uniqueArray($data['uri'], $uri);
+        $filename = "{$this->app->getRootPath()}runtime/config.json";
+        file_put_contents($filename, json_encode($data, JSON_UNESCAPED_UNICODE));
         return $this->bindRuntime($data);
-    }
-
-    /**
-     * 获取实时运行配置
-     * @param string $key
-     * @param array $default
-     * @return array
-     */
-    public function getRuntime($key = null, $default = [])
-    {
-        $jsonfile = "{$this->app->getRootPath()}runtime/config.json";
-        if (file_exists($jsonfile) && is_file($jsonfile)) {
-            $data = json_decode(file_get_contents($jsonfile), true);
-        }
-        if (empty($data) || !is_array($data)) $data = [];
-        if (empty($data['map']) || !is_array($data['map'])) $data['map'] = [];
-        if (empty($data['uri']) || !is_array($data['uri'])) $data['uri'] = [];
-        if (empty($data['run']) || !is_string($data['run'])) $data['run'] = 'developer';
-        return is_null($key) ? $data : ($data[$key] ?? $default);
     }
 
     /**
@@ -297,14 +296,26 @@ class SystemService extends Service
         // 动态设置应用绑定
         $config = ['app_map' => [], 'domain_bind' => []];
         if (isset($data['map']) && is_array($data['map']) && count($data['map']) > 0) {
-            $config['app_map'] = array_unique(array_reverse(array_merge($this->app->config->get('app.app_map', []), $data['map'])));
+            $config['app_map'] = $this->uniqueArray($this->app->config->get('app.app_map', []), $data['map']);
         }
         if (isset($data['uri']) && is_array($data['uri']) && count($data['uri']) > 0) {
-            $config['domain_bind'] = array_unique(array_reverse(array_merge($this->app->config->get('app.domain_bind', []), $data['uri'])));
+            $config['domain_bind'] = $this->uniqueArray($this->app->config->get('app.domain_bind', []), $data['uri']);
         }
         // 动态设置运行模式
         $this->app->config->set($config, 'app');
         return $this->app->debug($data['run'] !== 'product')->isDebug();
+    }
+
+    /**
+     * 获取唯一数组参数
+     * @param array ...$args
+     * @return array
+     */
+    private function uniqueArray(...$args): array
+    {
+        $unique = array_unique(array_reverse(array_merge(...$args)));
+        foreach ($unique as $kk => $vv) if ($kk == $vv) unset($unique[$kk]);
+        return $unique;
     }
 
     /**
@@ -337,8 +348,7 @@ class SystemService extends Service
      */
     public function doInit(\think\App $app): void
     {
-        $app->debug($this->isDebug());
-        $response = $app->http->run();
+        $response = $app->debug($this->isDebug())->http->run();
         $response->send();
         $app->http->end($response);
     }
