@@ -50,29 +50,31 @@ class ModuleService extends Service
 
     /**
      * 安装或更新模块
-     * @param string $name
+     * @param string $name 模块名称
      * @return array
      */
     public function install($name): array
     {
-        $install = InstallService::instance();
-        $data = $install->grenerateDifference(["app/{$name}"]);
-        if (empty($data)) return [0, '没有需要安装的文件', []];
-        $lines = [];
-        foreach ($data as $file) {
-            [$state, $mode, $name] = $install->fileSynchronization($file);
-            if ($state) {
-                if ($mode === 'add') $lines[] = "add {$name} successed";
-                if ($mode === 'mod') $lines[] = "modify {$name} successed";
-                if ($mode === 'del') $lines[] = "deleted {$name} successed";
-            } else {
-                if ($mode === 'add') $lines[] = "add {$name} failed";
-                if ($mode === 'mod') $lines[] = "modify {$name} failed";
-                if ($mode === 'del') $lines[] = "deleted {$name} failed";
-            }
-        }
         $this->app->cache->set('module-online-data', []);
-        return [1, '模块安装成功', $lines];
+        $data = InstallService::instance()->grenerateDifference(["app/{$name}"]);
+        if (empty($data)) {
+            return [0, '没有需要安装的文件', []];
+        } else {
+            $lines = [];
+            foreach ($data as $file) {
+                [$state, $mode, $name] = InstallService::instance()->fileSynchronization($file);
+                if ($state) {
+                    if ($mode === 'add') $lines[] = "add {$name} successed";
+                    if ($mode === 'mod') $lines[] = "modify {$name} successed";
+                    if ($mode === 'del') $lines[] = "deleted {$name} successed";
+                } else {
+                    if ($mode === 'add') $lines[] = "add {$name} failed";
+                    if ($mode === 'mod') $lines[] = "modify {$name} failed";
+                    if ($mode === 'del') $lines[] = "deleted {$name} failed";
+                }
+            }
+            return [1, '模块安装成功', $lines];
+        }
     }
 
     /**
@@ -102,7 +104,11 @@ class ModuleService extends Service
     {
         $data = [];
         foreach (NodeService::instance()->getModules() as $name) {
-            if (is_array($ver = $this->__getVersion($name))) $data[$name] = $ver;
+            if (is_array($ver = $this->getModuleVersion($name))) {
+                if (preg_match('|$\d{4}\.\d{2}\.\d{2}\.\d{2}^|', $ver['version'])) {
+                    $data[$name] = $ver;
+                }
+            }
         }
         return $data;
     }
@@ -112,7 +118,7 @@ class ModuleService extends Service
      * @param string $name 模块名称
      * @return bool|array|null
      */
-    private function __getVersion($name)
+    private function getModuleVersion($name)
     {
         $file = $this->app->getBasePath() . $name . DIRECTORY_SEPARATOR . 'ver.php';
         if (file_exists($file) && is_file($file) && is_array($vars = @include $file)) {
