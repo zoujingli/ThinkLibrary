@@ -29,7 +29,7 @@ class ModuleService extends Service
      * 获取模块变更
      * @return array
      */
-    public function change()
+    public function change(): array
     {
         [$online, $locals] = [$this->online(), $this->getModules()];
         foreach ($online as &$item) if (isset($locals[$item['name']])) {
@@ -64,11 +64,11 @@ class ModuleService extends Service
             if ($state) {
                 if ($mode === 'add') $lines[] = "add {$name} successed";
                 if ($mode === 'mod') $lines[] = "modify {$name} successed";
-                if ($mode === 'del') $lines[] = "delete {$name} successed";
+                if ($mode === 'del') $lines[] = "deleted {$name} successed";
             } else {
                 if ($mode === 'add') $lines[] = "add {$name} failed";
                 if ($mode === 'mod') $lines[] = "modify {$name} failed";
-                if ($mode === 'del') $lines[] = "delete {$name} failed";
+                if ($mode === 'del') $lines[] = "deleted {$name} failed";
             }
         }
         $this->app->cache->set('module-online-data', []);
@@ -83,7 +83,8 @@ class ModuleService extends Service
     {
         $data = $this->app->cache->get('module-online-data', []);
         if (!empty($data)) return $data;
-        $result = json_decode(HttpExtend::get('https://v6.thinkadmin.top/admin/api.update/version'), true);
+        $server = InstallService::instance()->getServer();
+        $result = json_decode(HttpExtend::get("{$server}/admin/api.update/version"), true);
         if (isset($result['code']) && $result['code'] > 0 && isset($result['data']) && is_array($result['data'])) {
             foreach ($result['data'] as $item) $data[$item['name']] = $item;
             $this->app->cache->set('module-online-data', $data, 1800);
