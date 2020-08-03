@@ -88,9 +88,8 @@ class ModuleService extends Service
         $server = InstallService::instance()->getServer();
         $result = json_decode(HttpExtend::get("{$server}/admin/api.update/version"), true);
         if (isset($result['code']) && $result['code'] > 0 && isset($result['data']) && is_array($result['data'])) {
-            foreach ($result['data'] as $item) $data[$item['name']] = $item;
-            $this->app->cache->set('module-online-data', $data, 1800);
-            return $data;
+            $this->app->cache->set('module-online-data', $result['data'], 1800);
+            return $result['data'];
         } else {
             return [];
         }
@@ -105,7 +104,7 @@ class ModuleService extends Service
         $data = [];
         foreach (NodeService::instance()->getModules() as $name) {
             if (is_array($ver = $this->getModuleVersion($name))) {
-                if (preg_match('|$\d{4}\.\d{2}\.\d{2}\.\d{2}^|', $ver['version'])) {
+                if (preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $ver['version'])) {
                     $data[$name] = $ver;
                 }
             }
