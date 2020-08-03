@@ -71,6 +71,7 @@ class ModuleService extends Service
                 if ($mode === 'del') $lines[] = "delete {$name} failed";
             }
         }
+        $this->app->cache->set('module-online-data', []);
         return [1, '模块安装成功', $lines];
     }
 
