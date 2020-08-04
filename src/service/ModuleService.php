@@ -81,7 +81,7 @@ class ModuleService extends Service
         } else {
             $lines = [];
             foreach ($data as $file) {
-                [$state, $mode, $name] = InstallService::instance()->fileSynchronization($file);
+                [$state, $mode, $name] = InstallService::instance()->updateFileByDownload($file);
                 if ($state) {
                     if ($mode === 'add') $lines[] = "add {$name} successed";
                     if ($mode === 'mod') $lines[] = "modify {$name} successed";
