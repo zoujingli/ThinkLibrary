@@ -129,6 +129,21 @@ class ModuleService extends Service
     }
 
     /**
+     * 检查文件上否可下载
+     * @param string $name
+     * @return boolean
+     */
+    public function checkAllowDownload($name): bool
+    {
+        foreach ($this->getAllowDownloadRule() as $rule) {
+            if (stripos($name, $rule) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 获取模块版本信息
      * @param string $name 模块名称
      * @return bool|array|null
