@@ -129,7 +129,7 @@ class ModuleService extends Service
     }
 
     /**
-     * 检查文件上否可下载
+     * 检查文件是否可下载
      * @param string $name
      * @return boolean
      */
