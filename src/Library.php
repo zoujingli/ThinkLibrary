@@ -73,9 +73,9 @@ class Library extends Service
                 $this->app->request->setPathinfo($_SERVER['argv'][1]);
             }
         } else {
-            $isSes = $this->app->request->request('not_init_session', 0) > 0;
-            $isYar = stripos($this->app->request->header('USER-AGENT', ''), 'PHP Yar RPC-') !== false;
-            if (!$isYar && $isSes) {
+            $isSess = $this->app->request->request('not_init_session', 0) > 0;
+            $notYar = stripos($this->app->request->header('USER-AGENT', ''), 'PHP Yar RPC-') !== false;
+            if ($notYar && $isSess) {
                 // 注册会话初始化中间键
                 $this->app->middleware->add(SessionInit::class);
                 // 注册语言包处理中间键
