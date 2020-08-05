@@ -114,6 +114,21 @@ class ModuleService extends Service
     }
 
     /**
+     * 获取允许下载的规则
+     * @return array
+     */
+    public function getAllowDownloadRule(): array
+    {
+        $data = $this->app->cache->get('moduleAllowRule', []);
+        if (empty($data)) {
+            $data = ['config', 'public/static'];
+            foreach (array_keys($this->getModules()) as $name) $data[] = "app/{$name}";
+            $this->app->cache->set('moduleAllowRule', $data, 30);
+        }
+        return $data;
+    }
+
+    /**
      * 获取模块版本信息
      * @param string $name 模块名称
      * @return bool|array|null
