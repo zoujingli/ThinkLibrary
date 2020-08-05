@@ -140,9 +140,7 @@ class ModuleService extends Service
         }
         // 检查允许下载的文件规则
         foreach ($this->getAllowDownloadRule() as $rule) {
-            if (stripos($name, $rule) !== false) {
-                return true;
-            }
+            if (stripos($name, $rule) !== false) return true;
         }
         // 不在允许下载的规则内
         return false;
