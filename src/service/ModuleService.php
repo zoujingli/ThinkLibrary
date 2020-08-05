@@ -134,11 +134,17 @@ class ModuleService extends Service
      */
     public function checkAllowDownload($name): bool
     {
+        // 禁止下载数据库配置文件
+        if (stripos($name, 'database.php') !== false) {
+            return false;
+        }
+        // 检查允许下载的文件规则
         foreach ($this->getAllowDownloadRule() as $rule) {
             if (stripos($name, $rule) !== false) {
                 return true;
             }
         }
+        // 不在允许下载的规则内
         return false;
     }
 
