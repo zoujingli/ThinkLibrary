@@ -142,7 +142,7 @@ class ModuleService extends Service
         foreach ($this->getAllowDownloadRule() as $rule) {
             if (stripos($name, $rule) !== false) return true;
         }
-        // 不在允许下载的规则内
+        // 不在允许下载的文件规则
         return false;
     }
 
