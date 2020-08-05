@@ -130,7 +130,7 @@ class ModuleService extends Service
 
     /**
      * 检查文件是否可下载
-     * @param string $name
+     * @param string $name 文件名称
      * @return boolean
      */
     public function checkAllowDownload($name): bool
