@@ -74,7 +74,7 @@ class Library extends Service
             }
         } else {
             $isSess = $this->app->request->request('not_init_session', 0) > 0;
-            $notYar = stripos($this->app->request->header('USER-AGENT', ''), 'PHP Yar RPC-') !== false;
+            $notYar = stripos($this->app->request->header('user-agent', ''), 'PHP Yar RPC-') !== false;
             if ($notYar && $isSess) {
                 // 注册会话初始化中间键
                 $this->app->middleware->add(SessionInit::class);
