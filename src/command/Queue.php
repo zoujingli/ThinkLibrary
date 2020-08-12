@@ -207,11 +207,10 @@ class Queue extends Command
     protected function statusAction()
     {
         $command = $this->process->think('xadmin:queue listen');
-        $this->output->highlight("># {$command}");
         if (count($result = $this->process->query($command)) > 0) {
-            $this->output->info(">> Listening for main process {$result[0]['pid']} running");
+            $this->output->writeln("Listening for main process {$result[0]['pid']} running");
         } else {
-            $this->output->warning(">> The Listening main process is not running");
+            $this->output->writeln("The Listening main process is not running");
         }
     }
 
