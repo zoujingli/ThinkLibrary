@@ -216,6 +216,9 @@ class Queue extends Command
 
     /**
      * 立即监听任务
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function listenAction()
     {
@@ -229,26 +232,22 @@ class Queue extends Command
         $this->output->writeln('============== LISTENING ==============');
         while (true) {
             [$start, $where] = [microtime(true), [['status', '=', 1], ['exec_time', '<=', time()]]];
-            $this->app->db->name($this->table)->where($where)->order('exec_time asc')->chunk(100, function (Collection $result) {
-                foreach ($result->toArray() as $vo) try {
-                    $command = $this->process->think("xadmin:queue dorun {$vo['code']} -");
-                    $this->output->highlight("># {$command}");
-                    if (count($this->process->query($command)) > 0) {
-                        $this->output->writeln(">> Already in progress -> [{$vo['code']}] {$vo['title']}");
-                    } else {
-                        $this->process->create($command);
-                        $this->output->writeln(">> Created new process -> [{$vo['code']}] {$vo['title']}");
-                    }
-                } catch (\Exception $exception) {
-                    $this->app->db->name($this->table)->where(['code' => $vo['code']])->update([
-                        'status' => 4, 'outer_time' => time(), 'exec_desc' => $exception->getMessage(),
-                    ]);
-                    $this->output->error(">> Execution failed -> [{$vo['code']}] {$vo['title']}，{$exception->getMessage()}");
+            foreach ($this->app->db->name($this->table)->where($where)->order('exec_time asc')->select()->toArray() as $vo) try {
+                $command = $this->process->think("xadmin:queue dorun {$vo['code']} -");
+                $this->output->highlight("># {$command}");
+                if (count($this->process->query($command)) > 0) {
+                    $this->output->writeln(">> Already in progress -> [{$vo['code']}] {$vo['title']}");
+                } else {
+                    $this->process->create($command);
+                    $this->output->writeln(">> Created new process -> [{$vo['code']}] {$vo['title']}");
                 }
-            });
-            if (microtime(true) - $start < 0.5000) {
-                usleep(500000);
+            } catch (\Exception $exception) {
+                $this->app->db->name($this->table)->where(['code' => $vo['code']])->update([
+                    'status' => 4, 'outer_time' => time(), 'exec_desc' => $exception->getMessage(),
+                ]);
+                $this->output->error(">> Execution failed -> [{$vo['code']}] {$vo['title']}，{$exception->getMessage()}");
             }
+            if (microtime(true) - $start < 0.5000) usleep(500000);
         }
     }
 
