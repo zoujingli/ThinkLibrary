@@ -12,19 +12,18 @@
 // | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
-// 以下源代码来自 https://github.com/erusev/parsedown ，也是基于 MIT 开源协议
-// 未减少 Composer 组件数量，直接将源码复制于此，在此表示感谢 ！！！
+// | 以下源代码来自 https://github.com/erusev/parsedown ，基于 MIT 协议开源
+// | 为减少 Composer 组件数量优化加载速度，直接将源码复制于此，在此表示感谢原作者 ！
+// +----------------------------------------------------------------------
 
-namespace think\admin\service;
-
-use think\admin\Service;
+namespace think\admin\extend;
 
 /**
  * Markdown 文档解析服务
- * Class MarkdownService
- * @package think\admin\service
+ * Class Parsedown
+ * @package think\admin\extend
  */
-class MarkdownService extends Service
+class Parsedown
 {
     const version = '1.7.4';
 
