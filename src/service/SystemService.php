@@ -234,7 +234,7 @@ class SystemService extends Service
         if (is_null($state)) {
             return $this->bindRuntime();
         } else {
-            return $this->setRuntime([], $state ? 'product' : 'developoer');
+            return $this->setRuntime([], $state ? 'product' : 'developer');
         }
     }
 
