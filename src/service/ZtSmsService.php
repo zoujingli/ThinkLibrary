@@ -39,7 +39,6 @@ class ZtSmsService extends Service
 
     /**
      * 短信服务初始化
-     * @return ZtSmsService|void
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -56,7 +55,7 @@ class ZtSmsService extends Service
      * @param string $password 账号密码
      * @return static
      */
-    public function make($username, $password)
+    public function make(string $username, string $password)
     {
         $this->username = $username;
         $this->password = $password;
@@ -70,7 +69,7 @@ class ZtSmsService extends Service
      * @param string $tplcode
      * @return boolean
      */
-    public function checkVerifyCode($code, $phone, $tplcode = 'ztsms.register_verify')
+    public function checkVerifyCode(string $code, string $phone, string $tplcode = 'ztsms.register_verify'): bool
     {
         $cache = $this->app->cache->get($ckey = md5("code-{$tplcode}-{$phone}"), []);
         if (is_array($cache) && isset($cache['code']) && $cache['code'] == $code) {
@@ -91,7 +90,7 @@ class ZtSmsService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function sendVerifyCode($phone, $wait = 120, $tplcode = 'ztsms.register_verify')
+    public function sendVerifyCode(string $phone, int $wait = 120, string $tplcode = 'ztsms.register_verify'): array
     {
         $content = sysconf($tplcode) ?: '您的短信验证码为{code}，请在十分钟内完成操作！';
         $cache = $this->app->cache->get($ckey = md5("code-{$tplcode}-{$phone}"), []);
@@ -139,7 +138,7 @@ class ZtSmsService extends Service
      */
     public function signGet(string $sign): array
     {
-        if (strpos($sign, '】') === false) $sign .= '】';
+        if (strpos($sign, '】') === false) $sign = $sign . '】';
         if (strpos($sign, '【') === false) $sign = '【' . $sign;
         return $this->doRequest('https://api.mix2.zthysms.com/sms/v1/sign/query', ['sign' => $sign]);
     }
@@ -162,27 +161,27 @@ class ZtSmsService extends Service
 
     /**
      * 查询模板状态
-     * @param integer $temId 短信模板
+     * @param string $temId 短信模板
      * @return array
      */
-    public function tplGet(int $temId): array
+    public function tplGet(string $temId): array
     {
         return $this->doRequest('https://api.mix2.zthysms.com/sms/v2/template/query', ['temId' => $temId]);
     }
 
     /**
      * 发送模板短信
-     * @param integer $tpId 短信模板
-     * @param string $signs 短信签名
+     * @param string $tpId 短信模板
+     * @param string $sign 短信签名
      * @param array $records 发送记录
      * @return array
      */
-    public function tplSend(int $tpId, string $signs, array $records): array
+    public function tplSend(string $tpId, string $sign, array $records): array
     {
-        if (strpos($signs, '】') === false) $signs .= '】';
-        if (strpos($signs, '【') === false) $signs = '【' . $signs;
+        if (strpos($sign, '】') === false) $sign = $sign . '】';
+        if (strpos($sign, '【') === false) $sign = '【' . $sign;
         return $this->doRequest('https://api.mix2.zthysms.com/v2/sendSmsTp', [
-            'tpId' => $tpId, 'records' => $records, 'signature' => $signs,
+            'tpId' => $tpId, 'records' => $records, 'signature' => $sign,
         ]);
     }
 
@@ -205,7 +204,7 @@ class ZtSmsService extends Service
      * @param array $records
      * @return array
      */
-    public function batchSend(array $records)
+    public function batchSend(array $records): array
     {
         return $this->doRequest('https://api.mix2.zthysms.com/v2/sendSmsPa', ['records' => $records]);
     }
