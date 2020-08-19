@@ -70,7 +70,7 @@ class ZtSmsService extends Service
      * @param string $tplcode
      * @return boolean
      */
-    public function checkVerifyCode($code, $phone, $tplcode = 'zt.register_verify')
+    public function checkVerifyCode($code, $phone, $tplcode = 'ztsms.register_verify')
     {
         $cache = $this->app->cache->get($ckey = md5("code-{$tplcode}-{$phone}"), []);
         if (is_array($cache) && isset($cache['code']) && $cache['code'] == $code) {
@@ -91,7 +91,7 @@ class ZtSmsService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function sendVerifyCode($phone, $wait = 120, $tplcode = 'zt.register_verify')
+    public function sendVerifyCode($phone, $wait = 120, $tplcode = 'ztsms.register_verify')
     {
         $content = sysconf($tplcode) ?: '您的短信验证码为{code}，请在十分钟内完成操作！';
         $cache = $this->app->cache->get($ckey = md5("code-{$tplcode}-{$phone}"), []);
