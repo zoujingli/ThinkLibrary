@@ -298,9 +298,8 @@ class SystemService extends Service
      */
     private function uniqueArray(...$args): array
     {
-        $unique = array_unique(array_reverse(array_merge(...$args)));
-        foreach ($unique as $kk => $vv) if ($kk == $vv) unset($unique[$kk]);
-        return $unique;
+        return array_unique(array_reverse(array_merge(...$args)));
+        // foreach ($unique as $kk => $vv) if ($kk == $vv) unset($unique[$kk]);
     }
 
     /**
