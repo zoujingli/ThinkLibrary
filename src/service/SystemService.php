@@ -285,15 +285,11 @@ class SystemService extends Service
         // 获取运行配置
         if (empty($data)) $data = $this->getRuntime();
         // 动态设置应用绑定
-        $config = ['app_map' => [], 'domain_bind' => []];
-        if (isset($data['map']) && is_array($data['map']) && count($data['map']) > 0) {
-            $config['app_map'] = $this->uniqueArray($this->app->config->get('app.app_map', []), $data['map']);
-        }
-        if (isset($data['uri']) && is_array($data['uri']) && count($data['uri']) > 0) {
-            $config['domain_bind'] = $this->uniqueArray($this->app->config->get('app.domain_bind', []), $data['uri']);
-        }
+        $bind = ['app_map' => $this->app->config->get('app.app_map', []), 'domain_bind' => $this->app->config->get('app.domain_bind', [])];
+        if (isset($data['map']) && is_array($data['map']) && count($data['map']) > 0) $bind['app_map'] = $this->uniqueArray($bind['app_map'], $data['map']);
+        if (isset($data['uri']) && is_array($data['uri']) && count($data['uri']) > 0) $bind['domain_bind'] = $this->uniqueArray($bind['domain_bind'], $data['uri']);
         // 动态设置运行模式
-        $this->app->config->set($config, 'app');
+        $this->app->config->set($bind, 'app');
         return $this->app->debug($data['run'] !== 'product')->isDebug();
     }
 
