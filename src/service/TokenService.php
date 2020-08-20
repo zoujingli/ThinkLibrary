@@ -157,7 +157,7 @@ class TokenService extends Service
             }
         }
         if ($clear) {
-            $this->app->cache->set($this->cachename, $data);
+            $this->app->cache->set($this->cachename, array_keys($data));
         }
         return $data;
     }
