@@ -28,22 +28,40 @@ class TokenService extends Service
      * 验证有效时间
      * @var integer
      */
-    protected $expire = 600;
+    private $expire = 600;
 
     /**
      * 缓存分组名称
      * @var string
      */
-    protected $cachename;
+    private $cachename;
+
+    /**
+     * 当前缓存数据
+     * @var array
+     */
+    private $cachedata = [];
 
     /**
      * 表单令牌服务初始化
      */
     protected function initialize()
     {
-        $username = AdminService::instance()->getUserName();
-        $this->cachename = 'systoken_' . ($username ?: 'default');
-        $this->_getCacheList(true);
+        $user = AdminService::instance()->getUserName();
+        $this->cachename = 'systoken_' . ($user ?: 'default');
+        $this->cachedata = $this->_getCacheList(true);
+        $this->app->event->listen('HttpEnd', function () {
+            TokenService::instance()->saveCacheData();
+        });
+    }
+
+    /**
+     * 保存缓存到文件
+     */
+    public function saveCacheData()
+    {
+        $this->_clearTimeoutCache();
+        $this->app->cache->set($this->cachename, $this->cachedata, $this->expire);
     }
 
     /**
@@ -64,9 +82,9 @@ class TokenService extends Service
     public function checkFormToken($token = null, $node = null)
     {
         $cnode = NodeService::instance()->fullnode($node);
-        $cache = $this->_getCacheItem($token ?: $this->getInputToken(), []);
-        if (empty($cache['node']) || empty($cache['time']) || empty($cache['token'])) return false;
-        if ($cache['time'] + 600 < time() || strtolower($cache['node']) !== strtolower($cnode)) return false;
+        $cache = $this->_getCacheItem($token ?: $this->getInputToken());
+        if (empty($cache['node']) || empty($cache['time'])) return false;
+        if (strtolower($cache['node']) !== strtolower($cnode)) return false;
         return true;
     }
 
@@ -90,9 +108,8 @@ class TokenService extends Service
     {
         $cnode = NodeService::instance()->fullnode($node);
         [$token, $time] = [uniqid() . rand(100000, 999999), time()];
-        $data = ['node' => $cnode, 'token' => $token, 'time' => $time];
-        $this->_setCacheItem($token, $data, $this->expire);
-        return $data;
+        $this->_setCacheItem($token, $item = ['node' => $cnode, 'time' => $time]);
+        return array_merge($item, ['token' => $token]);
     }
 
     /**
@@ -100,65 +117,70 @@ class TokenService extends Service
      */
     public function clearCache()
     {
-        foreach ($this->app->cache->get($this->cachename, []) as $name) {
-            $this->_delCacheItem($name);
-        }
-        $this->app->delete($this->cachename);
+        $this->app->cache->delete($this->cachename);
     }
 
     /**
      * 设置缓存数据
-     * @param string $name
-     * @param array $value
-     * @param null $ttl
-     * @return bool
+     * @param string $token
+     * @param array $item
+     * @return static
      */
-    private function _setCacheItem(string $name, array $value, $ttl = null)
+    private function _setCacheItem(string $token, array $item)
     {
-        $this->app->cache->push($this->cachename, $name);
-        return $this->app->cache->set($this->cachename . $name, $value, $ttl);
+        $this->cachedata[$token] = $item;
+        return $this;
     }
 
     /**
      * 删除缓存
-     * @param string $name
-     * @return bool
+     * @param string $token
      */
-    private function _delCacheItem(string $name)
+    private function _delCacheItem(string $token)
     {
-        return $this->app->cache->delete($this->cachename . $name);
+        unset($this->cachedata[$token]);
     }
 
     /**
      * 获取指定缓存
-     * @param string $name
+     * @param string $token
      * @param array $default
      * @return mixed
      */
-    private function _getCacheItem(string $name, $default = [])
+    private function _getCacheItem(string $token, $default = [])
     {
-        return $this->app->cache->get($this->cachename . $name, $default);
+        $this->_clearTimeoutCache();
+        if (isset($this->cachedata[$token])) {
+            return array_merge($this->cachedata[$token], ['token' => $token]);
+        } else {
+            return $default;
+        }
     }
 
     /**
      * 获取缓存列表
-     * @param bool $clear 强制清理无效的记录
+     * @param bool $clear 强制清理
      * @return array
      */
     private function _getCacheList(bool $clear = false): array
     {
-        [$data, $time] = [[], time()];
-        foreach ($this->app->cache->get($this->cachename, []) as $name) {
-            $item = $this->_getCacheItem($name, []);
-            if (is_array($item) && isset($item['time']) && $item['time'] + $this->expire > $time) {
-                $data[$name] = $item;
-            } elseif ($clear) {
-                $this->_delCacheItem($name);
+        $this->cachedata = $this->app->cache->get($this->cachename, []);
+        if ($clear) $this->cachedata = $this->_clearTimeoutCache();
+        return $this->cachedata;
+    }
+
+    /**
+     * 清理超时的缓存
+     * @return array
+     */
+    private function _clearTimeoutCache(): array
+    {
+        $time = time();
+        foreach ($this->cachedata as $key => $item) {
+            if (empty($item['time']) || $item['time'] + $this->expire < $time) {
+                unset($this->cachedata[$key]);
             }
         }
-        if ($clear) {
-            $this->app->cache->set($this->cachename, array_keys($data));
-        }
-        return $data;
+        return $this->cachedata;
     }
 }
