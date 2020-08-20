@@ -109,11 +109,11 @@ class TokenService extends Service
     /**
      * 设置缓存数据
      * @param string $name
-     * @param mixed $value
+     * @param array $value
      * @param null $ttl
      * @return bool
      */
-    private function _setCacheItem($name, $value, $ttl = null)
+    private function _setCacheItem(string $name, array $value, $ttl = null)
     {
         $this->app->cache->push($this->cachename, $name);
         return $this->app->cache->set($this->cachename . $name, $value, $ttl);
@@ -124,7 +124,7 @@ class TokenService extends Service
      * @param string $name
      * @return bool
      */
-    private function _delCacheItem($name)
+    private function _delCacheItem(string $name)
     {
         return $this->app->cache->delete($this->cachename . $name);
     }
@@ -145,14 +145,14 @@ class TokenService extends Service
      * @param bool $clear 强制清理无效的记录
      * @return array
      */
-    private function _getCacheList($clear = false): array
+    private function _getCacheList(bool $clear = false): array
     {
         [$data, $time] = [[], time()];
         foreach ($this->app->cache->get($this->cachename, []) as $name) {
             $item = $this->_getCacheItem($name, []);
             if (is_array($item) && isset($item['time']) && $item['time'] + $this->expire > $time) {
                 $data[$name] = $item;
-            } elseif ($clear) {
+            } elseif ($clear && isset($item['token'])) {
                 $this->_delCacheItem($item['token']);
             }
         }
