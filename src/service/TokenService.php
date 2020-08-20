@@ -152,8 +152,8 @@ class TokenService extends Service
             $item = $this->_getCacheItem($name, []);
             if (is_array($item) && isset($item['time']) && $item['time'] + $this->expire > $time) {
                 $data[$name] = $item;
-            } elseif ($clear && isset($item['token'])) {
-                $this->_delCacheItem($item['token']);
+            } elseif ($clear) {
+                $this->_delCacheItem($name);
             }
         }
         if ($clear) {
