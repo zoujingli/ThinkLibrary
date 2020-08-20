@@ -25,7 +25,7 @@ use think\admin\Service;
 class TokenService extends Service
 {
     /**
-     * 验证有效时间
+     * 令牌有效时间
      * @var integer
      */
     private $expire = 600;
