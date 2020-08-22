@@ -22,7 +22,7 @@ use think\App;
 use think\exception\HttpResponseException;
 
 /**
- * 接口基础服务对象
+ * 系统接口基础服务
  * Class InterfaceService
  * @package think\admin\service
  */
