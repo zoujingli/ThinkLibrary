@@ -87,7 +87,7 @@ class OpenService extends Service
             $this->baseError(lang('think_library_params_failed_time'));
         }
         // 请求签名验证
-        if (!$this->_signCheck($input)) {
+        if (!$this->_checkSign($input)) {
             $this->baseError(lang('think_library_params_failed_sign'));
         }
         // 解析请求数据
@@ -149,7 +149,7 @@ class OpenService extends Service
     public function baseResponse($info, $data = [], $code = 1)
     {
         $extend = ['code' => $code, 'info' => $info, 'data' => $data, 'appid' => $data['appid']];
-        throw new HttpResponseException(json(array_merge($this->_buildData($data), $extend)));
+        throw new HttpResponseException(json(array_merge($this->_buildSign($data), $extend)));
     }
 
     /**
@@ -161,7 +161,7 @@ class OpenService extends Service
      */
     public function doRequest(string $api, array $data = []): array
     {
-        $result = json_decode(HttpExtend::post($this->appurl . $api, $this->_buildData($data)), true);
+        $result = json_decode(HttpExtend::post($this->appurl . $api, $this->_buildSign($data)), true);
         if (empty($result)) throw new \think\admin\Exception(lang('think_library_response_failed'));
         if (empty($result['code'])) throw new \think\admin\Exception($result['info']);
         return $result['data'] ?? [];
@@ -169,10 +169,10 @@ class OpenService extends Service
 
     /**
      * 请求数据签名验证
-     * @param array $data
-     * @return bool
+     * @param array $data 待检查数据
+     * @return boolean
      */
-    private function _signCheck(array $data): bool
+    private function _checkSign(array $data): bool
     {
         if (isset($data['appid']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
             $sign = md5("{$data['appid']}#{$data['data']}#{$data['time']}#{$this->appkey}#{$data['nostr']}");
@@ -187,7 +187,7 @@ class OpenService extends Service
      * @param array $data ['appid','time','nostr','data','sign']
      * @return array
      */
-    private function _buildData(array $data): array
+    private function _buildSign(array $data): array
     {
         [$time, $nostr, $json] = [time(), uniqid(), json_encode($data, 256)];
         $sign = md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$nostr}");
