@@ -69,7 +69,7 @@ class OpenService extends Service
      * 获取请求数据
      * @return array
      */
-    public function request(): array
+    public function get(): array
     {
         $input = ValidateHelper::instance()->init([
             'appid.require' => lang('think_library_params_failed_empty', ['appid']),
