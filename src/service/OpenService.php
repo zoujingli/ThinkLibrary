@@ -44,7 +44,7 @@ class OpenService extends Service
      * 接口请求地址
      * @var string
      */
-    protected $appuri;
+    protected $appurl;
 
     /**
      * 楚才开放平台初始化
@@ -62,7 +62,7 @@ class OpenService extends Service
         parent::__construct($app);
         $this->appid = $appid ?: sysconf('data.cuci_open_appid');
         $this->appkey = $appkey ?: sysconf('data.cuci_open_appkey');
-        $this->appuri = $appuri ?: (sysconf('data.cuci_open_appkey') ?: 'https://open.cuci.cc/');
+        $this->appurl = $appuri ?: (sysconf('data.cuci_open_appkey') ?: 'https://open.cuci.cc/');
     }
 
     /**
@@ -87,7 +87,7 @@ class OpenService extends Service
             $this->baseError(lang('think_library_params_failed_time'));
         }
         // 请求签名验证
-        if (!$this->signCheck($input)) {
+        if (!$this->_signCheck($input)) {
             $this->baseError(lang('think_library_params_failed_sign'));
         }
         // 解析请求数据
@@ -148,9 +148,23 @@ class OpenService extends Service
      */
     public function baseResponse($info, $data = [], $code = 1)
     {
-        $attr = array_combine(['appid', 'time', 'nostr', 'data', 'sign'], $this->signData($data));
         $extend = ['code' => $code, 'info' => $info, 'data' => $data, 'appid' => $data['appid']];
-        throw new HttpResponseException(json(array_merge($attr, $extend)));
+        throw new HttpResponseException(json(array_merge($this->_buildData($data), $extend)));
+    }
+
+    /**
+     * 接口数据请求
+     * @param string $api 接口地址
+     * @param array $data 请求数据
+     * @return array
+     * @throws \think\admin\Exception
+     */
+    public function doRequest(string $api, array $data = []): array
+    {
+        $result = json_decode(HttpExtend::post($this->appurl . $api, $this->_buildData($data)), true);
+        if (empty($result)) throw new \think\admin\Exception(lang('think_library_response_failed'));
+        if (empty($result['code'])) throw new \think\admin\Exception($result['info']);
+        return $result['data'] ?? [];
     }
 
     /**
@@ -158,13 +172,14 @@ class OpenService extends Service
      * @param array $data
      * @return bool
      */
-    public function signCheck(array $data): bool
+    private function _signCheck(array $data): bool
     {
         if (isset($data['appid']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
             $sign = md5("{$data['appid']}#{$data['data']}#{$data['time']}#{$this->appkey}#{$data['nostr']}");
             return $sign === $data['sign'];
+        } else {
+            return false;
         }
-        return false;
     }
 
     /**
@@ -172,25 +187,10 @@ class OpenService extends Service
      * @param array $data ['appid','time','nostr','data','sign']
      * @return array
      */
-    public function signData(array $data): array
+    private function _buildData(array $data): array
     {
-        [$time, $nostr, $json] = [time(), uniqid(), json_encode($data, JSON_UNESCAPED_UNICODE)];
-        return [$this->appid, $time, $nostr, $json, md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$nostr}")];
-    }
-
-    /**
-     * 接口数据请求
-     * @param string $location 接口地址
-     * @param array $httpdata 请求数据
-     * @return array
-     * @throws \think\admin\Exception
-     */
-    public function doRequest(string $location, array $httpdata = []): array
-    {
-        $post = array_combine(['appid', 'time', 'nostr', 'data', 'sign'], $this->signData($httpdata));
-        $result = json_decode(HttpExtend::post("{$this->appuri}{$location}", $post), true);
-        if (empty($result)) throw new \think\admin\Exception(lang('think_library_response_failed'));
-        if (empty($result['code'])) throw new \think\admin\Exception($result['info']);
-        return $result['data'] ?? [];
+        [$time, $nostr, $json] = [time(), uniqid(), json_encode($data, 256)];
+        $sign = md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$nostr}");
+        return ['appid' => $this->appid, 'time' => $time, 'nostr' => $nostr, 'data' => $json, 'sign' => $sign];
     }
 }
