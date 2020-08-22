@@ -22,11 +22,11 @@ use think\App;
 use think\exception\HttpResponseException;
 
 /**
- * 楚才开放平台服务
- * Class OpenService
+ * 接口基础服务对象
+ * Class InterfaceService
  * @package think\admin\service
  */
-class OpenService extends Service
+class InterfaceService extends Service
 {
     /**
      * 接口认证账号
@@ -44,25 +44,25 @@ class OpenService extends Service
      * 接口请求地址
      * @var string
      */
-    public $appurl;
+    public $baseapi;
 
     /**
-     * 楚才开放平台初始化
+     * 接口服务初始化
      * OpenService constructor.
      * @param App $app
      * @param string $appid 接口账号
      * @param string $appkey 接口密钥
-     * @param string $appuri 接口地址
+     * @param string $baseapi 接口地址
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function __construct(App $app, $appid = '', $appkey = '', $appuri = '')
+    public function __construct(App $app, $appid = '', $appkey = '', $baseapi = '')
     {
         parent::__construct($app);
-        $this->appid = $appid ?: sysconf('data.cuci_open_appid');
-        $this->appkey = $appkey ?: sysconf('data.cuci_open_appkey');
-        $this->appurl = $appuri ?: (sysconf('data.cuci_open_appkey') ?: 'https://open.cuci.cc/');
+        $this->appid = $appid ?: sysconf('data.interface_appid');
+        $this->appkey = $appkey ?: sysconf('data.interface_appkey');
+        $this->baseapi = $baseapi ?: sysconf('data.interface_baseapi');
     }
 
     /**
@@ -164,14 +164,14 @@ class OpenService extends Service
 
     /**
      * 接口数据请求
-     * @param string $api 接口地址
+     * @param string $uri 接口地址
      * @param array $data 请求数据
      * @return array
      * @throws \think\admin\Exception
      */
-    public function doRequest(string $api, array $data = []): array
+    public function doRequest(string $uri, array $data = []): array
     {
-        $result = json_decode(HttpExtend::post($this->appurl . $api, $this->_buildSign($data)), true);
+        $result = json_decode(HttpExtend::post($this->baseapi . $uri, $this->_buildSign($data)), true);
         if (empty($result)) throw new \think\admin\Exception(lang('think_library_response_failed'));
         if (empty($result['code'])) throw new \think\admin\Exception($result['info']);
         return $result['data'] ?? [];
