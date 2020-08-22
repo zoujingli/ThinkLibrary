@@ -71,6 +71,7 @@ class OpenService extends Service
      */
     public function get(): array
     {
+        // 基础参数获取
         $input = ValidateHelper::instance()->init([
             'appid.require' => lang('think_library_params_failed_empty', ['appid']),
             'nostr.require' => lang('think_library_params_failed_empty', ['nostr']),
