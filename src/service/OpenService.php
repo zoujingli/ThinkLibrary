@@ -16,8 +16,10 @@
 namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
+use think\admin\helper\ValidateHelper;
 use think\admin\Service;
 use think\App;
+use think\exception\HttpResponseException;
 
 /**
  * 楚才开放平台服务
@@ -27,16 +29,22 @@ use think\App;
 class OpenService extends Service
 {
     /**
-     * 接口账号
+     * 接口认证账号
      * @var string
      */
     protected $appid;
 
     /**
-     * 接口密钥
+     * 接口认证密钥
      * @var string
      */
     protected $appkey;
+
+    /**
+     * 接口请求地址
+     * @var string
+     */
+    protected $appuri;
 
     /**
      * 楚才开放平台初始化
@@ -44,41 +52,144 @@ class OpenService extends Service
      * @param App $app
      * @param string $appid 接口账号
      * @param string $appkey 接口密钥
+     * @param string $appuri 接口地址
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function __construct(App $app, $appid = '', $appkey = '')
+    public function __construct(App $app, $appid = '', $appkey = '', $appuri = '')
     {
         parent::__construct($app);
         $this->appid = $appid ?: sysconf('data.cuci_open_appid');
         $this->appkey = $appkey ?: sysconf('data.cuci_open_appkey');
+        $this->appuri = $appuri ?: (sysconf('data.cuci_open_appkey') ?: 'https://open.cuci.cc/');
+    }
+
+    /**
+     * 获取请求数据
+     * @return array
+     */
+    public function request(): array
+    {
+        $input = ValidateHelper::instance()->init([
+            'appid.require' => lang('think_library_params_failed_empty', ['appid']),
+            'nostr.require' => lang('think_library_params_failed_empty', ['nostr']),
+            'time.require'  => lang('think_library_params_failed_empty', ['time']),
+            'sign.require'  => lang('think_library_params_failed_empty', ['sign']),
+            'data.require'  => lang('think_library_params_failed_empty', ['data']),
+        ], 'request', [$this, 'baseError']);
+        // 接口参数处理
+        if ($input['appid'] !== $this->appid) {
+            $this->baseError(lang('think_library_params_failed_auth'));
+        }
+        // 请求时间检查
+        if (abs($input['time'] - time()) > 30) {
+            $this->baseError(lang('think_library_params_failed_time'));
+        }
+        // 请求签名验证
+        if (!$this->signCheck($input)) {
+            $this->baseError(lang('think_library_params_failed_sign'));
+        }
+        // 解析请求数据
+        return json_decode($input['data'], true) ?: [];
+    }
+
+    /**
+     * 回复业务处理失败的消息
+     * @param mixed $info 消息内容
+     * @param mixed $data 返回数据
+     * @param mixed $code 返回状态码
+     */
+    public function error($info, $data = '{-null-}', $code = 0)
+    {
+        if ($data === '{-null-}') $data = new \stdClass();
+        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
+    }
+
+    /**
+     * 回复业务处理成功的消息
+     * @param mixed $info 消息内容
+     * @param mixed $data 返回数据
+     * @param mixed $code 返回状态码
+     */
+    public function success($info, $data = '{-null-}', $code = 1)
+    {
+        if ($data === '{-null-}') $data = new \stdClass();
+        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
+    }
+
+    /**
+     * 回复根失败消息
+     * @param mixed $info 消息内容
+     * @param mixed $data 返回数据
+     * @param mixed $code 根状态码
+     */
+    public function baseError($info, $data = [], $code = 0)
+    {
+        $this->baseResponse($info, $data, $code);
+    }
+
+    /**
+     * 回复根成功消息
+     * @param mixed $info 消息内容
+     * @param mixed $data 返回数据
+     * @param mixed $code 根状态码
+     */
+    public function baseSuccess($info, $data = [], $code = 1)
+    {
+        $this->baseResponse($info, $data, $code);
+    }
+
+    /**
+     * 回复根签名消息
+     * @param mixed $info 消息内容
+     * @param mixed $data 返回数据
+     * @param mixed $code 根状态码
+     */
+    public function baseResponse($info, $data = [], $code = 1)
+    {
+        $attr = array_combine(['appid', 'time', 'nostr', 'data', 'sign'], $this->signData($data));
+        $extend = ['code' => $code, 'info' => $info, 'data' => $data, 'appid' => $data['appid']];
+        throw new HttpResponseException(json(array_merge($attr, $extend)));
+    }
+
+    /**
+     * 请求数据签名验证
+     * @param array $data
+     * @return bool
+     */
+    public function signCheck(array $data): bool
+    {
+        if (isset($data['appid']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
+            $sign = md5("{$data['appid']}#{$data['data']}#{$data['time']}#{$this->appkey}#{$data['nostr']}");
+            return $sign === $data['sign'];
+        }
+        return false;
     }
 
     /**
      * 接口数据签名
-     * @param array $data [time, nostr, json, sign]
+     * @param array $data ['appid','time','nostr','data','sign']
      * @return array
      */
     public function signData(array $data): array
     {
         [$time, $nostr, $json] = [time(), uniqid(), json_encode($data, JSON_UNESCAPED_UNICODE)];
-        return [$time, $nostr, $json, md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$nostr}")];
+        return [$this->appid, $time, $nostr, $json, md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$nostr}")];
     }
 
     /**
      * 接口数据请求
-     * @param string $uri 接口地址
-     * @param array $data 请求数据
+     * @param string $location 接口地址
+     * @param array $httpdata 请求数据
      * @return array
      * @throws \think\admin\Exception
      */
-    public function doRequest(string $uri, array $data = []): array
+    public function doRequest(string $location, array $httpdata = []): array
     {
-        [$time, $nostr, $json, $sign] = $this->signData($data);
-        $post = ['appid' => $this->appid, 'time' => $time, 'nostr' => $nostr, 'sign' => $sign, 'data' => $json];
-        $result = json_decode(HttpExtend::post("https://open.cuci.cc/{$uri}", $post), true);
-        if (empty($result)) throw new \think\admin\Exception('服务端接口响应异常');
+        $post = array_combine(['appid', 'time', 'nostr', 'data', 'sign'], $this->signData($httpdata));
+        $result = json_decode(HttpExtend::post("{$this->appuri}{$location}", $post), true);
+        if (empty($result)) throw new \think\admin\Exception(lang('think_library_response_failed'));
         if (empty($result['code'])) throw new \think\admin\Exception($result['info']);
         return $result['data'] ?? [];
     }
