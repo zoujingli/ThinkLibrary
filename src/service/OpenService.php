@@ -66,6 +66,15 @@ class OpenService extends Service
     }
 
     /**
+     * 获取接口账号
+     * @return string
+     */
+    public function getAppid()
+    {
+        return $this->appid;
+    }
+
+    /**
      * 获取请求数据
      * @return array
      */
