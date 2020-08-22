@@ -193,7 +193,7 @@ class InterfaceService extends Service
 
     /**
      * 接口数据签名
-     * @param array $data ['appid','time','nostr','data','sign']
+     * @param array $data ['appid','nostr','time','sign','data']
      * @return array
      */
     private function _buildSign(array $data): array
