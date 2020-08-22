@@ -174,7 +174,7 @@ class OpenService extends Service
      */
     private function _checkSign(array $data): bool
     {
-        if (isset($data['appid']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
+        if (isset($data['sign']) && isset($data['appid']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
             $sign = md5("{$data['appid']}#{$data['data']}#{$data['time']}#{$this->appkey}#{$data['nostr']}");
             return $sign === $data['sign'];
         } else {
