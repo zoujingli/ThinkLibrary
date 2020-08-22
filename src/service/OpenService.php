@@ -191,6 +191,6 @@ class OpenService extends Service
     {
         [$time, $nostr, $json] = [time(), uniqid(), json_encode($data, 256)];
         $sign = md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$nostr}");
-        return ['appid' => $this->appid, 'time' => $time, 'nostr' => $nostr, 'data' => $json, 'sign' => $sign];
+        return ['appid' => $this->appid, 'nostr' => $nostr, 'time' => $time, 'sign' => $sign, 'data' => $json];
     }
 }
