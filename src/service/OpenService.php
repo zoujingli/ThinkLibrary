@@ -32,19 +32,19 @@ class OpenService extends Service
      * 接口认证账号
      * @var string
      */
-    protected $appid;
+    public $appid;
 
     /**
      * 接口认证密钥
      * @var string
      */
-    protected $appkey;
+    public $appkey;
 
     /**
      * 接口请求地址
      * @var string
      */
-    protected $appurl;
+    public $appurl;
 
     /**
      * 楚才开放平台初始化
