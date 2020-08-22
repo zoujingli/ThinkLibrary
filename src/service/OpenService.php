@@ -78,7 +78,7 @@ class OpenService extends Service
             'time.require'  => lang('think_library_params_failed_empty', ['time']),
             'sign.require'  => lang('think_library_params_failed_empty', ['sign']),
             'data.require'  => lang('think_library_params_failed_empty', ['data']),
-        ], 'request', [$this, 'baseError']);
+        ], 'post', [$this, 'baseError']);
         // 接口参数处理
         if ($input['appid'] !== $this->appid) {
             $this->baseError(lang('think_library_params_failed_auth'));
