@@ -115,26 +115,24 @@ class ModuleService extends Service
      */
     public function install($name): array
     {
+        $install = InstallService::instance();
         $this->app->cache->set('moduleOnlineData', []);
-        $data = InstallService::instance()->grenerateDifference(['app' . '/' . $name]);
-        if (empty($data)) {
-            return [0, '没有需要安装的文件', []];
-        } else {
-            $lines = [];
-            foreach ($data as $file) {
-                [$state, $mode, $name] = InstallService::instance()->updateFileByDownload($file);
-                if ($state) {
-                    if ($mode === 'add') $lines[] = "add {$name} successed";
-                    if ($mode === 'mod') $lines[] = "modify {$name} successed";
-                    if ($mode === 'del') $lines[] = "deleted {$name} successed";
-                } else {
-                    if ($mode === 'add') $lines[] = "add {$name} failed";
-                    if ($mode === 'mod') $lines[] = "modify {$name} failed";
-                    if ($mode === 'del') $lines[] = "deleted {$name} failed";
-                }
+        $data = $install->grenerateDifference(['app' . '/' . $name]);
+        if (empty($data)) return [0, '没有需要安装的文件', []];
+        $lines = [];
+        foreach ($data as $file) {
+            [$state, $mode, $name] = $install->updateFileByDownload($file);
+            if ($state) {
+                if ($mode === 'add') $lines[] = "add {$name} successed";
+                if ($mode === 'mod') $lines[] = "modify {$name} successed";
+                if ($mode === 'del') $lines[] = "deleted {$name} successed";
+            } else {
+                if ($mode === 'add') $lines[] = "add {$name} failed";
+                if ($mode === 'mod') $lines[] = "modify {$name} failed";
+                if ($mode === 'del') $lines[] = "deleted {$name} failed";
             }
-            return [1, '模块安装成功', $lines];
         }
+        return [1, '模块安装成功', $lines];
     }
 
     /**
