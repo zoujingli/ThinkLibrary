@@ -99,7 +99,7 @@ class ModuleService extends Service
     {
         $data = $this->app->cache->get('moduleOnlineData', []);
         if (!empty($data)) return $data;
-        $result = json_decode(HttpExtend::get("{$this->server}/admin/api.update/version"), true);
+        $result = json_decode(HttpExtend::get($this->server . '/admin/api.update/version'), true);
         if (isset($result['code']) && $result['code'] > 0 && isset($result['data']) && is_array($result['data'])) {
             $this->app->cache->set('moduleOnlineData', $result['data'], 30);
             return $result['data'];
@@ -149,7 +149,7 @@ class ModuleService extends Service
             $vars = $this->_getModuleVersion($name);
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
                 $data[$name] = array_merge($vars, ['change' => []]);
-                foreach ($service->scanDirectory($this->app->getBasePath() . $name . '/module/change/', [], 'md') as $file) {
+                foreach ($service->scanDirectory($this->_getModulePath($name) . '/module/change/', [], 'md') as $file) {
                     $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = Parsedown::instance()->parse(file_get_contents($file));
                 }
             }
@@ -197,13 +197,23 @@ class ModuleService extends Service
      */
     private function _getModuleVersion($name)
     {
-        $appdir = $this->app->getBasePath() . $name;
-        $filename = $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR . 'module.json';
+        $filename = $this->_getModulePath($name) . 'module.json';
         if (file_exists($filename) && is_file($filename) && is_readable($filename)) {
             $vars = json_decode(file_get_contents($filename), true);
             return isset($vars['name']) && isset($vars['version']) ? $vars : null;
         } else {
             return false;
         }
+    }
+
+    /**
+     * 获取模块信息路径
+     * @param string $name
+     * @return string
+     */
+    private function _getModulePath($name)
+    {
+        $appdir = $this->app->getBasePath() . $name;
+        return $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR;
     }
 }
