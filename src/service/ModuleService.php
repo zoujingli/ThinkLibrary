@@ -149,7 +149,7 @@ class ModuleService extends Service
             $vars = $this->_getModuleVersion($name);
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
                 $data[$name] = array_merge($vars, ['change' => []]);
-                foreach ($service->scanDirectory($this->app->getBasePath() . $name . '/module/change/', [], '.md') as $file) {
+                foreach ($service->scanDirectory($this->app->getBasePath() . $name . '/module/change/', [], 'md') as $file) {
                     $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = Parsedown::instance()->parse(file_get_contents($file));
                 }
             }
@@ -198,7 +198,7 @@ class ModuleService extends Service
     private function _getModuleVersion($name)
     {
         $appdir = $this->app->getBasePath() . $name;
-        $filename = $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR . 'version.json';
+        $filename = $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR . 'module.json';
         if (file_exists($filename) && is_file($filename) && is_readable($filename)) {
             $vars = json_decode(file_get_contents($filename), true);
             return isset($vars['name']) && isset($vars['version']) ? $vars : null;
