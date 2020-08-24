@@ -43,8 +43,9 @@ class ModuleService extends Service
      */
     public function initialize()
     {
-        $this->version = $this->app->config->get('app.thinkadmin_ver', 'v4.0.0');
-        $version = strstr($this->version . '.', '.', true);
+        $full = $this->app->config->get('app.thinkadmin_ver', 'v4.0.0');
+        $this->version = trim($full, 'v');
+        $version = strstr($full . '.', '.', true);
         $this->server = "https://{$version}.thinkadmin.top";
     }
 
