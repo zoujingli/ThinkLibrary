@@ -58,7 +58,7 @@ class InstallService extends Service
         // 扫描规则文件
         foreach ($rules as $key => $rule) {
             $name = strtr(trim($rule, '\\/'), '\\', '/');
-            $data = array_merge($data, $this->_scanList("{$this->root}{$name}"));
+            $data = array_merge($data, $this->_scanList($this->root . $name));
         }
         // 清除忽略文件
         foreach ($data as $key => $item) foreach ($ignore as $ign) {
