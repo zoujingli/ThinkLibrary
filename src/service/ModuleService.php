@@ -148,8 +148,7 @@ class ModuleService extends Service
         foreach ($service->getModules() as $name) {
             $vars = $this->_getModuleVersion($name);
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
-                $data[$name] = $vars;
-                $data[$name]['change'] = [];
+                $data[$name] = array_merge($vars, ['change' => []]);
                 foreach ($service->scanDirectory($this->app->getBasePath() . $name . '/module/change/', [], '.md') as $file) {
                     $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = Parsedown::instance()->parse(file_get_contents($file));
                 }
