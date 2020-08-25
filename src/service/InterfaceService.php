@@ -216,7 +216,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 接口数据请求
+     * 接口数据模拟请求
      * @param string $uri 接口地址
      * @param array $data 请求数据
      * @return array
