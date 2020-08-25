@@ -22,29 +22,35 @@ use think\App;
 use think\exception\HttpResponseException;
 
 /**
- * 系统接口基础服务
+ * 通用接口基础服务
  * Class InterfaceService
  * @package think\admin\service
  */
 class InterfaceService extends Service
 {
     /**
+     * 调试模式
+     * @var bool
+     */
+    private $debug;
+
+    /**
      * 接口认证账号
      * @var string
      */
-    public $appid;
+    private $appid;
 
     /**
      * 接口认证密钥
      * @var string
      */
-    public $appkey;
+    private $appkey;
 
     /**
      * 接口请求地址
      * @var string
      */
-    public $baseapi;
+    private $baseapi;
 
     /**
      * 接口服务初始化
@@ -66,6 +72,29 @@ class InterfaceService extends Service
     }
 
     /**
+     * 动态配置参数
+     * @param mixed $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+        if (isset($this->$name)) {
+            $this->$name = $value;
+        }
+    }
+
+    /**
+     * 设置调试模式
+     * @param boolean $debug
+     * @return $this
+     */
+    public function debug($debug)
+    {
+        $this->debug = boolval($debug);
+        return $this;
+    }
+
+    /**
      * 获取接口账号
      * @return string
      */
@@ -75,11 +104,24 @@ class InterfaceService extends Service
     }
 
     /**
+     * 获取接口地址
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseapi;
+    }
+
+    /**
      * 获取请求数据
      * @return array
      */
     public function get(): array
     {
+        // 调试模式
+        if ($this->debug) {
+            return $this->app->request->request();
+        }
         // 基础参数获取
         $input = ValidateHelper::instance()->init([
             'appid.require' => lang('think_library_params_failed_empty', ['appid']),
@@ -113,7 +155,11 @@ class InterfaceService extends Service
     public function error($info, $data = '{-null-}', $code = 0)
     {
         if ($data === '{-null-}') $data = new \stdClass();
-        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
+        if ($this->debug) {
+            $this->baseError($info, $data, $code);
+        } else {
+            $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
+        }
     }
 
     /**
@@ -125,7 +171,11 @@ class InterfaceService extends Service
     public function success($info, $data = '{-null-}', $code = 1)
     {
         if ($data === '{-null-}') $data = new \stdClass();
-        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
+        if ($this->debug) {
+            $this->baseSuccess($info, $data, $code);
+        } else {
+            $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
+        }
     }
 
     /**
