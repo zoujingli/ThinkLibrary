@@ -98,6 +98,15 @@ class InterfaceService extends Service
     }
 
     /**
+     * 获取接口地址
+     * @return string
+     */
+    public function getBaseUrl()
+    {
+        return $this->baseapi;
+    }
+
+    /**
      * 设置授权账号
      * @param string $appid
      * @param string $appkey
@@ -108,15 +117,6 @@ class InterfaceService extends Service
         $this->appid = $appid;
         $this->appkey = $appkey;
         return $this;
-    }
-
-    /**
-     * 获取接口地址
-     * @return string
-     */
-    public function getBaseUrl()
-    {
-        return $this->baseapi;
     }
 
     /**
