@@ -245,7 +245,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 接口数据签名
+     * 接口响应数据签名
      * @param array $data ['appid','nostr','time','sign','data']
      * @return array
      */
