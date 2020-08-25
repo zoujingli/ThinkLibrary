@@ -160,12 +160,11 @@ class InterfaceService extends Service
     public function showCheck()
     {
         if (is_null($check = $this->checkInput())) {
-            return $this->baseError(lang('think_library_params_failed_auth'));
+            $this->baseError(lang('think_library_params_failed_auth'));
         } elseif ($check === false) {
-            return $this->baseError(lang('think_library_params_failed_sign'));
-        } else {
-            return $this;
+            $this->baseError(lang('think_library_params_failed_sign'));
         }
+        return $this;
     }
 
     /**
