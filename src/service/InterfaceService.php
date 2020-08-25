@@ -235,11 +235,14 @@ class InterfaceService extends Service
     /**
      * 请求数据签名验证
      * @param array $data 待检查数据
-     * @return boolean
+     * @return bool|null
      */
-    public function checkSign(array $data): bool
+    public function checkSign(array $data)
     {
-        if (isset($data['sign']) && isset($data['appid']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
+        if (isset($data['appid']) && isset($data['sign']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
+            if ($data['appid'] !== $this->appid) {
+                return null;
+            }
             return md5("{$data['appid']}#{$data['data']}#{$data['time']}#{$this->appkey}#{$data['nostr']}") === $data['sign'];
         } else {
             return false;
