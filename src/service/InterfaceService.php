@@ -121,8 +121,7 @@ class InterfaceService extends Service
 
     /**
      * 获取请求数据
-     * @param boolean $field
-     * @param boolean $check
+     * @param boolean $check 验证数据
      * @return mixed
      */
     public function getInput($check = true)
