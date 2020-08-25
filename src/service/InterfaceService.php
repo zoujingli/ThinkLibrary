@@ -114,9 +114,10 @@ class InterfaceService extends Service
 
     /**
      * 获取请求数据
+     * @param boolean $isCheckSign
      * @return array
      */
-    public function get(): array
+    public function get($isCheckSign = true): array
     {
         // 调试模式
         if ($this->debug) {
@@ -139,7 +140,7 @@ class InterfaceService extends Service
             $this->baseError(lang('think_library_params_failed_time'));
         }
         // 请求签名验证
-        if (!$this->_checkSign($input)) {
+        if ($isCheckSign && !$this->_checkSign($input)) {
             $this->baseError(lang('think_library_params_failed_sign'));
         }
         // 解析请求数据
