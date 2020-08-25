@@ -41,6 +41,12 @@ class InterfaceService extends Service
     private $appid;
 
     /**
+     * 请求数据
+     * @var array
+     */
+    private $input;
+
+    /**
      * 接口认证密钥
      * @var string
      */
@@ -115,37 +121,65 @@ class InterfaceService extends Service
 
     /**
      * 获取请求数据
-     * @param boolean $isCheckSign
-     * @return array
+     * @param boolean $field
+     * @param boolean $check
+     * @return mixed
      */
-    public function get($isCheckSign = true): array
+    public function getInput($check = true)
     {
-        // 调试模式
-        if ($this->debug) {
-            return $this->app->request->request();
-        }
         // 基础参数获取
-        $input = ValidateHelper::instance()->init([
+        $this->input = ValidateHelper::instance()->init([
             'appid.require' => lang('think_library_params_failed_empty', ['appid']),
             'nostr.require' => lang('think_library_params_failed_empty', ['nostr']),
             'time.require'  => lang('think_library_params_failed_empty', ['time']),
             'sign.require'  => lang('think_library_params_failed_empty', ['sign']),
             'data.require'  => lang('think_library_params_failed_empty', ['data']),
         ], 'post', [$this, 'baseError']);
-        // 接口参数处理
-        if ($input['appid'] !== $this->appid) {
-            $this->baseError(lang('think_library_params_failed_auth'));
-        }
         // 请求时间检查
-        if (abs($input['time'] - time()) > 30) {
+        if (abs($this->input['time'] - time()) > 30) {
             $this->baseError(lang('think_library_params_failed_time'));
         }
-        // 请求签名验证
-        if ($isCheckSign && !$this->checkSign($input)) {
-            $this->baseError(lang('think_library_params_failed_sign'));
+        return $check ? $this->showCheck() : $this->input;
+    }
+
+    /**
+     * 请求数据签名验证
+     * @return bool|null
+     */
+    public function checkInput()
+    {
+        if (empty($this->input)) $this->getInput(false);
+        if ($this->input['appid'] !== $this->appid) return null;
+        return md5("{$this->appid}#{$this->input['data']}#{$this->input['time']}#{$this->appkey}#{$this->input['nostr']}") === $this->input['sign'];
+    }
+
+    /**
+     * 显示检查结果
+     * @return $this
+     */
+    public function showCheck()
+    {
+        if (is_null($check = $this->checkInput())) {
+            return $this->baseError(lang('think_library_params_failed_auth'));
+        } elseif ($check === false) {
+            return $this->baseError(lang('think_library_params_failed_sign'));
+        } else {
+            return $this;
         }
-        // 解析请求数据
-        return json_decode($input['data'], true) ?: [];
+    }
+
+    /**
+     * 获取请求参数
+     * @return array
+     */
+    public function getData()
+    {
+        if ($this->debug) {
+            return $this->app->request->request();
+        } else {
+            if (empty($this->input)) $this->getInput(true);
+            return json_decode($this->input['data'], true) ?: [];
+        }
     }
 
     /**
@@ -212,8 +246,8 @@ class InterfaceService extends Service
     {
         $array = $this->_buildSign($data);
         throw new HttpResponseException(json([
-            'code' => $code, 'info' => $info, 'appid' => input('appid', null),
-            'time' => $array['time'], 'nostr' => $array['nostr'], 'sign' => $array['sign'], 'data' => $data,
+            'code'  => $code, 'info' => $info, 'time' => $array['time'], 'sign' => $array['sign'],
+            'appid' => input('appid', null), 'nostr' => $array['nostr'], 'data' => $data,
         ]));
     }
 
@@ -230,23 +264,6 @@ class InterfaceService extends Service
         if (empty($result)) throw new \think\admin\Exception(lang('think_library_response_failed'));
         if (empty($result['code'])) throw new \think\admin\Exception($result['info']);
         return $result['data'] ?? [];
-    }
-
-    /**
-     * 请求数据签名验证
-     * @param array $data 待检查数据
-     * @return bool|null
-     */
-    public function checkSign(array $data)
-    {
-        if (isset($data['appid']) && isset($data['sign']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
-            if ($data['appid'] !== $this->appid) {
-                return null;
-            }
-            return md5("{$data['appid']}#{$data['data']}#{$data['time']}#{$this->appkey}#{$data['nostr']}") === $data['sign'];
-        } else {
-            return false;
-        }
     }
 
     /**
