@@ -141,7 +141,7 @@ class InterfaceService extends Service
             $this->baseError(lang('think_library_params_failed_time'));
         }
         // 请求签名验证
-        if ($isCheckSign && !$this->_checkSign($input)) {
+        if ($isCheckSign && !$this->checkSign($input)) {
             $this->baseError(lang('think_library_params_failed_sign'));
         }
         // 解析请求数据
@@ -237,7 +237,7 @@ class InterfaceService extends Service
      * @param array $data 待检查数据
      * @return boolean
      */
-    private function _checkSign(array $data): bool
+    public function checkSign(array $data): bool
     {
         if (isset($data['sign']) && isset($data['appid']) && isset($data['data']) && isset($data['time']) && isset($data['nostr'])) {
             return md5("{$data['appid']}#{$data['data']}#{$data['time']}#{$this->appkey}#{$data['nostr']}") === $data['sign'];
