@@ -72,18 +72,6 @@ class InterfaceService extends Service
     }
 
     /**
-     * 动态配置参数
-     * @param mixed $name
-     * @param mixed $value
-     */
-    public function __set($name, $value)
-    {
-        if (isset($this->$name)) {
-            $this->$name = $value;
-        }
-    }
-
-    /**
      * 设置调试模式
      * @param boolean $debug
      * @return $this
@@ -101,6 +89,19 @@ class InterfaceService extends Service
     public function getAppid()
     {
         return $this->appid;
+    }
+
+    /**
+     * 设置授权账号
+     * @param string $appid
+     * @param string $appkey
+     * @return $this
+     */
+    public function setAuth($appid, $appkey)
+    {
+        $this->appid = $appid;
+        $this->appkey = $appkey;
+        return $this;
     }
 
     /**
