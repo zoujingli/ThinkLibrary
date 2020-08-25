@@ -208,8 +208,11 @@ class InterfaceService extends Service
      */
     public function baseResponse($info, $data = [], $code = 1)
     {
-        $extend = ['code' => $code, 'info' => $info, 'data' => $data, 'appid' => $data['appid']];
-        throw new HttpResponseException(json(array_merge($this->_buildSign($data), $extend)));
+        $array = $this->_buildSign($data);
+        throw new HttpResponseException(json([
+            'code' => $code, 'info' => $info, 'appid' => input('appid', null),
+            'time' => $array['time'], 'nostr' => $array['nostr'], 'sign' => $array['sign'], 'data' => $data,
+        ]));
     }
 
     /**
