@@ -189,11 +189,7 @@ class InterfaceService extends Service
     public function error($info, $data = '{-null-}', $code = 0)
     {
         if ($data === '{-null-}') $data = new \stdClass();
-        if ($this->debug) {
-            $this->baseError($info, $data, $code);
-        } else {
-            $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
-        }
+        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
     }
 
     /**
@@ -205,11 +201,7 @@ class InterfaceService extends Service
     public function success($info, $data = '{-null-}', $code = 1)
     {
         if ($data === '{-null-}') $data = new \stdClass();
-        if ($this->debug) {
-            $this->baseSuccess($info, $data, $code);
-        } else {
-            $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
-        }
+        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data], 1);
     }
 
     /**
