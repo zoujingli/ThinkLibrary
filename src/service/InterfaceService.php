@@ -60,21 +60,18 @@ class InterfaceService extends Service
 
     /**
      * 接口服务初始化
-     * OpenService constructor.
+     * InterfaceService constructor.
      * @param App $app
-     * @param string $appid 接口账号
-     * @param string $appkey 接口密钥
-     * @param string $baseapi 接口地址
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function __construct(App $app, $appid = '', $appkey = '', $baseapi = '')
+    public function __construct(App $app)
     {
         parent::__construct($app);
-        $this->appid = $appid ?: sysconf('data.interface_appid');
-        $this->appkey = $appkey ?: sysconf('data.interface_appkey');
-        $this->baseurl = $baseapi ?: sysconf('data.interface_baseapi');
+        $this->appid = sysconf('data.interface_appid') ?: '';
+        $this->appkey = sysconf('data.interface_appkey') ?: '';
+        $this->baseurl = sysconf('data.interface_baseapi') ?: '';
     }
 
     /**
