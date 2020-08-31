@@ -28,6 +28,12 @@ use think\admin\Service;
 class ModuleService extends Service
 {
     /**
+     * 代码根目录
+     * @var string
+     */
+    protected $root;
+
+    /**
      * 官方应用地址
      * @var string
      */
@@ -40,13 +46,14 @@ class ModuleService extends Service
     protected $version;
 
     /**
-     * 服务初始化
+     * 模块服务初始化
      */
     public function initialize()
     {
+        $this->root = $this->app->getRootPath();
         $this->version = trim(Library::VERSION, 'v');
-        $version = strstr($this->version, '.', true);
-        $this->server = "https://v{$version}.thinkadmin.top";
+        $maxver = strstr($this->version, '.', true);
+        $this->server = "https://v{$maxver}.thinkadmin.top";
     }
 
     /**
@@ -115,13 +122,12 @@ class ModuleService extends Service
      */
     public function install($name): array
     {
-        $install = InstallService::instance();
         $this->app->cache->set('moduleOnlineData', []);
-        $data = $install->grenerateDifference(['app' . '/' . $name]);
+        $data = $this->grenerateDifference(['app' . '/' . $name]);
         if (empty($data)) return [0, '没有需要安装的文件', []];
         $lines = [];
         foreach ($data as $file) {
-            [$state, $mode, $name] = $install->updateFileByDownload($file);
+            [$state, $mode, $name] = $this->updateFileByDownload($file);
             if ($state) {
                 if ($mode === 'add') $lines[] = "add {$name} successed";
                 if ($mode === 'mod') $lines[] = "modify {$name} successed";
@@ -147,7 +153,7 @@ class ModuleService extends Service
             $vars = $this->_getModuleVersion($name);
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
                 $data[$name] = array_merge($vars, ['change' => []]);
-                foreach ($service->scanDirectory($this->_getModulePath($name) . 'change', [], 'md') as $file) {
+                foreach ($service->scanDirectory($this->_getModuleInfoPath($name) . 'change', [], 'md') as $file) {
                     $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = Parsedown::instance()->parse(file_get_contents($file));
                 }
             }
@@ -156,10 +162,29 @@ class ModuleService extends Service
     }
 
     /**
+     * 检查文件是否可下载
+     * @param string $name 文件名称
+     * @return boolean
+     */
+    public function checkAllowDownload(string $name): bool
+    {
+        // 禁止下载数据库配置文件
+        if (stripos($name, 'database.php') !== false) {
+            return false;
+        }
+        // 检查允许下载的文件规则
+        foreach ($this->_getAllowDownloadRule() as $rule) {
+            if (stripos($name, $rule) !== false) return true;
+        }
+        // 不在允许下载的文件规则
+        return false;
+    }
+
+    /**
      * 获取允许下载的规则
      * @return array
      */
-    public function getAllowDownloadRule(): array
+    private function _getAllowDownloadRule(): array
     {
         $data = $this->app->cache->get('moduleAllowRule', []);
         if (is_array($data) && count($data) > 0) return $data;
@@ -170,32 +195,13 @@ class ModuleService extends Service
     }
 
     /**
-     * 检查文件是否可下载
-     * @param string $name 文件名称
-     * @return boolean
-     */
-    public function checkAllowDownload($name): bool
-    {
-        // 禁止下载数据库配置文件
-        if (stripos($name, 'database.php') !== false) {
-            return false;
-        }
-        // 检查允许下载的文件规则
-        foreach ($this->getAllowDownloadRule() as $rule) {
-            if (stripos($name, $rule) !== false) return true;
-        }
-        // 不在允许下载的文件规则
-        return false;
-    }
-
-    /**
      * 获取模块版本信息
      * @param string $name 模块名称
      * @return bool|array|null
      */
-    private function _getModuleVersion($name)
+    private function _getModuleVersion(string $name)
     {
-        $filename = $this->_getModulePath($name) . 'module.json';
+        $filename = $this->_getModuleInfoPath($name) . 'module.json';
         if (file_exists($filename) && is_file($filename) && is_readable($filename)) {
             $vars = json_decode(file_get_contents($filename), true);
             return isset($vars['name']) && isset($vars['version']) ? $vars : null;
@@ -206,12 +212,148 @@ class ModuleService extends Service
 
     /**
      * 获取模块信息路径
-     * @param string $name
+     * @param string $name 模块名称
      * @return string
      */
-    private function _getModulePath($name)
+    private function _getModuleInfoPath(string $name): string
     {
         $appdir = $this->app->getBasePath() . $name;
         return $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * 获取文件信息列表
+     * @param array $rules 文件规则
+     * @param array $ignore 忽略规则
+     * @param array $data 扫描结果列表
+     * @return array
+     */
+    public function getList(array $rules, array $ignore = [], array $data = []): array
+    {
+        // 扫描规则文件
+        foreach ($rules as $key => $rule) {
+            $name = strtr(trim($rule, '\\/'), '\\', '/');
+            $data = array_merge($data, $this->_scanLocalFileHashList($this->root . $name));
+        }
+        // 清除忽略文件
+        foreach ($data as $key => $item) foreach ($ignore as $ign) {
+            if (stripos($item['name'], $ign) === 0) unset($data[$key]);
+        }
+        // 返回文件数据
+        return ['rules' => $rules, 'ignore' => $ignore, 'list' => $data];
+    }
+
+    /**
+     * 获取文件差异数据
+     * @param array $rules 文件规则
+     * @param array $ignore 忽略规则
+     * @return array
+     */
+    public function grenerateDifference(array $rules = [], array $ignore = []): array
+    {
+        [$rules1, $ignore1, $data] = [$rules, $ignore, []];
+        $result = json_decode(HttpExtend::post($this->server . '/admin/api.update/node', [
+            'rules' => json_encode($rules1), 'ignore' => json_encode($ignore1),
+        ]), true);
+        if (!empty($result['code'])) {
+            $new = $this->getList($result['data']['rules'], $result['data']['ignore']);
+            foreach ($this->_grenerateDifferenceContrast($result['data']['list'], $new['list']) as $file) {
+                if (in_array($file['type'], ['add', 'del', 'mod'])) foreach ($rules1 as $rule) {
+                    if (stripos($file['name'], $rule) === 0) $data[] = $file;
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * 尝试下载并更新文件
+     * @param array $file 文件信息
+     * @return array
+     */
+    public function updateFileByDownload(array $file): array
+    {
+        if (in_array($file['type'], ['add', 'mod'])) {
+            if ($this->_downloadUpdateFile(encode($file['name']))) {
+                return [true, $file['type'], $file['name']];
+            } else {
+                return [false, $file['type'], $file['name']];
+            }
+        } elseif (in_array($file['type'], ['del'])) {
+            $real = $this->root . $file['name'];
+            if (is_file($real) && unlink($real)) {
+                $this->_removeEmptyDirectory(dirname($real));
+                return [true, $file['type'], $file['name']];
+            } else {
+                return [false, $file['type'], $file['name']];
+            }
+        }
+    }
+
+    /**
+     * 下载更新文件内容
+     * @param string $encode
+     * @return boolean|integer
+     */
+    private function _downloadUpdateFile(string $encode)
+    {
+        $source = $this->server . '/admin/api.update/get?encode=' . $encode;
+        $result = json_decode(HttpExtend::get($source), true);
+        if (empty($result['code'])) return false;
+        $filename = $this->root . decode($encode);
+        file_exists(dirname($filename)) || mkdir(dirname($filename), 0755, true);
+        return file_put_contents($filename, base64_decode($result['data']['content']));
+    }
+
+    /**
+     * 清理空目录
+     * @param string $path
+     */
+    private function _removeEmptyDirectory(string $path)
+    {
+        if (is_dir($path) && count(scandir($path)) === 2 && rmdir($path)) {
+            $this->_removeEmptyDirectory(dirname($path));
+        }
+    }
+
+    /**
+     * 根据线上线下生成操作数组
+     * @param array $serve 线上文件列表信息
+     * @param array $local 本地文件列表信息
+     * @return array
+     */
+    private function _grenerateDifferenceContrast(array $serve = [], array $local = []): array
+    {
+        // 数据扁平化
+        [$_serve, $_local, $_diffy] = [[], [], []];
+        foreach ($serve as $t) $_serve[$t['name']] = $t;
+        foreach ($local as $t) $_local[$t['name']] = $t;
+        unset($serve, $local);
+        // 线上数据差异计算
+        foreach ($_serve as $t) isset($_local[$t['name']]) ? array_push($_diffy, [
+            'type' => $t['hash'] === $_local[$t['name']]['hash'] ? null : 'mod', 'name' => $t['name'],
+        ]) : array_push($_diffy, ['type' => 'add', 'name' => $t['name']]);
+        // 本地数据增量计算
+        foreach ($_local as $t) if (!isset($_serve[$t['name']])) array_push($_diffy, ['type' => 'del', 'name' => $t['name']]);
+        unset($_serve, $_local);
+        usort($_diffy, function ($a, $b) {
+            return $a['name'] !== $b['name'] ? ($a['name'] > $b['name'] ? 1 : -1) : 0;
+        });
+        return $_diffy;
+    }
+
+    /**
+     * 获取目录文件列表
+     * @param mixed $path 扫描目录
+     * @param array $data 扫描结果
+     * @return array
+     */
+    private function _scanLocalFileHashList(string $path, array $data = []): array
+    {
+        foreach (NodeService::instance()->scanDirectory($path, [], null) as $file) $data[] = [
+            'name' => str_replace(strstr($this->root, '\\', '/'), '', $file),
+            'hash' => md5(preg_replace('/\s+/', '', file_get_contents($path))),
+        ];
+        return $data;
     }
 }
