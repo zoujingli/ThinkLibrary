@@ -351,7 +351,7 @@ class ModuleService extends Service
     private function _scanLocalFileHashList(string $path, array $data = []): array
     {
         foreach (NodeService::instance()->scanDirectory($path, [], null) as $file) $data[] = [
-            'name' => str_replace(strstr($this->root, '\\', '/'), '', $file),
+            'name' => str_replace(strtr($this->root, '\\', '/'), '', $file),
             'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file))),
         ];
         return $data;
