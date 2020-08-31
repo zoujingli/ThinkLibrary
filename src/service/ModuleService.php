@@ -162,6 +162,28 @@ class ModuleService extends Service
     }
 
     /**
+     * 获取文件信息列表
+     * @param array $rules 文件规则
+     * @param array $ignore 忽略规则
+     * @param array $data 扫描结果列表
+     * @return array
+     */
+    public function getChanges(array $rules, array $ignore = [], array $data = []): array
+    {
+        // 扫描规则文件
+        foreach ($rules as $key => $rule) {
+            $name = strtr(trim($rule, '\\/'), '\\', '/');
+            $data = array_merge($data, $this->_scanLocalFileHashList($this->root . $name));
+        }
+        // 清除忽略文件
+        foreach ($data as $key => $item) foreach ($ignore as $ign) {
+            if (stripos($item['name'], $ign) === 0) unset($data[$key]);
+        }
+        // 返回文件数据
+        return ['rules' => $rules, 'ignore' => $ignore, 'list' => $data];
+    }
+
+    /**
      * 检查文件是否可下载
      * @param string $name 文件名称
      * @return boolean
@@ -181,69 +203,6 @@ class ModuleService extends Service
     }
 
     /**
-     * 获取允许下载的规则
-     * @return array
-     */
-    private function _getAllowDownloadRule(): array
-    {
-        $data = $this->app->cache->get('moduleAllowRule', []);
-        if (is_array($data) && count($data) > 0) return $data;
-        $data = ['config', 'public/static', 'public/router.php', 'public/index.php'];
-        foreach (array_keys($this->getModules()) as $name) $data[] = "app/{$name}";
-        $this->app->cache->set('moduleAllowRule', $data, 30);
-        return $data;
-    }
-
-    /**
-     * 获取模块版本信息
-     * @param string $name 模块名称
-     * @return bool|array|null
-     */
-    private function _getModuleVersion(string $name)
-    {
-        $filename = $this->_getModuleInfoPath($name) . 'module.json';
-        if (file_exists($filename) && is_file($filename) && is_readable($filename)) {
-            $vars = json_decode(file_get_contents($filename), true);
-            return isset($vars['name']) && isset($vars['version']) ? $vars : null;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * 获取模块信息路径
-     * @param string $name 模块名称
-     * @return string
-     */
-    private function _getModuleInfoPath(string $name): string
-    {
-        $appdir = $this->app->getBasePath() . $name;
-        return $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * 获取文件信息列表
-     * @param array $rules 文件规则
-     * @param array $ignore 忽略规则
-     * @param array $data 扫描结果列表
-     * @return array
-     */
-    public function getChangeRuleList(array $rules, array $ignore = [], array $data = []): array
-    {
-        // 扫描规则文件
-        foreach ($rules as $key => $rule) {
-            $name = strtr(trim($rule, '\\/'), '\\', '/');
-            $data = array_merge($data, $this->_scanLocalFileHashList($this->root . $name));
-        }
-        // 清除忽略文件
-        foreach ($data as $key => $item) foreach ($ignore as $ign) {
-            if (stripos($item['name'], $ign) === 0) unset($data[$key]);
-        }
-        // 返回文件数据
-        return ['rules' => $rules, 'ignore' => $ignore, 'list' => $data];
-    }
-
-    /**
      * 获取文件差异数据
      * @param array $rules 文件规则
      * @param array $ignore 忽略规则
@@ -256,7 +215,7 @@ class ModuleService extends Service
             'rules' => json_encode($rules1), 'ignore' => json_encode($ignore1),
         ]), true);
         if (!empty($result['code'])) {
-            $new = $this->getChangeRuleList($result['data']['rules'], $result['data']['ignore']);
+            $new = $this->getChanges($result['data']['rules'], $result['data']['ignore']);
             foreach ($this->_grenerateDifferenceContrast($result['data']['list'], $new['list']) as $file) {
                 if (in_array($file['type'], ['add', 'del', 'mod'])) foreach ($rules1 as $rule) {
                     if (stripos($file['name'], $rule) === 0) $data[] = $file;
@@ -291,6 +250,36 @@ class ModuleService extends Service
     }
 
     /**
+     * 获取允许下载的规则
+     * @return array
+     */
+    private function _getAllowDownloadRule(): array
+    {
+        $data = $this->app->cache->get('moduleAllowRule', []);
+        if (is_array($data) && count($data) > 0) return $data;
+        $data = ['config', 'public/static', 'public/router.php', 'public/index.php'];
+        foreach (array_keys($this->getModules()) as $name) $data[] = "app/{$name}";
+        $this->app->cache->set('moduleAllowRule', $data, 30);
+        return $data;
+    }
+
+    /**
+     * 获取模块版本信息
+     * @param string $name 模块名称
+     * @return bool|array|null
+     */
+    private function _getModuleVersion(string $name)
+    {
+        $filename = $this->_getModuleInfoPath($name) . 'module.json';
+        if (file_exists($filename) && is_file($filename) && is_readable($filename)) {
+            $vars = json_decode(file_get_contents($filename), true);
+            return isset($vars['name']) && isset($vars['version']) ? $vars : null;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * 下载更新文件内容
      * @param string $encode
      * @return boolean|integer
@@ -314,6 +303,17 @@ class ModuleService extends Service
         if (is_dir($path) && count(scandir($path)) === 2 && rmdir($path)) {
             $this->_removeEmptyDirectory(dirname($path));
         }
+    }
+
+    /**
+     * 获取模块信息路径
+     * @param string $name 模块名称
+     * @return string
+     */
+    private function _getModuleInfoPath(string $name): string
+    {
+        $appdir = $this->app->getBasePath() . $name;
+        return $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -352,7 +352,7 @@ class ModuleService extends Service
     {
         foreach (NodeService::instance()->scanDirectory($path, [], null) as $file) $data[] = [
             'name' => str_replace(strstr($this->root, '\\', '/'), '', $file),
-            'hash' => md5(preg_replace('/\s+/', '', file_get_contents($path))),
+            'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file))),
         ];
         return $data;
     }
