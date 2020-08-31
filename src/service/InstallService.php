@@ -34,7 +34,7 @@ class InstallService extends Service
      */
     public function getList(array $rules, array $ignore = [], array $data = []): array
     {
-        return ModuleService::instance()->getList($rules, $ignore, $data);
+        return ModuleService::instance()->getChangeRuleList($rules, $ignore, $data);
     }
 
     /**

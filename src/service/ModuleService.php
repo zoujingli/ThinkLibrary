@@ -228,7 +228,7 @@ class ModuleService extends Service
      * @param array $data 扫描结果列表
      * @return array
      */
-    public function getList(array $rules, array $ignore = [], array $data = []): array
+    public function getChangeRuleList(array $rules, array $ignore = [], array $data = []): array
     {
         // 扫描规则文件
         foreach ($rules as $key => $rule) {
@@ -256,7 +256,7 @@ class ModuleService extends Service
             'rules' => json_encode($rules1), 'ignore' => json_encode($ignore1),
         ]), true);
         if (!empty($result['code'])) {
-            $new = $this->getList($result['data']['rules'], $result['data']['ignore']);
+            $new = $this->getChangeRuleList($result['data']['rules'], $result['data']['ignore']);
             foreach ($this->_grenerateDifferenceContrast($result['data']['list'], $new['list']) as $file) {
                 if (in_array($file['type'], ['add', 'del', 'mod'])) foreach ($rules1 as $rule) {
                     if (stripos($file['name'], $rule) === 0) $data[] = $file;
