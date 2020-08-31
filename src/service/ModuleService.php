@@ -17,6 +17,7 @@ namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
 use think\admin\extend\Parsedown;
+use think\admin\Library;
 use think\admin\Service;
 
 /**
@@ -43,10 +44,9 @@ class ModuleService extends Service
      */
     public function initialize()
     {
-        $full = $this->app->config->get('app.thinkadmin_ver', 'v4.0.0');
-        $this->version = trim($full, 'v');
-        $version = strstr($full . '.', '.', true);
-        $this->server = "https://{$version}.thinkadmin.top";
+        $this->version = trim(Library::VERSION, 'v');
+        $version = strstr($this->version, '.', true);
+        $this->server = "https://v{$version}.thinkadmin.top";
     }
 
     /**
