@@ -51,23 +51,23 @@ class MenuService extends Service
      */
     public function getTree(): array
     {
-        $result = $this->app->db->name('SystemMenu')->where(['status' => '1'])->order('sort desc,id asc')->select();
-        return $this->_buildData(DataExtend::arr2tree($result->toArray()), NodeService::instance()->getMethods());
+        $query = $this->app->db->name('SystemMenu');
+        $query->where(['status' => '1'])->order('sort desc,id asc');
+        return $this->_buildData(DataExtend::arr2tree($query->select()->toArray()));
     }
 
     /**
      * 后台主菜单权限过滤
      * @param array $menus 当前菜单列表
-     * @param array $nodes 系统权限节点
      * @return array
      * @throws \ReflectionException
      */
-    private function _buildData(array $menus, array $nodes): array
+    private function _buildData(array $menus): array
     {
         $service = AdminService::instance();
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
-                $menu['sub'] = $this->_buildData($menu['sub'], $nodes);
+                $menu['sub'] = $this->_buildData($menu['sub']);
             }
             if (!empty($menu['sub'])) {
                 $menu['url'] = '#';
