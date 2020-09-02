@@ -31,7 +31,7 @@ class MenuService extends Service
      * @return array
      * @throws \ReflectionException
      */
-    public function getList()
+    public function getList(): array
     {
         static $nodes = [];
         if (count($nodes) > 0) return $nodes;
@@ -49,7 +49,7 @@ class MenuService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getTree()
+    public function getTree(): array
     {
         $result = $this->app->db->name('SystemMenu')->where(['status' => '1'])->order('sort desc,id asc')->select();
         return $this->_buildData(DataExtend::arr2tree($result->toArray()), NodeService::instance()->getMethods());
@@ -62,19 +62,29 @@ class MenuService extends Service
      * @return array
      * @throws \ReflectionException
      */
-    private function _buildData($menus, $nodes)
+    private function _buildData(array $menus, array $nodes): array
     {
+        $service = AdminService::instance();
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
                 $menu['sub'] = $this->_buildData($menu['sub'], $nodes);
             }
-            if (!empty($menu['sub'])) $menu['url'] = '#';
-            elseif ($menu['url'] === '#') unset($menus[$key]);
-            elseif (preg_match('|^https?://|i', $menu['url'])) continue;
-            else {
+            if (!empty($menu['sub'])) {
+                $menu['url'] = '#';
+            } elseif ($menu['url'] === '#') {
+                unset($menus[$key]);
+            } elseif (preg_match('|^https?://|i', $menu['url'])) {
+                if (!!$menu['node'] && !$service->check($menu['node'])) {
+                    unset($menus[$key]);
+                } elseif ($menu['params']) {
+                    $menu['url'] .= (strpos($menu['url'], '?') === false ? '?' : '&') . $menu['params'];
+                }
+            } elseif (!!$menu['node'] && !$service->check($menu['node'])) {
+                unset($menus[$key]);
+            } else {
                 $node = join('/', array_slice(explode('/', $menu['url']), 0, 3));
-                $menu['url'] = url($menu['url']) . (empty($menu['params']) ? '' : "?{$menu['params']}");
-                if (!AdminService::instance()->check($node)) unset($menus[$key]);
+                $menu['url'] = url($menu['url']) . ($menu['params'] ? '' : "?{$menu['params']}");
+                if (!$service->check($node)) unset($menus[$key]);
             }
         }
         return $menus;
