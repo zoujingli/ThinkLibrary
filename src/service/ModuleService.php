@@ -172,8 +172,8 @@ class ModuleService extends Service
     {
         // 扫描规则文件
         foreach ($rules as $key => $rule) {
-            $name = strtr(trim($rule, '\\/'), '\\', '/');
-            $data = array_merge($data, $this->_scanLocalFileHashList($this->root . $name));
+            $path = $this->root . strtr(trim($rule, '\\/'), '\\', '/');
+            $data = array_merge($data, $this->_scanLocalFileHashList($path));
         }
         // 清除忽略文件
         foreach ($data as $key => $item) foreach ($ignore as $ign) {
@@ -358,10 +358,12 @@ class ModuleService extends Service
      */
     private function _scanLocalFileHashList(string $path, array $data = []): array
     {
-        foreach (NodeService::instance()->scanDirectory($path, [], null) as $file) $data[] = [
-            'name' => str_replace(strtr($this->root, '\\', '/'), '', $file),
-            'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file))),
-        ];
+        foreach (NodeService::instance()->scanDirectory($path, [], null) as $file) {
+            $name = str_replace(strtr($this->root, '\\', '/'), '', $file);
+            if ($this->checkAllowDownload($name)) $data[] = [
+                'name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file))),
+            ];
+        }
         return $data;
     }
 }
