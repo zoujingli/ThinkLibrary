@@ -194,6 +194,10 @@ class ModuleService extends Service
         if (stripos($name, 'database.php') !== false) {
             return false;
         }
+        // 禁止目录级别上跳
+        if (stripos($name, '../') !== false) {
+            return false;
+        }
         // 检查允许下载的文件规则
         foreach ($this->_getAllowDownloadRule() as $rule) {
             if (stripos($name, $rule) !== false) return true;
