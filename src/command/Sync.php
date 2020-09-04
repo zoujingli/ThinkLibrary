@@ -201,7 +201,7 @@ class Sync extends Command
      * @param string $name 文件名称
      * @return boolean
      */
-    public function checkAllowDownload($name)
+    private function checkAllowDownload($name)
     {
         // 禁止目录级别上跳
         if (stripos($name, '../') !== false) {
@@ -229,11 +229,11 @@ class Sync extends Command
      */
     private function _getAllowDownloadRule(): array
     {
-        $data = $this->app->cache->get('moduleAllowRule', []);
+        $data = cache('moduleAllowRule', []);
         if (is_array($data) && count($data) > 0) return $data;
         $data = ['think', 'config', 'public/static', 'public/router.php', 'public/index.php'];
         foreach (['admin', 'wechat', 'service'] as $name) $data[] = 'application/' . $name;
-        $this->app->cache->set('moduleAllowRule', $data, 30);
+        cache('moduleAllowRule', $data, 30);
         return $data;
     }
 
