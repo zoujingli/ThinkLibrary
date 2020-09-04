@@ -195,7 +195,7 @@ class ModuleService extends Service
             return false;
         }
         // 禁止下载数据库配置文件
-        if (stripos($name, 'database.php') !== false) {
+        if (stripos($name, 'config/database') !== false) {
             return false;
         }
         // 禁止非官方演示项目下载
