@@ -248,9 +248,9 @@ class SystemService extends Service
      * 获取实时运行配置
      * @param string $key
      * @param array $default
-     * @return array
+     * @return array|string
      */
-    public function getRuntime($key = null, array $default = []): array
+    public function getRuntime($key = null, array $default = [])
     {
         $filename = "{$this->app->getRootPath()}runtime/config.json";
         if (file_exists($filename) && is_file($filename)) {
