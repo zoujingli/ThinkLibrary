@@ -194,10 +194,10 @@ class ModuleService extends Service
         if (stripos($name, '..') !== false) {
             return false;
         }
-        // 禁止非官方演示项目下载
-        if (!SystemService::instance()->checkRunMode('dev')) {
-            return false;
-        }
+        // 禁止非官方演示项目下载，不支持通过指令更新
+        // if (!SystemService::instance()->checkRunMode('dev')) {
+        //    return false;
+        // }
         // 禁止下载数据库配置文件
         if (stripos(strtr($name, '\\', '/'), 'config/database') !== false) {
             return false;
