@@ -326,28 +326,24 @@ class ModuleService extends Service
 
     /**
      * 根据线上线下生成操作数组
-     * @param array $serve 线上文件列表信息
-     * @param array $local 本地文件列表信息
+     * @param array $serve 线上文件数据
+     * @param array $local 本地文件数据
+     * @param array $diffy 计算结算数据
      * @return array
      */
-    private function _grenerateDifferenceContrast(array $serve = [], array $local = []): array
+    private function _grenerateDifferenceContrast(array $serve = [], array $local = [], array $diffy = []): array
     {
-        // 数据扁平化
-        [$_serve, $_local, $_diffy] = [[], [], []];
-        foreach ($serve as $t) $_serve[$t['name']] = $t;
-        foreach ($local as $t) $_local[$t['name']] = $t;
-        unset($serve, $local);
-        // 线上数据差异计算
-        foreach ($_serve as $t) isset($_local[$t['name']]) ? array_push($_diffy, [
-            'type' => $t['hash'] === $_local[$t['name']]['hash'] ? null : 'mod', 'name' => $t['name'],
-        ]) : array_push($_diffy, ['type' => 'add', 'name' => $t['name']]);
-        // 本地数据增量计算
-        foreach ($_local as $t) if (!isset($_serve[$t['name']])) array_push($_diffy, ['type' => 'del', 'name' => $t['name']]);
-        unset($_serve, $_local);
-        usort($_diffy, function ($a, $b) {
-            return $a['name'] !== $b['name'] ? ($a['name'] > $b['name'] ? 1 : -1) : 0;
-        });
-        return $_diffy;
+        $serve = array_combine(array_column($serve, 'name'), array_column($serve, 'hash'));
+        $local = array_combine(array_column($local, 'name'), array_column($local, 'hash'));
+        foreach ($serve as $name => $hash) {
+            $type = isset($local[$name]) ? ($hash === $local[$name] ? null : 'mod') : 'add';
+            $diffy[$name] = ['type' => $type, 'name' => $name];
+        }
+        foreach ($local as $name => $hash) if (!isset($serve[$name])) {
+            $diffy[$name] = ['type' => 'del', 'name' => $name];
+        }
+        ksort($diffy);
+        return array_values($diffy);
     }
 
     /**
