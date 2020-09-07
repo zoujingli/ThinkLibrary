@@ -250,7 +250,7 @@ class SystemService extends Service
      * @param array $default
      * @return array
      */
-    public function getRuntime(string $key = null, array $default = []): array
+    public function getRuntime($key = null, array $default = []): array
     {
         $filename = "{$this->app->getRootPath()}runtime/config.json";
         if (file_exists($filename) && is_file($filename)) {
@@ -286,7 +286,7 @@ class SystemService extends Service
      * @param array $data 配置数据
      * @return boolean 是否调试模式
      */
-    public function bindRuntime($data = []): bool
+    public function bindRuntime(array $data = []): bool
     {
         if (empty($data)) $data = $this->getRuntime();
         $bind['app_map'] = $this->app->config->get('app.app_map', []);
