@@ -56,7 +56,7 @@ class NodeService extends Service
      * @param string $node
      * @return string
      */
-    public function fullnode(string $node): string
+    public function fullnode($node): string
     {
         if (empty($node)) return $this->getCurrent();
         if (count($attrs = explode('/', $node)) === 1) {
