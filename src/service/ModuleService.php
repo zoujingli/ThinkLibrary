@@ -327,7 +327,7 @@ class ModuleService extends Service
      * 根据线上线下生成操作数组
      * @param array $serve 线上文件数据
      * @param array $local 本地文件数据
-     * @param array $diffy 计算结算数据
+     * @param array $diffy 计算结果数据
      * @return array
      */
     private function _grenerateDifferenceContrast(array $serve = [], array $local = [], array $diffy = []): array
