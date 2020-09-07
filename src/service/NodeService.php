@@ -138,10 +138,10 @@ class NodeService extends Service
      * 获取所有PHP文件列表
      * @param string $path 扫描目录
      * @param array $data 额外数据
-     * @param string $ext 文件后缀
+     * @param null|string $ext 文件后缀
      * @return array
      */
-    public function scanDirectory(string $path, array $data = [], string $ext = 'php'): array
+    public function scanDirectory(string $path, array $data = [], $ext = 'php'): array
     {
         if (file_exists($path)) {
             if (is_file($path)) {
