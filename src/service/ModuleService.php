@@ -191,7 +191,7 @@ class ModuleService extends Service
     public function checkAllowDownload(string $name): bool
     {
         // 禁止目录级别上跳
-        if (stripos($name, '../') !== false) {
+        if (stripos($name, '..') !== false) {
             return false;
         }
         // 禁止非官方演示项目下载
