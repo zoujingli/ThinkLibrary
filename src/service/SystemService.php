@@ -250,7 +250,7 @@ class SystemService extends Service
      * @param array $default
      * @return array
      */
-    public function getRuntime($key = null, $default = [])
+    public function getRuntime(string $key = null, array $default = []): array
     {
         $filename = "{$this->app->getRootPath()}runtime/config.json";
         if (file_exists($filename) && is_file($filename)) {

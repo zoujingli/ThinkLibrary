@@ -67,7 +67,7 @@ class FormHelper extends Helper
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function init($dbQuery, $template = '', $field = '', $where = [], $data = [])
+    public function init($dbQuery, string $template = '', string $field = '', array $where = [], array $data = [])
     {
         $this->query = $this->buildQuery($dbQuery);
         [$this->template, $this->where, $this->data] = [$template, $where, $data];

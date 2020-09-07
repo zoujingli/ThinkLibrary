@@ -45,7 +45,7 @@ class DeleteHelper extends Helper
      * @return boolean|null|void
      * @throws \think\db\exception\DbException
      */
-    public function init($dbQuery, $field = '', $where = [])
+    public function init($dbQuery, string $field = '', array $where = [])
     {
         $this->query = $this->buildQuery($dbQuery);
         $this->field = $field ?: $this->query->getPk();

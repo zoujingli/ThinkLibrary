@@ -60,7 +60,7 @@ class ModuleService extends Service
      * 获取服务端地址
      * @return string
      */
-    public function getServer()
+    public function getServer(): string
     {
         return $this->server;
     }
@@ -69,7 +69,7 @@ class ModuleService extends Service
      * 获取版本号信息
      * @return string
      */
-    public function getVersion()
+    public function getVersion(): string
     {
         return $this->version;
     }
