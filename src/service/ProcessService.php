@@ -106,7 +106,7 @@ class ProcessService extends Service
      * @param boolean $outarr 返回类型
      * @return string|array
      */
-    public function exec($command, $outarr = false): string
+    public function exec($command, $outarr = false)
     {
         exec($command, $output);
         return $outarr ? $output : join("\n", $output);
