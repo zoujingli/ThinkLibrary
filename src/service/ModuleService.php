@@ -212,25 +212,24 @@ class ModuleService extends Service
 
     /**
      * 获取文件差异数据
-     * @param array $rules 文件规则
+     * @param array $rules 查询规则
      * @param array $ignore 忽略规则
+     * @param array $result 差异数据
      * @return array
      */
-    public function grenerateDifference(array $rules = [], array $ignore = []): array
+    public function grenerateDifference(array $rules = [], array $ignore = [], array $result = []): array
     {
-        [$rules1, $ignore1, $data] = [$rules, $ignore, []];
-        $result = json_decode(HttpExtend::post($this->server . '/admin/api.update/node', [
-            'rules' => json_encode($rules1), 'ignore' => json_encode($ignore1),
+        $online = json_decode(HttpExtend::post($this->server . '/admin/api.update/node', [
+            'rules' => json_encode($rules), 'ignore' => json_encode($ignore),
         ]), true);
-        if (!empty($result['code'])) {
-            $new = $this->getChanges($result['data']['rules'], $result['data']['ignore']);
-            foreach ($this->_grenerateDifferenceContrast($result['data']['list'], $new['list']) as $file) {
-                if (in_array($file['type'], ['add', 'del', 'mod'])) foreach ($rules1 as $rule) {
-                    if (stripos($file['name'], $rule) === 0) $data[] = $file;
-                }
+        if (empty($online['code'])) return $result;
+        $change = $this->getChanges($online['data']['rules'] ?? [], $online['data']['ignore'] ?? []);
+        foreach ($this->_grenerateDifferenceContrast($online['data']['list'], $change['list']) as $file) {
+            if (in_array($file['type'], ['add', 'del', 'mod'])) foreach ($rules as $rule) {
+                if (stripos($file['name'], $rule) === 0) $result[] = $file;
             }
         }
-        return $data;
+        return $result;
     }
 
     /**
