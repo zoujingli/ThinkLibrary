@@ -80,7 +80,8 @@ class Sync extends Command
     public function build()
     {
         return $this->tree([
-            'think', 'config/log.php', 'config/cookie.php', 'config/template.php',
+            'think',
+            'config/log.php', 'config/cookie.php', 'config/template.php',
             'application/admin', 'application/wechat', 'application/service',
             'public/static/plugs', 'public/static/theme', 'public/static/admin.js', 'public/static/login.js',
         ]);
