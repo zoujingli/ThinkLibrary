@@ -104,7 +104,7 @@ class HttpExtend
             curl_setopt($curl, CURLOPT_COOKIE, $options['cookie']);
         }
         // Header 头信息设置
-        if (empty($options['headers'])) {
+        if (!empty($options['headers'])) {
             curl_setopt($curl, CURLOPT_HTTPHEADER, $options['headers']);
         }
         if (!empty($options['cookie_file'])) {
