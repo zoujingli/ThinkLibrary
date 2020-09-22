@@ -100,9 +100,11 @@ class HttpExtend
         // Agent 代理设置
         curl_setopt($curl, CURLOPT_USERAGENT, static::getUserAgent());
         // CURL 头信息设置
-        if (!empty($options['headers'])) {
-            curl_setopt($curl, CURLOPT_HTTPHEADER, $options['headers']);
+        $options['headers'] = $options['headers'] ?? [];
+        if (stripos(join(',', $options['headers']), 'Content-Type:') !== false) {
+            $options['headers'][] = 'Content-Type: application/x-www-form-urlencoded';
         }
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $options['headers']);
         // Cookie 信息设置
         if (!empty($options['cookie'])) {
             curl_setopt($curl, CURLOPT_COOKIE, $options['cookie']);
