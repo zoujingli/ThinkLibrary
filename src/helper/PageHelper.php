@@ -80,7 +80,7 @@ class PageHelper extends Helper
             $result = ['list' => $this->query->select()->toArray()];
         }
         if (false !== $this->class->callback('_page_filter', $result['list']) && $display) {
-            return $this->class->fetch($template, $result);
+            $this->class->fetch($template, $result);
         } else {
             return $result;
         }
