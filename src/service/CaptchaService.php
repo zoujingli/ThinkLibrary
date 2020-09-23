@@ -13,6 +13,8 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+declare (strict_types=1);
+
 namespace think\admin\service;
 
 use think\admin\Service;
@@ -34,11 +36,11 @@ class CaptchaService extends Service
     private $fontsize = 20; // 指定字体大小
 
     /**
-     * 服务初始化
+     * 验证码服务初始化
      * @param array $config
      * @return static
      */
-    public function initialize($config = [])
+    public function initialize(array $config = [])
     {
         // 动态配置属性
         foreach ($config as $k => $v) if (isset($this->$k)) $this->$k = $v;
@@ -62,7 +64,7 @@ class CaptchaService extends Service
      * @param array $config
      * @return $this
      */
-    public function config($config = [])
+    public function config(array $config = [])
     {
         return $this->initialize($config);
     }
@@ -110,7 +112,7 @@ class CaptchaService extends Service
     /**
      * 检查验证码是否正确
      * @param string $code 需要验证的值
-     * @param string $uniqid 验证码编号
+     * @param string|null $uniqid 验证码编号
      * @return boolean
      */
     public function check(string $code, $uniqid = null): bool

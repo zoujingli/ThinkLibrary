@@ -13,6 +13,8 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+declare (strict_types=1);
+
 namespace think\admin;
 
 use think\admin\storage\LocalStorage;
@@ -81,7 +83,7 @@ abstract class Storage
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function __callStatic($method, $arguments)
+    public static function __callStatic(string $method, array $arguments)
     {
         if (method_exists($class = static::instance(), $method)) {
             return call_user_func_array([$class, $method], $arguments);
@@ -92,7 +94,7 @@ abstract class Storage
 
     /**
      * 设置文件驱动名称
-     * @param string $name 驱动名称
+     * @param null|string $name 驱动名称
      * @return static
      * @throws Exception
      * @throws \think\db\exception\DataNotFoundException
@@ -193,7 +195,7 @@ abstract class Storage
 
     /**
      * 获取下载链接后缀
-     * @param string $attname 下载名称
+     * @param null|string $attname 下载名称
      * @return string
      */
     protected function getSuffix(string $attname = null): string

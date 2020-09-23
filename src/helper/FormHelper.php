@@ -13,6 +13,8 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+declare (strict_types=1);
+
 namespace think\admin\helper;
 
 use think\admin\Helper;
@@ -58,7 +60,7 @@ class FormHelper extends Helper
         if ($this->app->request->isPost()) {
             $data = array_merge($this->app->request->post(), $data);
             if (false !== $this->class->callback('_form_filter', $data, $where)) {
-                $result = data_save($query, $data, $field, $where);
+                $result = data_save($query, $data, $field, $where) !== false;
                 if (false !== $this->class->callback('_form_result', $result, $data)) {
                     if ($result !== false) {
                         $this->class->success(lang('think_library_form_success'));
