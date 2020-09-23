@@ -97,16 +97,18 @@ class NodeService extends Service
         } else {
             $data = [];
         }
+        /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\think\admin\Controller');
+        /*! 扫描所有代码控制器节点，更新节点缓存 */
         foreach ($this->scanDirectory($this->app->getBasePath()) as $file) {
             if (preg_match("|/(\w+)/(\w+)/controller/(.+)\.php$|i", $file, $matches)) {
                 [, $namespace, $appname, $classname] = $matches;
+                $class = new \ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\'));
                 $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
-                $reflection = new \ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\'));
-                $data[$prefix] = $this->_parseComment($reflection->getDocComment(), $classname);
-                foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    if (in_array($metname = strtolower($method->getName()), $ignores)) continue;
-                    $data["{$prefix}/{$metname}"] = $this->_parseComment($method->getDocComment(), $metname);
+                $data[$prefix] = $this->_parseComment($class->getDocComment(), $classname);
+                foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                    if (in_array($metname = $method->getName(), $ignores)) continue;
+                    $data[strtolower("{$prefix}/{$metname}")] = $this->_parseComment($method->getDocComment(), $metname);
                 }
             }
         }
