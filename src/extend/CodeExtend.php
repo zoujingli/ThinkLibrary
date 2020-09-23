@@ -26,8 +26,8 @@ class CodeExtend
 {
     /**
      * 获取随机字符串编码
-     * @param integer $size 字符串长度
-     * @param integer $type 字符串类型(1纯数字,2纯字母,3数字字母)
+     * @param integer $size 编码长度
+     * @param integer $type 编码类型(1纯数字,2纯字母,3数字字母)
      * @param string $prefix 编码前缀
      * @return string
      */
@@ -37,17 +37,15 @@ class CodeExtend
         $chars = 'abcdefghijklmnopqrstuvwxyz';
         if (intval($type) === 1) $chars = $numbs;
         if (intval($type) === 3) $chars = "{$numbs}{$chars}";
-        $string = $prefix . $chars[rand(1, strlen($chars) - 1)];
-        if (isset($chars)) while (strlen($string) < $size) {
-            $string .= $chars[rand(0, strlen($chars) - 1)];
-        }
-        return $string;
+        $code = $prefix . $chars[rand(1, strlen($chars) - 1)];
+        while (strlen($code) < $size) $code .= $chars[rand(0, strlen($chars) - 1)];
+        return $code;
     }
 
     /**
      * 唯一日期编码
-     * @param integer $size
-     * @param string $prefix
+     * @param integer $size 编码长度
+     * @param string $prefix 编码前缀
      * @return string
      */
     public static function uniqidDate(int $size = 16, string $prefix = ''): string
@@ -60,8 +58,8 @@ class CodeExtend
 
     /**
      * 唯一数字编码
-     * @param integer $size
-     * @param string $prefix
+     * @param integer $size 编码长度
+     * @param string $prefix 编码前缀
      * @return string
      */
     public static function uniqidNumber(int $size = 12, string $prefix = ''): string

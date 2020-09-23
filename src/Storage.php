@@ -52,7 +52,7 @@ abstract class Storage
      * 链接类型
      * @var string
      */
-    protected $linkType;
+    protected $type;
 
     /**
      * Storage constructor.
@@ -64,7 +64,7 @@ abstract class Storage
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->linkType = sysconf('storage.link_type');
+        $this->type = sysconf('storage.link_type');
         $this->initialize();
     }
 
@@ -177,7 +177,7 @@ abstract class Storage
 
     /**
      * 使用CURL读取网络资源
-     * @param string $url
+     * @param string $url 资源地址
      * @return string
      */
     public static function curlGet(string $url)
@@ -200,7 +200,7 @@ abstract class Storage
      */
     protected function getSuffix(string $attname = null): string
     {
-        if ($this->linkType === 'full') {
+        if ($this->type === 'full') {
             if (is_string($attname) && strlen($attname) > 0) {
                 return "?attname=" . urlencode($attname);
             }
