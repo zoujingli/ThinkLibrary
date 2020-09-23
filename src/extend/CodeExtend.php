@@ -51,9 +51,9 @@ class CodeExtend
     public static function uniqidDate(int $size = 16, string $prefix = ''): string
     {
         if ($size < 14) $size = 14;
-        $string = $prefix . date('Ymd') . (date('H') + date('i')) . date('s');
-        while (strlen($string) < $size) $string .= rand(0, 9);
-        return $string;
+        $code = $prefix . date('Ymd') . (date('H') + date('i')) . date('s');
+        while (strlen($code) < $size) $code .= rand(0, 9);
+        return $code;
     }
 
     /**
@@ -66,8 +66,8 @@ class CodeExtend
     {
         $time = time() . '';
         if ($size < 10) $size = 10;
-        $string = $prefix . (intval($time[0]) + intval($time[1])) . substr($time, 2) . rand(0, 9);
-        while (strlen($string) < $size) $string .= rand(0, 9);
-        return $string;
+        $code = $prefix . (intval($time[0]) + intval($time[1])) . substr($time, 2) . rand(0, 9);
+        while (strlen($code) < $size) $code .= rand(0, 9);
+        return $code;
     }
 }
