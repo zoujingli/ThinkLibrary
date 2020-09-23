@@ -48,7 +48,7 @@ class NodeService extends Service
         $prefix = $this->app->getNamespace();
         $middle = '\\' . $this->nameTolower($this->app->request->controller());
         $suffix = ($type === 'controller') ? '' : ('\\' . $this->app->request->action());
-        return strtr(substr($prefix, stripos($prefix, '\\') + 1) . $middle . $suffix, '\\', '/');
+        return strtolower(strtr(substr($prefix, stripos($prefix, '\\') + 1) . $middle . $suffix, '\\', '/'));
     }
 
     /**
