@@ -101,16 +101,15 @@ class NodeService extends Service
         foreach ($this->scanDirectory($this->app->getBasePath()) as $file) {
             if (preg_match("|/(\w+)/(\w+)/controller/(.+)\.php$|i", $file, $matches)) {
                 [, $namespace, $appname, $classname] = $matches;
-                $prefix = strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/');
+                $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
                 $reflection = new \ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\'));
                 $data[$prefix] = $this->_parseComment($reflection->getDocComment(), $classname);
                 foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-                    if (in_array($metname = $method->getName(), $ignores)) continue;
+                    if (in_array($metname = strtolower($method->getName()), $ignores)) continue;
                     $data["{$prefix}/{$metname}"] = $this->_parseComment($method->getDocComment(), $metname);
                 }
             }
         }
-        $data = array_change_key_case($data, CASE_LOWER);
         $this->app->cache->set('SystemAuthNode', $data);
         return $data;
     }
