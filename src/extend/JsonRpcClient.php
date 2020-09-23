@@ -55,6 +55,10 @@ class JsonRpcClient
     {
         // Performs the HTTP POST
         $options = [
+            'ssl'  => [
+                'verify_peer'      => false,
+                'verify_peer_name' => false,
+            ],
             'http' => [
                 'method'  => 'POST',
                 'header'  => 'Content-type: application/json',
