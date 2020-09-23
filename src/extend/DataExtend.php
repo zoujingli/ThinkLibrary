@@ -70,15 +70,15 @@ class DataExtend
     /**
      * 获取数据树子ID
      * @param array $list 数据列表
-     * @param mixed $cid 起始ID内容
-     * @param string $ckey 当前ID字段
-     * @param string $pkey 上级ID字段
+     * @param mixed $id 起始ID
+     * @param string $ckey ID_KEY
+     * @param string $pkey PID_KEY
      * @return array
      */
-    public static function getArrSubIds(array $list, $cid = 0, string $ckey = 'id', string $pkey = 'pid'): array
+    public static function getArrSubIds(array $list, $id = 0, string $ckey = 'id', string $pkey = 'pid'): array
     {
-        $ids = [intval($cid)];
-        foreach ($list as $vo) if (intval($vo[$pkey]) > 0 && intval($vo[$pkey]) === intval($cid)) {
+        $ids = [intval($id)];
+        foreach ($list as $vo) if (intval($vo[$pkey]) > 0 && intval($vo[$pkey]) === intval($id)) {
             $ids = array_merge($ids, static::getArrSubIds($list, intval($vo[$ckey]), $ckey, $pkey));
         }
         return $ids;

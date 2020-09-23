@@ -161,7 +161,7 @@ class CaptchaService extends Service
         for ($i = 0; $i < $this->length; $i++) {
             $fontcolor = imagecolorallocate($img, mt_rand(0, 156), mt_rand(0, 156), mt_rand(0, 156));
             if (function_exists('imagettftext')) {
-                imagettftext($img, $this->fontsize, mt_rand(-30, 30), $_x * $i + mt_rand(1, 5), $this->height / 1.4, $fontcolor, $this->fontfile, $this->code[$i]);
+                imagettftext($img, $this->fontsize, mt_rand(-30, 30), intval($_x * $i + mt_rand(1, 5)), intval($this->height / 1.4), $fontcolor, $this->fontfile, $this->code[$i]);
             } else {
                 imagestring($img, 15, $_x * $i + mt_rand(10, 15), mt_rand(10, 30), $this->code[$i], $fontcolor);
             }
