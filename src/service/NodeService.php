@@ -55,10 +55,10 @@ class NodeService extends Service
 
     /**
      * 检查并完整节点内容
-     * @param string $node
+     * @param null|string $node
      * @return string
      */
-    public function fullnode($node): string
+    public function fullnode(?string $node = ''): string
     {
         if (empty($node)) return $this->getCurrent();
         if (count($attrs = explode('/', $node)) === 1) {
