@@ -206,7 +206,7 @@ class QueueService extends Service
         $prefix = str_pad("{$used}", strlen("{$total}"), '0', STR_PAD_LEFT);
         $message = "[{$prefix}/{$total}] {$message}";
         if (defined('WorkQueueCode')) {
-            $this->progress(2, $message, sprintf("%.2f", $used / $total));
+            $this->progress(2, $message, sprintf("%.2f", $used / $total * 100));
         } else {
             echo $message . PHP_EOL;
         }
