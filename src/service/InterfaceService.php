@@ -13,6 +13,8 @@
 // | github 代码仓库：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+declare (strict_types=1);
+
 namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
@@ -79,7 +81,7 @@ class InterfaceService extends Service
      * @param boolean $debug
      * @return $this
      */
-    public function debug($debug)
+    public function debug(bool $debug): InterfaceService
     {
         $this->debug = boolval($debug);
         return $this;
@@ -89,7 +91,7 @@ class InterfaceService extends Service
      * 获取接口账号
      * @return string
      */
-    public function getAppid()
+    public function getAppid(): string
     {
         return $this->appid;
     }
@@ -98,7 +100,7 @@ class InterfaceService extends Service
      * 获取接口地址
      * @return string
      */
-    public function getBaseUrl()
+    public function getBaseUrl(): string
     {
         return $this->baseurl;
     }
@@ -109,10 +111,21 @@ class InterfaceService extends Service
      * @param string $appkey 接口密钥
      * @return $this
      */
-    public function setAuth($appid, $appkey)
+    public function setAuth(string $appid, string $appkey): InterfaceService
     {
         $this->appid = $appid;
         $this->appkey = $appkey;
+        return $this;
+    }
+
+    /**
+     * 设置接口网关地址
+     * @param string $getway
+     * @return $this
+     */
+    public function getway(string $getway): InterfaceService
+    {
+        $this->baseurl = $getway;
         return $this;
     }
 
@@ -154,7 +167,7 @@ class InterfaceService extends Service
      * 显示检查结果
      * @return $this
      */
-    public function showCheck()
+    public function showCheck(): InterfaceService
     {
         if ($this->debug) return $this;
         if (is_null($check = $this->checkInput())) {
