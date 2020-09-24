@@ -107,7 +107,7 @@ class NodeService extends Service
                 [, $namespace, $appname, $classname] = $matches;
                 $class = new \ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\'));
                 $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
-                $data[$prefix] = $this->_parseComment($class->getDocComment(), $classname);
+                $data[$prefix] = $this->_parseComment($class->getDocComment() ?: '', $classname);
                 foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($metname = $method->getName(), $ignores)) continue;
                     $data[strtolower("{$prefix}/{$metname}")] = $this->_parseComment($method->getDocComment() ?: '', $metname);
