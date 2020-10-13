@@ -48,13 +48,15 @@ class Library extends Service
      */
     public function boot()
     {
-        // 多应用中间键
+        // 多应用中间键处理
         $this->app->event->listen('HttpRun', function () {
             $this->app->middleware->add(App::class);
             // 解决 HTTP 模式下调用 Console 之后 URL 生成问题
-            $this->app->request->setHost($this->app->request->host());
+            if (!$this->app->config->get('app.url', '')) {
+                $this->app->config->set(['url' => $this->app->request->url(true)], 'app');
+            }
         });
-        // 替换 ThinkPHP 地址
+        // 替换 ThinkPHP 地址处理
         $this->app->bind('think\route\Url', Url::class);
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class, 'clear' => Clear::class]);
