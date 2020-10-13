@@ -52,7 +52,7 @@ class Library extends Service
         $this->app->event->listen('HttpRun', function () {
             $this->app->middleware->add(App::class);
             // 解决 HTTP 模式下调用 Console 之后 URL 生成问题
-            if (!$this->app->config->get('app.url', '')) {
+            if (!$this->app->request->isCli() && !$this->app->config->get('app.url')) {
                 $this->app->config->set(['url' => $this->app->request->url(true)], 'app');
             }
         });
