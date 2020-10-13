@@ -51,7 +51,7 @@ class Library extends Service
         // 多应用中间键
         $this->app->event->listen('HttpRun', function () {
             $this->app->middleware->add(App::class);
-            // 解决 HTTP 格式下调用 Console 之后 URL 生成问题
+            // 解决 HTTP 模式下调用 Console 之后 URL 生成问题
             $this->app->request->setHost($this->app->request->host());
         });
         // 替换 ThinkPHP 地址处理
