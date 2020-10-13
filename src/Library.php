@@ -54,7 +54,7 @@ class Library extends Service
             // 解决 HTTP 模式下调用 Console 之后 URL 生成问题
             $this->app->request->setHost($this->app->request->host());
         });
-        // 替换 ThinkPHP 地址处理
+        // 替换 ThinkPHP 地址
         $this->app->bind('think\route\Url', Url::class);
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class, 'clear' => Clear::class]);
