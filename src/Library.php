@@ -56,7 +56,7 @@ class Library extends Service
                 $this->app->config->set(['url' => $this->app->request->url(true)], 'app');
             }
         });
-        // 替换 ThinkPHP 地址处理
+        // 替换 ThinkPHP 地址
         $this->app->bind('think\route\Url', Url::class);
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class, 'clear' => Clear::class]);
