@@ -85,16 +85,9 @@ class TxcosStorage extends Storage
      */
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null)
     {
-        $token = $this->buildUploadToken($name);
-        $data = ['key' => $name];
-        $data['policy'] = $token['policy'];
-        $data['q-ak'] = $token['q-ak'];
-        $data['q-key-time'] = $token['q-key-time'];
-        $data['q-signature'] = $token['q-signature'];
-        $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
+        $data = $this->buildUploadToken($name) + ['key' => $name];
         if (is_string($attname) && strlen($attname) > 0) {
-            $filename = urlencode($attname);
-            $data['Content-Disposition'] = "inline;filename={$filename}";
+            $data['Content-Disposition'] = '' . urlencode($attname);
         }
         $data['success_action_status'] = '200';
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
@@ -196,12 +189,12 @@ class TxcosStorage extends Storage
 
     /**
      * 获取文件上传令牌
-     * @param null|string $name 文件名称
+     * @param string $name 文件名称
      * @param integer $expires 有效时间
      * @param null|string $attname 下载名称
      * @return array
      */
-    public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null): array
+    public function buildUploadToken(string $name, int $expires = 3600, ?string $attname = null): array
     {
         $startTimestamp = time();
         $endTimestamp = $startTimestamp + $expires;
@@ -209,15 +202,12 @@ class TxcosStorage extends Storage
         $siteurl = $this->url($name, false, $attname);
         $policy = json_encode([
             'expiration' => date('Y-m-d\TH:i:s.000\Z', $endTimestamp),
-            'conditions' => [['q-sign-algorithm' => 'sha1'], ['q-ak' => $this->secretId], ['q-sign-time' => $keyTime]],
+            'conditions' => [['q-ak' => $this->secretId], ['q-sign-time' => $keyTime], ['q-sign-algorithm' => 'sha1']],
         ]);
         return [
-            'policy'           => base64_encode($policy),
-            'q-ak'             => $this->secretId,
-            'q-key-time'       => $keyTime,
-            'q-signature'      => hash_hmac('sha1', sha1($policy), hash_hmac('sha1', $keyTime, $this->secretKey)),
-            'q-sign-algorithm' => 'sha1',
-            'siteurl'          => $siteurl,
+            'policy'  => base64_encode($policy), 'q-ak' => $this->secretId,
+            'siteurl' => $siteurl, 'q-key-time' => $keyTime, 'q-sign-algorithm' => 'sha1',
+            // 'q-signature' => hash_hmac('sha1', sha1($policy), hash_hmac('sha1', $keyTime, $this->secretKey)),
         ];
     }
 
