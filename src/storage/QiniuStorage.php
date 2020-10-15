@@ -237,7 +237,7 @@ class QiniuStorage extends Storage
      * 七牛云对象存储区域
      * @return array
      */
-    public function region()
+    public static function region()
     {
         return [
             'up.qiniup.com'     => '华东',

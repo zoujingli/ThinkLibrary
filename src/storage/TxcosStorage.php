@@ -284,7 +284,7 @@ class TxcosStorage extends Storage
      * 腾讯云COS存储区域
      * @return array
      */
-    public function region()
+    public static function region()
     {
         return [
             'cos.ap-beijing-1.myqcloud.com'     => '中国大陆 公有云地域 北京一区（已售罄）',

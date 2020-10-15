@@ -258,7 +258,7 @@ class AliossStorage extends Storage
      * 阿里云OSS存储区域
      * @return array
      */
-    public function region()
+    public static function region()
     {
         return [
             'oss-cn-hangzhou.aliyuncs.com'    => '华东 1（杭州）',
