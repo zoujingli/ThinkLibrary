@@ -21,12 +21,6 @@ class TxcosStorage extends Storage
     private $point;
 
     /**
-     * 账号 AppID
-     * @var string
-     */
-    private $appid;
-
-    /**
      * 存储空间名称
      * @var string
      */
@@ -54,7 +48,6 @@ class TxcosStorage extends Storage
     protected function initialize()
     {
         // 读取配置文件
-        $this->appid = sysconf('storage.txcos_appid');
         $this->point = sysconf('storage.txcos_point');
         $this->bucket = sysconf('storage.txcos_bucket');
         $this->secretId = sysconf('storage.txcos_secret_id');
@@ -132,7 +125,7 @@ class TxcosStorage extends Storage
     public function del(string $name, bool $safe = false)
     {
         [$file] = explode('?', $name);
-        $result = HttpExtend::request('DELETE', "http://{$this->bucket}-{$this->appid}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('DELETE', "http://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, '204 No Content'));
@@ -147,7 +140,7 @@ class TxcosStorage extends Storage
     public function has(string $name, bool $safe = false)
     {
         $file = $this->delSuffix($name);
-        $result = HttpExtend::request('HEAD', "http://{$this->bucket}-{$this->appid}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('HEAD', "http://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $name),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
@@ -198,7 +191,7 @@ class TxcosStorage extends Storage
     public function upload(): string
     {
         $protocol = $this->app->request->isSsl() ? 'https' : 'http';
-        return "{$protocol}://{$this->bucket}-{$this->appid}.{$this->point}";
+        return "{$protocol}://{$this->bucket}.{$this->point}";
     }
 
     /**
