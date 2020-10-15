@@ -88,10 +88,10 @@ class TxcosStorage extends Storage
         $token = $this->buildUploadToken($name);
         $data = ['key' => $name];
         $data['policy'] = $token['policy'];
-        $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
         $data['q-ak'] = $token['q-ak'];
         $data['q-key-time'] = $token['q-key-time'];
-        $data['q-signature'] = $token['d-signature'];
+        $data['q-signature'] = $token['q-signature'];
+        $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
         if (is_string($attname) && strlen($attname) > 0) {
             $filename = urlencode($attname);
             $data['Content-Disposition'] = "inline;filename={$filename}";
@@ -213,10 +213,10 @@ class TxcosStorage extends Storage
         ]);
         return [
             'policy'           => base64_encode($policy),
-            'q-sign-algorithm' => 'sha1',
             'q-ak'             => $this->secretId,
             'q-key-time'       => $keyTime,
             'q-signature'      => hash_hmac('sha1', sha1($policy), hash_hmac('sha1', $keyTime, $this->secretKey)),
+            'q-sign-algorithm' => 'sha1',
             'siteurl'          => $siteurl,
         ];
     }
