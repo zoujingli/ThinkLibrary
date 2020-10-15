@@ -219,8 +219,8 @@ class AliossStorage extends Storage
                 'conditions' => [['content-length-range', 0, 1048576000]],
                 'expiration' => date('Y-m-d\TH:i:s.000\Z', time() + $expires),
             ])),
-            'siteurl' => $this->url($name, false, $attname),
             'keyid'   => $this->accessKey,
+            'siteurl' => $this->url($name, false, $attname),
         ];
         $data['signature'] = base64_encode(hash_hmac('sha1', $data['policy'], $this->secretKey, true));
         return $data;
