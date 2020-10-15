@@ -21,6 +21,12 @@ class TxcosStorage extends Storage
     private $point;
 
     /**
+     * 账号 AppID
+     * @var string
+     */
+    private $appid;
+
+    /**
      * 存储空间名称
      * @var string
      */
@@ -48,6 +54,7 @@ class TxcosStorage extends Storage
     protected function initialize()
     {
         // 读取配置文件
+        $this->appid = sysconf('storage.txcos_appid');
         $this->point = sysconf('storage.txcos_point');
         $this->bucket = sysconf('storage.txcos_bucket');
         $this->secretId = sysconf('storage.txcos_secret_id');
@@ -87,13 +94,14 @@ class TxcosStorage extends Storage
     {
         $token = $this->buildUploadToken($name);
         $data = ['key' => $name];
-        $data['q-ak'] = $token['q-ak'];
         $data['policy'] = $token['policy'];
+        $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
+        $data['q-ak'] = $token['q-ak'];
         $data['q-key-time'] = $token['q-key-time'];
         $data['q-signature'] = $token['d-signature'];
-        $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
         if (is_string($attname) && strlen($attname) > 0) {
-            $data['Content-Disposition'] = 'inline;filename=' . urlencode($attname);
+            $filename = urlencode($attname);
+            $data['Content-Disposition'] = "inline;filename={$filename}";
         }
         $data['success_action_status'] = '200';
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
@@ -124,7 +132,7 @@ class TxcosStorage extends Storage
     public function del(string $name, bool $safe = false)
     {
         [$file] = explode('?', $name);
-        $result = HttpExtend::request('DELETE', "http://{$this->bucket}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('DELETE', "http://{$this->bucket}-{$this->appid}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, '204 No Content'));
@@ -139,7 +147,7 @@ class TxcosStorage extends Storage
     public function has(string $name, bool $safe = false)
     {
         $file = $this->delSuffix($name);
-        $result = HttpExtend::request('HEAD', "http://{$this->bucket}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('HEAD', "http://{$this->bucket}-{$this->appid}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $name),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
@@ -190,7 +198,7 @@ class TxcosStorage extends Storage
     public function upload(): string
     {
         $http = $this->app->request->isSsl() ? 'https' : 'http';
-        return "{$http}://{$this->bucket}.{$this->point}";
+        return "{$http}://{$this->bucket}-{$this->appid}.{$this->point}";
     }
 
     /**
@@ -270,6 +278,37 @@ class TxcosStorage extends Storage
         $header['Authorization'] = urldecode(http_build_query($signArray));
         foreach ($header as $key => $value) $header[$key] = ucfirst($key) . ": {$value}";
         return array_values($header);
+    }
+
+    /**
+     * 腾讯云COS存储区域
+     * @return array
+     */
+    public function region()
+    {
+        return [
+            'cos.ap-beijing-1.myqcloud.com'     => '中国大陆 公有云地域 北京一区（已售罄）',
+            'cos.ap-beijing.myqcloud.com'       => '中国大陆 公有云地域 北京',
+            'cos.ap-nanjing.myqcloud.com'       => '中国大陆 公有云地域 南京',
+            'cos.ap-shanghai.myqcloud.com'      => '中国大陆 公有云地域 上海',
+            'cos.ap-guangzhou.myqcloud.com'     => '中国大陆 公有云地域 广州',
+            'cos.ap-chengdu.myqcloud.com'       => '中国大陆 公有云地域 成都',
+            'cos.ap-chongqing.myqcloud.com'     => '中国大陆 公有云地域 重庆',
+            'cos.ap-shenzhen-fsi.myqcloud.com'  => '中国大陆 金融云地域 深圳金融',
+            'cos.ap-shanghai-fsi.myqcloud.com'  => '中国大陆 金融云地域 上海金融',
+            'cos.ap-beijing-fsi.myqcloud.com'   => '中国大陆 金融云地域 北京金融',
+            'cos.ap-hongkong.myqcloud.com'      => '亚太地区 公有云地域 中国香港',
+            'cos.ap-singapore.myqcloud.com'     => '亚太地区 公有云地域 新加坡',
+            'cos.ap-mumbai.myqcloud.com'        => '亚太地区 公有云地域 孟买',
+            'cos.ap-seoul.myqcloud.com'         => '亚太地区 公有云地域 首尔',
+            'cos.ap-bangkok.myqcloud.com'       => '亚太地区 公有云地域 曼谷',
+            'cos.ap-tokyo.myqcloud.com'         => '亚太地区 公有云地域 东京',
+            'cos.na-siliconvalley.myqcloud.com' => '北美地区 公有云地域 硅谷',
+            'cos.na-ashburn.myqcloud.com'       => '北美地区 公有云地域 弗吉尼亚',
+            'cos.na-toronto.myqcloud.com'       => '北美地区 公有云地域 多伦多',
+            'cos.eu-frankfurt.myqcloud.com'     => '欧洲地区 公有云地域 法兰克福',
+            'cos.eu-moscow.myqcloud.com'        => '欧洲地区 公有云地域 莫斯科	',
+        ];
     }
 
 }
