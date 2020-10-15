@@ -209,23 +209,16 @@ class TxcosStorage extends Storage
         $siteurl = $this->url($name, false, $attname);
         $policy = json_encode([
             'expiration' => date('Y-m-d\TH:i:s.000\Z', $endTimestamp),
-            'conditions' => [
-                ['q-sign-algorithm' => 'sha1'],
-                ['q-ak' => $this->secretId],
-                ['q-sign-time' => $keyTime],
-            ],
+            'conditions' => [['q-sign-algorithm' => 'sha1'], ['q-ak' => $this->secretId], ['q-sign-time' => $keyTime]],
         ]);
-        $data = [
+        return [
             'policy'           => base64_encode($policy),
             'q-sign-algorithm' => 'sha1',
             'q-ak'             => $this->secretId,
             'q-key-time'       => $keyTime,
+            'q-signature'      => hash_hmac('sha1', sha1($policy), hash_hmac('sha1', $keyTime, $this->secretKey)),
             'siteurl'          => $siteurl,
         ];
-        $signKey = hash_hmac('sha1', $keyTime, $this->secretKey);
-        $stringToSign = sha1($policy);
-        $data['q-signature'] = hash_hmac('sha1', $stringToSign, $signKey);
-        return $data;
     }
 
     /**
