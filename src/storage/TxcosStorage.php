@@ -50,7 +50,7 @@ class TxcosStorage extends Storage
         // 读取配置文件
         $this->point = sysconf('storage.txcos_point');
         $this->bucket = sysconf('storage.txcos_bucket');
-        $this->secretId = sysconf('storage.txcos_secret_id');
+        $this->secretId = sysconf('storage.txcos_access_key');
         $this->secretKey = sysconf('storage.txcos_secret_key');
         // 计算链接前缀
         $type = strtolower(sysconf('storage.txcos_http_protocol'));
