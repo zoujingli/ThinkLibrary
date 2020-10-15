@@ -197,8 +197,8 @@ class TxcosStorage extends Storage
      */
     public function upload(): string
     {
-        $http = $this->app->request->isSsl() ? 'https' : 'http';
-        return "{$http}://{$this->bucket}-{$this->appid}.{$this->point}";
+        $protocol = $this->app->request->isSsl() ? 'https' : 'http';
+        return "{$protocol}://{$this->bucket}-{$this->appid}.{$this->point}";
     }
 
     /**
