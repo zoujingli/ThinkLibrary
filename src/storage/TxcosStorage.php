@@ -212,7 +212,7 @@ class TxcosStorage extends Storage
             'conditions' => [
                 ['q-sign-algorithm' => 'sha1'],
                 ['q-ak' => $this->secretId],
-                ['q-sign-time' => $keyTime]
+                ['q-sign-time' => $keyTime],
             ],
         ]);
         $data = [
@@ -220,7 +220,7 @@ class TxcosStorage extends Storage
             'q-sign-algorithm' => 'sha1',
             'q-ak'             => $this->secretId,
             'q-key-time'       => $keyTime,
-            'siteurl'          => $siteurl
+            'siteurl'          => $siteurl,
         ];
         $signKey = hash_hmac('sha1', $keyTime, $this->secretKey);
         $stringToSign = sha1($policy);
@@ -237,33 +237,33 @@ class TxcosStorage extends Storage
      */
     private function headerSign(string $method, string $soruce, array $header = []): array
     {
-        // 1.生成KeyTime
+        // 1.生成 KeyTime
         $startTimestamp = time();
         $endTimestamp = $startTimestamp + 3600;
         $keyTime = "{$startTimestamp};{$endTimestamp}";
         // 2.生成 SignKey
         $signKey = hash_hmac('sha1', $keyTime, $this->secretKey);
-        // 3.生成UrlParamList,HttpParameters
-        list($parse_url, $urlParamList, $httpParameters) = [parse_url($soruce), '', ''];
+        // 3.生成 UrlParamList, HttpParameters
+        [$parse_url, $urlParamList, $httpParameters] = [parse_url($soruce), '', ''];
         if (!empty($parse_url['query'])) {
             parse_str($parse_url['query'], $params);
             uksort($params, 'strnatcasecmp');
             $urlParamList = join(';', array_keys($params));
             $httpParameters = http_build_query($params);
         }
-        // 4.生成HeaderList,HttpHeaders
-        list($headerList, $httpHeaders) = ['', ''];
+        // 4.生成 HeaderList, HttpHeaders
+        [$headerList, $httpHeaders] = ['', ''];
         if (!empty($header)) {
             uksort($header, 'strnatcasecmp');
             $headerList = join(';', array_keys($header));
             $httpHeaders = http_build_query($header);
         }
-        // 5.生成HttpString
+        // 5.生成 HttpString
         $httpString = strtolower($method) . "\n/{$parse_url['path']}\n{$httpParameters}\n{$httpHeaders}\n";
-        // 6.生成StringToSign
+        // 6.生成 StringToSign
         $httpStringSha1 = sha1($httpString);
         $stringToSign = "sha1\n{$keyTime}\n{$httpStringSha1}\n";
-        // 7.生成Signature
+        // 7.生成 Signature
         $signature = hash_hmac('sha1', $stringToSign, $signKey);
         // 8.生成签名
         $signArray = [
@@ -273,7 +273,7 @@ class TxcosStorage extends Storage
             'q-key-time'       => $keyTime,
             'q-header-list'    => $headerList,
             'q-url-param-list' => $urlParamList,
-            'q-signature'      => $signature
+            'q-signature'      => $signature,
         ];
         $header['Authorization'] = urldecode(http_build_query($signArray));
         foreach ($header as $key => $value) $header[$key] = ucfirst($key) . ": {$value}";
