@@ -105,8 +105,7 @@ class AliossStorage extends Storage
         $data['OSSAccessKeyId'] = $this->accessKey;
         $data['success_action_status'] = '200';
         if (is_string($attname) && strlen($attname) > 0) {
-            $filename = urlencode($attname);
-            $data['Content-Disposition'] = "inline;filename={$filename}";
+            $data['Content-Disposition'] = 'inline;filename=' . urlencode($attname);
         }
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
         if (is_numeric(stripos(HttpExtend::submit($this->upload(), $data, $file), '200 OK'))) {

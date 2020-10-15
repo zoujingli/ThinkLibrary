@@ -87,16 +87,15 @@ class TxcosStorage extends Storage
     {
         $token = $this->buildUploadToken($name);
         $data = ['key' => $name];
-        $data['policy'] = $token['policy'];
-        $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
         $data['q-ak'] = $token['q-ak'];
+        $data['policy'] = $token['policy'];
         $data['q-key-time'] = $token['q-key-time'];
         $data['q-signature'] = $token['d-signature'];
-        $data['success_action_status'] = '200';
+        $data['q-sign-algorithm'] = $token['q-sign-algorithm'];
         if (is_string($attname) && strlen($attname) > 0) {
-            $filename = urlencode($attname);
-            $data['Content-Disposition'] = "inline;filename={$filename}";
+            $data['Content-Disposition'] = 'inline;filename=' . urlencode($attname);
         }
+        $data['success_action_status'] = '200';
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
         if (is_numeric(stripos(HttpExtend::submit($this->upload(), $data, $file), '200 OK'))) {
             return ['file' => $this->path($name, $safe), 'url' => $this->url($name, $safe, $attname), 'key' => $name];
