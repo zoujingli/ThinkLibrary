@@ -173,7 +173,7 @@ if (!function_exists('arr2str')) {
         if (is_array($allow)) foreach ($data as $item) {
             if (in_array($item, $allow)) $temp[] = $item;
         }
-        return join($separ, $temp);
+        return $separ . join($separ, $temp) . $separ;
     }
 }
 if (!function_exists('encode')) {
