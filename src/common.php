@@ -152,7 +152,7 @@ if (!function_exists('str2arr')) {
     function str2arr(string $text, string $separ = ',', ?array $allow = null): array
     {
         $text = trim($text, $separ);
-        $data = $text ? explode($separ, $text) : [];
+        $data = strlen($text) ? explode($separ, $text) : [];
         if (is_array($allow)) foreach ($data as $key => $mark) {
             if (!in_array($mark, $allow)) unset($data[$key]);
         }
