@@ -145,8 +145,8 @@ class SystemService extends Service
         $d1 = $this->app->config->get('app.default_app');
         $d3 = $this->app->config->get('route.default_action');
         $d2 = $this->app->config->get('route.default_controller');
-        $url = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
-        return preg_replace(["|^/{$d1}/{$d2}/{$d3}(\.html)?$|i", "|/{$d2}/{$d3}(\.html)?$|i", "|/{$d3}(\.html)?$|i"], ['$1', '$1', '$1'], $url);
+        $pattern = ["#^/{$d1}/{$d2}/{$d3}(.html)?#i", "#^(/.*?)/{$d2}/{$d3}(^\w|\?|\.|$)#i", "#^(/.*?/.*?)/{$d3}(^\w|\?|\.|$)#i"];
+        return preg_replace($pattern, ['', '$1$2', '$1$2'], $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build());
     }
 
     /**
