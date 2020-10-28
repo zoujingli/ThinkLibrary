@@ -51,9 +51,12 @@ class NodeService extends Service
         if (preg_match("|\\\\addons\\\\{$prefix}$|", $this->app->getNamespace())) {
             $prefix = "addons-{$this->app->http->getName()}";
         }
+        // 获取应用前缀节点
         if ($type === 'module') return $prefix;
+        // 获取控制器前缀节点
         $middle = '\\' . $this->nameTolower($this->app->request->controller());
         if ($type === 'controller') return $prefix . $middle;
+        // 获取完整的权限节点
         return strtolower(strtr($prefix . $middle . $this->app->request->action(), '\\', '/'));
     }
 
@@ -64,7 +67,9 @@ class NodeService extends Service
      */
     public function fullnode(?string $node = ''): string
     {
-        if (empty($node)) return $this->getCurrent();
+        if (empty($node)) {
+            return $this->getCurrent();
+        }
         switch (count($attrs = explode('/', $node))) {
             case 2:
                 return $this->getCurrent('module') . '/' . strtolower($node);
