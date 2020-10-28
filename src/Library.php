@@ -111,8 +111,13 @@ class Library extends Service
                 }
             }, 'route');
         }
-        // 动态加入应用函数
-        $SysRule = "{$this->app->getBasePath()}*/sys.php";
-        foreach (glob($SysRule) as $file) includeFile($file);
+        // 动态加入应用初始化系统函数
+        $base = $this->app->getBasePath();
+        foreach (glob("{$base}*/sys.php") as $file) includeFile($file);
+        // 动态加载插件初始化系统函数
+        $base = "{$this->app->getBasePath()}addons/";
+        if (file_exists($base) && is_dir($base)) {
+            foreach (glob("{$base}*/sys.php") as $file) includeFile($file);
+        }
     }
 }
