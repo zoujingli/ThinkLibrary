@@ -147,7 +147,7 @@ class BuildUrl extends Url
         $name = $this->app->http->getName();
         if (preg_match("#{$depr}addons-{$name}({$depr}|\.|$)#i", $request->url())) {
             [$_name, $_attr] = explode($depr, $url . $depr, 2);
-            if ($_name === $name) $url = "addons-{$name}" . rtrim($_attr, $depr);
+            if ($_name === $name) $url = "addons-{$name}{$depr}" . rtrim($_attr, $depr);
         }
         /*=====- 插件 Addons URL 处理 - 结束 -=====*/
         $url = rtrim($file, '/') . '/' . ltrim($url, '/');
