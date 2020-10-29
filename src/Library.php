@@ -82,7 +82,7 @@ class Library extends Service
                 $this->app->request->setPathinfo($_SERVER['argv'][1]);
             }
         } else {
-            $isSess = intval($this->app->request->get('not_init_session', '0')) == 0;
+            $isSess = intval($this->app->request->get('not_init_session', '0')) === 0;
             $notYar = stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-') === false;
             if ($notYar && $isSess) {
                 // 注册会话初始化中间键
