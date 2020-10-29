@@ -54,10 +54,10 @@ class NodeService extends Service
         // 获取应用前缀节点
         if ($type === 'module') return $prefix;
         // 获取控制器前缀节点
-        $middle = '\\' . $this->nameTolower($this->app->request->controller());
-        if ($type === 'controller') return $prefix . $middle;
+        $middle = $this->nameTolower($this->app->request->controller());
+        if ($type === 'controller') return $prefix . '/' . $middle;
         // 获取完整的权限节点
-        return strtolower(strtr($prefix . $middle . $this->app->request->action(), '\\', '/'));
+        return $prefix . '/' . $middle . '/' . strtolower($this->app->request->action());
     }
 
     /**
