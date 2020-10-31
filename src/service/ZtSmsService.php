@@ -28,6 +28,12 @@ use think\admin\Service;
 class ZtSmsService extends Service
 {
     /**
+     * 接口地址
+     * @var string
+     */
+    private $api = 'https://api.mix2.zthysms.com';
+
+    /**
      * 子账号名称
      * @var string
      */
@@ -68,12 +74,13 @@ class ZtSmsService extends Service
      * 验证手机短信验证码
      * @param string $code 验证码
      * @param string $phone 手机号验证
-     * @param string $tplcode
+     * @param string $template 模板编码
      * @return boolean
      */
-    public function checkVerifyCode(string $code, string $phone, string $tplcode = 'ztsms.register_verify'): bool
+    public function checkVerifyCode(string $code, string $phone, string $template = 'ztsms.register_verify'): bool
     {
-        $cache = $this->app->cache->get($ckey = md5("code-{$tplcode}-{$phone}"), []);
+        $ckey = md5("code-{$template}-{$phone}");
+        $cache = $this->app->cache->get($ckey, []);
         if (is_array($cache) && isset($cache['code']) && $cache['code'] == $code) {
             $this->app->cache->delete($ckey);
             return true;
@@ -86,7 +93,7 @@ class ZtSmsService extends Service
      * 验证手机短信验证码
      * @param string $phone 手机号码
      * @param integer $wait 等待时间
-     * @param string $template 模板编号
+     * @param string $template 模板编码
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -124,24 +131,32 @@ class ZtSmsService extends Service
      */
     public function signAdd(array $signs = [], string $remark = ''): array
     {
-        foreach ($signs as $key => $sign) {
-            if (strpos($sign, '】') === false) $signs[$key] = $sign . '】';
-            if (strpos($sign, '【') === false) $signs[$key] = '【' . $sign;
-        }
-        $data = ['sign' => $signs, 'remark' => $remark];
-        return $this->doRequest('https://api.mix2.zthysms.com/sms/v1/sign', $data);
+        foreach ($signs as $key => $name) $signs[$key] = $this->_singName($name);
+        return $this->doRequest('/sms/v1/sign', ['sign' => $signs, 'remark' => $remark]);
     }
 
     /**
      * 查询短信签名
-     * @param string $sign 短信签名
+     * @param string $name 短信签名
      * @return array
      */
-    public function signGet(string $sign): array
+    public function signGet(string $name): array
     {
-        if (strpos($sign, '】') === false) $sign = $sign . '】';
-        if (strpos($sign, '【') === false) $sign = '【' . $sign;
-        return $this->doRequest('https://api.mix2.zthysms.com/sms/v1/sign/query', ['sign' => $sign]);
+        return $this->doRequest('/sms/v1/sign/query', [
+            'sign' => $this->_singName($name),
+        ]);
+    }
+
+    /**
+     * 短信签名内容处理
+     * @param string $name
+     * @return string
+     */
+    private function _singName(string $name): string
+    {
+        if (strpos($name, '】') === false) $name = $name . '】';
+        if (strpos($name, '【') === false) $name = '【' . $name;
+        return $name;
     }
 
     /**
@@ -155,7 +170,7 @@ class ZtSmsService extends Service
      */
     public function tplAdd(string $temName, int $temType, string $temContent, array $paramJson = [], string $remark = ''): array
     {
-        return $this->doRequest('https://api.mix2.zthysms.com/sms/v2/template', [
+        return $this->doRequest('/sms/v2/template', [
             'temName' => $temName, 'temType' => $temType, 'temContent' => $temContent, 'paramJson' => $paramJson, 'remark' => $remark,
         ]);
     }
@@ -167,7 +182,7 @@ class ZtSmsService extends Service
      */
     public function tplGet(string $temId): array
     {
-        return $this->doRequest('https://api.mix2.zthysms.com/sms/v2/template/query', ['temId' => $temId]);
+        return $this->doRequest('/sms/v2/template/query', ['temId' => $temId]);
     }
 
     /**
@@ -181,7 +196,7 @@ class ZtSmsService extends Service
     {
         if (strpos($sign, '】') === false) $sign = $sign . '】';
         if (strpos($sign, '【') === false) $sign = '【' . $sign;
-        return $this->doRequest('https://api.mix2.zthysms.com/v2/sendSmsTp', [
+        return $this->doRequest('/v2/sendSmsTp', [
             'tpId' => $tpId, 'records' => $records, 'signature' => $sign,
         ]);
     }
@@ -197,7 +212,7 @@ class ZtSmsService extends Service
     {
         $data = ['mobile' => $mobile, 'content' => $content];
         if ($time > 0) $data['time'] = $time;
-        return $this->doRequest('https://api.mix2.zthysms.com/v2/sendSms', $data);
+        return $this->doRequest('/v2/sendSms', $data);
     }
 
     /**
@@ -207,7 +222,7 @@ class ZtSmsService extends Service
      */
     public function batchSend(array $records): array
     {
-        return $this->doRequest('https://api.mix2.zthysms.com/v2/sendSmsPa', ['records' => $records]);
+        return $this->doRequest('/v2/sendSmsPa', ['records' => $records]);
     }
 
     /**
@@ -215,22 +230,22 @@ class ZtSmsService extends Service
      */
     public function balance(): array
     {
-        [$state, $result, $message] = $this->doRequest('https://api.mix2.zthysms.com/v2/balance', []);
+        [$state, $result, $message] = $this->doRequest('/v2/balance', []);
         return [$state, $state ? $result['sumSms'] : 0, $message];
     }
 
     /**
      * 执行网络请求
-     * @param string $url 接口请求地址
+     * @param string $uri 接口请求地址
      * @param array $data 接口请求参数
      * @return array
      */
-    private function doRequest(string $url, array $data): array
+    private function doRequest(string $uri, array $data): array
     {
         $encode = md5(md5($this->password) . ($tkey = time()));
         $options = ['headers' => ['Content-Type:application/json;charset="UTF-8"']];
         $extends = ['username' => $this->username, 'password' => $encode, 'tKey' => $tkey];
-        $result = json_decode(HttpExtend::post($url, json_encode(array_merge($data, $extends)), $options), true);
+        $result = json_decode(HttpExtend::post($this->api . $uri, json_encode(array_merge($data, $extends)), $options), true);
         if (empty($result['code'])) {
             return [0, [], '接口请求网络异常'];
         } elseif (intval($result['code']) === 200) {
