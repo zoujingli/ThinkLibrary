@@ -197,7 +197,7 @@ class ModuleService extends Service
             return false;
         }
         // 阻止可能存在敏感信息的文件被下载
-        if (preg_match('#config[\\\\/](filesystem|database|session|cache)#i', $name)) {
+        if (preg_match('#config[\\\\/]+(filesystem|database|session|cache)#i', $name)) {
             return false;
         }
         // 检查允许下载的文件规则列表
