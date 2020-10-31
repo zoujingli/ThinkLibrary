@@ -86,33 +86,33 @@ class ZtSmsService extends Service
      * 验证手机短信验证码
      * @param string $phone 手机号码
      * @param integer $wait 等待时间
-     * @param string $tplcode 模板编号
+     * @param string $template 模板编号
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function sendVerifyCode(string $phone, int $wait = 120, string $tplcode = 'ztsms.register_verify'): array
+    public function sendVerifyCode(string $phone, int $wait = 120, string $template = 'ztsms.register_verify'): array
     {
-        $content = sysconf($tplcode) ?: '您的短信验证码为{code}，请在十分钟内完成操作！';
-        $cache = $this->app->cache->get($ckey = md5("code-{$tplcode}-{$phone}"), []);
+        $time = time();
+        $ckey = md5("code-{$template}-{$phone}");
+        $cache = $this->app->cache->get($ckey, []);
         // 检查是否已经发送
-        if (is_array($cache) && isset($cache['time']) && $cache['time'] > time() - $wait) {
-            $dtime = ($cache['time'] + $wait < time()) ? 0 : ($wait - time() + $cache['time']);
+        if (is_array($cache) && isset($cache['time']) && $cache['time'] + $wait > $time) {
+            $dtime = $cache['time'] + $wait < $time ? 0 : $cache['time'] + $wait - $time;
             return [1, '短信验证码已经发送！', ['time' => $dtime]];
         }
         // 生成新的验证码
-        [$code, $time] = [rand(100000, 999999), time()];
+        $code = rand(100000, 999999);
         $this->app->cache->set($ckey, ['code' => $code, 'time' => $time], 600);
         // 尝试发送短信内容
-        [$state] = $this->timeSend($phone, preg_replace_callback("|{(.*?)}|", function ($matches) use ($code) {
-            return $matches[1] === 'code' ? $code : $matches[1];
-        }, $content));
-        if ($state) return [1, '短信验证码发送成功！', [
-            'time' => ($time + $wait < time()) ? 0 : ($wait - time() + $time)],
-        ]; else {
+        $content = sysconf($template) ?: '您的短信验证码为{code}，请在十分钟内完成操作！';
+        [$state] = $this->timeSend($phone, str_replace('{code}', $code, $content));
+        if ($state) {
+            return [1, '短信验证码发送成功！', ['time' => $wait]];
+        } else {
             $this->app->cache->delete($ckey);
-            return [0, '短信发送失败，请稍候再试！', []];
+            return [0, '短信发送失败，请稍候再试！', ['time' => 0]];
         }
     }
 
