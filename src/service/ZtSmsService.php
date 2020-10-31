@@ -106,7 +106,7 @@ class ZtSmsService extends Service
         $code = rand(100000, 999999);
         $this->app->cache->set($ckey, ['code' => $code, 'time' => $time], 600);
         // 尝试发送短信内容
-        $content = sysconf($template) ?: '您的短信验证码为{code}，请在十分钟内完成操作！';
+        $content = sysconf($template) ?: '您的验证码为{code}，请在十分钟内完成操作！';
         [$state] = $this->timeSend($phone, str_replace('{code}', $code, $content));
         if ($state) {
             return [1, '短信验证码发送成功！', ['time' => $wait]];
