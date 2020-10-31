@@ -73,15 +73,6 @@ class Multiple
     }
 
     /**
-     * 获取路由目录
-     * @return string
-     */
-    protected function getRoutePath(): string
-    {
-        return $this->app->getAppPath() . 'route' . DIRECTORY_SEPARATOR;
-    }
-
-    /**
      * 解析多应用
      * @return bool
      */
@@ -153,7 +144,7 @@ class Multiple
     }
 
     /**
-     * 设置应用
+     * 设置应用参数
      * @param string $appName 应用名称
      */
     private function setApp(string $appName): void
@@ -171,7 +162,7 @@ class Multiple
         $this->app->http->name($appName);
         if (is_dir($appPath)) {
             $this->app->setRuntimePath($this->app->getRuntimePath() . $appName . DIRECTORY_SEPARATOR);
-            $this->app->http->setRoutePath($this->getRoutePath());
+            $this->app->http->setRoutePath($this->app->getAppPath() . 'route' . DIRECTORY_SEPARATOR);
             $this->loadApp($appPath);
         }
     }
