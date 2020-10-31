@@ -148,30 +148,18 @@ class ZtSmsService extends Service
     }
 
     /**
-     * 短信签名内容处理
-     * @param string $name
-     * @return string
-     */
-    private function _singName(string $name): string
-    {
-        if (strpos($name, '】') === false) $name = $name . '】';
-        if (strpos($name, '【') === false) $name = '【' . $name;
-        return $name;
-    }
-
-    /**
      * 报备短信模板
-     * @param string $temName 模板名称
-     * @param integer $temType 模板类型（1验证码,2行业通知,3营销推广）
-     * @param string $temContent 模板内容
-     * @param array $paramJson 变量格式
+     * @param string $name 模板名称
+     * @param integer $type 模板类型（1验证码, 2行业通知, 3营销推广）
+     * @param string $content 模板内容
+     * @param array $params 模板变量
      * @param string $remark 模板备注
      * @return array
      */
-    public function tplAdd(string $temName, int $temType, string $temContent, array $paramJson = [], string $remark = ''): array
+    public function tplAdd(string $name, int $type, string $content, array $params = [], string $remark = ''): array
     {
         return $this->doRequest('/sms/v2/template', [
-            'temName' => $temName, 'temType' => $temType, 'temContent' => $temContent, 'paramJson' => $paramJson, 'remark' => $remark,
+            'temName' => $name, 'temType' => $type, 'temContent' => $content, 'paramJson' => $params, 'remark' => $remark,
         ]);
     }
 
@@ -194,10 +182,8 @@ class ZtSmsService extends Service
      */
     public function tplSend(string $tpId, string $sign, array $records): array
     {
-        if (strpos($sign, '】') === false) $sign = $sign . '】';
-        if (strpos($sign, '【') === false) $sign = '【' . $sign;
         return $this->doRequest('/v2/sendSmsTp', [
-            'tpId' => $tpId, 'records' => $records, 'signature' => $sign,
+            'tpId' => $tpId, 'records' => $records, 'signature' => $this->_singName($sign),
         ]);
     }
 
@@ -232,6 +218,18 @@ class ZtSmsService extends Service
     {
         [$state, $result, $message] = $this->doRequest('/v2/balance', []);
         return [$state, $state ? $result['sumSms'] : 0, $message];
+    }
+
+    /**
+     * 短信签名内容处理
+     * @param string $name
+     * @return string
+     */
+    private function _singName(string $name): string
+    {
+        if (strpos($name, '】') === false) $name = $name . '】';
+        if (strpos($name, '【') === false) $name = '【' . $name;
+        return $name;
     }
 
     /**
