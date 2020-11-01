@@ -145,8 +145,12 @@ class BuildUrl extends Url
         }
         /*=====- 多应用绑定 URL 生成处理 -=====*/
         $app = $this->app->http->getName();
-        if ($this->app->http->isBind() && preg_match("#^{$app}({$depr}|\.|$)#i", $url)) {
-            $url = trim(substr($url, strlen($app)), $depr);
+        if ($this->app->http->isBind()) {
+            if (preg_match("#^{$app}({$depr}|\.|$)#i", $url)) {
+                $url = trim(substr($url, strlen($app)), $depr);
+            } elseif (substr_count($url, $depr) >= 2) {
+                $file = 'index.php';
+            }
         }
         /*=====- 插件 Addons URL 处理 - 开始 -=====*/
         if (preg_match("#^{$depr}addons-{$app}({$depr}|\.|$)#i", $request->url())) {
