@@ -45,9 +45,9 @@ class BuildUrl extends Url
             $url = $this->app->http->getName() . '/' . $request->controller() . '/' . $request->action();
         } else {
             $path = explode('/', $url);
-            $app = empty($path) ? $this->app->http->getName() : array_shift($path);
-            $controller = empty($path) ? $request->controller() : array_shift($path);
-            $action = empty($path) ? $request->action() : array_shift($path);
+            $action = empty($path) ? $request->action() : array_pop($path);
+            $controller = empty($path) ? $request->controller() : array_pop($path);
+            $app = empty($path) ? $this->app->http->getName() : array_pop($path);
             $url = Str::snake($controller) . '/' . $action;
             $bind = $this->app->config->get('app.domain_bind', []);
             if ($key = array_search($app, $bind)) {
