@@ -137,10 +137,10 @@ class BuildUrl extends Url
             }
         }
         // 还原 URL 分隔符
-        $depr = $this->route->config('pathinfo_depr');
-        $url = str_replace('/', $depr, $url);
         $file = $request->baseFile();
-        if ($file && 0 !== strpos($request->url(), $file)) {
+        $depr = $this->route->config('pathinfo_depr');
+        [$uri, $url] = [$request->url(), str_replace('/', $depr, $url)];
+        if ($file && 0 !== strpos($uri, $file)) {
             $file = str_replace('\\', '/', dirname($file));
         }
         /*=====- 多应用绑定 URL 生成处理 -=====*/
@@ -153,7 +153,7 @@ class BuildUrl extends Url
             }
         }
         /*=====- 插件 Addons URL 处理 - 开始 -=====*/
-        if (preg_match("#^{$depr}addons-{$app}({$depr}|\.|$)#i", $request->url())) {
+        if (preg_match("#^{$depr}addons-{$app}({$depr}|\.|$)#i", $uri)) {
             [$prefix, $suffix] = explode($depr, $url . $depr, 2);
             if ($prefix === $app) $url = rtrim("addons-{$app}{$depr}{$suffix}", $depr);
         }
