@@ -112,7 +112,7 @@ class Library extends Service
                 }
             }, 'route');
         }
-        // 动态加入应用初始化系统函数
+        // 动态加载应用初始化系统函数
         [$ds, $base] = [DIRECTORY_SEPARATOR, $this->app->getBasePath()];
         foreach (glob("{$base}*{$ds}sys.php") as $file) includeFile($file);
         // 动态加载插件初始化系统函数
