@@ -169,15 +169,10 @@ if (!function_exists('arr2str')) {
      */
     function arr2str(array $data, string $separ = ',', ?array $allow = null)
     {
-        if (is_array($allow)) {
-            $temp = [];
-            foreach ($data as $item) {
-                if (in_array($item, $allow)) $temp[] = $item;
-            }
-            return $separ . join($separ, $temp) . $separ;
-        } else {
-            return $separ . join($separ, $data) . $separ;
+        if (is_array($allow)) foreach ($data as $key => $mark) {
+            if (!in_array($mark, $allow)) unset($data[$key]);
         }
+        return $separ . join($separ, $data) . $separ;
     }
 }
 if (!function_exists('encode')) {
