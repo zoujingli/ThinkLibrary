@@ -233,7 +233,7 @@ class Queue extends Command
         $this->output->writeln('============== LISTENING ==============');
         while (true) {
             [$start, $where] = [microtime(true), [['status', '=', 1], ['exec_time', '<=', time()]]];
-            foreach ($this->app->db->name($this->table)->where($where)->order('exec_time asc')->select()->toArray() as $vo) try {
+            foreach ($this->app->db->name($this->table)->where($where)->order('exec_time asc')->cursor() as $vo) try {
                 $command = $this->process->think("xadmin:queue dorun {$vo['code']} -");
                 $this->output->comment("># {$command}");
                 if (count($this->process->query($command)) > 0) {
