@@ -248,7 +248,7 @@ class Queue extends Command
                 ]);
                 $this->output->error(">> Execution failed -> [{$vo['code']}] {$vo['title']}，{$exception->getMessage()}");
             }
-            if (microtime(true) < $start + 1) usleep(500000);
+            if (microtime(true) < $start + 1) usleep(1000000);
         }
     }
 
