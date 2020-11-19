@@ -103,8 +103,8 @@ class ZtSmsService extends Service
     {
         $time = time();
         $ckey = md5("code-{$template}-{$phone}");
-        $cache = $this->app->cache->get($ckey, []);
         // 检查是否已经发送
+        $cache = $this->app->cache->get($ckey, []);
         if (is_array($cache) && isset($cache['time']) && $cache['time'] + $wait > $time) {
             $dtime = $cache['time'] + $wait < $time ? 0 : $cache['time'] + $wait - $time;
             return [1, '短信验证码已经发送！', ['time' => $dtime]];
