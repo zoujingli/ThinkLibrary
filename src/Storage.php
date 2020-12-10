@@ -202,7 +202,7 @@ abstract class Storage
     /**
      * 获取下载链接后缀
      * @param null|string $attname 下载名称
-     * @param null|string $filename 原文件名称
+     * @param null|string $filename 文件名称
      * @return string
      */
     protected function getSuffix(?string $attname = null, ?string $filename = null): string
