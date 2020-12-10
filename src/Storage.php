@@ -219,7 +219,7 @@ abstract class Storage
             $extens = strtolower(pathinfo($this->delSuffix($filename), PATHINFO_EXTENSION));
             $suffix = in_array($extens, ['png', 'jpg', 'jpeg']) ? ($compress[$class] ?? '') : '';
         }
-        if (stripos($this->link, 'full') !== false && is_string($attname) && strlen($attname) > 0) {
+        if (is_string($attname) && strlen($attname) > 0 && stripos($this->link, 'full') !== false) {
             $suffix .= ($suffix ? '&' : '?') . 'attname=' . urlencode($attname);
         }
         return $suffix;
