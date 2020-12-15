@@ -77,8 +77,8 @@ abstract class Queue
     /**
      * 设置任务的进度
      * @param null|string $message 进度消息
-     * @param null|integer $progress 进度数值
-     * @param null|integer $backline 回退行数
+     * @param null|float $progress 进度数值
+     * @param integer $backline 回退行数
      * @return Queue
      */
     protected function setQueueProgress(?string $message = null, $progress = null, $backline = 0): Queue

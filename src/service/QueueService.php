@@ -173,7 +173,7 @@ class QueueService extends Service
                 'code' => $this->code, 'status' => $status, 'message' => $message, 'progress' => $progress, 'history' => [],
             ]);
         } catch (\Exception | \Error $exception) {
-            return $this->progress($status, $message, $progress);
+            return $this->progress($status, $message, $progress, $backline);
         }
         while (count($data['history']) > 0 && $backline > 0) {
             [--$backline, array_pop($data['history'])];
