@@ -53,8 +53,9 @@ class PageHelper extends Helper
             if ($limit > 0) {
                 $limit = intval($limit);
             } else {
+                $cache = intval($this->app->request->get('not_limit_cache', 0)) > 0;
                 $limit = $this->app->request->get('limit', $this->app->cookie->get('limit', 20));
-                $this->app->cookie->set('limit', ($limit = intval($limit >= 10 ? $limit : 20)) . '');
+                if ($cache) $this->app->cookie->set('limit', ($limit = intval($limit >= 10 ? $limit : 20)) . '');
             }
             [$options, $query] = ['', $this->app->request->get()];
             $pager = $this->query->paginate(['list_rows' => $limit, 'query' => $query], $total);
