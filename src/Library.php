@@ -86,7 +86,7 @@ class Library extends Service
         $this->app->lang->load(__DIR__ . '/lang/en-us.php', 'en-us');
         // 终端 HTTP 访问处理
         if (!$this->app->request->isCli()) {
-            $issess = intval($this->app->request->get('not_init_session', 0)) > 0;
+            $issess = intval($this->app->request->get('not_init_session', 0)) < 1;
             $notapi = stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-') === false;
             if ($notapi && $issess) {
                 // 注册会话初始化中间键
