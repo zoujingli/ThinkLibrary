@@ -90,7 +90,7 @@ abstract class Storage
      * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic(string $method, array $arguments)
-    {
+    { 
         if (method_exists($class = static::instance(), $method)) {
             return call_user_func_array([$class, $method], $arguments);
         } else {
