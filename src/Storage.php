@@ -84,13 +84,13 @@ abstract class Storage
      * @param string $method 方法名称
      * @param array $arguments 调用参数
      * @return mixed
-     * @throws Exception
+     * @throws Exception 
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic(string $method, array $arguments)
-    { 
+    {
         if (method_exists($class = static::instance(), $method)) {
             return call_user_func_array([$class, $method], $arguments);
         } else {
