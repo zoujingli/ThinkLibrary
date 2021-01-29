@@ -27,7 +27,7 @@ use think\db\Query;
  */
 class FormHelper extends Helper
 {
-
+ 
     /**
      * 逻辑器初始化
      * @param string|Query $dbQuery
