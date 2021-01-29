@@ -46,7 +46,7 @@ class FormHelper extends Helper
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = input($field, $data[$field] ?? null);
         if ($this->app->request->isGet()) {
-            if ($value !== null) { 
+            if ($value !== null) {
                 $find = $query->where([$field => $value])->where($where)->find();
                 if (!empty($find) && is_array($find)) $data = array_merge($data, $find);
             }
