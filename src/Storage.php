@@ -96,7 +96,7 @@ abstract class Storage
         } else {
             throw new Exception("method not exists: " . get_class($class) . "->{$method}()");
         }
-    }
+    } 
 
     /**
      * 设置文件驱动名称
