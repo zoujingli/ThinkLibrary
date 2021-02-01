@@ -1,7 +1,7 @@
 [![Latest Stable Version](https://poser.pugx.org/zoujingli/think-library/v/stable)](https://packagist.org/packages/zoujingli/think-library) [![Total Downloads](https://poser.pugx.org/zoujingli/think-library/downloads)](https://packagist.org/packages/zoujingli/think-library) [![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-library/v/unstable)](https://packagist.org/packages/zoujingli/think-library) [![License](https://poser.pugx.org/zoujingli/think-library/license)](https://packagist.org/packages/zoujingli/think-library)
 
 # 项目已转移
-新项目地址：https://gitee.com/zoujingli/ThinkLibrary
+项目新地址：https://gitee.com/zoujingli/ThinkLibrary
 
 此库不会经常更新！！！！
 ----------
