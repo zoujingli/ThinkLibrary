@@ -110,28 +110,27 @@ CREATE TABLE `system_config`
 * 系统任务列队支持需要的数据表
 
 ```sql
-CREATE TABLE `system_queue`
-(
-    `id`         bigint(20) NOT NULL AUTO_INCREMENT,
-    `code`       varchar(20)          DEFAULT '' COMMENT '任务编号',
-    `title`      varchar(50) NOT NULL DEFAULT '' COMMENT '任务名称',
-    `command`    varchar(500)         DEFAULT '' COMMENT '执行指令',
-    `exec_data`  longtext COMMENT '执行参数',
-    `exec_time`  bigint(20) unsigned DEFAULT '0' COMMENT '执行时间',
-    `exec_desc`  varchar(500)         DEFAULT '' COMMENT '状态描述',
-    `enter_time` bigint(20) DEFAULT '0' COMMENT '开始时间',
-    `outer_time` bigint(20) DEFAULT '0' COMMENT '结束时间',
-    `attempts`   bigint(20) DEFAULT '0' COMMENT '执行次数',
-    `rscript`    tinyint(1) DEFAULT '1' COMMENT '单例模式',
-    `status`     tinyint(1) DEFAULT '1' COMMENT '任务状态(1新任务,2处理中,3成功,4失败)',
-    `create_at`  timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`id`) USING BTREE,
-    KEY          `idx_system_queue_code` (`code`),
-    KEY          `idx_system_queue_title` (`title`) USING BTREE,
-    KEY          `idx_system_queue_status` (`status`) USING BTREE,
-    KEY          `idx_system_queue_rscript` (`rscript`) USING BTREE,
-    KEY          `idx_system_queue_create_at` (`create_at`) USING BTREE,
-    KEY          `idx_system_queue_exec_time` (`exec_time`) USING BTREE
+CREATE TABLE `system_queue` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `code` varchar(20) DEFAULT '' COMMENT '任务编号',
+  `title` varchar(50) NOT NULL DEFAULT '' COMMENT '任务名称',
+  `command` varchar(500) DEFAULT '' COMMENT '执行指令',
+  `exec_data` longtext COMMENT '执行参数',
+  `exec_time` bigint(20) unsigned DEFAULT '0' COMMENT '执行时间',
+  `exec_desc` varchar(500) DEFAULT '' COMMENT '状态描述',
+  `enter_time` bigint(20) DEFAULT '0' COMMENT '开始时间',
+  `outer_time` bigint(20) DEFAULT '0' COMMENT '结束时间',
+  `attempts` bigint(20) DEFAULT '0' COMMENT '执行次数',
+  `rscript` tinyint(1) DEFAULT '1' COMMENT '单例模式',
+  `status` tinyint(1) DEFAULT '1' COMMENT '任务状态(1新任务,2处理中,3成功,4失败)',
+  `create_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_system_queue_code` (`code`),
+  KEY `idx_system_queue_title` (`title`) USING BTREE,
+  KEY `idx_system_queue_status` (`status`) USING BTREE,
+  KEY `idx_system_queue_rscript` (`rscript`) USING BTREE,
+  KEY `idx_system_queue_create_at` (`create_at`) USING BTREE,
+  KEY `idx_system_queue_exec_time` (`exec_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-任务';
 ```
 
