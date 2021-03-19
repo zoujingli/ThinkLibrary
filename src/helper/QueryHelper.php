@@ -187,7 +187,7 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 清空数据表保留结构
+     * 清空数据并保留表结构
      * @return $this
      */
     public function truncate(): QueryHelper
