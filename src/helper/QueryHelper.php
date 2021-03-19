@@ -187,6 +187,17 @@ class QueryHelper extends Helper
     }
 
     /**
+     * 清空数据表保留结构
+     * @return $this
+     */
+    public function truncate(): QueryHelper
+    {
+        $table = $this->query->getTable();
+        $this->query->execute("truncate table `{$table}`");
+        return $this;
+    }
+
+    /**
      * QueryHelper call.
      * @param string $name 调用方法名称
      * @param array $args 调用参数内容
