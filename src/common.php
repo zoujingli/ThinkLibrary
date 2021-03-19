@@ -27,10 +27,11 @@ if (!function_exists('p')) {
      * @param mixed $data 输出的数据
      * @param boolean $new 强制替换文件
      * @param null|string $file 保存文件名称
+     * @return false|int
      */
     function p($data, $new = false, $file = null)
     {
-        SystemService::instance()->putDebug($data, $new, $file);
+        return SystemService::instance()->putDebug($data, $new, $file);
     }
 }
 if (!function_exists('auth')) {
