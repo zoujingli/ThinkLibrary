@@ -154,7 +154,10 @@ if (!function_exists('str2arr')) {
         $text = trim($text, $separ);
         $data = strlen($text) ? explode($separ, $text) : [];
         if (is_array($allow)) foreach ($data as $key => $item) {
-            if (!in_array($item, $allow) || $item === '') unset($data[$key]);
+            if (!in_array($item, $allow)) unset($data[$key]);
+        }
+        foreach ($data as $key => $item) {
+            if ($item === '') unset($data[$key]);
         }
         return $data;
     }
@@ -170,7 +173,10 @@ if (!function_exists('arr2str')) {
     function arr2str(array $data, string $separ = ',', ?array $allow = null): string
     {
         if (is_array($allow)) foreach ($data as $key => $item) {
-            if (!in_array($item, $allow) || $item === '') unset($data[$key]);
+            if (!in_array($item, $allow)) unset($data[$key]);
+        }
+        foreach ($data as $key => $item) {
+            if ($item === '') unset($data[$key]);
         }
         return $separ . join($separ, $data) . $separ;
     }
