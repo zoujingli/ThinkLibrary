@@ -193,7 +193,7 @@ class QueryHelper extends Helper
     public function truncate(): QueryHelper
     {
         $table = $this->query->getTable();
-        $this->query->execute("truncate table `{$table}`");
+        $this->app->db->execute("truncate table `{$table}`");
         return $this;
     }
 
