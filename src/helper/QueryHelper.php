@@ -60,12 +60,12 @@ class QueryHelper extends Helper
     /**
      * 设置 Like 查询条件
      * @param string|array $fields 查询字段
+     * @param string $split 前后分割符
      * @param array|string|null $input 输入数据
      * @param string $alias 别名分割符
-     * @param string $split 前后分割符
      * @return $this
      */
-    public function like($fields, $input = null, string $alias = '#', string $split = ''): QueryHelper
+    public function like($fields, string $split = '', $input = null, string $alias = '#'): QueryHelper
     {
         $data = $this->_getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
