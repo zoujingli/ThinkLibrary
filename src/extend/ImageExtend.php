@@ -34,20 +34,21 @@ class ImageExtend
      * @param string $src 源图
      * @param float $percent 压缩比例
      */
-    public function __construct($src, $percent = 1)
+    public function __construct(string $src, float $percent = 1)
     {
         $this->src = $src;
         $this->percent = $percent;
     }
 
-
-    /** 高清压缩图片
+    /**
+     * 高清压缩图片
      * @param string $saveName 提供图片名（可不带扩展名，用源图扩展名）用于保存。或不提供文件名直接显示
+     * @return bool
      */
-    public function compressImg(string $saveName = '')
+    public function compressImg(string $saveName = ''): bool
     {
         $this->_openImage();
-        empty($saveName) ? $this->_showImage() : $this->_saveImage($saveName);
+        return empty($saveName) ? $this->_showImage() : $this->_saveImage($saveName);
     }
 
     /**
@@ -59,8 +60,8 @@ class ImageExtend
         $this->imageinfo = [
             'width'  => $width,
             'height' => $height,
-            'type'   => image_type_to_extension($type, false),
             'attr'   => $attr,
+            'type'   => image_type_to_extension($type, false),
         ];
         $fun = "imagecreatefrom" . $this->imageinfo['type'];
         $this->image = $fun($this->src);
@@ -74,37 +75,42 @@ class ImageExtend
     {
         $newWidth = $this->imageinfo['width'] * $this->percent;
         $newHeight = $this->imageinfo['height'] * $this->percent;
-        $image_thump = imagecreatetruecolor($newWidth, $newHeight);
-        //将原图复制带图片载体上面，并且按照一定比例压缩,极大的保持了清晰度
-        imagecopyresampled($image_thump, $this->image, 0, 0, 0, 0, $newWidth, $newHeight, $this->imageinfo['width'], $this->imageinfo['height']);
+        $imgThumps = imagecreatetruecolor($newWidth, $newHeight);
+        // 将原图复制带图片载体上面，并且按照一定比例压缩，极大的保持了清晰度
+        imagecopyresampled($imgThumps, $this->image, 0, 0, 0, 0, $newWidth, $newHeight, $this->imageinfo['width'], $this->imageinfo['height']);
         imagedestroy($this->image);
-        $this->image = $image_thump;
+        $this->image = $imgThumps;
     }
 
     /**
-     * 输出图片:保存图片则用saveImage()
+     * 输出图片:保存图片则用 saveImage()
+     * @return bool
      */
-    private function _showImage()
+    private function _showImage(): bool
     {
         header('Content-Type: image/' . $this->imageinfo['type']);
         $funcs = "image" . $this->imageinfo['type'];
         $funcs($this->image);
+        return true;
     }
 
     /**
      * 保存图片到硬盘：
-     * @param string $dstImgName 1、可指定字符串不带后缀的名称，使用源图扩展名 。2、直接指定目标图片名带扩展名。
+     * @param string $dstImgName
+     * @return bool
      */
-    private function _saveImage(string $dstImgName): void
+    private function _saveImage(string $dstImgName): bool
     {
-        if (empty($dstImgName)) return;
-        $allowImgs = ['.jpg', '.jpeg', '.png', '.bmp', '.wbmp', '.gif'];   //如果目标图片名有后缀就用目标图片扩展名 后缀，如果没有，则用源图的扩展名
+        if (empty($dstImgName)) return false;
+
+        // 如果目标图片名有后缀就用目标图片扩展名 后缀，如果没有，则用源图的扩展名
+        $allowImgs = ['.jpg', '.jpeg', '.png', '.bmp', '.wbmp', '.gif'];
         $dstExt = strrchr($dstImgName, ".");
         $sourseExt = strrchr($this->src, ".");
         if (!empty($dstExt)) $dstExt = strtolower($dstExt);
         if (!empty($sourseExt)) $sourseExt = strtolower($sourseExt);
 
-        //有指定目标名扩展名
+        // 有指定目标名扩展名
         if (!empty($dstExt) && in_array($dstExt, $allowImgs)) {
             $dstName = $dstImgName;
         } elseif (!empty($sourseExt) && in_array($sourseExt, $allowImgs)) {
@@ -113,7 +119,7 @@ class ImageExtend
             $dstName = $dstImgName . $this->imageinfo['type'];
         }
         $funcs = "image" . $this->imageinfo['type'];
-        $funcs($this->image, $dstName);
+        return $funcs($this->image, $dstName);
     }
 
     /**
