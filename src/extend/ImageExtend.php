@@ -105,21 +105,20 @@ class ImageExtend
 
         // 如果目标图片名有后缀就用目标图片扩展名 后缀，如果没有，则用源图的扩展名
         $allowImgs = ['.jpg', '.jpeg', '.png', '.bmp', '.wbmp', '.gif'];
-        $dstExt = strrchr($dstImgName, ".");
-        $sourseExt = strrchr($this->src, ".");
+        [$dstExt, $srcExt] = [strrchr($dstImgName, "."), strrchr($this->src, ".")];
         if (!empty($dstExt)) $dstExt = strtolower($dstExt);
-        if (!empty($sourseExt)) $sourseExt = strtolower($sourseExt);
+        if (!empty($srcExt)) $srcExt = strtolower($srcExt);
 
         // 有指定目标名扩展名
         if (!empty($dstExt) && in_array($dstExt, $allowImgs)) {
             $dstName = $dstImgName;
-        } elseif (!empty($sourseExt) && in_array($sourseExt, $allowImgs)) {
-            $dstName = $dstImgName . $sourseExt;
+        } elseif (!empty($srcExt) && in_array($srcExt, $allowImgs)) {
+            $dstName = $dstImgName . $srcExt;
         } else {
             $dstName = $dstImgName . $this->imageinfo['type'];
         }
-        $funcs = "image" . $this->imageinfo['type'];
-        return $funcs($this->image, $dstName);
+        $image = "image{$this->imageinfo['type']}";
+        return $image($this->image, $dstName);
     }
 
     /**
