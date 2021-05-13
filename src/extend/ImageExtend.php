@@ -63,9 +63,9 @@ class ImageExtend
      */
     private function _openImage(): array
     {
-        [$width, $height, $type, $attr] = getimagesize($this->src);
+        [$width, $height, $type] = getimagesize($this->src);
         if ($width < 1 || $height < 1) return [0, '读取图片尺寸失败！'];
-        $this->imageinfo = ['width' => $width, 'height' => $height, 'attr' => $attr, 'type' => image_type_to_extension($type, false)];
+        $this->imageinfo = ['width' => $width, 'height' => $height, 'type' => image_type_to_extension($type, false)];
         $fun = "imagecreatefrom{$this->imageinfo['type']}";
         imagealphablending($this->image = $fun($this->src), true);
         return $this->_thumpImage();
@@ -76,12 +76,19 @@ class ImageExtend
      */
     private function _thumpImage(): array
     {
-        $newWidth = intval($this->imageinfo['width'] * $this->percent);
-        $newHeight = intval($this->imageinfo['height'] * $this->percent);
-        imagealphablending($imgThumps = imagecreatetruecolor($this->imageinfo['width'], $this->imageinfo['width']), true);
-        imagecopyresampled($imgThumps, $this->image, 0, 0, 0, 0, $newWidth, $newHeight, $this->imageinfo['width'], $this->imageinfo['height']);
-        imagedestroy($this->image);
-        $this->image = $imgThumps;
+        [$srcWidth, $srcHeight] = [$this->imageinfo['width'], $this->imageinfo['height']];
+        [$newWidth, $newHeight] = [intval($srcWidth * $this->percent), intval($srcHeight * $this->percent)];
+        [$srcThumps, $dstBackup] = [imagecreatetruecolor($newWidth, $newHeight), imagecreatetruecolor($srcWidth, $srcHeight)];
+
+        [imagealphablending($srcThumps, false), imagesavealpha($srcThumps, true)];
+        [imagealphablending($dstBackup, false), imagesavealpha($dstBackup, true)];
+
+        imagecopyresampled($srcThumps, $this->image, 0, 0, 0, 0, $newWidth, $newHeight, $srcWidth, $srcHeight);
+        imagecopyresampled($dstBackup, $srcThumps, 0, 0, 0, 0, $srcWidth, $srcHeight, $newWidth, $newHeight);
+
+        [imagedestroy($srcThumps), imagedestroy($this->image)];
+
+        $this->image = $dstBackup;
         return [1, '图片压缩成功'];
     }
 
