@@ -67,7 +67,7 @@ class ImageExtend
         if ($width < 1 || $height < 1) return [0, '读取图片尺寸失败！'];
         $this->imageinfo = ['width' => $width, 'height' => $height, 'attr' => $attr, 'type' => image_type_to_extension($type, false)];
         $fun = "imagecreatefrom{$this->imageinfo['type']}";
-        $this->image = $fun($this->src);
+        imagealphablending($this->image = $fun($this->src), true);
         return $this->_thumpImage();
     }
 
@@ -78,8 +78,7 @@ class ImageExtend
     {
         $newWidth = intval($this->imageinfo['width'] * $this->percent);
         $newHeight = intval($this->imageinfo['height'] * $this->percent);
-        $imgThumps = imagecreatetruecolor($newWidth, $newHeight);
-        // 将原图复制带图片载体上面，并且按照一定比例压缩，极大的保持了清晰度
+        imagealphablending($imgThumps = imagecreatetruecolor($this->imageinfo['width'], $this->imageinfo['width']), true);
         imagecopyresampled($imgThumps, $this->image, 0, 0, 0, 0, $newWidth, $newHeight, $this->imageinfo['width'], $this->imageinfo['height']);
         imagedestroy($this->image);
         $this->image = $imgThumps;
