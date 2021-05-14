@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\Db;
 use think\db\Query;
 
 /**
@@ -25,7 +26,7 @@ use think\db\Query;
  * Class QueryHelper
  * @package think\admin\helper
  * @see \think\db\Query
- * @mixin \think\db\Query
+ * @mixin Query
  */
 class QueryHelper extends Helper
 {
@@ -37,7 +38,7 @@ class QueryHelper extends Helper
 
     /**
      * 获取当前Db操作对象
-     * @return \think\db\Query
+     * @return Db|Query
      */
     public function db()
     {
@@ -46,14 +47,14 @@ class QueryHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param string|Query $dbQuery
+     * @param string|Query|Db $dbQuery
      * @param array|string|null $input 输入数据
      * @return $this
      */
     public function init($dbQuery, $input = null): QueryHelper
     {
         $this->query = $this->buildQuery($dbQuery);
-        $this->input = $this->_getInputData($input);
+        $this->input = $this->getInputData($input);
         return $this;
     }
 
@@ -67,7 +68,7 @@ class QueryHelper extends Helper
      */
     public function like($fields, string $split = '', $input = null, string $alias = '#'): QueryHelper
     {
-        $data = $this->_getInputData($input ?: $this->input);
+        $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             [$dk, $qk] = [$field, $field];
             if (stripos($field, $alias) !== false) {
@@ -89,7 +90,7 @@ class QueryHelper extends Helper
      */
     public function equal($fields, $input = null, string $alias = '#'): QueryHelper
     {
-        $data = $this->_getInputData($input ?: $this->input);
+        $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             [$dk, $qk] = [$field, $field];
             if (stripos($field, $alias) !== false) {
@@ -112,7 +113,7 @@ class QueryHelper extends Helper
      */
     public function in($fields, string $split = ',', $input = null, string $alias = '#'): QueryHelper
     {
-        $data = $this->_getInputData($input ?: $this->input);
+        $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             [$dk, $qk] = [$field, $field];
             if (stripos($field, $alias) !== false) {
@@ -223,7 +224,7 @@ class QueryHelper extends Helper
      */
     private function _setBetweenWhere($fields, string $split = ' ', $input = null, string $alias = '#', ?callable $callback = null): QueryHelper
     {
-        $data = $this->_getInputData($input ?: $this->input);
+        $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
             [$dk, $qk] = [$field, $field];
             if (stripos($field, $alias) !== false) {
@@ -246,7 +247,7 @@ class QueryHelper extends Helper
      * @param array|string|null $input
      * @return array
      */
-    private function _getInputData($input): array
+    private function getInputData($input): array
     {
         if (is_array($input)) {
             return $input;

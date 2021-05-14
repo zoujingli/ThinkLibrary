@@ -34,10 +34,10 @@ class SaveHelper extends Helper
      * @param array $data 表单扩展数据
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
-     * @return boolean|void
+     * @return boolean
      * @throws \think\db\exception\DbException
      */
-    public function init($dbQuery, array $data = [], string $field = '', array $where = [])
+    public function init($dbQuery, array $data = [], string $field = '', array $where = []): bool
     {
         $query = $this->buildQuery($dbQuery);
         $data = $data ?: $this->app->request->post();
@@ -45,7 +45,7 @@ class SaveHelper extends Helper
         $value = $this->app->request->post($field, null);
         // 主键限制处理
         if (!isset($where[$field]) && is_string($value)) {
-            $query->whereIn($field, explode(',', $value));
+            $query->whereIn($field, str2arr($value));
             if (isset($data)) unset($data[$field]);
         }
         // 前置回调处理
@@ -53,10 +53,10 @@ class SaveHelper extends Helper
             return false;
         }
         // 执行更新操作
-        $result = $query->where($where)->update($data) !== false;
+        $query->where($where)->update($data);
         // 结果回调处理
         if (false === $this->class->callback('_save_result', $result)) {
-            return $result;
+            return true;
         }
         // 回复前端结果
         if ($result !== false) {

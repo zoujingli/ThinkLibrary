@@ -101,31 +101,40 @@ class SystemService extends Service
 
     /**
      * 数据增量保存
-     * @param Query|string $dbQuery 数据查询对象
+     * @param Query|string $query 数据查询对象
      * @param array $data 需要保存的数据
      * @param string $key 更新条件查询主键
-     * @param array $where 额外更新查询条件
+     * @param array $map 额外更新查询条件
      * @return boolean|integer 失败返回 false, 成功返回主键值或 true
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function save($dbQuery, array $data, string $key = 'id', array $where = [])
+    public function save($query, array $data, string $key = 'id', array $map = [])
     {
-        $val = $data[$key] ?? null;
-        $query = (is_string($dbQuery) ? $this->app->db->name($dbQuery) : $dbQuery)->master()->strict(false)->where($where);
-        if (empty($where[$key])) is_string($val) && strpos($val, ',') !== false ? $query->whereIn($key, explode(',', $val)) : $query->where([$key => $val]);
-        return is_array($info = (clone $query)->find()) && !empty($info) ? ($query->update($data) !== false ? ($info[$key] ?? true) : false) : $query->insertGetId($data);
+        if (is_string($query)) $query = $this->app->db->name($query);
+        [$query, $value] = [$query->master()->strict(false)->where($map), $data[$key] ?? null];
+        if (empty($map[$key])) if (is_string($value) && strpos($value, ',') !== false) {
+            $query->whereIn($key, str2arr($value));
+        } else {
+            $query->where([$key => $value]);
+        }
+        if (($info = (clone $query)->find()) && !empty($info)) {
+            $query->update($data);
+            return $info[$key] ?? true;
+        } else {
+            return $query->insertGetId($data);
+        }
     }
 
     /**
      * 解析缓存名称
      * @param string $rule 配置名称
-     * @param string $type 配置类型
      * @return array
      */
-    private function _parse(string $rule, string $type = 'base'): array
+    private function _parse(string $rule): array
     {
+        $type = 'base';
         if (stripos($rule, '.') !== false) {
             [$type, $rule] = explode('.', $rule, 2);
         }

@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\Db;
 use think\db\Query;
 
 /**
@@ -30,7 +31,7 @@ class FormHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param string|Query $dbQuery
+     * @param string|Db|Query $dbQuery
      * @param string $template 模板名称
      * @param string $field 指定数据主键
      * @param array $where 额外更新条件

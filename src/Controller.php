@@ -54,19 +54,13 @@ abstract class Controller extends \stdClass
     public $request;
 
     /**
-     * 控制器中间键
-     * @var array
-     */
-    protected $middleware = [];
-
-    /**
      * 表单CSRF验证状态
      * @var boolean
      */
     public $csrf_state = false;
 
     /**
-     * 表单CSRF验证失败提示
+     * 表单CSRF验证消息
      * @var string
      */
     public $csrf_message;
@@ -98,7 +92,7 @@ abstract class Controller extends \stdClass
      * 返回失败的操作
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
-     * @param integer $code 返回代码
+     * @param mixed $code 返回代码
      */
     public function error($info, $data = '{-null-}', $code = 0): void
     {
@@ -112,7 +106,7 @@ abstract class Controller extends \stdClass
      * 返回成功的操作
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
-     * @param integer $code 返回代码
+     * @param mixed $code 返回代码
      */
     public function success($info, $data = '{-null-}', $code = 1): void
     {
@@ -130,7 +124,7 @@ abstract class Controller extends \stdClass
      * @param string $url 跳转链接
      * @param integer $code 跳转代码
      */
-    public function redirect(string $url, $code = 301): void
+    public function redirect(string $url, int $code = 301): void
     {
         throw new HttpResponseException(redirect($url, $code));
     }
@@ -157,7 +151,7 @@ abstract class Controller extends \stdClass
      * @param mixed $value 变量的值
      * @return $this
      */
-    public function assign($name, $value = '')
+    public function assign($name, $value = ''): Controller
     {
         if (is_string($name)) {
             $this->$name = $value;
@@ -211,7 +205,7 @@ abstract class Controller extends \stdClass
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    protected function _page($dbQuery, bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = '')
+    protected function _page($dbQuery, bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
         return PageHelper::instance()->init($dbQuery, $page, $display, $total, $limit, $template);
     }
@@ -239,7 +233,7 @@ abstract class Controller extends \stdClass
      * @param string|array $type 输入方式 ( post. 或 get. )
      * @return array
      */
-    protected function _vali(array $rules, $type = '')
+    protected function _vali(array $rules, $type = ''): array
     {
         return ValidateHelper::instance()->init($rules, $type);
     }
@@ -253,7 +247,7 @@ abstract class Controller extends \stdClass
      * @return boolean
      * @throws DbException
      */
-    protected function _save($dbQuery, array $data = [], string $field = '', array $where = [])
+    protected function _save($dbQuery, array $data = [], string $field = '', array $where = []): bool
     {
         return SaveHelper::instance()->init($dbQuery, $data, $field, $where);
     }
@@ -266,7 +260,7 @@ abstract class Controller extends \stdClass
      * @return boolean|null
      * @throws DbException
      */
-    protected function _delete($dbQuery, string $field = '', array $where = [])
+    protected function _delete($dbQuery, string $field = '', array $where = []): ?bool
     {
         return DeleteHelper::instance()->init($dbQuery, $field, $where);
     }
@@ -276,7 +270,7 @@ abstract class Controller extends \stdClass
      * @param boolean $return 是否返回结果
      * @return boolean
      */
-    protected function _applyFormToken(bool $return = false)
+    protected function _applyFormToken(bool $return = false): bool
     {
         return TokenHelper::instance()->init($return);
     }
