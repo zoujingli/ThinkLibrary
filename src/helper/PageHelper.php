@@ -18,6 +18,9 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 
 /**
@@ -37,9 +40,9 @@ class PageHelper extends Helper
      * @param integer $limit 集合每页记录数
      * @param string $template 模板文件名称
      * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function init($dbQuery, bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
@@ -86,15 +89,14 @@ class PageHelper extends Helper
             } else {
                 $this->class->fetch($template, $result);
             }
-        } else {
-            return $result;
         }
+        return $result;
     }
 
     /**
      * 执行列表排序操作
      * POST 提交 {action:sort,PK:$PK,SORT:$SORT}
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     private function _sortAction()
     {

@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\db\exception\DbException;
 use think\db\Query;
 
 /**
@@ -35,14 +36,14 @@ class SaveHelper extends Helper
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean
-     * @throws \think\db\exception\DbException
+     * @throws DbException
      */
     public function init($dbQuery, array $data = [], string $field = '', array $where = []): bool
     {
         $query = $this->buildQuery($dbQuery);
         $data = $data ?: $this->app->request->post();
         $field = $field ?: ($query->getPk() ?: 'id');
-        $value = $this->app->request->post($field, null);
+        $value = $this->app->request->post($field);
         // 主键限制处理
         if (!isset($where[$field]) && is_string($value)) {
             $query->whereIn($field, str2arr($value));

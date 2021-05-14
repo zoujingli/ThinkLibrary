@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin;
 
+use stdClass;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\PageHelper;
@@ -38,7 +39,7 @@ use think\Request;
  * Class Controller
  * @package think\admin
  */
-abstract class Controller extends \stdClass
+abstract class Controller extends stdClass
 {
 
     /**
@@ -96,7 +97,7 @@ abstract class Controller extends \stdClass
      */
     public function error($info, $data = '{-null-}', $code = 0): void
     {
-        if ($data === '{-null-}') $data = new \stdClass();
+        if ($data === '{-null-}') $data = new stdClass();
         throw new HttpResponseException(json([
             'code' => $code, 'info' => $info, 'data' => $data,
         ]));
@@ -113,7 +114,7 @@ abstract class Controller extends \stdClass
         if ($this->csrf_state) {
             TokenHelper::instance()->clear();
         }
-        if ($data === '{-null-}') $data = new \stdClass();
+        if ($data === '{-null-}') $data = new stdClass();
         throw new HttpResponseException(json([
             'code' => $code, 'info' => $info, 'data' => $data,
         ]));

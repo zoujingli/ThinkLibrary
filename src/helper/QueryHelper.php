@@ -19,6 +19,9 @@ namespace think\admin\helper;
 
 use think\admin\Helper;
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 
 /**
@@ -175,15 +178,15 @@ class QueryHelper extends Helper
      * 实例化分页管理器
      * @param boolean $page 是否启用分页
      * @param boolean $display 是否渲染模板
-     * @param boolean $total 集合分页记录数
+     * @param boolean|int $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @param string $template 模板文件名称
-     * @return mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
-    public function page(bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = '')
+    public function page(bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
         return PageHelper::instance()->init($this->query, $page, $display, $total, $limit, $template);
     }
