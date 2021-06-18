@@ -163,11 +163,11 @@ class SystemService extends Service
         // 默认节点配置数据
         $app = $this->app->config->get('app.default_app');
         $act = Str::lower($this->app->config->get('route.default_action'));
-        $cls = Str::snake($this->app->config->get('route.default_controller'));
+        $ctr = Str::snake($this->app->config->get('route.default_controller'));
         // 替换省略链接路径
         return preg_replace([
-            "#^({$pre}){$app}/{$cls}/{$act}(\.{$ext}|^\w|\?|$)?#i",
-            "#^({$pre}[\w\.]+)/{$cls}/{$act}(\.{$ext}|^\w|\?|$)#i",
+            "#^({$pre}){$app}/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)?#i",
+            "#^({$pre}[\w\.]+)/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)#i",
             "#^({$pre}[\w\.]+)(/[\w\.]+)/{$act}(\.{$ext}|^\w|\?|$)#i",
         ], ['$1$2', '$1$2', '$1$2$3'], $uri);
     }
