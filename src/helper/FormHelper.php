@@ -48,7 +48,7 @@ class FormHelper extends Helper
     {
         $query = $this->buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
-        $value = input($field, $data[$field] ?? null);
+        $value = $data[$field] ?? input($field);
         if ($this->app->request->isGet()) {
             if ($value !== null) {
                 $find = $query->where([$field => $value])->where($where)->find();
