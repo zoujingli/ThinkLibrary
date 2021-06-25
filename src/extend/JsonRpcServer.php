@@ -75,7 +75,7 @@ class JsonRpcServer
                 $error = ['code' => '-32600', 'message' => '无效的请求', 'meaning' => '发送的JSON不是一个有效的请求对象'];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'] ?? '0', 'result' => null, 'error' => $error];
             } else try {
-                if ($request['method'] === '__getClassName') {
+                if (strtolower($request['method']) === '_get_class_name_') {
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => get_class($object), 'error' => null];
                 } elseif (method_exists($object, $request['method'])) {
                     // Executes the task on local object
