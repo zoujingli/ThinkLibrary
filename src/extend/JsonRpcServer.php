@@ -104,6 +104,7 @@ class JsonRpcServer
             $object = new ReflectionClass($object);
             echo "<h2>" . $object->getName() . "</h2><hr>";
             foreach ($object->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                if ($method[0] === '-') continue;
                 $params = [];
                 foreach ($method->getParameters() as $parameter) {
                     $type = $parameter->getType();
