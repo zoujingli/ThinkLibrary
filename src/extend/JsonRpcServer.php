@@ -104,16 +104,15 @@ class JsonRpcServer
             $object = new ReflectionClass($object);
             echo "<h2>" . $object->getName() . "</h2><hr>";
             foreach ($object->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if (stripos($method->getName(), '-') !== 0) {
-                    $params = [];
-                    foreach ($method->getParameters() as $parameter) {
-                        $type = $parameter->getType();
-                        $params[] = ($type ? "{$type} $" : '$') . $parameter->getName();
-                    }
-                    $params = count($params) > 0 ? join(', ', $params) : '';
-                    echo '<div style="color:#666">' . nl2br($method->getDocComment() ?: '') . '</div>';
-                    echo "<div style='color:#00E'>{$object->getShortName()}::{$method->getName()}({$params})</div><br>";
+                if (stripos($method->getName(), '_') === 0) continue;
+                $params = [];
+                foreach ($method->getParameters() as $parameter) {
+                    $type = $parameter->getType();
+                    $params[] = ($type ? "{$type} $" : '$') . $parameter->getName();
                 }
+                $params = count($params) > 0 ? join(', ', $params) : '';
+                echo '<div style="color:#666">' . nl2br($method->getDocComment() ?: '') . '</div>';
+                echo "<div style='color:#00E'>{$object->getShortName()}::{$method->getName()}({$params})</div><br>";
             }
         } catch (Exception $exception) {
             echo "<h3>[{$exception->getCode()}] {$exception->getMessage()}</h3>";
