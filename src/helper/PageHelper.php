@@ -79,7 +79,7 @@ class PageHelper extends Helper
             }
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>{$opts}</select>";
             $pagehtml = lang('think_library_page_html', [$data['total'], $select, $data['last_page'], $data['current_page']]);
-            $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$pagehtml}</span>{$pager->render()}</div>");
+            $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$pagehtml}</span>" . str_replace('<a href=', '<a data-open=', $pager->render()) . "</div>");
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
         } else {
             $result = ['list' => $this->query->select()->toArray()];
