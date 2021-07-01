@@ -75,6 +75,7 @@ abstract class Helper
         if (is_string($dbQuery)) {
             $this->query = $this->app->db->name($dbQuery);
         } elseif ($dbQuery instanceof \think\Model) {
+            $this->model = $dbQuery;
             $this->query = $dbQuery->db();
         } elseif ($dbQuery instanceof BaseQuery) {
             $this->query = $dbQuery;

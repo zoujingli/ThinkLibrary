@@ -67,5 +67,4 @@ class SaveHelper extends Helper
             $this->class->error(lang('think_library_save_error'));
         }
     }
-
 }
