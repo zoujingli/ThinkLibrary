@@ -50,7 +50,7 @@ class PageHelper extends Helper
         $this->query = $this->buildQuery($dbQuery);
         // 数据列表排序自动处理
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            if (in_array('sort', $this->query->getTableFields())) {
+            if (method_exists($this->query, 'getTableFields') && in_array('sort', $this->query->getTableFields())) {
                 if ($this->app->request->has($pk = $this->query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
                     $data = ['sort' => intval($this->app->request->post('sort', 0))];
