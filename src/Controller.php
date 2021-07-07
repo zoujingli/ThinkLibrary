@@ -27,10 +27,10 @@ use think\admin\helper\TokenHelper;
 use think\admin\helper\ValidateHelper;
 use think\admin\service\QueueService;
 use think\App;
+use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
-use think\db\Query;
 use think\exception\HttpResponseException;
 use think\Model;
 use think\Request;
@@ -184,7 +184,7 @@ abstract class Controller extends stdClass
 
     /**
      * 快捷查询逻辑器
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param array|string|null $input
      * @return QueryHelper
      */
@@ -195,7 +195,7 @@ abstract class Controller extends stdClass
 
     /**
      * 快捷分页逻辑器
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param boolean $page 是否启用分页
      * @param boolean $display 是否渲染模板
      * @param boolean|integer $total 集合分页记录数
@@ -213,7 +213,7 @@ abstract class Controller extends stdClass
 
     /**
      * 快捷表单逻辑器
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param string $template 模板名称
      * @param string $field 指定数据对象主键
      * @param array $where 额外更新条件
@@ -241,7 +241,7 @@ abstract class Controller extends stdClass
 
     /**
      * 快捷更新逻辑器
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param array $data 表单扩展数据
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
@@ -255,7 +255,7 @@ abstract class Controller extends stdClass
 
     /**
      * 快捷删除逻辑器
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
      * @return boolean|null

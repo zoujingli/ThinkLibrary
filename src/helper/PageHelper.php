@@ -18,10 +18,10 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
-use think\db\Query;
 use think\Model;
 
 /**
@@ -34,7 +34,7 @@ class PageHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param boolean $page 是否启用分页
      * @param boolean $display 是否渲染模板
      * @param boolean|integer $total 集合分页记录数
@@ -61,7 +61,6 @@ class PageHelper extends Helper
             }
             $this->class->error(lang('think_library_sort_error'));
         }
-        // 列表分页及结果集处理
         if ($page) {
             if ($limit <= 1) {
                 $limit = $this->app->request->get('limit', $this->app->cookie->get('limit', 20));
@@ -69,18 +68,19 @@ class PageHelper extends Helper
                     $this->app->cookie->set('limit', ($limit = intval($limit >= 5 ? $limit : 20)) . '');
                 }
             }
-            $query = $this->app->request->get();
-            $pager = $this->query->paginate(['list_rows' => $limit, 'query' => $query], $total);
-            [$data, $opts] = [$pager->toArray(), ''];
-            foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as $num) {
-                $url = $this->app->request->baseUrl() . '?' . urldecode(http_build_query(array_merge($query, ['limit' => $num, 'page' => 1])));
-                if (stripos($this->app->request->get('spm', '-'), 'm-') === 0) $url = sysuri('admin/index/index') . '#' . $url;
-                $opts .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $url, $limit === $num ? 'selected' : '', $num);
-            }
-            $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>{$opts}</select>";
-            $pagehtml = lang('think_library_page_html', [$data['total'], $select, $data['last_page'], $data['current_page']]);
-            $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$pagehtml}</span>" . str_replace('<a href=', '<a data-open=', $pager->render()) . "</div>");
+            $get = $this->app->request->get();
+            $data = ($paginate = $this->query->paginate(['list_rows' => $limit, 'query' => $get], $total))->toArray();
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
+            // 分页跳转参数生成
+            $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
+            foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as $num) {
+                $url = $this->app->request->baseUrl() . '?' . http_build_query(array_merge($get, ['limit' => $num, 'page' => 1]));
+                if (stripos($this->app->request->get('spm', '-'), 'm-') === 0) $url = sysuri('admin/index/index') . '#' . $url;
+                $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $url, $limit === $num ? 'selected' : '', $num);
+            }
+            $link = str_replace('<a href=', '<a data-open=', $paginate->render() ?: '');
+            $html = lang('think_library_page_html', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
+            $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
             $result = ['list' => $this->query->select()->toArray()];
         }

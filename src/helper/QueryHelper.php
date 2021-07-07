@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
@@ -50,7 +51,7 @@ class QueryHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param array|string|null $input 输入数据
      * @return $this
      */

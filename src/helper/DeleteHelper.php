@@ -18,8 +18,8 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\db\BaseQuery;
 use think\db\exception\DbException;
-use think\db\Query;
 use think\Model;
 
 /**
@@ -31,7 +31,7 @@ class DeleteHelper extends Helper
 {
     /**
      * 逻辑器初始化
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @param string $field 操作数据主键
      * @param array $where 额外更新条件
      * @return boolean|null
@@ -61,6 +61,10 @@ class DeleteHelper extends Helper
             $fields = $query->getTableFields();
             if (in_array('deleted', $fields)) $data['deleted'] = 1;
             if (in_array('is_deleted', $fields)) $data['is_deleted'] = 1;
+            if (!empty($data)) {
+                if (in_array('deleted_at', $fields)) $data['deleted_at'] = date('Y-m-d H:i:s');
+                if (in_array('deleted_time', $fields)) $data['deleted_time'] = time();
+            }
         }
         // 执行删除操作
         $result = (empty($data) ? $query->delete() : $query->update($data)) !== false;

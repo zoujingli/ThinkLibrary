@@ -44,7 +44,7 @@ abstract class Helper
 
     /**
      * 数据查询实例
-     * @var Query
+     * @var BaseQuery
      */
     public $query;
 
@@ -67,7 +67,7 @@ abstract class Helper
 
     /**
      * 获取数据库对象
-     * @param Model|Query|string $dbQuery
+     * @param Model|BaseQuery|string $dbQuery
      * @return Query|mixed
      */
     protected function buildQuery($dbQuery)
