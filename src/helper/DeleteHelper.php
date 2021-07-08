@@ -61,7 +61,7 @@ class DeleteHelper extends Helper
             $fields = $query->getTableFields();
             if (in_array('deleted', $fields)) $data['deleted'] = 1;
             if (in_array('is_deleted', $fields)) $data['is_deleted'] = 1;
-            if (!empty($data)) {
+            if (isset($data['deleted']) || isset($data['is_deleted'])) {
                 if (in_array('deleted_at', $fields)) $data['deleted_at'] = date('Y-m-d H:i:s');
                 if (in_array('deleted_time', $fields)) $data['deleted_time'] = time();
             }

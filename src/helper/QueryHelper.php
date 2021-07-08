@@ -42,9 +42,9 @@ class QueryHelper extends Helper
 
     /**
      * 获取当前Db操作对象
-     * @return Query
+     * @return BaseQuery
      */
-    public function db(): Query
+    public function db(): BaseQuery
     {
         return $this->query;
     }
@@ -179,7 +179,7 @@ class QueryHelper extends Helper
      * 实例化分页管理器
      * @param boolean $page 是否启用分页
      * @param boolean $display 是否渲染模板
-     * @param boolean|int $total 集合分页记录数
+     * @param boolean|integer $total 集合分页记录数
      * @param integer $limit 集合每页记录数
      * @param string $template 模板文件名称
      * @return array
