@@ -42,8 +42,8 @@ class SaveHelper extends Helper
     public function init($dbQuery, array $edata = [], string $field = '', array $where = []): bool
     {
         $query = $this->buildQuery($dbQuery);
-        $edata = $edata ?: $this->app->request->post();
         $field = $field ?: ($query->getPk() ?: 'id');
+        $edata = $edata ?: $this->app->request->post();
         $value = $this->app->request->post($field);
         // 主键限制处理
         if (!isset($where[$field]) && is_string($value)) {
