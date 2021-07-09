@@ -52,7 +52,7 @@ class QueryHelper extends Helper
     /**
      * 逻辑器初始化
      * @param Model|BaseQuery|string $dbQuery
-     * @param array|string|null $input 输入数据
+     * @param string|array|null $input 输入数据
      * @return $this
      */
     public function init($dbQuery, $input = null): QueryHelper
@@ -66,7 +66,7 @@ class QueryHelper extends Helper
      * 设置 Like 查询条件
      * @param string|array $fields 查询字段
      * @param string $split 前后分割符
-     * @param array|string|null $input 输入数据
+     * @param string|array|null $input 输入数据
      * @param string $alias 别名分割符
      * @return $this
      */
@@ -88,7 +88,7 @@ class QueryHelper extends Helper
     /**
      * 设置 Equal 查询条件
      * @param string|array $fields 查询字段
-     * @param array|string|null $input 输入类型
+     * @param string|array|null $input 输入类型
      * @param string $alias 别名分割符
      * @return $this
      */
@@ -111,7 +111,7 @@ class QueryHelper extends Helper
      * 设置 IN 区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param array|string|null $input 输入数据
+     * @param string|array|null $input 输入数据
      * @param string $alias 别名分割符
      * @return $this
      */
@@ -134,7 +134,7 @@ class QueryHelper extends Helper
      * 设置内容区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param array|string|null $input 输入数据
+     * @param string|array|null $input 输入数据
      * @param string $alias 别名分割符
      * @return $this
      */
@@ -147,7 +147,7 @@ class QueryHelper extends Helper
      * 设置日期时间区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param array|string|null $input 输入数据
+     * @param string|array|null $input 输入数据
      * @param string $alias 别名分割符
      * @return $this
      */
@@ -163,7 +163,7 @@ class QueryHelper extends Helper
      * 设置时间戳区间查询
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param array|string|null $input 输入数据
+     * @param string|array|null $input 输入数据
      * @param string $alias 别名分割符
      * @return $this
      */
@@ -221,7 +221,7 @@ class QueryHelper extends Helper
      * 设置区域查询条件
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
-     * @param array|string|null $input 输入数据
+     * @param string|array|null $input 输入数据
      * @param string $alias 别名分割符
      * @param callable|null $callback 回调函数
      * @return $this
@@ -248,7 +248,7 @@ class QueryHelper extends Helper
 
     /**
      * 获取输入数据
-     * @param array|string|null $input
+     * @param string|array|null $input
      * @return array
      */
     private function getInputData($input): array
