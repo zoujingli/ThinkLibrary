@@ -296,6 +296,7 @@ class SystemService extends Service
     public function clearRuntime(): void
     {
         $data = $this->getRuntime();
+        $this->app->cache->clear();
         $this->app->console->call('clear', ['--dir']);
         $this->setRuntime($data['mode'], $data['appmap'], $data['domain']);
     }
@@ -322,10 +323,12 @@ class SystemService extends Service
         $data['mode'] = $mode ?: $data['mode'];
         $data['appmap'] = $this->uniqueArray($data['appmap'], $appmap);
         $data['domain'] = $this->uniqueArray($data['domain'], $domain);
+
         // 组装配置文件格式
         $rows[] = "mode = {$data['mode']}";
         foreach ($data['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
         foreach ($data['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
+
         // 数据配置保存文件
         $env = $this->app->getRootPath() . 'runtime/.env';
         file_put_contents($env, "[RUNTIME]\n" . join("\n", $rows));

@@ -42,9 +42,9 @@ class QueryHelper extends Helper
 
     /**
      * 获取当前Db操作对象
-     * @return BaseQuery
+     * @return Query
      */
-    public function db(): BaseQuery
+    public function db(): Query
     {
         return $this->query;
     }

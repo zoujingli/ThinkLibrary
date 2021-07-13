@@ -44,7 +44,7 @@ abstract class Helper
 
     /**
      * 数据查询实例
-     * @var BaseQuery
+     * @var Query
      */
     public $query;
 
@@ -74,7 +74,7 @@ abstract class Helper
     {
         if (is_string($dbQuery)) {
             $this->query = $this->app->db->name($dbQuery);
-        } elseif ($dbQuery instanceof \think\Model) {
+        } elseif ($dbQuery instanceof Model) {
             $this->model = $dbQuery;
             $this->query = $dbQuery->db();
         } elseif ($dbQuery instanceof BaseQuery) {
