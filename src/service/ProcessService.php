@@ -42,11 +42,13 @@ class ProcessService extends Service
      */
     public function think(string $args = '', bool $simple = false): string
     {
-        if ($simple) {
-            return trim("{$this->app->getRootPath()}think {$args}");
+        $command = trim("{$this->app->getRootPath()}think {$args}");
+        if ($simple) return $command;
+        $binary = sysconf('base.binary') ?: PHP_BINARY;
+        if (in_array(basename($binary), ['php', 'php.exe'])) {
+            return "{$binary} {$command}";
         } else {
-            $binary = sysconf('base.binary') ?: 'php';
-            return trim("{$binary} {$this->app->getRootPath()}think {$args}");
+            return "php {$command}";
         }
     }
 
