@@ -22,6 +22,7 @@ use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\exception\HttpResponseException;
 use think\Model;
 
 /**
@@ -92,5 +93,44 @@ class PageHelper extends Helper
             }
         }
         return $result;
+    }
+
+    /**
+     * 组件 Layui.Table 处理
+     * @param Model|BaseQuery|string $dbQuery
+     * @param string $template
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    public function layTable($dbQuery, string $template = ''): array
+    {
+        $get = $this->app->request->get();
+        if (($get['output'] ?? '') === 'json') {
+            return PageHelper::instance()->init($dbQuery);
+        } elseif (($get['output'] ?? '') === 'layui.table') {
+            $this->query = $this->buildQuery($dbQuery);
+            // 根据参数排序
+            if (isset($get['_field_']) && isset($get['_order_'])) {
+                $this->query->order("{$get['_field_']} {$get['_order_']}");
+            }
+            // 数据分页处理
+            if (isset($get['page']) && isset($get['limit'])) {
+                $rows = $get['limit'] ?: 20;
+                $data = $this->query->paginate(['list_rows' => $rows, 'query' => $get], false)->toArray();
+                $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
+            } else {
+                $data = $this->query->select()->toArray();
+                $result = ['msg' => '', 'code' => 0, 'count' => count($data), 'data' => $data];
+            }
+            if (false !== $this->class->callback('_page_filter', $result['data'])) {
+                throw new HttpResponseException(json($result));
+            } else {
+                return $result;
+            }
+        } else {
+            $this->class->fetch($template);
+        }
     }
 }

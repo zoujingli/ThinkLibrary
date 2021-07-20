@@ -193,6 +193,19 @@ class QueryHelper extends Helper
     }
 
     /**
+     * Layui.Table 组件数据
+     * @param string $template
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    public function layTable(string $template = ''): array
+    {
+        return PageHelper::instance()->layTable($this->query, $template);
+    }
+
+    /**
      * 清空数据并保留表结构
      * @return $this
      */
