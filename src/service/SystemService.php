@@ -371,12 +371,24 @@ class SystemService extends Service
      * 初始化并运行主程序
      * @param null|App $app
      */
-    public function doInit(?App $app = null): void
+    public function doInit(?App $app = null)
     {
         $this->app = $app ?: $this->app;
         $this->app->debug($this->isDebug());
         ($response = $this->app->http->run())->send();
         $this->app->http->end($response);
+    }
+
+    /**
+     * 初始化命令行主程序
+     * @param App|null $app
+     * @throws Exception
+     */
+    public function cliInit(?App $app = null)
+    {
+        $this->app = $app ?: $this->app;
+        $this->app->debug($this->isDebug());
+        $this->app->console->run();
     }
 
     /**
