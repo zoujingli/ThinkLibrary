@@ -384,7 +384,7 @@ class SystemService extends Service
      * @param App|null $app
      * @throws Exception
      */
-    public function cliInit(?App $app = null)
+    public function doConsoleInit(?App $app = null)
     {
         $this->app = $app ?: $this->app;
         $this->app->debug($this->isDebug());
