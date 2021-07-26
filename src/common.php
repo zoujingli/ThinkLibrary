@@ -50,18 +50,6 @@ if (!function_exists('auth')) {
         return AdminService::instance()->check($node);
     }
 }
-if (!function_exists('model')) {
-    /**
-     * 动态创建模型
-     * @param string $name 模型名称
-     * @param array $data 初始化数据
-     * @return \think\admin\Model|Model
-     */
-    function model(string $name, array $data = [])
-    {
-        return \think\admin\Model::mk($name, $data);
-    }
-}
 if (!function_exists('sysuri')) {
     /**
      * 生成最短 URL 地址
