@@ -51,9 +51,9 @@ class FormHelper extends Helper
         $value = $edata[$field] ?? input($field);
         if ($this->app->request->isGet()) {
             if ($value !== null) {
-                $find = $query->where([$field => $value])->where($where)->find();
-                if ($find instanceof Model) $find = $find->toArray();
-                $edata = array_merge($edata, $find ?: []);
+                $exist = $query->where([$field => $value])->where($where)->find();
+                if ($exist instanceof Model) $exist = $exist->toArray();
+                $edata = array_merge($edata, $exist ?: []);
             }
             if (false !== $this->class->callback('_form_filter', $edata)) {
                 $this->class->fetch($template, ['vo' => $edata]);
