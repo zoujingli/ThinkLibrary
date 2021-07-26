@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin;
 
+use think\admin\Model as ModelAlias;
 use think\App;
 use think\Container;
 use think\db\BaseQuery;
@@ -73,12 +74,14 @@ abstract class Helper
     protected function buildQuery($dbQuery)
     {
         if (is_string($dbQuery)) {
-            $this->query = $this->app->db->name($dbQuery);
+            $this->model = ModelAlias::mk($dbQuery);
+            $this->query = $this->model->db();
         } elseif ($dbQuery instanceof Model) {
             $this->model = $dbQuery;
             $this->query = $dbQuery->db();
         } elseif ($dbQuery instanceof BaseQuery) {
-            $this->query = $dbQuery;
+            $this->model = ModelAlias::mk($dbQuery->getTable());
+            $this->query = $dbQuery->model($this->model);
         }
         return $this->query;
     }

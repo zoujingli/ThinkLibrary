@@ -169,13 +169,14 @@ abstract class Controller extends stdClass
      * @param string $name 回调方法名称
      * @param mixed $one 回调引用参数1
      * @param mixed $two 回调引用参数2
+     * @param mixed $thr 回调引用参数3
      * @return boolean
      */
-    public function callback(string $name, &$one = [], &$two = []): bool
+    public function callback(string $name, &$one = [], &$two = [], &$thr = []): bool
     {
-        if (is_callable($name)) return call_user_func($name, $this, $one, $two);
+        if (is_callable($name)) return call_user_func($name, $this, $one, $two, $thr);
         foreach (["_{$this->app->request->action()}{$name}", $name] as $method) {
-            if (method_exists($this, $method) && false === $this->$method($one, $two)) {
+            if (method_exists($this, $method) && false === $this->$method($one, $two, $thr)) {
                 return false;
             }
         }
