@@ -73,10 +73,15 @@ abstract class Helper
     protected function buildQuery($dbQuery)
     {
         if (is_string($dbQuery)) {
-            $this->query = $this->app->db->name($dbQuery);
+            if (stripos($dbQuery, '\\') !== false) {
+                $this->model = new $dbQuery;
+                $this->query = $this->model->db();
+            } else {
+                $this->query = $this->app->db->name($dbQuery);
+            }
         } elseif ($dbQuery instanceof Model) {
             $this->model = $dbQuery;
-            $this->query = $dbQuery->db();
+            $this->query = $this->model->db();
         } elseif ($dbQuery instanceof BaseQuery) {
             $this->query = $dbQuery;
         }
