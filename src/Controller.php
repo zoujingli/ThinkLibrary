@@ -250,7 +250,6 @@ abstract class Controller extends stdClass
      * @param array $where 额外更新条件
      * @return boolean
      * @throws DbException
-     * @throws Exception
      */
     protected function _save($dbQuery, array $data = [], string $field = '', array $where = []): bool
     {
