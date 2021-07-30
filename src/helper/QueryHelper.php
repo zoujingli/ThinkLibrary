@@ -221,7 +221,7 @@ class QueryHelper extends Helper
      * Layui.Table 组件数据
      * @param ?callable $befor 表单前置操作
      * @param ?callable $after 表单后置操作
-     * @param string $template 模板名称
+     * @param string $template 前端模板文件
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
