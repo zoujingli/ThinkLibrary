@@ -65,11 +65,7 @@ class QueryHelper extends Helper
     public function init($dbQuery, $input = null): QueryHelper
     {
         $this->input = $this->getInputData($input);
-        if ($this->method === 'post' && input('post.action') === 'sort') {
-            $this->query = PageHelper::instance()->autoSortQuery($this->query);
-        } else {
-            $this->query = $this->buildQuery($dbQuery);
-        }
+        $this->query = PageHelper::instance()->autoSortQuery($dbQuery);
         return $this;
     }
 
@@ -244,7 +240,7 @@ class QueryHelper extends Helper
     {
         return PageHelper::instance()->layTable($this->query, $template);
     }
-    
+
     /**
      * QueryHelper call.
      * @param string $name 调用方法名称
