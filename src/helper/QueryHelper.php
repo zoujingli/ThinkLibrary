@@ -228,17 +228,16 @@ class QueryHelper extends Helper
      */
     public function layTable(?callable $befor = null, ?callable $after = null, string $template = '')
     {
-        // 非数据请求直接显示模板
-        if ($this->output !== 'get.layui.table') {
-            if (is_callable($befor)) {
-                call_user_func($befor, $this, $this->query);
-            }
-            $this->class->fetch($template);
-        } else {
+        if ($this->output === 'get.layui.table') {
             if (is_callable($after)) {
                 call_user_func($after, $this, $this->query);
             }
             $this->page->layTable($this->query, $template);
+        } else {
+            if (is_callable($befor)) {
+                call_user_func($befor, $this, $this->query);
+            }
+            $this->class->fetch($template);
         }
     }
 
