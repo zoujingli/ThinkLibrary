@@ -35,6 +35,12 @@ use think\Model;
 class QueryHelper extends Helper
 {
     /**
+     * 分页助手工具
+     * @var PageHelper
+     */
+    protected $page;
+
+    /**
      * 当前数据操作
      * @var Query
      */
@@ -64,8 +70,9 @@ class QueryHelper extends Helper
      */
     public function init($dbQuery, $input = null): QueryHelper
     {
+        $this->page = PageHelper::instance();
         $this->input = $this->getInputData($input);
-        $this->query = PageHelper::instance()->autoSortQuery($dbQuery);
+        $this->query = $this->page->autoSortQuery($dbQuery);
         return $this;
     }
 
@@ -196,7 +203,7 @@ class QueryHelper extends Helper
      */
     public function page(bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
-        return PageHelper::instance()->init($this->query, $page, $display, $total, $limit, $template);
+        return $this->page->init($this->query, $page, $display, $total, $limit, $template);
     }
 
     /**
@@ -211,34 +218,28 @@ class QueryHelper extends Helper
     }
 
     /**
-     * 检查当前请求
-     * @param ?callable $callable
-     * @param string $template
-     * @return QueryHelper
-     */
-    public function preTable(?callable $callable = null, string $template = ''): QueryHelper
-    {
-        // 非数据请求直接显示模板
-        if ($this->output !== 'get.layui.table') {
-            if (is_callable($callable)) {
-                call_user_func($callable);
-            }
-            $this->class->fetch($template);
-        }
-        return $this;
-    }
-
-    /**
      * Layui.Table 组件数据
-     * @param string $template
-     * @return array
+     * @param ?callable $befor 表单前置操作
+     * @param ?callable $after 表单后置操作
+     * @param string $template 模板名称
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function layTable(string $template = ''): array
+    public function layTable(?callable $befor = null, ?callable $after = null, string $template = '')
     {
-        return PageHelper::instance()->layTable($this->query, $template);
+        // 非数据请求直接显示模板
+        if ($this->output !== 'get.layui.table') {
+            if (is_callable($befor)) {
+                call_user_func($befor, $this, $this->query);
+            }
+            $this->class->fetch($template);
+        } else {
+            if (is_callable($after)) {
+                call_user_func($after, $this, $this->query);
+            }
+            $this->page->layTable($this->query, $template);
+        }
     }
 
     /**
