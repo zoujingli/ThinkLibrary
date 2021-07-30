@@ -57,12 +57,12 @@ abstract class Helper
     /**
      * Helper constructor.
      * @param App $app
-     * @param Controller $class
+     * @param Controller $controller
      */
-    public function __construct(Controller $class, App $app)
+    public function __construct(App $app, Controller $controller)
     {
         $this->app = $app;
-        $this->class = $class;
+        $this->class = $controller;
     }
 
     /**

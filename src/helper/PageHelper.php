@@ -74,7 +74,7 @@ class PageHelper extends Helper
             $result = ['list' => $this->query->select()->toArray()];
         }
         if (false !== $this->class->callback('_page_filter', $result['list']) && $display) {
-            if ($this->app->request->get('output') === 'json') {
+            if ($this->class->output === 'get.json') {
                 $this->class->success('JSON-DATA', $result);
             } else {
                 $this->class->fetch($template, $result);
@@ -94,12 +94,12 @@ class PageHelper extends Helper
      */
     public function layTable($dbQuery, string $template = ''): array
     {
-        $get = $this->app->request->get();
         $this->query = $this->buildQuery($dbQuery);
         if ($this->app->request->isPost()) $this->_listSort();
-        if (($get['output'] ?? '') === 'json') {
+        if ($this->class->output === 'get.json') {
             return PageHelper::instance()->init($dbQuery);
-        } elseif (($get['output'] ?? '') === 'layui.table') {
+        } elseif ($this->class->output === 'get.layui.table') {
+            $get = $this->app->request->get();
             // 根据参数排序
             if (isset($get['_field_']) && isset($get['_order_'])) {
                 $this->query->order("{$get['_field_']} {$get['_order_']}");

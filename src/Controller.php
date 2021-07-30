@@ -50,6 +50,12 @@ abstract class Controller extends stdClass
     public $app;
 
     /**
+     * 输出格式
+     * @var string
+     */
+    public $output;
+
+    /**
      * 请求对象
      * @var Request
      */
@@ -76,6 +82,10 @@ abstract class Controller extends stdClass
         $this->app = $app;
         $this->request = $app->request;
         $this->app->bind('think\admin\Controller', $this);
+        // 计算指定输出格式
+        $method = $app->request->method() ?: ($app->request->isCli() ? 'cli' : 'nil');
+        $this->output = strtolower("{$method}.{$app->request->request('output', 'default')}");
+        // 过滤基础方法访问
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
