@@ -22,6 +22,7 @@ use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\db\Query;
 use think\exception\HttpResponseException;
 use think\Model;
 
@@ -32,7 +33,6 @@ use think\Model;
  */
 class PageHelper extends Helper
 {
-
     /**
      * 逻辑器初始化
      * @param Model|BaseQuery|string $dbQuery
@@ -48,8 +48,6 @@ class PageHelper extends Helper
      */
     public function init($dbQuery, bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
-        $this->query = $this->buildQuery($dbQuery);
-        if ($this->app->request->isPost()) $this->_listSort();
         if ($page) {
             if ($limit <= 1) {
                 $limit = $this->app->request->get('limit', $this->app->cookie->get('limit', 20));
@@ -58,7 +56,7 @@ class PageHelper extends Helper
                 }
             }
             $get = $this->app->request->get();
-            $data = ($paginate = $this->query->paginate(['list_rows' => $limit, 'query' => $get], $total))->toArray();
+            $data = ($paginate = $this->autoSortQuery($dbQuery)->paginate(['list_rows' => $limit, 'query' => $get], $total))->toArray();
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
             // 分页跳转参数生成
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
@@ -71,10 +69,10 @@ class PageHelper extends Helper
             $html = lang('think_library_page_html', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
             $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
-            $result = ['list' => $this->query->select()->toArray()];
+            $result = ['list' => $this->autoSortQuery($dbQuery)->select()->toArray()];
         }
         if (false !== $this->class->callback('_page_filter', $result['list']) && $display) {
-            if ($this->class->output === 'get.json') {
+            if ($this->output === 'get.json') {
                 $this->class->success('JSON-DATA', $result);
             } else {
                 $this->class->fetch($template, $result);
@@ -94,23 +92,23 @@ class PageHelper extends Helper
      */
     public function layTable($dbQuery, string $template = ''): array
     {
-        $this->query = $this->buildQuery($dbQuery);
-        if ($this->app->request->isPost()) $this->_listSort();
-        if ($this->class->output === 'get.json') {
+        if ($this->output === 'get.json') {
             return PageHelper::instance()->init($dbQuery);
-        } elseif ($this->class->output === 'get.layui.table') {
+        }
+        if ($this->output === 'get.layui.table') {
             $get = $this->app->request->get();
+            $query = $this->autoSortQuery($dbQuery);
             // 根据参数排序
             if (isset($get['_field_']) && isset($get['_order_'])) {
-                $this->query->order("{$get['_field_']} {$get['_order_']}");
+                $query->order("{$get['_field_']} {$get['_order_']}");
             }
             // 数据分页处理
             if (isset($get['page']) && isset($get['limit'])) {
                 $rows = $get['limit'] ?: 20;
-                $data = $this->query->paginate(['list_rows' => $rows, 'query' => $get], false)->toArray();
+                $data = $query->paginate(['list_rows' => $rows, 'query' => $get], false)->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
             } else {
-                $data = $this->query->select()->toArray();
+                $data = $query->select()->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => count($data), 'data' => $data];
             }
             if (false !== $this->class->callback('_page_filter', $result['data'])) {
@@ -120,26 +118,31 @@ class PageHelper extends Helper
             }
         } else {
             $this->class->fetch($template);
+            return [];
         }
     }
 
     /**
-     * 数据列表排序自动处理
+     * 绑定排序并返回操作对象
+     * @param Model|BaseQuery|string $dbQuery
+     * @return Query
      * @throws DbException
      */
-    private function _listSort()
+    public function autoSortQuery($dbQuery): Query
     {
+        $query = $this->buildQuery($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            if (method_exists($this->query, 'getTableFields') && in_array('sort', $this->query->getTableFields())) {
-                if ($this->app->request->has($pk = $this->query->getPk() ?: 'id', 'post')) {
+            if (method_exists($query, 'getTableFields') && in_array('sort', $query->getTableFields())) {
+                if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
                     $data = ['sort' => intval($this->app->request->post('sort', 0))];
-                    if ($this->app->db->table($this->query->getTable())->where($map)->update($data) !== false) {
+                    if ($this->app->db->table($query->getTable())->where($map)->update($data) !== false) {
                         $this->class->success(lang('think_library_sort_success'), '');
                     }
                 }
             }
             $this->class->error(lang('think_library_sort_error'));
         }
+        return $query;
     }
 }

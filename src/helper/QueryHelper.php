@@ -35,6 +35,12 @@ use think\Model;
 class QueryHelper extends Helper
 {
     /**
+     * 当前数据操作
+     * @var Query
+     */
+    protected $query;
+
+    /**
      * 初始化默认数据
      * @var array
      */
@@ -54,11 +60,16 @@ class QueryHelper extends Helper
      * @param Model|BaseQuery|string $dbQuery
      * @param string|array|null $input 输入数据
      * @return $this
+     * @throws DbException
      */
     public function init($dbQuery, $input = null): QueryHelper
     {
-        $this->query = $this->buildQuery($dbQuery);
         $this->input = $this->getInputData($input);
+        if ($this->method === 'post' && input('post.action') === 'sort') {
+            $this->query = PageHelper::instance()->autoSortQuery($this->query);
+        } else {
+            $this->query = $this->buildQuery($dbQuery);
+        }
         return $this;
     }
 
@@ -193,6 +204,35 @@ class QueryHelper extends Helper
     }
 
     /**
+     * 清空数据并保留表结构
+     * @return $this
+     */
+    public function empty(): QueryHelper
+    {
+        $table = $this->query->getTable();
+        $this->app->db->execute("truncate table `{$table}`");
+        return $this;
+    }
+
+    /**
+     * 检查当前请求
+     * @param ?callable $callable
+     * @param string $template
+     * @return QueryHelper
+     */
+    public function preTable(?callable $callable = null, string $template = ''): QueryHelper
+    {
+        // 非数据请求直接显示模板
+        if ($this->output !== 'get.layui.table') {
+            if (is_callable($callable)) {
+                call_user_func($callable);
+            }
+            $this->class->fetch($template);
+        }
+        return $this;
+    }
+
+    /**
      * Layui.Table 组件数据
      * @param string $template
      * @return array
@@ -204,18 +244,7 @@ class QueryHelper extends Helper
     {
         return PageHelper::instance()->layTable($this->query, $template);
     }
-
-    /**
-     * 清空数据并保留表结构
-     * @return $this
-     */
-    public function empty(): QueryHelper
-    {
-        $table = $this->query->getTable();
-        $this->app->db->execute("truncate table `{$table}`");
-        return $this;
-    }
-
+    
     /**
      * QueryHelper call.
      * @param string $name 调用方法名称

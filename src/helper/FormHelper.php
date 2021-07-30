@@ -60,7 +60,8 @@ class FormHelper extends Helper
             } else {
                 return $edata;
             }
-        } elseif ($this->app->request->isPost()) {
+        }
+        if ($this->app->request->isPost()) {
             $edata = array_merge($this->app->request->post(), $edata);
             if (false !== $this->class->callback('_form_filter', $edata, $where)) {
                 $result = data_save($query, $edata, $field, $where) !== false;

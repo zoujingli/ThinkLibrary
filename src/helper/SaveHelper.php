@@ -38,6 +38,7 @@ class SaveHelper extends Helper
      * @param array $where 额外更新条件
      * @return boolean
      * @throws DbException
+     * @throws \think\admin\Exception
      */
     public function init($dbQuery, array $edata = [], string $field = '', array $where = []): bool
     {
