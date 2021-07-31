@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\admin\service\AdminService;
 use think\db\BaseQuery;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
@@ -132,6 +133,9 @@ class PageHelper extends Helper
     {
         $query = $this->buildQuery($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
+            if (!AdminService::instance()->isLogin()) {
+                $this->class->error(lang('think_library_not_login'));
+            }
             if (method_exists($query, 'getTableFields') && in_array('sort', $query->getTableFields())) {
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
