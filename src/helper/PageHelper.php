@@ -57,8 +57,8 @@ class PageHelper extends Helper
                 }
             }
             $get = $this->app->request->get();
-            $inner = strpos($get['spm'] ?? '', 'm-') === 0;
-            $prefix = $inner ? (sysuri('admin/index/index') . '#') : '';
+            $inpage = strpos($get['spm'] ?? '', 'm-') === 0;
+            $prefix = $inpage ? (sysuri('admin/index/index') . '#') : '';
             // 生成分页数据
             $data = ($paginate = $this->autoSortQuery($dbQuery)->paginate(['list_rows' => $limit, 'query' => $get], $total))->toArray();
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
@@ -68,7 +68,7 @@ class PageHelper extends Helper
                 $url = $this->app->request->baseUrl() . '?' . http_build_query(array_merge($get, ['limit' => $num, 'page' => 1]));
                 $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
             }
-            $link = $inner ? str_replace('<a href=', '<a data-open=', $paginate->render() ?: '') : ($paginate->render() ?: '');
+            $link = $inpage ? str_replace('<a href=', '<a data-open=', $paginate->render() ?: '') : ($paginate->render() ?: '');
             $html = lang('think_library_page_html', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
             $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
