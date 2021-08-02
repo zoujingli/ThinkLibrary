@@ -68,8 +68,8 @@ class PageHelper extends Helper
                 $url = $this->app->request->baseUrl() . '?' . http_build_query(array_merge($get, ['limit' => $num, 'page' => 1]));
                 $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
             }
-            $link = $inpage ? str_replace('<a href=', '<a data-open=', $paginate->render() ?: '') : ($paginate->render() ?: '');
             $html = lang('think_library_page_html', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
+            $link = $inpage ? str_replace('<a href=', '<a data-open=', $paginate->render() ?: '') : ($paginate->render() ?: '');
             $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
             $result = ['list' => $this->autoSortQuery($dbQuery)->select()->toArray()];
