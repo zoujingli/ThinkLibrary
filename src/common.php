@@ -38,6 +38,30 @@ if (!function_exists('p')) {
         return SystemService::instance()->putDebug($data, $new, $file);
     }
 }
+if (!function_exists('M')) {
+    /**
+     * 动态创建模型对象
+     * @param string $name 模型名称
+     * @param array $data 初始数据
+     * @return Model
+     */
+    function M(string $name, array $data = []): Model
+    {
+        if (strpos($name, '\\') !== false) {
+            if (class_exists($name)) return new $name($data);
+            $name = basename(str_replace('\\', '//', $name));
+        }
+        if (!class_exists($class = "virtual\\model\\{$name}")) {
+            $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
+            (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
+            if (!file_exists($file = $path . $name . '.php')) {
+                file_put_contents($file, "<?php\nnamespace virtual\\model;\n\nclass {$name} extends \\think\\Model{\n}");
+            }
+            \Composer\Autoload\includeFile($file);
+        }
+        return new $class($data);
+    }
+}
 if (!function_exists('auth')) {
     /**
      * 访问权限检查
