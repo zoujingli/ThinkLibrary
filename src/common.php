@@ -51,6 +51,7 @@ if (!function_exists('M')) {
             if (class_exists($name)) return new $name($data);
             $name = basename(str_replace('\\', '//', $name));
         }
+        $name = \think\helper\Str::studly($name);
         if (!class_exists($class = "virtual\\model\\{$name}")) {
             $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
             (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
