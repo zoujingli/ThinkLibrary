@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use Exception;
+use think\admin\Helper;
 use think\admin\Service;
 use think\App;
 use think\db\exception\DataNotFoundException;
@@ -118,18 +119,15 @@ class SystemService extends Service
      */
     public function save($query, array $data, string $key = 'id', array $map = [])
     {
-        $query = is_string($query) ? $this->app->db->name($query) : ($query instanceof Model ? $query->db() : $query);
-        if (!$query instanceof Query) throw new ModelNotFoundException('数据库操作对象异常！');
-        [$value] = [$data[$key] ?? null, $query->master()->strict(false)->where($map)];
+        $value = $data[$key] ?? null;
+        $query = Helper::buildQuery($query)->master()->strict(false)->where($map);
         if (empty($map[$key])) if (is_string($value) && strpos($value, ',') !== false) {
             $query->whereIn($key, str2arr($value));
         } else {
             $query->where([$key => $value]);
         }
         if (($info = (clone $query)->find()) && !empty($info)) {
-            if ($info instanceof Model) $info = $info->toArray();
-            $query->update($data);
-            return $info[$key] ?? true;
+            return $query->update($data) !== false ? ($info[$key] ?? true) : false;
         } else {
             return $query->insertGetId($data);
         }

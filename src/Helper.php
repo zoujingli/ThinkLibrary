@@ -69,22 +69,6 @@ abstract class Helper
     }
 
     /**
-     * 获取数据库对象
-     * @param Model|BaseQuery|string $dbQuery
-     * @return Query|mixed
-     */
-    protected function buildQuery($dbQuery)
-    {
-        if (is_string($dbQuery)) {
-            $isClass = stripos($dbQuery, '\\') !== false;
-            $dbQuery = $isClass ? new $dbQuery : $this->app->db->name($dbQuery);
-        }
-        if ($dbQuery instanceof Query) return $dbQuery;
-        if ($dbQuery instanceof Model) return $dbQuery->db();
-        return $dbQuery;
-    }
-
-    /**
      * 实例对象反射
      * @param array $args
      * @return static
@@ -92,5 +76,46 @@ abstract class Helper
     public static function instance(...$args): Helper
     {
         return Container::getInstance()->invokeClass(static::class, $args);
+    }
+
+    /**
+     * 获取数据库查询对象
+     * @param Model|BaseQuery|string $query
+     * @return Query|mixed
+     */
+    public static function buildQuery($query)
+    {
+        if (is_string($query)) {
+            $query = self::buildModel($query);
+        }
+        if ($query instanceof Model) return $query->db();
+        if ($query instanceof Query && !$query->getModel()) {
+            $query->model(self::buildModel($query->getName()));
+        }
+        return $query;
+    }
+
+    /**
+     * 动态创建模型对象
+     * @param string $name 模型名称
+     * @param array $data 初始数据
+     * @return Model
+     */
+    public static function buildModel(string $name, array $data = []): Model
+    {
+        if (strpos($name, '\\') !== false) {
+            if (class_exists($name)) return new $name($data);
+            $name = basename(str_replace('\\', '/', $name));
+        }
+        $name = \think\helper\Str::studly($name);
+        if (!class_exists($class = "virtual\\model\\{$name}")) {
+            $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
+            (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
+            if (!file_exists($file = $path . $name . '.php')) {
+                file_put_contents($file, "<?php\nnamespace virtual\\model;\n\nclass {$name} extends \\think\\Model{\n}");
+            }
+            \Composer\Autoload\includeFile($file);
+        }
+        return new $class($data);
     }
 }

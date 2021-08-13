@@ -14,6 +14,7 @@
 // +----------------------------------------------------------------------
 
 use think\admin\extend\HttpExtend;
+use think\admin\Helper;
 use think\admin\service\AdminService;
 use think\admin\service\QueueService;
 use think\admin\service\SystemService;
@@ -47,20 +48,7 @@ if (!function_exists('M')) {
      */
     function M(string $name, array $data = []): Model
     {
-        if (strpos($name, '\\') !== false) {
-            if (class_exists($name)) return new $name($data);
-            $name = basename(str_replace('\\', '//', $name));
-        }
-        $name = \think\helper\Str::studly($name);
-        if (!class_exists($class = "virtual\\model\\{$name}")) {
-            $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
-            (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
-            if (!file_exists($file = $path . $name . '.php')) {
-                file_put_contents($file, "<?php\nnamespace virtual\\model;\n\nclass {$name} extends \\think\\Model{\n}");
-            }
-            \Composer\Autoload\includeFile($file);
-        }
-        return new $class($data);
+        return Helper::buildModel($name, $data);
     }
 }
 if (!function_exists('auth')) {
