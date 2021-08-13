@@ -119,17 +119,22 @@ class SystemService extends Service
      */
     public function save($query, array $data, string $key = 'id', array $map = [])
     {
-        $value = $data[$key] ?? null;
-        $query = Helper::buildQuery($query)->master()->strict(false)->where($map);
-        if (empty($map[$key])) if (is_string($value) && strpos($value, ',') !== false) {
-            $query->whereIn($key, str2arr($value));
-        } else {
-            $query->where([$key => $value]);
+        $query = Helper::buildQuery($query)->master()->strict(false);
+        if (empty($map[$key])) {
+            $value = $data[$key] ?? null;
+            if (is_string($value) && strpos($value, ',') !== false) {
+                $query->whereIn($key, str2arr($value));
+            } else {
+                $query->where([$key => $value]);
+            }
         }
-        if (($info = (clone $query)->find()) && !empty($info)) {
-            return $query->update($data) !== false ? ($info[$key] ?? true) : false;
+        if (($info = $query->where($map)->find()) && !empty($info)) {
+            if ($info->save($data) === false) return false;
+            return $data[$key] ?? true;
         } else {
-            return $query->insertGetId($data);
+            $model = $query->getModel();
+            if ($model->data($data)->save() === false) return false;
+            return $model[$key] ?? true;
         }
     }
 

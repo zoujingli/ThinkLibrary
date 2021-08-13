@@ -54,10 +54,15 @@ class SaveHelper extends Helper
         if (false === $this->class->callback('_save_filter', $query, $edata)) {
             return false;
         }
+        // 检查原始数据
+        $exist = $query->master()->where($where)->find();
+        if (empty($exist)) {
+            $this->class->error(lang('think_library_save_error'));
+        }
         // 执行更新操作
-        $result = $query->where($where)->update($edata) !== false;
+        $result = $exist->save($edata);
         // 结果回调处理
-        if (false === $this->class->callback('_save_result', $result)) {
+        if (false === $this->class->callback('_save_result', $result, $exist)) {
             return $result;
         }
         // 回复前端结果
