@@ -42,19 +42,23 @@ class DeleteHelper extends Helper
         $query = $this->buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $this->app->request->post($field);
+
         // 查询限制处理
         if (!empty($where)) $query->where($where);
         if (!isset($where[$field]) && is_string($value)) {
             $query->whereIn($field, str2arr($value));
         }
+
         // 前置回调处理
         if (false === $this->class->callback('_delete_filter', $query, $where)) {
             return null;
         }
+
         // 阻止危险操作
         if (!$query->getOptions('where')) {
             $this->class->error(lang('think_library_delete_error'));
         }
+
         // 组装执行数据
         $data = [];
         if (method_exists($query, 'getTableFields')) {
@@ -72,13 +76,17 @@ class DeleteHelper extends Helper
         $model->exists(false)->$field = $value;
 
         // 回调前置事件
-        $model::onBeforeDelete($model);
+        if (method_exists($model, 'onBeforeDelete')) {
+            $model->onBeforeDelete($model);
+        }
 
         // 执行删除操作
         $result = (empty($data) ? $query->delete() : $query->update($data)) !== false;
 
         // 回调后置事件
-        $model::onAfterDelete($model);
+        if (method_exists($model, 'onAfterDelete')) {
+            $model->onAfterDelete($model);
+        }
 
         // 结果回调处理
         if (false === $this->class->callback('_delete_result', $result)) {
