@@ -71,21 +71,16 @@ class DeleteHelper extends Helper
             }
         }
 
-        // 组装模型数据
-        $model = $query->getModel()->newInstance();
-        $model->exists(false)->$field = $value;
-
-        // 回调前置事件
-        if (method_exists($model, 'onBeforeDelete')) {
-            $model->onBeforeDelete($model);
-        }
-
         // 执行删除操作
         $result = (empty($data) ? $query->delete() : $query->update($data)) !== false;
 
-        // 回调后置事件
-        if (method_exists($model, 'onAfterDelete')) {
-            $model->onAfterDelete($model);
+        if ($result) {
+            // 模型自定义事件回调
+            $model = $query->getModel();
+            $model->exists(false)->$field = $value;
+            if (method_exists($model, 'onAdminDelete')) {
+                $model->onAdminDelete($model);
+            }
         }
 
         // 结果回调处理

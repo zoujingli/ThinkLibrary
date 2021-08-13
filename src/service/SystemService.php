@@ -128,12 +128,20 @@ class SystemService extends Service
                 $query->where([$key => $value]);
             }
         }
-        if (($info = $query->where($map)->find()) && !empty($info)) {
-            if ($info->save($data) === false) return false;
+        if (($model = $query->where($map)->find()) && !empty($model)) {
+            if ($model->save($data) === false) return false;
+            // 模型自定义事件回调
+            if (method_exists($model, 'onAdminUpdate')) {
+                $model->onAdminUpdate($model);
+            }
             return $data[$key] ?? true;
         } else {
             $model = $query->getModel();
             if ($model->data($data)->save() === false) return false;
+            // 模型自定义事件回调
+            if (method_exists($model, 'onAdminInsert')) {
+                $model->onAdminInsert($model);
+            }
             return $model[$key] ?? true;
         }
     }
