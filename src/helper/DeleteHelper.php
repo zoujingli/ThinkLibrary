@@ -66,8 +66,20 @@ class DeleteHelper extends Helper
                 if (in_array('deleted_time', $fields)) $data['deleted_time'] = time();
             }
         }
+
+        // 组装模型数据
+        $model = $query->getModel()->newInstance();
+        $model[$field] = $value;
+
+        // 回调前置事件
+        $model::onBeforeDelete($model);
+
         // 执行删除操作
         $result = (empty($data) ? $query->delete() : $query->update($data)) !== false;
+
+        // 回调后置事件
+        $model::onAfterDelete($model);
+
         // 结果回调处理
         if (false === $this->class->callback('_delete_result', $result)) {
             return $result;
