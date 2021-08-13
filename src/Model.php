@@ -19,10 +19,10 @@ namespace think\admin;
  * 基础模型类
  * Class Model
  * @package think\admin
- * @method void onAdminSave(Model $model) static 数据字段操作事件
- * @method void onAdminUpdate(Model $model) static 数据更新操作事件
- * @method void onAdminInsert(Model $model) static 数据插入操作事件
- * @method void onAdminDelete(Model $model) static 数据删除操作事件
+ * @method void onAdminSave($model) static 数据字段操作事件
+ * @method void onAdminUpdate($model) static 数据更新操作事件
+ * @method void onAdminInsert($model) static 数据插入操作事件
+ * @method void onAdminDelete($model) static 数据删除操作事件
  */
 abstract class Model extends \think\Model
 {

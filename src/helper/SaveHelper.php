@@ -58,21 +58,17 @@ class SaveHelper extends Helper
         }
 
         // 检查原始数据
-        $exist = $query->master()->where($where)->find();
-        if (empty($exist)) {
-            $this->class->error(lang('think_library_save_error'));
-        }
-
-        // 执行更新操作
-        $result = $exist->save($edata);
+        $result = $query->master()->where($where)->update($edata) !== false;
 
         // 模型自定义事件回调
-        if ($result && method_exists($exist, 'onAdminSave')) {
-            $exist->onAdminSave($exist);
+        $model = $query->getModel();
+        $model[$field] = $value;
+        if ($result && method_exists($model, 'onAdminSave')) {
+            $model->onAdminSave($model);
         }
 
         // 结果回调处理
-        if (false === $this->class->callback('_save_result', $result, $exist)) {
+        if (false === $this->class->callback('_save_result', $result, $model)) {
             return $result;
         }
 
