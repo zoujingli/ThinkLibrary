@@ -243,7 +243,7 @@ class ModuleService extends Service
             } else {
                 return [false, $file['type'], $file['name']];
             }
-        } elseif (in_array($file['type'], ['del'])) {
+        } elseif ($file['type'] == 'del') {
             $real = $this->root . $file['name'];
             if (is_file($real) && unlink($real)) {
                 $this->_removeEmptyDirectory(dirname($real));

@@ -132,7 +132,7 @@ class SystemService extends Service
             if ($model->save($data) === false) return false;
             // 模型自定义事件回调
             if (method_exists($model, 'onAdminUpdate')) {
-                $model->onAdminUpdate($model);
+                $model->onAdminUpdate(strval($model[$key] ?? ''));
             }
             return $data[$key] ?? true;
         } else {
@@ -140,7 +140,7 @@ class SystemService extends Service
             if ($model->data($data)->save() === false) return false;
             // 模型自定义事件回调
             if (method_exists($model, 'onAdminInsert')) {
-                $model->onAdminInsert($model);
+                $model->onAdminInsert(strval($model[$key] ?? ''));
             }
             return $model[$key] ?? true;
         }

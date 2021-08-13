@@ -19,11 +19,62 @@ namespace think\admin;
  * 基础模型类
  * Class Model
  * @package think\admin
- * @method void onAdminSave($model) static 数据字段操作事件
- * @method void onAdminUpdate($model) static 数据更新操作事件
- * @method void onAdminInsert($model) static 数据插入操作事件
- * @method void onAdminDelete($model) static 数据删除操作事件
  */
 abstract class Model extends \think\Model
 {
+    /**
+     * 日志类型
+     * @var string
+     */
+    protected $oplogType;
+
+    /**
+     * 日志名称
+     * @var string
+     */
+    protected $oplogName;
+
+    /**
+     * 修改状态默认处理
+     * @param string $ids
+     */
+    public function onAdminSave(string $ids)
+    {
+        if ($this->oplogType && $this->oplogName) {
+            sysoplog($this->oplogType, "修改{$this->oplogName}[{$ids}]的状态");
+        }
+    }
+
+    /**
+     * 更新事件默认处理
+     * @param string $ids
+     */
+    public function onAdminUpdate(string $ids)
+    {
+        if ($this->oplogType && $this->oplogName) {
+            sysoplog($this->oplogType, "更新{$this->oplogName}[{$ids}]的数据");
+        }
+    }
+
+    /**
+     * 新增事件默认处理
+     * @param string $ids
+     */
+    public function onAdminInsert(string $ids)
+    {
+        if ($this->oplogType && $this->oplogName) {
+            sysoplog($this->oplogType, "增加{$this->oplogName}[{$ids}]的数据");
+        }
+    }
+
+    /**
+     * 删除事件默认处理
+     * @param string $ids
+     */
+    public function onAdminDelete(string $ids)
+    {
+        if ($this->oplogType && $this->oplogName) {
+            sysoplog($this->oplogType, "删除{$this->oplogName}[{$ids}]的数据");
+        }
+    }
 }

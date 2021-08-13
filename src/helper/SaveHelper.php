@@ -62,9 +62,8 @@ class SaveHelper extends Helper
 
         // 模型自定义事件回调
         $model = $query->getModel();
-        $model[$field] = $value;
         if ($result && method_exists($model, 'onAdminSave')) {
-            $model->onAdminSave($model);
+            $model->onAdminSave(strval($value));
         }
 
         // 结果回调处理

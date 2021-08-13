@@ -72,14 +72,11 @@ class DeleteHelper extends Helper
         }
 
         // 执行删除操作
-        $result = (empty($data) ? $query->delete() : $query->update($data)) !== false;
-
-        if ($result) {
+        if ($result = (empty($data) ? $query->delete() : $query->update($data)) !== false) {
             // 模型自定义事件回调
             $model = $query->getModel();
-            $model->exists(false)->$field = $value;
             if (method_exists($model, 'onAdminDelete')) {
-                $model->onAdminDelete($model);
+                $model->onAdminDelete(strval($value));
             }
         }
 
