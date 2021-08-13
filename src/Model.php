@@ -22,11 +22,6 @@ namespace think\admin;
  */
 abstract class Model extends \think\Model
 {
-    /**
-     * 日志类型
-     * @var string
-     */
-    protected $oplogType;
 
     /**
      * 日志名称
@@ -35,13 +30,19 @@ abstract class Model extends \think\Model
     protected $oplogName;
 
     /**
+     * 日志类型
+     * @var string
+     */
+    protected $oplogType;
+
+    /**
      * 修改状态默认处理
      * @param string $ids
      */
     public function onAdminSave(string $ids)
     {
         if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "修改{$this->oplogName}[{$ids}]的状态");
+            sysoplog($this->oplogType, "修改{$this->oplogName}[{$ids}]状态");
         }
     }
 
@@ -52,7 +53,7 @@ abstract class Model extends \think\Model
     public function onAdminUpdate(string $ids)
     {
         if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "更新{$this->oplogName}[{$ids}]的数据");
+            sysoplog($this->oplogType, "更新{$this->oplogName}[{$ids}]成功");
         }
     }
 
@@ -63,7 +64,7 @@ abstract class Model extends \think\Model
     public function onAdminInsert(string $ids)
     {
         if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "增加{$this->oplogName}[{$ids}]的数据");
+            sysoplog($this->oplogType, "增加{$this->oplogName}[{$ids}]成功");
         }
     }
 
@@ -74,7 +75,7 @@ abstract class Model extends \think\Model
     public function onAdminDelete(string $ids)
     {
         if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "删除{$this->oplogName}[{$ids}]的数据");
+            sysoplog($this->oplogType, "删除{$this->oplogName}[{$ids}]成功");
         }
     }
 }
