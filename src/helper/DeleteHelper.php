@@ -69,7 +69,7 @@ class DeleteHelper extends Helper
 
         // 组装模型数据
         $model = $query->getModel()->newInstance();
-        $model[$field] = $value;
+        $model->exists(false)->$field = $value;
 
         // 回调前置事件
         $model::onBeforeDelete($model);
@@ -84,6 +84,7 @@ class DeleteHelper extends Helper
         if (false === $this->class->callback('_delete_result', $result)) {
             return $result;
         }
+
         // 回复返回结果
         if ($result !== false) {
             $this->class->success(lang('think_library_delete_success'), '');
