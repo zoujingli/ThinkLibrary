@@ -19,6 +19,8 @@ namespace think\admin;
  * 基础模型类
  * Class Model
  * @package think\admin
+ * @see \think\db\Query
+ * @mixin \think\db\Query
  */
 abstract class Model extends \think\Model
 {
