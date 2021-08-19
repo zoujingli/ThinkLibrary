@@ -20,6 +20,7 @@ namespace think\admin;
 use think\App;
 use think\Container;
 use think\db\BaseQuery;
+use think\db\Mongo;
 use think\db\Query;
 use think\Model;
 
@@ -81,7 +82,7 @@ abstract class Helper
     /**
      * 获取数据库查询对象
      * @param Model|BaseQuery|string $query
-     * @return Query|mixed
+     * @return Query|Mongo|BaseQuery
      */
     public static function buildQuery($query)
     {
@@ -89,7 +90,7 @@ abstract class Helper
             return self::buildModel($query)->db();
         }
         if ($query instanceof Model) return $query->db();
-        if ($query instanceof Query && !$query->getModel()) {
+        if ($query instanceof BaseQuery && !$query->getModel()) {
             $query->model(self::buildModel($query->getName()));
         }
         return $query;
