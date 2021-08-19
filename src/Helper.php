@@ -22,6 +22,7 @@ use think\Container;
 use think\db\BaseQuery;
 use think\db\Mongo;
 use think\db\Query;
+use think\helper\Str;
 use think\Model;
 
 /**
@@ -83,6 +84,7 @@ abstract class Helper
      * 获取数据库查询对象
      * @param Model|BaseQuery|string $query
      * @return Query|Mongo|BaseQuery
+     * @throws \ReflectionException
      */
     public static function buildQuery($query)
     {
@@ -98,26 +100,30 @@ abstract class Helper
 
     /**
      * 动态创建模型对象
-     * @param string $name 模型名称
+     * @param mixed $name 模型名称
      * @param array $data 初始数据
-     * @return Model
+     * @return Model|object
      */
     public static function buildModel(string $name, array $data = []): Model
     {
-        if (strpos($name, '\\') !== false) {
-            if (class_exists($name)) return new $name($data);
-            $name = basename(str_replace('\\', '/', $name));
+        if (strpos($name, '\\') !== false && class_exists($name)) {
+            $model = new $name($data);
+            if ($model instanceof Model) return $model;
         }
-        $name = \think\helper\Str::studly($name);
-        if (!class_exists($class = "virtual\\model\\{$name}")) {
-            $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
-            (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
-            if (!file_exists($filename = $path . $name . '.php')) {
-                $template = file_get_contents(__DIR__ . '/multiple/command/stubs/model.stub');
-                file_put_contents($filename, str_replace('{%name%}', $name, $template));
+        $class = Str::studly(basename(str_replace('\\', '/', $name)));
+        $reflect = new \ReflectionClass (new class extends \think\Model {
+            public static $NAME = null;
+            protected $autoWriteTimestamp = false;
+
+            public function __construct(array $data = [])
+            {
+                if (is_string(self::$NAME)) {
+                    $this->name = self::$NAME;
+                    parent::__construct($data);
+                }
             }
-            \Composer\Autoload\includeFile($filename);
-        }
-        return new $class($data);
+        });
+        $reflect->setStaticPropertyValue('NAME', $class);
+        return $reflect->newInstance($data);
     }
 }
