@@ -199,7 +199,8 @@ class SystemService extends Service
      */
     public function setData(string $name, $value)
     {
-        return $this->save('SystemData', ['name' => $name, 'value' => serialize($value)], 'name');
+        $data = ['name' => $name, 'value' => serialize($value)];
+        return $this->save('SystemData', $data, 'name');
     }
 
     /**
