@@ -111,19 +111,19 @@ abstract class Helper
             if ($model instanceof Model) return $model;
             $name = basename(str_replace('\\', '/', $name));
         }
-        $reflect = new \ReflectionClass (new class extends \think\Model {
+        $model = new class extends \think\Model {
             public static $NAME = null;
             protected $autoWriteTimestamp = false;
 
             public function __construct(array $data = [])
             {
-                if (is_string(static::$NAME)) {
-                    $this->name = static::$NAME;
+                if (is_string(self::$NAME)) {
+                    $this->name = self::$NAME;
                     parent::__construct($data);
                 }
             }
-        });
-        $reflect->setStaticPropertyValue('NAME', Str::studly($name));
-        return $reflect->newInstance($data);
+        };
+        $model::$NAME = Str::studly($name);
+        return $model->newInstance($data);
     }
 }
