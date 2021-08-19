@@ -109,7 +109,7 @@ class SystemService extends Service
     /**
      * 数据增量保存
      * @param Model|Query|string $query 数据查询对象
-     * @param array $data 需要保存的数据
+     * @param array $data 需要保存的数据，成功返回对应模型
      * @param string $key 更新条件查询主键
      * @param array $map 额外更新查询条件
      * @return boolean|integer 失败返回 false, 成功返回主键值或 true
@@ -117,7 +117,7 @@ class SystemService extends Service
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function save($query, array $data, string $key = 'id', array $map = [])
+    public function save($query, array &$data, string $key = 'id', array $map = [])
     {
         $query = Helper::buildQuery($query)->master()->strict(false);
         if (empty($map[$key])) {
@@ -134,6 +134,7 @@ class SystemService extends Service
             if (method_exists($model, 'onAdminUpdate')) {
                 $model->onAdminUpdate(strval($model[$key] ?? ''));
             }
+            $data = $model->toArray();
             return $data[$key] ?? true;
         } else {
             $model = $query->getModel();
@@ -142,6 +143,7 @@ class SystemService extends Service
             if (method_exists($model, 'onAdminInsert')) {
                 $model->onAdminInsert(strval($model[$key] ?? ''));
             }
+            $data = $model->toArray();
             return $model[$key] ?? true;
         }
     }
