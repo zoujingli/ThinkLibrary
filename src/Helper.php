@@ -102,7 +102,7 @@ abstract class Helper
      * @param mixed $name 模型名称
      * @param array $data 初始数据
      * @param mixed $conn 默认连接
-     * @return Model|object
+     * @return Model
      */
     public static function buildModel(string $name, array $data = [], string $conn = ''): Model
     {
