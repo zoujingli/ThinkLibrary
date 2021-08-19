@@ -19,7 +19,6 @@ namespace virtual\model;
  * 自动创建的动态模型
  * Class {%name%}
  * @package virtual\model
- * @see \think\db\Query
  * @mixin \think\db\Query
  */
 class {%name%} extends \think\Model
