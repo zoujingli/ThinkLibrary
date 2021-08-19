@@ -323,12 +323,11 @@ class Queue extends Command
     protected function updateQueue(int $status, string $message, bool $isSplit = true)
     {
         // 更新当前任务
-        $info = trim(is_string($message) ? $message : '');
-        $desc = $isSplit ? explode("\n", $info) : [$message];
+        $desc = $isSplit ? explode("\n", trim($message)) : [$message];
         $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
             'status' => $status, 'outer_time' => microtime(true), 'exec_pid' => getmypid(), 'exec_desc' => $desc[0],
         ]);
-        $this->output->writeln(is_string($message) ? $message : '');
+        $this->output->writeln($message);
         // 任务进度标记
         if (!empty($desc[0])) {
             $this->queue->progress($status, ">>> {$desc[0]} <<<");

@@ -173,7 +173,7 @@ class ModuleService extends Service
     public function getChanges(array $rules, array $ignore = [], array $data = []): array
     {
         // 扫描规则文件
-        foreach ($rules as $key => $rule) {
+        foreach ($rules as $rule) {
             $path = $this->root . strtr(trim($rule, '\\/'), '\\', '/');
             $data = array_merge($data, $this->_scanLocalFileHashList($path));
         }

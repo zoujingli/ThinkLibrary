@@ -150,7 +150,7 @@ class MessageService extends Service
             'productid' => $productid,
             'password'  => md5(md5($this->chinaPassword) . $tkey),
         ]);
-        [$code, $message] = explode(',', $result . ',');
+        [$code] = explode(',', $result . ',');
         $this->app->db->name($this->table)->insert([
             'phone' => $phone, 'region' => '860', 'content' => $content, 'result' => $result,
         ]);
@@ -196,7 +196,7 @@ class MessageService extends Service
      */
     public function check($phone, $code, string $type = 'sms_reg_template'): bool
     {
-        $cache = $this->app->cache->get($cachekey = "{$type}_{$phone}", []);
+        $cache = $this->app->cache->get("{$type}_{$phone}", []);
         return is_array($cache) && isset($cache['code']) && $cache['code'] == $code;
     }
 
