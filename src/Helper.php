@@ -84,7 +84,6 @@ abstract class Helper
      * 获取数据库查询对象
      * @param Model|BaseQuery|string $query
      * @return Query|Mongo|BaseQuery
-     * @throws \ReflectionException
      */
     public static function buildQuery($query)
     {
@@ -102,9 +101,10 @@ abstract class Helper
      * 动态创建模型对象
      * @param mixed $name 模型名称
      * @param array $data 初始数据
+     * @param mixed $conn 默认连接
      * @return Model|object
      */
-    public static function buildModel(string $name, array $data = []): Model
+    public static function buildModel(string $name, array $data = [], string $conn = ''): Model
     {
         if (strpos($name, '\\') !== false && class_exists($name)) {
             $model = new $name($data);
@@ -113,16 +113,19 @@ abstract class Helper
         }
         $model = new class extends \think\Model {
             public static $NAME = null;
+            public static $CONN = null;
             protected $autoWriteTimestamp = false;
 
             public function __construct(array $data = [])
             {
                 if (is_string(self::$NAME)) {
                     $this->name = self::$NAME;
+                    $this->connection = self::$CONN;
                     parent::__construct($data);
                 }
             }
         };
+        $model::$CONN = $conn;
         $model::$NAME = Str::studly($name);
         return $model->newInstance($data);
     }
