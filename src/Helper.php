@@ -113,8 +113,8 @@ abstract class Helper
             $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
             (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
             if (!file_exists($filename = $path . $name . '.php')) {
-                $template = __DIR__ . '/multiple/command/stubs/model.stub';
-                file_put_contents($filename, str_replace('{%name%}', $name, file_get_contents($template)));
+                $template = file_get_contents(__DIR__ . '/multiple/command/stubs/model.stub');
+                file_put_contents($filename, str_replace('{%name%}', $name, $template));
             }
             \Composer\Autoload\includeFile($filename);
         }
