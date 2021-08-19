@@ -22,6 +22,7 @@ namespace virtual\model;
  * @see \think\db\Query
  * @mixin \think\db\Query
  */
-class {%name%} extends \think\Model {
+class {%name%} extends \think\Model
+{
     protected $autoWriteTimestamp = false;
 }
