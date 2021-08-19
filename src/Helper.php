@@ -109,21 +109,21 @@ abstract class Helper
         if (strpos($name, '\\') !== false && class_exists($name)) {
             $model = new $name($data);
             if ($model instanceof Model) return $model;
+            $name = basename(str_replace('\\', '/', $name));
         }
-        $class = Str::studly(basename(str_replace('\\', '/', $name)));
         $reflect = new \ReflectionClass (new class extends \think\Model {
             public static $NAME = null;
             protected $autoWriteTimestamp = false;
 
             public function __construct(array $data = [])
             {
-                if (is_string(self::$NAME)) {
-                    $this->name = self::$NAME;
+                if (is_string(static::$NAME)) {
+                    $this->name = static::$NAME;
                     parent::__construct($data);
                 }
             }
         });
-        $reflect->setStaticPropertyValue('NAME', $class);
+        $reflect->setStaticPropertyValue('NAME', Str::studly($name));
         return $reflect->newInstance($data);
     }
 }
