@@ -13,19 +13,15 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-declare (strict_types = 1);
-
-namespace {%app%}\{%layer%};
+namespace virtual\model;
 
 /**
- * 自动创建的动态控制器
- * Class Index{%suffix%}
- * @package {%app%}\{%layer%}
+ * 自动创建的动态模型
+ * Class {%name%}
+ * @package virtual\model
+ * @see \think\db\Query
+ * @mixin \think\db\Query
  */
-class Index{%suffix%}
-{
-    public function index()
-    {
-        return '您好！这是一个[{%name%}]示例应用';
-    }
+class {%name%} extends \think\Model {
+    protected $autoWriteTimestamp = false;
 }

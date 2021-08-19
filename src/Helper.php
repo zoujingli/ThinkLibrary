@@ -86,7 +86,7 @@ abstract class Helper
     public static function buildQuery($query)
     {
         if (is_string($query)) {
-            $query = self::buildModel($query);
+            return self::buildModel($query)->db();
         }
         if ($query instanceof Model) return $query->db();
         if ($query instanceof Query && !$query->getModel()) {
@@ -112,7 +112,8 @@ abstract class Helper
             $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
             (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
             if (!file_exists($file = $path . $name . '.php')) {
-                file_put_contents($file, "<?php\nnamespace virtual\\model;\n\nclass {$name} extends \\think\\Model{\n}");
+                $file = __DIR__ . '/multiple/command/stubs/model.stub';
+                file_put_contents($file, str_replace('{%name%}', $name, file_get_contents($file)));
             }
             \Composer\Autoload\includeFile($file);
         }

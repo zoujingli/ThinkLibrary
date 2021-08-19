@@ -24,6 +24,11 @@ namespace think\admin;
  */
 abstract class Model extends \think\Model
 {
+    /**
+     * 自动写入时间截
+     * @var bool
+     */
+    protected $autoWriteTimestamp = false;
 
     /**
      * 日志名称
