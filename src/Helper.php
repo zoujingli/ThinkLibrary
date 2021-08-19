@@ -111,11 +111,11 @@ abstract class Helper
         if (!class_exists($class = "virtual\\model\\{$name}")) {
             $path = app()->getRuntimePath() . 'model' . DIRECTORY_SEPARATOR;
             (!file_exists($path) || !is_dir($path)) && mkdir($path, 0755, true);
-            if (!file_exists($file = $path . $name . '.php')) {
+            if (!file_exists($filename = $path . $name . '.php')) {
                 $template = __DIR__ . '/multiple/command/stubs/model.stub';
-                file_put_contents($file, str_replace('{%name%}', $name, file_get_contents($template)));
+                file_put_contents($filename, str_replace('{%name%}', $name, file_get_contents($template)));
             }
-            \Composer\Autoload\includeFile($file);
+            \Composer\Autoload\includeFile($filename);
         }
         return new $class($data);
     }
