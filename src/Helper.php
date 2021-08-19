@@ -114,7 +114,6 @@ abstract class Helper
         $model = new class extends \think\Model {
             public static $NAME = null;
             public static $CONN = null;
-            protected $autoWriteTimestamp = false;
 
             public function __construct(array $data = [])
             {
