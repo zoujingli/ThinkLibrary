@@ -44,11 +44,12 @@ if (!function_exists('M')) {
      * 动态创建模型对象
      * @param string $name 模型名称
      * @param array $data 初始数据
+     * @param string $conn 指定连接
      * @return Model
      */
-    function M(string $name, array $data = []): Model
+    function M(string $name, array $data = [], string $conn = ''): Model
     {
-        return Helper::buildModel($name, $data);
+        return Helper::buildModel($name, $data, $conn);
     }
 }
 if (!function_exists('auth')) {

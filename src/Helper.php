@@ -101,7 +101,7 @@ abstract class Helper
      * 动态创建模型对象
      * @param mixed $name 模型名称
      * @param array $data 初始数据
-     * @param mixed $conn 默认连接
+     * @param mixed $conn 指定连接
      * @return Model
      */
     public static function buildModel(string $name, array $data = [], string $conn = ''): Model
