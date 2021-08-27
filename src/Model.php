@@ -24,7 +24,6 @@ namespace think\admin;
  */
 abstract class Model extends \think\Model
 {
-    protected $autoWriteTimestamp = false;
 
     /**
      * 日志名称
@@ -37,6 +36,15 @@ abstract class Model extends \think\Model
      * @var string
      */
     protected $oplogType;
+
+    /**
+     * 实例返回模型
+     * @return static
+     */
+    public static function mk($data = [])
+    {
+        return new static($data);
+    }
 
     /**
      * 修改状态默认处理
