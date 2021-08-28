@@ -106,9 +106,11 @@ abstract class Helper
      */
     public static function buildModel(string $name, array $data = [], string $conn = ''): Model
     {
-        if (strpos($name, '\\') !== false && class_exists($name)) {
-            $model = new $name($data);
-            if ($model instanceof Model) return $model;
+        if (strpos($name, '\\') !== false) {
+            if (class_exists($name)) {
+                $model = new $name($data);
+                if ($model instanceof Model) return $model;
+            }
             $name = basename(str_replace('\\', '/', $name));
         }
         $model = new class extends \think\Model {
