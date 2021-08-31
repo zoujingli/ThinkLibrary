@@ -44,7 +44,7 @@ class VirtualModel
         $this->template = '<?php ';
         $this->template .= 'namespace virtual\\model; ';
         $this->template .= "class {$uri['host']} extends \\think\\Model{ ";
-        if (isset($uri['fragment'])) {
+        if (isset($uri['fragment']) && !empty($uri['fragment'])) {
             $this->template .= 'protected $connection="' . $uri['fragment'] . '"; ';
         }
         $this->template .= '}';
