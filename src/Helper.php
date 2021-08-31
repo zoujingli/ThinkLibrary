@@ -17,12 +17,12 @@ declare (strict_types=1);
 
 namespace think\admin;
 
+use think\admin\extend\VirtualModel;
 use think\App;
 use think\Container;
 use think\db\BaseQuery;
 use think\db\Mongo;
 use think\db\Query;
-use think\helper\Str;
 use think\Model;
 
 /**
@@ -113,21 +113,6 @@ abstract class Helper
             }
             $name = basename(str_replace('\\', '/', $name));
         }
-        $model = new class extends \think\Model {
-            public static $NAME = null;
-            public static $CONN = null;
-
-            public function __construct(array $data = [])
-            {
-                if (is_string(self::$NAME)) {
-                    $this->name = self::$NAME;
-                    $this->connection = self::$CONN;
-                    parent::__construct($data);
-                }
-            }
-        };
-        $model::$CONN = $conn;
-        $model::$NAME = Str::studly($name);
-        return $model->newInstance($data);
+        return VirtualModel::mk($name, $data, $conn);
     }
 }
