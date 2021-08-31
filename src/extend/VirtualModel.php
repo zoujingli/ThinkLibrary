@@ -80,11 +80,12 @@ class VirtualModel
      */
     public static function mk(string $name, array $data = [], string $conn = ''): Model
     {
-        if (!in_array('model', stream_get_wrappers())) {
-            stream_wrapper_register('model', self::class);
+        if (!class_exists($class = "\\virtual\\model\\{$name}")) {
+            if (!in_array('model', stream_get_wrappers())) {
+                stream_wrapper_register('model', self::class);
+            }
+            includeFile('model://' . $name . '#' . $conn);
         }
-        includeFile('model://' . $name . '#' . $conn);
-        $class = "\\virtual\\model\\{$name}";
         return new $class($data);
     }
 }
