@@ -217,6 +217,20 @@ class SystemService extends Service
     }
 
     /**
+     * 复制并创建表结构
+     * @param string $from 来源表名
+     * @param string $create 创建表名
+     * @param array $tables 现有表集合
+     * @throws Exception
+     */
+    public function copyTableStruct(string $from, string $create, array $tables = [])
+    {
+        if (empty($tables)) [$tables] = $this->getTables();
+        if (!in_array($from, $tables)) throw new Exception("来源表 {$from} 不存在！");
+        $this->app->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
+    }
+
+    /**
      * 读取数据内容
      * @param string $name
      * @param mixed $default
