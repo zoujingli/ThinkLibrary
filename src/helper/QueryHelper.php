@@ -218,6 +218,17 @@ class QueryHelper extends Helper
     }
 
     /**
+     * 中间回调处理
+     * @param callable $after
+     * @return $this
+     */
+    public function filter(callable $after): QueryHelper
+    {
+        call_user_func($after, $this, $this->query);
+        return $this;
+    }
+
+    /**
      * Layui.Table 组件数据
      * @param ?callable $befor 表单前置操作
      * @param ?callable $after 表单后置操作
