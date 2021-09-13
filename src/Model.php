@@ -82,8 +82,8 @@ abstract class Model extends \think\Model
 
     /**
      * 快捷查询逻辑器
-     * @param array|string|null $input
-     * @param callable|null $callable
+     * @param array|string|null $input 查询来源
+     * @param callable|null $callable 初始回调
      * @return QueryHelper
      * @throws \think\db\exception\DbException
      */
