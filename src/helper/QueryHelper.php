@@ -68,11 +68,14 @@ class QueryHelper extends Helper
      * @return $this
      * @throws DbException
      */
-    public function init($dbQuery, $input = null): QueryHelper
+    public function init($dbQuery, $input = null, ?callable $callable = null): QueryHelper
     {
         $this->page = PageHelper::instance();
         $this->input = $this->getInputData($input);
         $this->query = $this->page->autoSortQuery($dbQuery);
+        if (is_callable($callable)) {
+            call_user_func($callable, $this, $this->query);
+        }
         return $this;
     }
 
