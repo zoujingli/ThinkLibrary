@@ -83,12 +83,17 @@ abstract class Model extends \think\Model
     /**
      * 快捷查询逻辑器
      * @param array|string|null $input
+     * @param array $args 前置模型操作，[方法=>参数]
      * @return QueryHelper
      * @throws \think\db\exception\DbException
      */
-    public static function mQuery($input = null): QueryHelper
+    public static function mQuery($input = null, array $args = []): QueryHelper
     {
-        return QueryHelper::instance()->init(static::mk(), $input);
+        $query = static::mk()->db();
+        if (count($args) > 0) foreach ($args as $type => $arg) {
+            is_array($arg) ? $query->$type(...$arg) : $query->$type($arg);
+        }
+        return QueryHelper::instance()->init($query, $input);
     }
 
     /**
