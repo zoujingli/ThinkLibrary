@@ -15,6 +15,9 @@
 
 namespace think\admin;
 
+use think\admin\helper\QueryHelper;
+use think\db\exception\DbException;
+
 /**
  * 基础模型类
  * Class Model
@@ -44,6 +47,17 @@ abstract class Model extends \think\Model
     public static function mk($data = [])
     {
         return new static($data);
+    }
+
+    /**
+     * 快捷查询逻辑器
+     * @param array|string|null $input
+     * @return QueryHelper
+     * @throws DbException
+     */
+    public static function mq($input = null): QueryHelper
+    {
+        return QueryHelper::instance()->init(static::mk(), $input);
     }
 
     /**
