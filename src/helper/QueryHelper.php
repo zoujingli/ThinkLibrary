@@ -65,6 +65,7 @@ class QueryHelper extends Helper
      * 逻辑器初始化
      * @param Model|BaseQuery|string $dbQuery
      * @param string|array|null $input 输入数据
+     * @param callable|null $callable 初始回调
      * @return $this
      * @throws DbException
      */
