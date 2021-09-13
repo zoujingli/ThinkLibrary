@@ -232,12 +232,12 @@ class QueryHelper extends Helper
             $this->page->init($this->query);
         } elseif ($this->output === 'get.layui.table') {
             if (is_callable($after)) {
-                call_user_func($after, $this, $this->query);
+                call_user_func($after, $this, $this->query->getModel(), $this->query);
             }
             $this->page->layTable($this->query, $template);
         } else {
             if (is_callable($befor)) {
-                call_user_func($befor, $this, $this->query);
+                call_user_func($befor, $this, $this->query->getModel(), $this->query);
             }
             $this->class->fetch($template);
         }
