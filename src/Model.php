@@ -55,7 +55,7 @@ abstract class Model extends \think\Model
      * @return QueryHelper
      * @throws DbException
      */
-    public static function mq($input = null): QueryHelper
+    public static function mQuery($input = null): QueryHelper
     {
         return QueryHelper::instance()->init(static::mk(), $input);
     }
