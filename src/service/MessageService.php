@@ -19,9 +19,6 @@ namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
 use think\admin\Service;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 旧助通短信接口服务
@@ -67,9 +64,9 @@ class MessageService extends Service
 
     /**
      * @return $this
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function initialize(): MessageService
     {
@@ -163,9 +160,9 @@ class MessageService extends Service
      * @param integer $wait 等待时间
      * @param string $type 短信模板
      * @return array
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function sendChinaSmsByCode($phone, int $wait = 120, string $type = 'sms_reg_template'): array
     {
@@ -246,9 +243,9 @@ class MessageService extends Service
      * @param integer|string $mobile 手机号码
      * @param string $content 发送内容
      * @return boolean
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function sendGlobeSms($code, $mobile, string $content): bool
     {

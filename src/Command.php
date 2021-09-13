@@ -21,9 +21,6 @@ use think\admin\service\ProcessService;
 use think\admin\service\QueueService;
 use think\console\Input;
 use think\console\Output;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 自定义指令基类
@@ -49,10 +46,10 @@ abstract class Command extends \think\console\Command
      * @param Input $input
      * @param Output $output
      * @return static
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function initialize(Input $input, Output $output): Command
     {
@@ -134,5 +131,4 @@ abstract class Command extends \think\console\Command
         $prefix = str_pad("{$count}", strlen("{$total}"), '0', STR_PAD_LEFT);
         return $this->setQueueProgress("[{$prefix}/{$total}] {$message}", sprintf("%.2f", $count / $total * 100), $backline);
     }
-
 }

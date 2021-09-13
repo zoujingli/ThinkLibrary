@@ -21,9 +21,6 @@ use Error;
 use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\Service;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 任务基础服务
@@ -61,10 +58,10 @@ class QueueService extends Service
      * 数据初始化
      * @param string $code
      * @return static
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function initialize(string $code = ''): QueueService
     {
@@ -85,10 +82,10 @@ class QueueService extends Service
      * 重发异步任务
      * @param integer $wait 等待时间
      * @return $this
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function reset(int $wait = 0): QueueService
     {
@@ -106,10 +103,10 @@ class QueueService extends Service
      * 添加定时清理任务
      * @param integer $loops 循环时间
      * @return $this
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function addCleanQueue(int $loops = 3600): QueueService
     {
@@ -125,10 +122,10 @@ class QueueService extends Service
      * @param integer $rscript 任务类型(0单例,1多例)
      * @param integer $loops 循环等待时间
      * @return $this
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function register(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): QueueService
     {

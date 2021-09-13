@@ -17,12 +17,8 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
-use ReflectionException;
 use think\admin\extend\DataExtend;
 use think\admin\Service;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 系统菜单管理服务
@@ -35,7 +31,7 @@ class MenuService extends Service
     /**
      * 获取可选菜单节点
      * @return array
-     * @throws ReflectionException
+     * @throws \ReflectionException
      */
     public function getList(): array
     {
@@ -50,10 +46,10 @@ class MenuService extends Service
     /**
      * 获取系统菜单树数据
      * @return array
-     * @throws ReflectionException
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \ReflectionException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function getTree(): array
     {
@@ -66,7 +62,7 @@ class MenuService extends Service
      * 后台主菜单权限过滤
      * @param array $menus 当前菜单列表
      * @return array
-     * @throws ReflectionException
+     * @throws \ReflectionException
      */
     private function _buildData(array $menus): array
     {

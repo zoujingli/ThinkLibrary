@@ -20,9 +20,6 @@ namespace think\admin;
 use think\admin\storage\LocalStorage;
 use think\App;
 use think\Container;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 文件存储引擎管理
@@ -66,9 +63,9 @@ abstract class Storage
     /**
      * Storage constructor.
      * @param App $app
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function __construct(App $app)
     {
@@ -87,10 +84,10 @@ abstract class Storage
      * @param string $method 方法名称
      * @param array $arguments 调用参数
      * @return mixed
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic(string $method, array $arguments)
     {
@@ -105,10 +102,10 @@ abstract class Storage
      * 设置文件驱动名称
      * @param null|string $name 驱动名称
      * @return static
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function instance(?string $name = null)
     {

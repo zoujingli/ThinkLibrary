@@ -7,9 +7,6 @@ namespace think\admin\storage;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Storage;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 腾讯云COS存储支持
@@ -44,10 +41,10 @@ class TxcosStorage extends Storage
 
     /**
      * 初始化入口
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function initialize()
     {
@@ -69,10 +66,10 @@ class TxcosStorage extends Storage
      * 获取当前实例对象
      * @param null|string $name
      * @return TxcosStorage
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function instance(?string $name = null)
     {

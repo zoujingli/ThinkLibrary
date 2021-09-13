@@ -17,15 +17,11 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
-use stdClass;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\helper\ValidateHelper;
 use think\admin\Service;
 use think\App;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 use think\exception\HttpResponseException;
 
 /**
@@ -69,9 +65,9 @@ class InterfaceService extends Service
      * 接口服务初始化
      * InterfaceService constructor.
      * @param App $app
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function __construct(App $app)
     {

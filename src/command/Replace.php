@@ -17,7 +17,6 @@ declare (strict_types=1);
 
 namespace think\admin\command;
 
-use Exception;
 use think\admin\Command;
 use think\admin\service\SystemService;
 use think\console\Input;
@@ -45,7 +44,7 @@ class Replace extends Command
      * @param Input $input
      * @param Output $output
      * @return void
-     * @throws Exception
+     * @throws \Exception
      */
     protected function execute(Input $input, Output $output)
     {

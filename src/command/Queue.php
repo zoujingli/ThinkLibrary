@@ -27,9 +27,6 @@ use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 use Throwable;
 
 /**
@@ -135,9 +132,9 @@ class Queue extends Command
 
     /**
      * 停止所有任务
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function stopAction()
     {
@@ -151,9 +148,9 @@ class Queue extends Command
 
     /**
      * 启动后台任务
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function startAction()
     {
@@ -173,9 +170,9 @@ class Queue extends Command
 
     /**
      * 查询所有任务
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function queryAction()
     {
@@ -189,7 +186,8 @@ class Queue extends Command
 
     /**
      * 清理所有任务
-     * @throws Exception
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DbException
      */
     protected function cleanAction()
     {
@@ -218,9 +216,9 @@ class Queue extends Command
 
     /**
      * 查询兼听状态
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function statusAction()
     {
@@ -233,7 +231,9 @@ class Queue extends Command
 
     /**
      * 立即监听任务
-     * @throws DbException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function listenAction()
     {
@@ -266,7 +266,7 @@ class Queue extends Command
 
     /**
      * 执行指定的任务内容
-     * @throws DbException
+     * @throws \think\db\exception\DbException
      */
     protected function doRunAction()
     {
@@ -318,7 +318,7 @@ class Queue extends Command
      * @param integer $status 任务状态
      * @param string $message 消息内容
      * @param boolean $isSplit 是否分隔
-     * @throws DbException
+     * @throws \think\db\exception\DbException
      */
     protected function updateQueue(int $status, string $message, bool $isSplit = true)
     {

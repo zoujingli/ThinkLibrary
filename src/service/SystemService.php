@@ -17,13 +17,10 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
-use Exception;
+use think\admin\Exception;
 use think\admin\Helper;
 use think\admin\Service;
 use think\App;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 use think\helper\Str;
 use think\Model;
@@ -53,9 +50,7 @@ class SystemService extends Service
      * @param string $name 配置名称
      * @param mixed $value 配置内容
      * @return integer|string
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DbException
      */
     public function set(string $name, $value = '')
     {
@@ -81,9 +76,9 @@ class SystemService extends Service
      * @param string $name
      * @param string $default
      * @return array|mixed|string
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function get(string $name = '', string $default = '')
     {
@@ -113,9 +108,9 @@ class SystemService extends Service
      * @param string $key 更新条件查询主键
      * @param array $map 额外更新查询条件
      * @return boolean|integer 失败返回 false, 成功返回主键值或 true
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function save($query, array &$data, string $key = 'id', array $map = [])
     {
@@ -193,9 +188,9 @@ class SystemService extends Service
      * @param string $name
      * @param mixed $value
      * @return boolean
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function setData(string $name, $value)
     {
@@ -221,7 +216,7 @@ class SystemService extends Service
      * @param string $from 来源表名
      * @param string $create 创建表名
      * @param array $tables 现有表集合
-     * @throws Exception
+     * @throws \think\admin\Exception
      */
     public function copyTableStruct(string $from, string $create, array $tables = [])
     {
@@ -409,8 +404,8 @@ class SystemService extends Service
 
     /**
      * 初始化命令行主程序
-     * @param App|null $app
-     * @throws Exception
+     * @param \think\App|null $app
+     * @throws \Exception
      */
     public function doConsoleInit(?App $app = null)
     {

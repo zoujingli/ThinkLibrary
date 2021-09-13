@@ -19,9 +19,6 @@ namespace think\admin\storage;
 
 use Exception;
 use think\admin\Storage;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 本地存储支持
@@ -33,9 +30,9 @@ class LocalStorage extends Storage
 
     /**
      * 初始化入口
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function initialize()
     {
@@ -55,9 +52,9 @@ class LocalStorage extends Storage
      * @param null|string $name
      * @return static
      * @throws \think\admin\Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function instance(?string $name = null)
     {
@@ -171,5 +168,4 @@ class LocalStorage extends Storage
     {
         return url('admin/api.upload/file')->build();
     }
-
 }

@@ -20,9 +20,6 @@ namespace think\admin\storage;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Storage;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\DbException;
-use think\db\exception\ModelNotFoundException;
 
 /**
  * 阿里云OSS存储支持
@@ -57,10 +54,10 @@ class AliossStorage extends Storage
 
     /**
      * 初始化入口
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function initialize()
     {
@@ -82,10 +79,10 @@ class AliossStorage extends Storage
      * 获取当前实例对象
      * @param null|string $name
      * @return static
-     * @throws Exception
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function instance(?string $name = null)
     {
@@ -286,5 +283,4 @@ class AliossStorage extends Storage
             'oss-me-east-1.aliyuncs.com'      => '中东东部 1（迪拜）',
         ];
     }
-
 }
