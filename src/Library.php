@@ -112,6 +112,7 @@ class Library extends Service
                 if ($request->isOptions()) {
                     return response()->code(204)->header($header);
                 } elseif (AdminService::instance()->check()) {
+                    $header['X-Frame-Options'] = 'sameorigin';
                     return $next($request)->header($header);
                 } elseif (AdminService::instance()->isLogin()) {
                     return json(['code' => 0, 'info' => lang('think_library_not_auth')])->header($header);
