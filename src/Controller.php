@@ -47,6 +47,12 @@ abstract class Controller extends stdClass
     public $app;
 
     /**
+     * 请求G参数
+     * @var array
+     */
+    public $get = [];
+
+    /**
      * 请求对象
      * @var Request
      */
@@ -72,6 +78,7 @@ abstract class Controller extends stdClass
     {
         $this->app = $app;
         $this->request = $app->request;
+        $this->get = $this->request->get();
         $this->app->bind('think\admin\Controller', $this);
         // 过滤基础方法访问
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
