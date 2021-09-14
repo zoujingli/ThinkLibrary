@@ -98,11 +98,15 @@ class Library extends Service
             $this->app->middleware->add(function (Request $request, Closure $next) {
                 $header = [];
                 if (($origin = $request->header('origin', '*')) !== '*') {
-                    $header['Access-Control-Allow-Origin'] = $origin;
-                    $header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,PATCH,DELETE';
-                    $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
-                    $header['Access-Control-Expose-Headers'] = 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
-                    $header['Access-Control-Allow-Credentials'] = 'true';
+                    $auto = $this->app->config->get('app.cors_auto', 1);
+                    $hosts = $this->app->config->get('app.cors_host', []);
+                    if ($auto || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
+                        $header['Access-Control-Allow-Origin'] = $origin;
+                        $header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,PATCH,DELETE';
+                        $header['Access-Control-Allow-Headers'] = 'Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
+                        $header['Access-Control-Expose-Headers'] = 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token';
+                        $header['Access-Control-Allow-Credentials'] = 'true';
+                    }
                 }
                 // 访问模式及访问权限检查
                 if ($request->isOptions()) {
