@@ -100,6 +100,7 @@ class Library extends Service
                 if (($origin = $request->header('origin', '*')) !== '*') {
                     $auto = $this->app->config->get('app.cors_auto', 1);
                     $hosts = $this->app->config->get('app.cors_host', []);
+                    if (is_string($hosts)) $hosts = str2arr($hosts);
                     if ($auto || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
                         $methods = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE');
                         $headers = $this->app->config->get('app.cors_headers', 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token');
