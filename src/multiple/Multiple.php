@@ -79,7 +79,7 @@ class Multiple
      */
     protected function parseMultiApp(): bool
     {
-        $defaultApp = $this->app->config->get('app.default_app') ?: 'index';
+        $defaultApp = $this->app->config->get('route.default_app') ?: 'index';
         [$script, $path] = [$this->scriptName(), $this->app->request->pathinfo()];
         if ($this->name || ($script && !in_array($script, ['index', 'router', 'think']))) {
             $appName = $this->name ?: $script;

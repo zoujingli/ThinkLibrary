@@ -172,9 +172,9 @@ class SystemService extends Service
         $pre = $this->app->route->buildUrl('@')->suffix(false)->domain($domain)->build();
         $uri = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
         // 默认节点配置数据
-        $app = $this->app->config->get('app.default_app');
-        $act = Str::lower($this->app->config->get('route.default_action'));
-        $ctr = Str::snake($this->app->config->get('route.default_controller'));
+        $app = $this->app->config->get('route.default_app') ?: 'index';
+        $act = Str::lower($this->app->config->get('route.default_action') ?: 'index');
+        $ctr = Str::snake($this->app->config->get('route.default_controller') ?: 'index');
         // 替换省略链接路径
         return preg_replace([
             "#^({$pre}){$app}/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)?#i",
