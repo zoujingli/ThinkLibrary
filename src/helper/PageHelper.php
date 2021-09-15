@@ -135,7 +135,7 @@ class PageHelper extends Helper
         foreach ($items as &$item) if (is_array($item)) {
             $this->xssFilter($item);
         } elseif (is_string($item)) {
-            $item = htmlspecialchars($item, ENT_NOQUOTES);
+            $item = htmlspecialchars($item, ENT_QUOTES);
         }
     }
 
