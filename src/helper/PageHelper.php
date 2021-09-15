@@ -114,6 +114,7 @@ class PageHelper extends Helper
                 $data = $query->select()->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => count($data), 'data' => $data];
             }
+            $this->xssFilter($result['data']);
             if (false !== $this->class->callback('_page_filter', $result['data'])) {
                 throw new HttpResponseException(json($result));
             } else {
@@ -122,6 +123,19 @@ class PageHelper extends Helper
         } else {
             $this->class->fetch($template);
             return [];
+        }
+    }
+
+    /**
+     * 输出 XSS 过滤处理
+     * @param array $items
+     */
+    private function xssFilter(array &$items)
+    {
+        foreach ($items as &$item) if (is_array($item)) {
+            $this->xssFilter($item);
+        } elseif (is_string($item)) {
+            $item = htmlspecialchars($item, ENT_NOQUOTES);
         }
     }
 
