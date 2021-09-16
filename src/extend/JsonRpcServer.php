@@ -17,7 +17,6 @@ declare (strict_types=1);
 
 namespace think\admin\extend;
 
-use Exception;
 use ReflectionClass;
 use ReflectionMethod;
 use think\App;
@@ -75,7 +74,7 @@ class JsonRpcServer
                 $error = ['code' => '-32600', 'message' => '无效的请求', 'meaning' => '发送的JSON不是一个有效的请求对象'];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'] ?? '0', 'result' => null, 'error' => $error];
             } else try {
-                if ($object instanceof Exception) {
+                if ($object instanceof \Exception) {
                     throw $object;
                 } elseif (method_exists($object, $request['method'])) {
                     $result = call_user_func_array([$object, $request['method']], $request['params']);
@@ -84,7 +83,10 @@ class JsonRpcServer
                     $error = ['code' => '-32601', 'message' => '找不到方法', 'meaning' => '该方法不存在或无效'];
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => null, 'error' => $error];
                 }
-            } catch (Exception $exception) {
+            } catch (\think\admin\Exception $exception) {
+                $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage()];
+                $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => $exception->getData(), 'error' => $error];
+            } catch (\Exception $exception) {
                 $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage()];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => null, 'error' => $error];
             }
@@ -113,7 +115,7 @@ class JsonRpcServer
                 echo '<div style="color:#666">' . nl2br($method->getDocComment() ?: '') . '</div>';
                 echo "<div style='color:#00E'>{$object->getShortName()}::{$method->getName()}({$params})</div><br>";
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             echo "<h3>[{$exception->getCode()}] {$exception->getMessage()}</h3>";
         }
     }

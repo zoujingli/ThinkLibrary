@@ -85,7 +85,7 @@ class JsonRpcClient
         if (is_null($response['error'])) {
             return $response['result'];
         } else {
-            throw new Exception("请求错误：{$response['error']['message']}", $response['error']['code']);
+            throw new Exception($response['error']['message'], $response['error']['code'], $response['result']);
         }
     }
 }
