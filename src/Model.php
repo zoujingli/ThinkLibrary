@@ -43,7 +43,7 @@ abstract class Model extends \think\Model
     protected $oplogType;
 
     /**
-     * 实例返回模型
+     * 创建模型实例
      * @return static
      */
     public static function mk($data = [])
