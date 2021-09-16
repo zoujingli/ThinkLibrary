@@ -71,7 +71,7 @@ class Queue extends Command
      * @param Output $output
      * @return void
      */
-    public function execute(Input $input, Output $output)
+    protected function execute(Input $input, Output $output)
     {
         $action = $input->hasOption('daemon') ? 'start' : $input->getArgument('action');
         if (method_exists($this, $method = "{$action}Action")) return $this->$method();

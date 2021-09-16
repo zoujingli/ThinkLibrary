@@ -43,7 +43,7 @@ class Database extends Command
      * @param Output $output
      * @return void
      */
-    public function execute(Input $input, Output $output): void
+    protected function execute(Input $input, Output $output): void
     {
         $method = $input->getArgument('action');
         if (in_array($method, ['repair', 'optimize'])) {
