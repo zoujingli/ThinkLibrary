@@ -76,7 +76,7 @@ class JsonRpcServer
             } else try {
                 if ($object instanceof \Exception) {
                     throw $object;
-                } else if (strtolower($request['method']) === '_get_class_name_') {
+                } elseif (strtolower($request['method']) === '_get_class_name_') {
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => get_class($object), 'error' => null];
                 } elseif (method_exists($object, $request['method'])) {
                     $result = call_user_func_array([$object, $request['method']], $request['params']);
