@@ -142,6 +142,7 @@ if (!function_exists('xssSafeFilter')) {
     function xssSafeFilter(string $text): string
     {
         $rules = [
+            '#<script.*?<\/script>#i'        => '',
             '#\s+on\w+=[\'\"]+.*?(\'|\")+#i' => '',
             '#\s+on\w+=\s*.*?(\s|>)+#i'      => '$1',
         ];
