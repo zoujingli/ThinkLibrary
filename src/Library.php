@@ -52,7 +52,7 @@ class Library extends Service
         // 服务初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
             // 配置默认输入过滤
-            $request->filter(['trim']);
+            $request->filter(['trim', 'xssSafeFilter']);
             // 注册多应用中间键
             $this->app->middleware->add(Multiple::class);
             // 判断访问模式兼容处理

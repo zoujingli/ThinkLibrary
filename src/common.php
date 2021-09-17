@@ -133,6 +133,19 @@ if (!function_exists('sysqueue')) {
         return QueueService::instance()->register($title, $command, $later, $data, $rscript, $loops)->code;
     }
 }
+if (!function_exists('xssSafeFilter')) {
+    /**
+     * 文本内容XSS过滤
+     * @param string $content
+     * @return string
+     */
+    function xssSafeFilter(string $content): string
+    {
+        $rules = ['/<script.*?<\/script>/i', '/\son\w+=[\'"]?.*?[\'"]?\s/i'];
+        foreach ($rules as $rule) $content = preg_replace($rule, ' ', $content);
+        return $content;
+    }
+}
 if (!function_exists('systoken')) {
     /**
      * 生成 CSRF-TOKEN 参数
