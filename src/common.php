@@ -141,7 +141,7 @@ if (!function_exists('xssSafeFilter')) {
      */
     function xssSafeFilter(string $content): string
     {
-        $rules = ['/<script.*?<\/script>/i', '/\son\w+=[\'"]?.*?[\'"]?\s/i'];
+        $rules = ['/<script.*?<\/script>/i', '/\son\w+=[\'"]*.*?[\'"]*\s/i'];
         foreach ($rules as $rule) $content = preg_replace($rule, ' ', $content);
         return $content;
     }
