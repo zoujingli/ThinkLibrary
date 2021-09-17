@@ -136,14 +136,19 @@ if (!function_exists('sysqueue')) {
 if (!function_exists('xssSafeFilter')) {
     /**
      * 文本内容XSS过滤
-     * @param string $content
+     * @param string $text
      * @return string
      */
-    function xssSafeFilter(string $content): string
+    function xssSafeFilter(string $text): string
     {
-        $rules = ['/<script.*?<\/script>/i', '/\son\w+=[\'"]*.*?[\'"]*\s/i'];
-        foreach ($rules as $rule) $content = preg_replace($rule, ' ', $content);
-        return $content;
+        $rules = [
+            '#\s+on\w+=[\'\"]+.*?(\'|\")+#i' => '',
+            '#\s+on\w+=\s*.*?(\s|>)+#i'      => '$1',
+        ];
+        foreach ($rules as $rule => $value) {
+            $text = preg_replace($rule, $value, $text);
+        }
+        return $text;
     }
 }
 if (!function_exists('systoken')) {
