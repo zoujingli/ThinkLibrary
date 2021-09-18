@@ -65,7 +65,7 @@ abstract class Model extends \think\Model
      * 调用魔术方法
      * @param string $method 方法名称
      * @param array $args 调用参数
-     * @return $this|false|mixed|void
+     * @return $this|false|mixed
      */
     public function __call($method, $args)
     {
