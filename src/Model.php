@@ -79,6 +79,7 @@ abstract class Model extends \think\Model
             if ($this->oplogType && $this->oplogName) {
                 sysoplog($this->oplogType, sprintf($oplogs[$method], $args[0] ?? ''));
             }
+            return $this;
         } else {
             return parent::__call($method, $args);
         }
