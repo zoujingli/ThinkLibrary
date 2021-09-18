@@ -134,13 +134,13 @@ if (!function_exists('sysqueue')) {
         return QueueService::instance()->register($title, $command, $later, $data, $rscript, $loops)->code;
     }
 }
-if (!function_exists('xssSafeFilter')) {
+if (!function_exists('xss_safe')) {
     /**
      * 文本内容XSS过滤
      * @param string $text
      * @return string
      */
-    function xssSafeFilter(string $text): string
+    function xss_safe(string $text): string
     {
         $rules = [
             '#<script.*?<\/script>#i'        => '',
