@@ -59,5 +59,4 @@ class Exception extends \Exception
     {
         $this->data = $data;
     }
-
 }
