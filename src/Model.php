@@ -75,8 +75,10 @@ abstract class Model extends \think\Model
             'onAdminInsert' => "增加{$this->oplogName}[%s]成功",
             "onAdminDelete" => "删除{$this->oplogName}[%s]成功",
         ];
-        if (isset($oplogs[$method]) && $this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, sprintf($oplogs[$method], $args[0] ?? ''));
+        if (isset($oplogs[$method])) {
+            if ($this->oplogType && $this->oplogName) {
+                sysoplog($this->oplogType, sprintf($oplogs[$method], $args[0] ?? ''));
+            }
         } else {
             return parent::__call($method, $args);
         }
