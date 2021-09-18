@@ -149,7 +149,8 @@ class MessageService extends Service
         ]);
         [$code] = explode(',', $result . ',');
         $this->app->db->name($this->table)->insert([
-            'phone' => $phone, 'region' => '860', 'content' => $content, 'result' => $result,
+            'phone'   => $phone, 'region' => '860',
+            'content' => $content, 'result' => $result,
         ]);
         return intval($code) === 1;
     }

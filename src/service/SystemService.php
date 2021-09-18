@@ -19,6 +19,9 @@ namespace think\admin\service;
 
 use think\admin\Exception;
 use think\admin\Helper;
+use think\admin\model\SystemConfig;
+use think\admin\model\SystemData;
+use think\admin\model\SystemOplog;
 use think\admin\Service;
 use think\App;
 use think\db\Query;
@@ -66,7 +69,7 @@ class SystemService extends Service
             $this->app->cache->delete($this->table);
             $map = ['type' => $type, 'name' => $field];
             $data = array_merge($map, ['value' => $value]);
-            $query = $this->app->db->name($this->table)->master(true)->where($map);
+            $query = SystemConfig::mk()->master(true)->where($map);
             return (clone $query)->count() > 0 ? $query->update($data) : $query->insert($data);
         }
     }
@@ -83,7 +86,7 @@ class SystemService extends Service
     public function get(string $name = '', string $default = '')
     {
         if (empty($this->data)) {
-            $this->app->db->name($this->table)->cache($this->table)->select()->map(function ($item) {
+            SystemConfig::mk()->cache('SytemConfig')->select()->map(function ($item) {
                 $this->data[$item['type']][$item['name']] = $item['value'];
             });
         }
@@ -234,7 +237,7 @@ class SystemService extends Service
     public function getData(string $name, $default = [])
     {
         try {
-            $value = $this->app->db->name('SystemData')->where(['name' => $name])->value('value');
+            $value = SystemData::mk()->where(['name' => $name])->value('value');
             return is_null($value) ? $default : unserialize($value);
         } catch (Exception $exception) {
             return $default;
@@ -250,7 +253,7 @@ class SystemService extends Service
     public function setOplog(string $action, string $content): bool
     {
         $oplog = $this->getOplog($action, $content);
-        return $this->app->db->name('SystemOplog')->insert($oplog) !== false;
+        return SystemOplog::mk()->insert($oplog) !== false;
     }
 
     /**

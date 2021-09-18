@@ -20,6 +20,7 @@ namespace think\admin\service;
 use Error;
 use think\admin\Exception;
 use think\admin\extend\CodeExtend;
+use think\admin\model\SystemQueue;
 use think\admin\Service;
 
 /**
@@ -67,7 +68,7 @@ class QueueService extends Service
     {
         if (!empty($code)) {
             $this->code = $code;
-            $this->record = $this->app->db->name('SystemQueue')->where(['code' => $this->code])->find();
+            $this->record = SystemQueue::mk()->where(['code' => $this->code])->find();
             if (empty($this->record)) {
                 $this->app->log->error("Qeueu initialize failed, Queue {$code} not found.");
                 throw new Exception("Qeueu initialize failed, Queue {$code} not found.");
@@ -93,7 +94,7 @@ class QueueService extends Service
             $this->app->log->error("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
             throw new Exception("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
         }
-        $this->app->db->name('SystemQueue')->where(['code' => $this->code])->strict(false)->failException(true)->update([
+        SystemQueue::mk()->where(['code' => $this->code])->strict(false)->failException(true)->update([
             'exec_pid' => 0, 'exec_time' => time() + $wait, 'status' => 1,
         ]);
         return $this->initialize($this->code);
@@ -130,11 +131,11 @@ class QueueService extends Service
     public function register(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): QueueService
     {
         $map = [['title', '=', $title], ['status', 'in', [1, 2]]];
-        if (empty($rscript) && ($queue = $this->app->db->name('SystemQueue')->where($map)->find())) {
+        if (empty($rscript) && ($queue = SystemQueue::mk()->where($map)->find())) {
             throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
         }
         $this->code = CodeExtend::uniqidDate(16, 'Q');
-        $this->app->db->name('SystemQueue')->strict(false)->failException(true)->insert([
+        SystemQueue::mk()->strict(false)->failException(true)->insert([
             'code'       => $this->code,
             'title'      => $title,
             'command'    => $command,

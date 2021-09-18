@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\DataExtend;
+use think\admin\model\SystemMenu;
 use think\admin\Service;
 
 /**
@@ -53,8 +54,7 @@ class MenuService extends Service
      */
     public function getTree(): array
     {
-        $query = $this->app->db->name('SystemMenu');
-        $query->where(['status' => 1])->order('sort desc,id asc');
+        $query = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc');
         return $this->_buildData(DataExtend::arr2tree($query->select()->toArray()));
     }
 

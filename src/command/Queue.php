@@ -21,6 +21,7 @@ use Error;
 use Exception;
 use Psr\Log\NullLogger;
 use think\admin\Command;
+use think\admin\model\SystemQueue;
 use think\admin\service\QueueService;
 use think\Collection;
 use think\console\Input;
@@ -46,12 +47,6 @@ class Queue extends Command
      * @var string
      */
     protected $code;
-
-    /**
-     * 绑定数据表
-     * @var string
-     */
-    protected $table = 'SystemQueue';
 
     /**
      * 指令任务配置
@@ -157,7 +152,7 @@ class Queue extends Command
      */
     protected function startAction()
     {
-        $this->app->db->name($this->table)->count();
+        SystemQueue::mk()->count();
         $this->output->comment(">$ {$this->process->think(static::QUEUE_LISTEN)}");
         if (count($result = $this->process->thinkQuery(static::QUEUE_LISTEN)) > 0) {
             $this->output->writeln("># Queue daemons already exist for pid {$result[0]['pid']}");
@@ -190,18 +185,17 @@ class Queue extends Command
     /**
      * 清理所有任务
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DbException
      */
     protected function cleanAction()
     {
         // 清理 7 天前的历史任务记录
         $map = [['exec_time', '<', time() - 7 * 24 * 3600]];
-        $clear = $this->app->db->name($this->table)->where($map)->delete();
+        $clear = SystemQueue::mk()->where($map)->delete();
         // 标记超过 1 小时未完成的任务为失败状态，循环任务失败重置
         $map1 = [['loops_time', '>', 0], ['status', '=', 4]]; // 执行失败的循环任务
         $map2 = [['exec_time', '<', time() - 3600], ['status', '=', 2]]; // 执行超时的任务
-        [$timeout, $loops, $total] = [0, 0, $this->app->db->name($this->table)->whereOr([$map1, $map2])->count()];
-        $this->app->db->name($this->table)->whereOr([$map1, $map2])->chunk(100, function (Collection $result) use ($total, &$loops, &$timeout) {
+        [$timeout, $loops, $total] = [0, 0, SystemQueue::mk()->whereOr([$map1, $map2])->count()];
+        SystemQueue::mk()->whereOr([$map1, $map2])->chunk(100, function (Collection $result) use ($total, &$loops, &$timeout) {
             foreach ($result->toArray() as $item) {
                 $item['loops_time'] > 0 ? $loops++ : $timeout++;
                 if ($item['loops_time'] > 0) {
@@ -211,7 +205,7 @@ class Queue extends Command
                     $this->queue->message($total, $timeout + $loops, "正在标记任务 {$item['code']} 为超时");
                     [$status, $message] = [4, '任务执行超时，已自动标识为失败！'];
                 }
-                $this->app->db->name($this->table)->where(['id' => $item['id']])->update(['status' => $status, 'exec_desc' => $message]);
+                SystemQueue::mk()->where(['id' => $item['id']])->update(['status' => $status, 'exec_desc' => $message]);
             }
         });
         $this->setQueueSuccess("清理 {$clear} 条历史任务，关闭 {$timeout} 条超时任务，重置 {$loops} 条循环任务");
@@ -234,21 +228,17 @@ class Queue extends Command
 
     /**
      * 立即监听任务
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function listenAction()
     {
         set_time_limit(0);
         ignore_user_abort(true);
         $this->app->db->setLog(new NullLogger());
-        $this->app->db->name($this->table)->count();
         $this->output->writeln("\tYou can exit with <info>`CTRL-C`</info>");
         $this->output->writeln('=============== LISTENING ===============');
         while (true) {
             [$map, $start] = [[['status', '=', 1], ['exec_time', '<=', time()]], microtime(true)];
-            foreach ($this->app->db->name($this->table)->where($map)->order('exec_time asc')->cursor() as $vo) try {
+            foreach (SystemQueue::mk()->where($map)->order('exec_time asc')->cursor() as $vo) try {
                 $args = "xadmin:queue dorun {$vo['code']} -";
                 $this->output->comment(">$ {$this->process->think($args)}");
                 if (count($this->process->thinkQuery($args)) > 0) {
@@ -258,7 +248,7 @@ class Queue extends Command
                     $this->output->writeln("># Created new process -> [{$vo['code']}] {$vo['title']}");
                 }
             } catch (Exception $exception) {
-                $this->app->db->name($this->table)->where(['code' => $vo['code']])->update([
+                SystemQueue::mk()->where(['code' => $vo['code']])->update([
                     'status' => 4, 'outer_time' => time(), 'exec_desc' => $exception->getMessage(),
                 ]);
                 $this->output->error("># Execution failed -> [{$vo['code']}] {$vo['title']}，{$exception->getMessage()}");
@@ -269,7 +259,6 @@ class Queue extends Command
 
     /**
      * 执行指定的任务内容
-     * @throws \think\db\exception\DbException
      */
     protected function doRunAction()
     {
@@ -285,7 +274,7 @@ class Queue extends Command
                 $this->output->warning("The or status of task {$this->code} is abnormal");
             } else {
                 // 锁定任务状态，防止任务再次被执行
-                $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
+                SystemQueue::mk()->strict(false)->where(['code' => $this->code])->update([
                     'enter_time' => microtime(true), 'attempts' => $this->app->db->raw('attempts+1'),
                     'outer_time' => 0, 'exec_pid' => getmypid(), 'exec_desc' => '', 'status' => 2,
                 ]);
@@ -321,13 +310,12 @@ class Queue extends Command
      * @param integer $status 任务状态
      * @param string $message 消息内容
      * @param boolean $isSplit 是否分隔
-     * @throws \think\db\exception\DbException
      */
     protected function updateQueue(int $status, string $message, bool $isSplit = true)
     {
         // 更新当前任务
         $desc = $isSplit ? explode("\n", trim($message)) : [$message];
-        $this->app->db->name($this->table)->strict(false)->where(['code' => $this->code])->update([
+        SystemQueue::mk()->strict(false)->where(['code' => $this->code])->update([
             'status' => $status, 'outer_time' => microtime(true), 'exec_pid' => getmypid(), 'exec_desc' => $desc[0],
         ]);
         $this->output->writeln($message);

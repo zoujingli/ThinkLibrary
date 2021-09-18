@@ -18,6 +18,9 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\DataExtend;
+use think\admin\model\SystemAuth;
+use think\admin\model\SystemNode;
+use think\admin\model\SystemUser;
 use think\admin\Service;
 
 /**
@@ -138,14 +141,14 @@ class AdminService extends Service
     {
         if ($force) $this->clearCache();
         if (($uid = $this->app->session->get('user.id'))) {
-            $user = $this->app->db->name('SystemUser')->where(['id' => $uid])->find();
+            $user = SystemUser::mk()->where(['id' => $uid])->find();
             if (!empty($user['authorize']) && !$this->isSuper()) {
-                $db = $this->app->db->name('SystemAuth')->field('id')->where(['status' => 1])->whereIn('id', str2arr($user['authorize']));
-                $user['nodes'] = array_unique($this->app->db->name('SystemAuthNode')->whereRaw("auth in {$db->buildSql()}")->column('node'));
+                $db = SystemAuth::mk()->field('id')->where(['status' => 1])->whereIn('id', str2arr($user['authorize']));
+                $user['nodes'] = array_unique(SystemNode::mk()->whereRaw("auth in {$db->buildSql()}")->column('node'));
             } else {
                 $user['nodes'] = [];
             }
-            $this->app->session->set('user', $user);
+            $this->app->session->set('user', $user->toArray());
         }
         return $this;
     }
@@ -160,5 +163,4 @@ class AdminService extends Service
         $this->app->cache->delete('SystemAuthNode');
         return $this;
     }
-
 }
