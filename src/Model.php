@@ -39,18 +39,17 @@ use think\Container;
  */
 abstract class Model extends \think\Model
 {
+    /**
+     * 日志类型
+     * @var string
+     */
+    protected $oplogType;
 
     /**
      * 日志名称
      * @var string
      */
     protected $oplogName;
-
-    /**
-     * 日志类型
-     * @var string
-     */
-    protected $oplogType;
 
     /**
      * 创建模型实例
@@ -91,10 +90,8 @@ abstract class Model extends \think\Model
     public static function __callStatic($method, $args)
     {
         $helpers = [
-            'mForm'   => FormHelper::class,
-            'mSave'   => SaveHelper::class,
-            'mQuery'  => QueryHelper::class,
-            'mDelete' => DeleteHelper::class,
+            'mForm'  => FormHelper::class, 'mSave' => SaveHelper::class,
+            'mQuery' => QueryHelper::class, 'mDelete' => DeleteHelper::class,
         ];
         if (isset($helpers[$method])) {
             return Container::getInstance()->invokeClass($helpers[$method])->init(static::class, ...$args);
