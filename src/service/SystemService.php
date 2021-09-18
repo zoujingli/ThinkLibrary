@@ -239,7 +239,7 @@ class SystemService extends Service
         try {
             $value = SystemData::mk()->where(['name' => $name])->value('value');
             return is_null($value) ? $default : unserialize($value);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return $default;
         }
     }

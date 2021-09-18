@@ -84,7 +84,7 @@ class InterfaceService extends Service
      */
     public function debug(bool $debug): InterfaceService
     {
-        $this->debug = boolval($debug);
+        $this->debug = $debug;
         return $this;
     }
 
@@ -156,7 +156,7 @@ class InterfaceService extends Service
      * 请求数据签名验证
      * @return bool|null
      */
-    public function checkInput()
+    public function checkInput(): ?bool
     {
         if ($this->debug) return true;
         if (empty($this->input)) $this->getInput(false);

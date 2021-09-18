@@ -327,11 +327,11 @@ class ModuleService extends Service
      * 根据线上线下生成操作数组
      * @param array $serve 线上文件数据
      * @param array $local 本地文件数据
-     * @param array $diffy 计算结果数据
      * @return array
      */
-    private function _grenerateDifferenceContrast(array $serve = [], array $local = [], array $diffy = []): array
+    private function _grenerateDifferenceContrast(array $serve = [], array $local = []): array
     {
+        $diffy = [];
         $serve = array_combine(array_column($serve, 'name'), array_column($serve, 'hash'));
         $local = array_combine(array_column($local, 'name'), array_column($local, 'hash'));
         foreach ($serve as $name => $hash) {
@@ -348,11 +348,11 @@ class ModuleService extends Service
     /**
      * 获取目录文件列表
      * @param mixed $path 扫描目录
-     * @param array $data 扫描结果
      * @return array
      */
-    private function _scanLocalFileHashList(string $path, array $data = []): array
+    private function _scanLocalFileHashList(string $path): array
     {
+        $data = [];
         foreach (NodeService::instance()->scanDirectory($path, [], null) as $file) {
             if ($this->checkAllowDownload($name = substr($file, strlen($this->root)))) {
                 $data[] = ['name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file)))];

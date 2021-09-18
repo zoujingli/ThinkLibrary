@@ -216,11 +216,11 @@ class TxcosStorage extends Storage
      * 操作请求头信息签名
      * @param string $method 请求方式
      * @param string $soruce 资源名称
-     * @param array $header 请求头信息
      * @return array
      */
-    private function headerSign(string $method, string $soruce, array $header = []): array
+    private function headerSign(string $method, string $soruce): array
     {
+        $header = [];
         // 1.生成 KeyTime
         $startTimestamp = time();
         $endTimestamp = $startTimestamp + 3600;

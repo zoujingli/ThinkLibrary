@@ -79,7 +79,7 @@ class CaptchaService extends Service
     }
 
     /**
-     * 获取图片内容
+     * 获取图片的内容
      * @return string
      */
     public function getData(): string
