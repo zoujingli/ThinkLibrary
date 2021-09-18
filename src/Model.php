@@ -25,6 +25,7 @@ use think\Container;
  * 基础模型类
  * Class Model
  * @see \think\db\Query
+ * @mixin \think\db\Query
  * @package think\admin
  *
  * @method void onAdminSave(string $ids) 记录状态变更日志
