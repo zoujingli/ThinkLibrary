@@ -33,12 +33,14 @@ class ValidateHelper extends Helper
      * @param string|array $input 输入内容 ( post. 或 get. )
      * @param callable|null $callable 异常处理操作
      * @return array
-     *  age.require => message // 最大值限定
-     *  age.between:1,120 => message // 范围限定
-     *  name.require => message // 必填内容
-     *  name.default => 100 // 获取并设置默认值
-     *  region.value => value // 固定字段数值内容
-     *  更多规则参照 ThinkPHP 官方的验证类
+     *
+     * age.require => message // 最大值限定
+     * age.between:1,120 => message // 范围限定
+     * name.require => message // 必填内容
+     * name.default => 100 // 获取并设置默认值
+     * region.value => value // 固定字段数值内容
+     *
+     * 更多规则参照 ThinkPHP 官方的验证类
      */
     public function init(array $rules, $input = '', ?callable $callable = null): array
     {

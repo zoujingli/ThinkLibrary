@@ -35,7 +35,7 @@ class SaveHelper extends Helper
      * @param array $edata 表单扩展数据
      * @param string $field 数据对象主键
      * @param array $where 额外更新条件
-     * @return boolean
+     * @return boolean|void
      * @throws \think\db\exception\DbException
      */
     public function init($dbQuery, array $edata = [], string $field = '', array $where = []): bool

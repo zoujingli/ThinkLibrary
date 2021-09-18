@@ -33,7 +33,7 @@ class DeleteHelper extends Helper
      * @param Model|BaseQuery|string $dbQuery
      * @param string $field 操作数据主键
      * @param array $where 额外更新条件
-     * @return boolean|null
+     * @return boolean|null|void
      * @throws \think\db\exception\DbException
      */
     public function init($dbQuery, string $field = '', array $where = []): ?bool
