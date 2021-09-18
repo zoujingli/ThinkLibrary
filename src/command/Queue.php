@@ -36,6 +36,9 @@ use Throwable;
  */
 class Queue extends Command
 {
+    /**
+     * 任务进程
+     */
     const QUEUE_LISTEN = 'xadmin:queue listen';
 
     /**
@@ -51,7 +54,7 @@ class Queue extends Command
     protected $table = 'SystemQueue';
 
     /**
-     * 配置指令参数
+     * 指令任务配置
      */
     public function configure()
     {
@@ -66,7 +69,7 @@ class Queue extends Command
     }
 
     /**
-     * 执行指令内容
+     * 任务执行入口
      * @param Input $input
      * @param Output $output
      * @return void

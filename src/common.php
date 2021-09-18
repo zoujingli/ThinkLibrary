@@ -13,6 +13,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+use think\admin\extend\CodeExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\Helper;
 use think\admin\service\AdminService;
@@ -252,7 +253,7 @@ if (!function_exists('enbase64url')) {
      */
     function enbase64url(string $string): string
     {
-        return rtrim(strtr(base64_encode($string), '+/', '-_'), '=');
+        return CodeExtend::safeBase64Encode($string);
     }
 }
 if (!function_exists('debase64url')) {
@@ -263,7 +264,7 @@ if (!function_exists('debase64url')) {
      */
     function debase64url(string $string): string
     {
-        return base64_decode(str_pad(strtr($string, '-_', '+/'), strlen($string) % 4, '='));
+        return CodeExtend::safeBase64Decode($string);
     }
 }
 if (!function_exists('http_get')) {

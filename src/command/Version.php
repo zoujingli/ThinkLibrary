@@ -28,6 +28,9 @@ use think\console\Output;
  */
 class Version extends Command
 {
+    /**
+     * 指令任务配置
+     */
     protected function configure()
     {
         $this->setName('xadmin:version');
@@ -35,6 +38,7 @@ class Version extends Command
     }
 
     /**
+     * 任务执行入口
      * @param Input $input
      * @param Output $output
      * @return void

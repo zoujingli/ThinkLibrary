@@ -31,6 +31,9 @@ use think\console\Output;
  */
 class Database extends Command
 {
+    /**
+     * 指令任务配置
+     */
     public function configure()
     {
         $this->setName('xadmin:database');
@@ -39,6 +42,7 @@ class Database extends Command
     }
 
     /**
+     * 任务执行入口
      * @param Input $input
      * @param Output $output
      * @return void
@@ -54,7 +58,7 @@ class Database extends Command
     }
 
     /**
-     * 修复数据表
+     * 修复所有数据表
      * @throws Exception
      */
     protected function _repair(): void
