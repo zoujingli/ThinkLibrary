@@ -126,7 +126,7 @@ class SystemService extends Service
         if (($model = $query->where($map)->find()) && !empty($model)) {
             if ($model->save($data) === false) return false;
             // 模型自定义事件回调
-            if (method_exists($model, 'onAdminUpdate')) {
+            if ($model instanceof \think\admin\Model) {
                 $model->onAdminUpdate(strval($model[$key] ?? ''));
             }
             $data = $model->toArray();
@@ -135,7 +135,7 @@ class SystemService extends Service
             $model = $query->getModel();
             if ($model->data($data)->save() === false) return false;
             // 模型自定义事件回调
-            if (method_exists($model, 'onAdminInsert')) {
+            if ($model instanceof \think\admin\Model) {
                 $model->onAdminInsert(strval($model[$key] ?? ''));
             }
             $data = $model->toArray();

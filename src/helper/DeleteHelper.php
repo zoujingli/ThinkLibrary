@@ -74,7 +74,7 @@ class DeleteHelper extends Helper
         if ($result = (empty($data) ? $query->delete() : $query->update($data)) !== false) {
             // 模型自定义事件回调
             $model = $query->getModel();
-            if (method_exists($model, 'onAdminDelete')) {
+            if ($model instanceof \think\admin\Model) {
                 $model->onAdminDelete(strval($value));
             }
         }
