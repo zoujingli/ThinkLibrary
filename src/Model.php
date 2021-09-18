@@ -19,13 +19,23 @@ use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
+use think\Container;
 
 /**
  * 基础模型类
  * Class Model
- * @package think\admin
  * @see \think\db\Query
- * @mixin \think\db\Query
+ * @package think\admin
+ *
+ * @method void onAdminSave(string $ids) 记录状态变更日志
+ * @method void onAdminUpdate(string $ids) 记录更新数据日志
+ * @method void onAdminInsert(string $ids) 记录新增数据日志
+ * @method void onAdminDelete(string $ids) 记录删除数据日志
+ *
+ * @method bool mSave(array $data = [], string $field = '', array $where = []) static 快捷更新逻辑器
+ * @method bool|null mDelete(string $field = '', array $where = []) static 快捷删除逻辑器
+ * @method bool|array mForm(string $temp = '', string $field = '', array $where = [], array $data = []) static 快捷表单逻辑器
+ * @method QueryHelper mQuery($input = null, callable $callable = null) static 快捷查询逻辑器
  */
 abstract class Model extends \think\Model
 {
@@ -52,99 +62,44 @@ abstract class Model extends \think\Model
     }
 
     /**
-     * 快捷表单逻辑器
-     * @param string $template 模板名称
-     * @param string $field 指定数据对象主键
-     * @param array $where 额外更新条件
-     * @param array $data 表单扩展数据
-     * @return array|bool
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 调用魔术方法
+     * @param string $method 方法名称
+     * @param array $args 调用参数
+     * @return $this|false|mixed|void
      */
-    public static function mForm(string $template = '', string $field = '', array $where = [], array $data = [])
+    public function __call($method, $args)
     {
-        return FormHelper::instance()->init(static::mk(), $template, $field, $where, $data);
-    }
-
-    /**
-     * 快捷更新逻辑器
-     * @param array $data 表单扩展数据
-     * @param string $field 数据对象主键
-     * @param array $where 额外更新条件
-     * @return bool
-     * @throws \think\db\exception\DbException
-     */
-    public static function mSave(array $data = [], string $field = '', array $where = []): bool
-    {
-        return SaveHelper::instance()->init(static::mk(), $data, $field, $where);
-    }
-
-    /**
-     * 快捷查询逻辑器
-     * @param array|string|null $input 查询来源
-     * @param callable|null $callable 初始回调
-     * @return QueryHelper
-     * @throws \think\db\exception\DbException
-     */
-    public static function mQuery($input = null, ?callable $callable = null): QueryHelper
-    {
-        return QueryHelper::instance()->init(static::mk(), $input, $callable);
-    }
-
-    /**
-     * 快捷删除逻辑器
-     * @param string $field 数据对象主键
-     * @param array $where 额外更新条件
-     * @return bool|null
-     * @throws \think\db\exception\DbException
-     */
-    public static function mDelete(string $field = '', array $where = []): ?bool
-    {
-        return DeleteHelper::instance()->init(static::mk(), $field, $where);
-    }
-
-    /**
-     * 修改状态默认处理
-     * @param string $ids
-     */
-    public function onAdminSave(string $ids)
-    {
-        if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "修改{$this->oplogName}[{$ids}]状态");
+        $oplogs = [
+            'onAdminSave'   => "修改{$this->oplogName}[%s]状态",
+            'onAdminUpdate' => "更新{$this->oplogName}[%s]记录",
+            'onAdminInsert' => "增加{$this->oplogName}[%s]成功",
+            "onAdminDelete" => "删除{$this->oplogName}[%s]成功",
+        ];
+        if (isset($oplogs[$method]) && $this->oplogType && $this->oplogName) {
+            sysoplog($this->oplogType, sprintf($oplogs[$method], $args[0] ?? ''));
+        } else {
+            return parent::__call($method, $args);
         }
     }
 
     /**
-     * 更新事件默认处理
-     * @param string $ids
+     * 静态魔术方法
+     * @param string $method 方法名称
+     * @param array $args 调用参数
+     * @return mixed|FormHelper|SaveHelper|QueryHelper|DeleteHelper
      */
-    public function onAdminUpdate(string $ids)
+    public static function __callStatic($method, $args)
     {
-        if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "更新{$this->oplogName}[{$ids}]成功");
-        }
-    }
-
-    /**
-     * 新增事件默认处理
-     * @param string $ids
-     */
-    public function onAdminInsert(string $ids)
-    {
-        if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "增加{$this->oplogName}[{$ids}]成功");
-        }
-    }
-
-    /**
-     * 删除事件默认处理
-     * @param string $ids
-     */
-    public function onAdminDelete(string $ids)
-    {
-        if ($this->oplogType && $this->oplogName) {
-            sysoplog($this->oplogType, "删除{$this->oplogName}[{$ids}]成功");
+        $helpers = [
+            'mForm'   => FormHelper::class,
+            'mSave'   => SaveHelper::class,
+            'mQuery'  => QueryHelper::class,
+            'mDelete' => DeleteHelper::class,
+        ];
+        if (isset($helpers[$method])) {
+            return Container::getInstance()->invokeClass($helpers[$method])->init(static::class, ...$args);
+        } else {
+            return parent::__callStatic($method, $args);
         }
     }
 }
