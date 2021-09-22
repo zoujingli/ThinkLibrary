@@ -81,7 +81,7 @@ class Library extends Service
      */
     public function register()
     {
-        // 加载中文语言
+        // 加载中文及英文语言包
         $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
         $this->app->lang->load(__DIR__ . '/lang/en-us.php', 'en-us');
         // 终端 HTTP 访问时特殊处理
@@ -97,11 +97,10 @@ class Library extends Service
             // 注册访问处理中间键
             $this->app->middleware->add(function (Request $request, Closure $next) {
                 $header = [];
+                // CORS 跨域规则配置
                 if (($origin = $request->header('origin', '*')) !== '*') {
-                    $auto = $this->app->config->get('app.cors_auto', 1);
-                    $hosts = $this->app->config->get('app.cors_host', []);
-                    if (is_string($hosts)) $hosts = str2arr($hosts);
-                    if ($auto || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
+                    if (is_string($hosts = $this->app->config->get('app.cors_host', []))) $hosts = str2arr($hosts);
+                    if ($this->app->config->get('app.cors_auto', 1) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
                         $headers = $this->app->config->get('app.cors_headers', 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token');
                         $header['Access-Control-Allow-Origin'] = $origin;
                         $header['Access-Control-Allow-Methods'] = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE');
