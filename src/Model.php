@@ -53,6 +53,12 @@ abstract class Model extends \think\Model
     protected $oplogName;
 
     /**
+     * 日志过滤
+     * @var callable
+     */
+    public static $oplogCall;
+
+    /**
      * 创建模型实例
      * @return static
      */
@@ -77,7 +83,11 @@ abstract class Model extends \think\Model
         ];
         if (isset($oplogs[$method])) {
             if ($this->oplogType && $this->oplogName) {
-                sysoplog($this->oplogType, sprintf($oplogs[$method], $args[0] ?? ''));
+                $changeIds = $args[0] ?? '';
+                if (is_callable(static::$oplogCall)) {
+                    $changeIds = call_user_func(static::$oplogCall, $method, $changeIds, $this);
+                }
+                sysoplog($this->oplogType, sprintf($oplogs[$method], $changeIds));
             }
             return $this;
         } else {
