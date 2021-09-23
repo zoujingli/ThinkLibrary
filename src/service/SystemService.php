@@ -63,7 +63,7 @@ class SystemService extends Service
             $this->app->cache->delete('SystemConfig');
             $map = ['type' => $type, 'name' => $field];
             $data = array_merge($map, ['value' => $value]);
-            $query = SystemConfig::mk()->cache()->master(true)->where($map);
+            $query = SystemConfig::mk()->master(true)->where($map);
             return (clone $query)->count() > 0 ? $query->update($data) : $query->insert($data);
         }
     }
