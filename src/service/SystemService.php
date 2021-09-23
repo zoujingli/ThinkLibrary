@@ -43,12 +43,6 @@ class SystemService extends Service
     protected $data = [];
 
     /**
-     * 绑定配置数据表
-     * @var string
-     */
-    protected $table = 'SystemConfig';
-
-    /**
      * 设置配置数据
      * @param string $name 配置名称
      * @param mixed $value 配置内容
@@ -66,10 +60,10 @@ class SystemService extends Service
             }
             return $count;
         } else {
-            $this->app->cache->delete($this->table);
+            $this->app->cache->delete('SystemConfig');
             $map = ['type' => $type, 'name' => $field];
             $data = array_merge($map, ['value' => $value]);
-            $query = SystemConfig::mk()->master(true)->where($map);
+            $query = SystemConfig::mk()->cache()->master(true)->where($map);
             return (clone $query)->count() > 0 ? $query->update($data) : $query->insert($data);
         }
     }
@@ -86,7 +80,7 @@ class SystemService extends Service
     public function get(string $name = '', string $default = '')
     {
         if (empty($this->data)) {
-            SystemConfig::mk()->cache('SytemConfig')->select()->map(function ($item) {
+            SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) {
                 $this->data[$item['type']][$item['name']] = $item['value'];
             });
         }
