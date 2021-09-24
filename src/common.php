@@ -76,6 +76,20 @@ if (!function_exists('sysuri')) {
         return SystemService::instance()->sysuri($url, $vars, $suffix, $domain);
     }
 }
+if (!function_exists('adminuri')) {
+    /**
+     * 生成后台 URL 地址
+     * @param string $url 路由地址
+     * @param array $vars PATH 变量
+     * @param boolean|string $suffix 后缀
+     * @param boolean|string $domain 域名
+     * @return string
+     */
+    function adminuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    {
+        return sysuri('admin/index/index') . '#' . url($url, $vars, $suffix, $domain)->build();
+    }
+}
 if (!function_exists('sysconf')) {
     /**
      * 获取或配置系统参数
