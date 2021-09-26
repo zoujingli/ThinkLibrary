@@ -19,7 +19,6 @@ use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
-use think\admin\service\SystemService;
 use think\Container;
 
 /**
@@ -35,7 +34,6 @@ use think\Container;
  * @method void onAdminDelete(string $ids) 记录删除数据日志
  *
  * @method bool mSave(array $data = [], string $field = '', array $where = []) static 快捷更新逻辑器
- * @method bool|int mData(array $data = [], string $field = '', array $where = []) static 快捷数据保存器
  * @method bool|null mDelete(string $field = '', array $where = []) static 快捷删除逻辑器
  * @method bool|array mForm(string $template = '', string $field = '', array $where = [], array $data = []) static 快捷表单逻辑器
  * @method QueryHelper mQuery($input = null, callable $callable = null) static 快捷查询逻辑器
@@ -102,9 +100,6 @@ abstract class Model extends \think\Model
      * @param string $method 方法名称
      * @param array $args 调用参数
      * @return mixed|FormHelper|SaveHelper|QueryHelper|DeleteHelper
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic($method, $args)
     {
@@ -116,8 +111,6 @@ abstract class Model extends \think\Model
         ];
         if (isset($helpers[$method])) {
             return Container::getInstance()->invokeClass($helpers[$method])->init(static::class, ...$args);
-        } elseif ($method === 'mData') {
-            return SystemService::instance()->save(static::class, ...$args);
         } else {
             return parent::__callStatic($method, $args);
         }
