@@ -101,7 +101,7 @@ abstract class Model extends \think\Model
      * 静态魔术方法
      * @param string $method 方法名称
      * @param array $args 调用参数
-     * @return mixed|FormHelper|SaveHelper|QueryHelper|DeleteHelper
+     * @return mixed|false|integer|QueryHelper
      */
     public static function __callStatic($method, $args)
     {
