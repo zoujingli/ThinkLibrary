@@ -34,11 +34,11 @@ use think\Container;
  * @method void onAdminInsert(string $ids) 记录新增数据日志
  * @method void onAdminDelete(string $ids) 记录删除数据日志
  *
- * @method bool mSet(array $data = [], string $field = '', array $where = []) static 快捷保存逻辑器
  * @method bool mSave(array $data = [], string $field = '', array $where = []) static 快捷更新逻辑器
  * @method bool|null mDelete(string $field = '', array $where = []) static 快捷删除逻辑器
  * @method bool|array mForm(string $template = '', string $field = '', array $where = [], array $data = []) static 快捷表单逻辑器
  * @method QueryHelper mQuery($input = null, callable $callable = null) static 快捷查询逻辑器
+ * @method bool|integer mUpdate(array $data = [], string $field = '', array $where = []) static 快捷保存逻辑器
  */
 abstract class Model extends \think\Model
 {
@@ -102,22 +102,19 @@ abstract class Model extends \think\Model
      * @param string $method 方法名称
      * @param array $args 调用参数
      * @return mixed|FormHelper|SaveHelper|QueryHelper|DeleteHelper
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic($method, $args)
     {
         $helpers = [
-            'mForm'   => FormHelper::class,
-            'mSave'   => SaveHelper::class,
-            'mQuery'  => QueryHelper::class,
-            'mDelete' => DeleteHelper::class,
+            'mForm'   => [FormHelper::class, 'init'],
+            'mSave'   => [SaveHelper::class, 'init'],
+            'mQuery'  => [QueryHelper::class, 'init'],
+            'mDelete' => [DeleteHelper::class, 'init'],
+            'mUpdate' => [SystemService::class, 'save'],
         ];
         if (isset($helpers[$method])) {
-            return Container::getInstance()->invokeClass($helpers[$method])->init(static::class, ...$args);
-        } elseif ($method === 'mSet') {
-            return SystemService::instance()->save(static::class, ...$args);
+            $arguments = array_merge([static::class], $args);
+            return Container::getInstance()->invokeMethod($helpers[$method], $arguments);
         } else {
             return parent::__callStatic($method, $args);
         }
