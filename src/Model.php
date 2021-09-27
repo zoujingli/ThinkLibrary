@@ -113,8 +113,8 @@ abstract class Model extends \think\Model
             'mUpdate' => [SystemService::class, 'save'],
         ];
         if (isset($helpers[$method])) {
-            $arguments = array_merge([static::class], $args);
-            return Container::getInstance()->invokeMethod($helpers[$method], $arguments);
+            array_unshift($args, static::class);
+            return Container::getInstance()->invokeMethod($helpers[$method], $args);
         } else {
             return parent::__callStatic($method, $args);
         }
