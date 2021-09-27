@@ -34,7 +34,7 @@ use think\Container;
  * @method void onAdminInsert(string $ids) 记录新增数据日志
  * @method void onAdminDelete(string $ids) 记录删除数据日志
  *
- * @method bool mSet(array $data = [], string $key = 'id', array $where = []) static 快捷保存逻辑器
+ * @method bool mSet(array $data = [], string $field = '', array $where = []) static 快捷保存逻辑器
  * @method bool mSave(array $data = [], string $field = '', array $where = []) static 快捷更新逻辑器
  * @method bool|null mDelete(string $field = '', array $where = []) static 快捷删除逻辑器
  * @method bool|array mForm(string $template = '', string $field = '', array $where = [], array $data = []) static 快捷表单逻辑器
