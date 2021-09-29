@@ -311,7 +311,7 @@ class Queue extends Command
      * @param string $message 消息内容
      * @param boolean $isSplit 是否分隔
      */
-    protected function updateQueue(int $status, string $message, bool $isSplit = true)
+    private function updateQueue(int $status, string $message, bool $isSplit = true)
     {
         // 更新当前任务
         $desc = $isSplit ? explode("\n", trim($message)) : [$message];

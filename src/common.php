@@ -267,7 +267,7 @@ if (!function_exists('enbase64url')) {
      */
     function enbase64url(string $string): string
     {
-        return CodeExtend::safeBase64Encode($string);
+        return CodeExtend::enSafe64($string);
     }
 }
 if (!function_exists('debase64url')) {
@@ -278,7 +278,7 @@ if (!function_exists('debase64url')) {
      */
     function debase64url(string $string): string
     {
-        return CodeExtend::safeBase64Decode($string);
+        return CodeExtend::deSafe64($string);
     }
 }
 if (!function_exists('http_get')) {

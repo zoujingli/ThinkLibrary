@@ -81,7 +81,7 @@ class CodeExtend
     {
         $iv = static::random(16, 3);
         $value = openssl_encrypt(serialize($data), 'AES-256-CBC', $skey, 0, $iv);
-        return static::safeBase64Encode(json_encode(['iv' => $iv, 'value' => $value]));
+        return static::enSafe64(json_encode(['iv' => $iv, 'value' => $value]));
     }
 
     /**
@@ -92,26 +92,26 @@ class CodeExtend
      */
     public static function decrypt(string $data, string $skey)
     {
-        $attr = json_decode(static::safeBase64Decode($data), true);
+        $attr = json_decode(static::deSafe64($data), true);
         return unserialize(openssl_decrypt($attr['value'], 'AES-256-CBC', $skey, 0, $attr['iv']));
     }
 
     /**
-     * Base64 安全编码
+     * Base64Url 安全编码
      * @param string $text 待加密文本
      * @return string
      */
-    public static function safeBase64Encode(string $text): string
+    public static function enSafe64(string $text): string
     {
         return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
     }
 
     /**
-     * Base64 安全解码
+     * Base64Url 安全解码
      * @param string $text 待解密文本
      * @return string
      */
-    public static function safeBase64Decode(string $text): string
+    public static function deSafe64(string $text): string
     {
         return base64_decode(str_pad(strtr($text, '-_', '+/'), strlen($text) % 4, '='));
     }
