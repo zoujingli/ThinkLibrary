@@ -87,10 +87,10 @@ class JsonRpcServer
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => null, 'error' => $error];
                 }
             } catch (\think\admin\Exception $exception) {
-                $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage()];
+                $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage(), 'meaning' => '数据处理异常'];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => $exception->getData(), 'error' => $error];
             } catch (Exception $exception) {
-                $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage()];
+                $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage(), 'meaning' => '系统处理异常'];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => null, 'error' => $error];
             }
             // Output the response
