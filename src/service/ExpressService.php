@@ -59,8 +59,12 @@ class ExpressService extends Service
      */
     protected function initialize(): ExpressService
     {
-        // 创建 CURL 请求模拟参数
+        // 获取当前请求 IP 地址
         $clentip = $this->app->request->ip();
+        if (empty($clentip) || $clentip === '0.0.0.0') {
+            $clentip = join('.', [rand(1, 254), rand(1, 254), rand(1, 254), rand(1, 254)]);
+        }
+        // 创建 CURL 请求模拟参数
         $this->options['headers'] = ['Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}"];
         $this->options['cookie_file'] = $this->app->getRootPath() . 'runtime/.cok';
         // 每 10 秒重置 cookie 文件
