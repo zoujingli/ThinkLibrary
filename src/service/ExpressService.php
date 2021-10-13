@@ -33,20 +33,24 @@ class ExpressService extends Service
      * 网络请求参数
      * @var array
      */
-    protected $options;
+    protected $options = [];
 
     /**
-     *  当前COOKIE文件
-     * @var string
-     */
-    protected $cookies;
-
-    /**
-     * 快递公司编码处理
+     * 公司编码别名
      * @var array
      */
     protected $codes = [
-        'ZTO' => 'zhongtong',
+        'YD'   => 'yunda',
+        'SF'   => 'shunfeng',
+        'UC'   => 'youshuwuliu',
+        'YTO'  => 'yuantong',
+        'STO'  => 'shentong',
+        'ZTO'  => 'zhongtong',
+        'ZJS'  => 'zhaijisong',
+        'DBL'  => 'debangwuliu',
+        'HHTT' => 'tiantian',
+        'HTKY' => 'huitongkuaidi',
+        'YZPY' => 'youzhengguonei',
     ];
 
     /**
@@ -57,13 +61,11 @@ class ExpressService extends Service
     {
         // 创建 CURL 请求模拟参数
         $clentip = $this->app->request->ip();
-        $this->cookies = "{$this->app->getRootPath()}runtime/.express.cookie";
-        $this->options = ['cookie_file' => $this->cookies, 'headers' => [
-            'Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}",
-        ]];
+        $this->options['headers'] = ['Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}"];
+        $this->options['cookie_file'] = $this->app->getRootPath() . 'runtime/.cok';
         // 每 10 秒重置 cookie 文件
-        if (file_exists($this->cookies) && filectime($this->cookies) + 10 < time()) {
-            @unlink($this->cookies);
+        if (file_exists($this->options['cookie_file']) && filectime($this->options['cookie_file']) + 10 < time()) {
+            @unlink($this->options['cookie_file']);
         }
         return $this;
     }
@@ -99,12 +101,11 @@ class ExpressService extends Service
 
     /**
      * 获取快递公司列表
-     * @param array $data
      * @return array
      */
-    public function getExpressList(array $data = []): array
+    public function getExpressList(): array
     {
-        return $this->getQueryData()[1];
+        return $this->getQueryData(2);
     }
 
     /**
@@ -116,30 +117,33 @@ class ExpressService extends Service
     private function doExpress(string $code, string $number)
     {
         [$code, $qqid] = [$this->codes[$code] ?? $code, CodeExtend::uniqidNumber(19, '7740')];
-        $url = "{$this->getQueryData()[0]}&appid=4001&nu={$number}&com={$code}&qid={$qqid}&new_need_di=1&source_xcx=0&vcode=&token=&sourceId=4155";
+        $url = "{$this->getQueryData(1)}&appid=4001&nu={$number}&com={$code}&qid={$qqid}&new_need_di=1&source_xcx=0&vcode=&token=&sourceId=4155";
         return json_decode(trim(HttpExtend::get($url, [], $this->options)), true);
     }
 
     /**
      * 获取快递查询接口
-     * @return array
+     * @param integer $type 类型数据
+     * @return string|array
      */
-    private function getQueryData(): array
+    private function getQueryData(int $type)
     {
         $expressUri = $this->app->cache->get('express_kuaidi_uri', '');
+        if ($type == 1 && !empty($expressUri)) return $expressUri;
         $expressCom = $this->app->cache->get('express_kuaidi_com', []);
-        if (!empty($expressUri)) return [$expressUri, $expressCom];
+        if ($type === 2 && !empty($expressCom)) return $expressCom;
         while (true) {
-            [$ssid, $input] = [CodeExtend::random(20, 3), CodeExtend::random(5, 1)];
+            [$ssid, $input] = [CodeExtend::random(20, 3), CodeExtend::random(5)];
             $content = HttpExtend::get("https://m.baidu.com/ssid={$ssid}/s?word=快递查询&ts=2027226&t_kt=0&ie=utf-8&rsv_iqid=&rsv_t=&sa=&rsv_pq=&rsv_sug4=&tj=1&inputT={$input}&sugid=&ss=", [], $this->options);
-            if (preg_match('#"checkExpUrl":"(.*?)"#i', $content, $matches)) {
-                if (preg_match('#"isShowScan":false,"common":.*?(\[.*?\]).*?#i', $content, $items)) {
-                    $attr = json_decode($items[1], true);
-                    $expressCom = array_combine(array_column($attr, 'code'), array_column($attr, 'name'));
-                    $this->app->cache->set('express_kuaidi_com', $expressCom, 20);
-                }
+            if ($type === 1 && preg_match('#"checkExpUrl":"(.*?)"#i', $content, $matches)) {
                 $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[1], 10);
-                return [$expressUri, $expressCom];
+                return $expressUri;
+            }
+            if ($type === 2 && preg_match('#"isShowScan":false,"common":.*?(\[.*?\]).*?#i', $content, $items)) {
+                $attr = json_decode($items[1], true);
+                $expressCom = array_combine(array_column($attr, 'code'), array_column($attr, 'name'));
+                $this->app->cache->set('express_kuaidi_com', $expressCom, 20);
+                return $expressCom;
             }
         }
     }
