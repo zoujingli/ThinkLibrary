@@ -42,6 +42,14 @@ class ExpressService extends Service
     protected $cookies;
 
     /**
+     * 快递公司编码处理
+     * @var array
+     */
+    protected $codes = [
+        'ZTO' => 'zhongtong',
+    ];
+
+    /**
      * 快递服务初始化
      * @return $this
      */
@@ -96,15 +104,7 @@ class ExpressService extends Service
      */
     public function getExpressList(array $data = []): array
     {
-        if (preg_match('/"currentData":.*?\[(.*?)],/', $this->_getWapBaiduHtml(), $matches)) {
-            foreach (json_decode("[{$matches['1']}]") as $item) $data[$item->value] = $item->text;
-            unset($data['_auto']);
-            return $data;
-        } else {
-            @unlink($this->cookies);
-            $this->app->cache->delete('express_kuaidi_html');
-            return $this->getExpressList();
-        }
+        return $this->getQueryData()[1];
     }
 
     /**
@@ -115,39 +115,32 @@ class ExpressService extends Service
      */
     private function doExpress(string $code, string $number)
     {
-        $qid = CodeExtend::uniqidNumber(19, '7740');
-        $url = "{$this->_getExpressQueryApi()}&appid=4001&nu={$number}&com={$code}&qid={$qid}&new_need_di=1&source_xcx=0&vcode=&token=&sourceId=4155&cb=callback";
-        return json_decode(str_replace('/**/callback(', '', trim(HttpExtend::get($url, [], $this->options), ')')), true);
+        [$code, $qqid] = [$this->codes[$code] ?? $code, CodeExtend::uniqidNumber(19, '7740')];
+        $url = "{$this->getQueryData()[0]}&appid=4001&nu={$number}&com={$code}&qid={$qqid}&new_need_di=1&source_xcx=0&vcode=&token=&sourceId=4155";
+        return json_decode(trim(HttpExtend::get($url, [], $this->options)), true);
     }
 
     /**
      * 获取快递查询接口
-     * @return string
+     * @return array
      */
-    private function _getExpressQueryApi(): string
+    private function getQueryData(): array
     {
-        if (preg_match('/"expSearchApi":.*?"(.*?)",/', $this->_getWapBaiduHtml(), $matches)) {
-            return str_replace('\\', '', $matches[1]);
-        } else {
-            @unlink($this->cookies);
-            $this->app->cache->delete('express_kuaidi_html');
-            return $this->_getExpressQueryApi();
+        $expressUri = $this->app->cache->get('express_kuaidi_uri', '');
+        $expressCom = $this->app->cache->get('express_kuaidi_com', []);
+        if (!empty($expressUri)) return [$expressUri, $expressCom];
+        while (true) {
+            [$ssid, $input] = [CodeExtend::random(20, 3), CodeExtend::random(5, 1)];
+            $content = HttpExtend::get("https://m.baidu.com/ssid={$ssid}/s?word=快递查询&ts=2027226&t_kt=0&ie=utf-8&rsv_iqid=&rsv_t=&sa=&rsv_pq=&rsv_sug4=&tj=1&inputT={$input}&sugid=&ss=", [], $this->options);
+            if (preg_match('#"checkExpUrl":"(.*?)"#i', $content, $matches)) {
+                if (preg_match('#"isShowScan":false,"common":.*?(\[.*?\]).*?#i', $content, $items)) {
+                    $attr = json_decode($items[1], true);
+                    $expressCom = array_combine(array_column($attr, 'code'), array_column($attr, 'name'));
+                    $this->app->cache->set('express_kuaidi_com', $expressCom, 20);
+                }
+                $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[1], 10);
+                return [$expressUri, $expressCom];
+            }
         }
     }
-
-    /**
-     * 获取百度WAP快递HTML（用于后面的抓取关键值）
-     * @return string
-     */
-    private function _getWapBaiduHtml(): string
-    {
-        $content = $this->app->cache->get('express_kuaidi_html', '');
-        while (empty($content) || stripos($content, '"expSearchApi":') === -1) {
-            $uniqid = str_replace('.', '', microtime(true));
-            $content = HttpExtend::get("https://m.baidu.com/s?word=快递查询&rand={$uniqid}", [], $this->options);
-        }
-        $this->app->cache->set('express_kuaidi_html', $content, 10);
-        return $content;
-    }
-
 }
