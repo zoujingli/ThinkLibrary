@@ -144,7 +144,7 @@ class InterfaceService extends Service
             'time.require'  => lang('think_library_params_failed_empty', ['time']),
             'sign.require'  => lang('think_library_params_failed_empty', ['sign']),
             'data.require'  => lang('think_library_params_failed_empty', ['data']),
-        ], 'post', [$this, 'baseError']);
+        ], 'request', [$this, 'baseError']);
         // 请求时间检查
         if (abs($this->input['time'] - time()) > 30) {
             $this->baseError(lang('think_library_params_failed_time'));

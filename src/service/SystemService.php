@@ -201,10 +201,7 @@ class SystemService extends Service
      */
     public function getTables(): array
     {
-        $tables = [];
-        foreach ($this->app->db->query("show tables") as $item) {
-            $tables = array_merge($tables, array_values($item));
-        }
+        $tables = $this->app->db->getTables();
         return [$tables, count($tables), 0];
     }
 
