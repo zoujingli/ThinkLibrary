@@ -41,9 +41,11 @@ class LocalStorage extends Storage
         $this->prefix = trim(dirname($this->app->request->baseFile(false)), '\\/');
         if ($type !== 'path') {
             $domain = sysconf('storage.local_http_domain') ?: $this->app->request->host();
-            if ($type === 'auto') $this->prefix = "//{$domain}";
-            elseif ($type === 'http') $this->prefix = "http://{$domain}";
-            elseif ($type === 'https') $this->prefix = "https://{$domain}";
+            if ($type === 'auto') {
+                $this->prefix = "//{$domain}";
+            } elseif (in_array($type, ['http', 'https'])) {
+                $this->prefix = "{$type}://{$domain}";
+            }
         }
     }
 

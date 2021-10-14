@@ -56,10 +56,11 @@ class TxcosStorage extends Storage
         // 计算链接前缀
         $type = strtolower(sysconf('storage.txcos_http_protocol'));
         $domain = strtolower(sysconf('storage.txcos_http_domain'));
-        if ($type === 'auto') $this->prefix = "//{$domain}";
-        elseif ($type === 'http') $this->prefix = "http://{$domain}";
-        elseif ($type === 'https') $this->prefix = "https://{$domain}";
-        else throw new Exception('未配置腾讯云COS访问域名哦');
+        if ($type === 'auto') {
+            $this->prefix = "//{$domain}";
+        } elseif (in_array($type, ['http', 'https'])) {
+            $this->prefix = "{$type}://{$domain}";
+        } else throw new Exception('未配置腾讯云COS访问域名哦');
     }
 
     /**

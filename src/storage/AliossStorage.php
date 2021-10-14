@@ -69,10 +69,11 @@ class AliossStorage extends Storage
         // 计算链接前缀
         $type = strtolower(sysconf('storage.alioss_http_protocol'));
         $domain = strtolower(sysconf('storage.alioss_http_domain'));
-        if ($type === 'auto') $this->prefix = "//{$domain}";
-        elseif ($type === 'http') $this->prefix = "http://{$domain}";
-        elseif ($type === 'https') $this->prefix = "https://{$domain}";
-        else throw new Exception('未配置阿里云URL域名哦');
+        if ($type === 'auto') {
+            $this->prefix = "//{$domain}";
+        } elseif (in_array($type, ['http', 'https'])) {
+            $this->prefix = "{$type}://{$domain}";
+        } else throw new Exception('未配置阿里云URL域名哦');
     }
 
     /**
