@@ -26,5 +26,15 @@ use think\admin\Model;
  */
 class SystemData extends Model
 {
+    /**
+     * 日志名称
+     * @var string
+     */
+    protected $oplogName = '数据字典';
 
+    /**
+     * 日志类型
+     * @var string
+     */
+    protected $oplogType = '数据字典管理';
 }
