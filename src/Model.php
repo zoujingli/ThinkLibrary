@@ -103,6 +103,9 @@ abstract class Model extends \think\Model
      * @param array $args 调用参数
      * @return mixed|false|integer|QueryHelper
      * @throws \ReflectionException
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic($method, $args)
     {
@@ -111,9 +114,10 @@ abstract class Model extends \think\Model
             'mSave'   => [SaveHelper::class, 'init'],
             'mQuery'  => [QueryHelper::class, 'init'],
             'mDelete' => [DeleteHelper::class, 'init'],
-            'mUpdate' => [SystemService::class, 'save'],
         ];
-        if (isset($helpers[$method])) {
+        if ($method === 'mUpdate') {
+            return SystemService::instance()->save(static::class, ...$args);
+        } elseif (isset($helpers[$method])) {
             array_unshift($args, static::class);
             return Container::getInstance()->invokeMethod($helpers[$method], $args);
         } else {
