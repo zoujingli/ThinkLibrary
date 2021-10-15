@@ -103,13 +103,13 @@ class SystemService extends Service
      * @param Model|Query|string $query 数据查询对象
      * @param array $data 需要保存的数据，成功返回对应模型
      * @param string $key 更新条件查询主键
-     * @param array $map 额外更新查询条件
+     * @param mixed $map 额外更新查询条件
      * @return boolean|integer 失败返回 false, 成功返回主键值或 true
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function save($query, array &$data, string $key = 'id', array $map = [])
+    public function save($query, array &$data, string $key = 'id', $map = [])
     {
         $query = Helper::buildQuery($query)->master()->strict(false);
         if (empty($map[$key])) {

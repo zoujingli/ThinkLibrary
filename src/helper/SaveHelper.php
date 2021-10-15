@@ -34,11 +34,11 @@ class SaveHelper extends Helper
      * @param Model|BaseQuery|string $dbQuery
      * @param array $edata 表单扩展数据
      * @param string $field 数据对象主键
-     * @param array $where 额外更新条件
+     * @param mixed $where 额外更新条件
      * @return boolean|void
      * @throws \think\db\exception\DbException
      */
-    public function init($dbQuery, array $edata = [], string $field = '', array $where = []): bool
+    public function init($dbQuery, array $edata = [], string $field = '', $where = []): bool
     {
         $query = $this->buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');

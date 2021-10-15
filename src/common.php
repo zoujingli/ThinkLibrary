@@ -313,13 +313,13 @@ if (!function_exists('data_save')) {
      * @param Model|Query|string $dbQuery
      * @param array $data 需要保存或更新的数据
      * @param string $key 条件主键限制
-     * @param array $where 其它的where条件
+     * @param mixed $where 其它的where条件
      * @return boolean|integer
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    function data_save($dbQuery, array $data, string $key = 'id', array $where = [])
+    function data_save($dbQuery, array $data, string $key = 'id', $where = [])
     {
         return SystemService::instance()->save($dbQuery, $data, $key, $where);
     }

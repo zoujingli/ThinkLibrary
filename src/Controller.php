@@ -223,14 +223,14 @@ abstract class Controller extends stdClass
      * @param Model|BaseQuery|string $dbQuery
      * @param string $template 模板名称
      * @param string $field 指定数据对象主键
-     * @param array $where 额外更新条件
+     * @param mixed $where 额外更新条件
      * @param array $data 表单扩展数据
      * @return array|boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function _form($dbQuery, string $template = '', string $field = '', array $where = [], array $data = [])
+    protected function _form($dbQuery, string $template = '', string $field = '', $where = [], array $data = [])
     {
         return FormHelper::instance()->init($dbQuery, $template, $field, $where, $data);
     }
@@ -251,11 +251,11 @@ abstract class Controller extends stdClass
      * @param Model|BaseQuery|string $dbQuery
      * @param array $data 表单扩展数据
      * @param string $field 数据对象主键
-     * @param array $where 额外更新条件
+     * @param mixed $where 额外更新条件
      * @return boolean
      * @throws \think\db\exception\DbException
      */
-    protected function _save($dbQuery, array $data = [], string $field = '', array $where = []): bool
+    protected function _save($dbQuery, array $data = [], string $field = '', $where = []): bool
     {
         return SaveHelper::instance()->init($dbQuery, $data, $field, $where);
     }
@@ -264,11 +264,11 @@ abstract class Controller extends stdClass
      * 快捷删除逻辑器
      * @param Model|BaseQuery|string $dbQuery
      * @param string $field 数据对象主键
-     * @param array $where 额外更新条件
+     * @param mixed $where 额外更新条件
      * @return boolean|null
      * @throws \think\db\exception\DbException
      */
-    protected function _delete($dbQuery, string $field = '', array $where = []): ?bool
+    protected function _delete($dbQuery, string $field = '', $where = []): ?bool
     {
         return DeleteHelper::instance()->init($dbQuery, $field, $where);
     }

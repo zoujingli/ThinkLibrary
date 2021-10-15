@@ -35,14 +35,14 @@ class FormHelper extends Helper
      * @param Model|BaseQuery|string $dbQuery
      * @param string $template 视图模板名称
      * @param string $field 指定数据主键
-     * @param array $where 额外更新条件
+     * @param mixed $where 限定更新条件
      * @param array $edata 表单扩展数据
      * @return void|array|boolean
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function init($dbQuery, string $template = '', string $field = '', array $where = [], array $edata = [])
+    public function init($dbQuery, string $template = '', string $field = '', $where = [], array $edata = [])
     {
         $query = $this->buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
