@@ -25,6 +25,7 @@ use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
 use think\admin\helper\TokenHelper;
 use think\admin\helper\ValidateHelper;
+use think\admin\service\NodeService;
 use think\admin\service\QueueService;
 use think\App;
 use think\db\BaseQuery;
@@ -47,10 +48,16 @@ abstract class Controller extends stdClass
     public $app;
 
     /**
-     * 请求G参数
+     * 请求GET参数
      * @var array
      */
     public $get = [];
+
+    /**
+     * 当前节点
+     * @var string
+     */
+    public $node;
 
     /**
      * 请求对象
@@ -77,13 +84,13 @@ abstract class Controller extends stdClass
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->request = $app->request;
-        $this->get = $this->request->get();
         $this->app->bind('think\admin\Controller', $this);
-        // 过滤基础方法访问
+        $this->request = $app->request;
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
+        $this->get = $this->request->get();
+        $this->node = NodeService::instance()->getCurrent();
         $this->initialize();
     }
 
