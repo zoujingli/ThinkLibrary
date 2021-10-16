@@ -129,16 +129,6 @@ class InterfaceService extends Service
     }
 
     /**
-     * 获取对象参数
-     * @param string $name
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        return $this->$name ?? null;
-    }
-
-    /**
      * 回复业务处理失败的消息
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
