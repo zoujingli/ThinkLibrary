@@ -32,18 +32,6 @@ use think\exception\HttpResponseException;
 class InterfaceService extends Service
 {
     /**
-     * 调试模式
-     * @var bool
-     */
-    private $debug;
-
-    /**
-     * 请求数据
-     * @var array
-     */
-    private $input;
-
-    /**
      * 接口认证账号
      * @var string
      */
@@ -59,7 +47,7 @@ class InterfaceService extends Service
      * 接口请求地址
      * @var string
      */
-    private $baseurl;
+    private $getway;
 
     /**
      * 接口服务初始化
@@ -74,36 +62,18 @@ class InterfaceService extends Service
         parent::__construct($app);
         $this->appid = sysconf('data.interface_appid') ?: '';
         $this->appkey = sysconf('data.interface_appkey') ?: '';
-        $this->baseurl = sysconf('data.interface_baseapi') ?: '';
+        $this->getway = sysconf('data.interface_getway') ?: '';
     }
 
     /**
-     * 设置调试模式
-     * @param boolean $debug
+     * 设置接口网关
+     * @param string $getway 接口网关
      * @return $this
      */
-    public function debug(bool $debug): InterfaceService
+    public function getway(string $getway): InterfaceService
     {
-        $this->debug = $debug;
+        $this->getway = $getway;
         return $this;
-    }
-
-    /**
-     * 获取接口账号
-     * @return string
-     */
-    public function getAppid(): string
-    {
-        return $this->appid;
-    }
-
-    /**
-     * 获取接口地址
-     * @return string
-     */
-    public function getBaseUrl(): string
-    {
-        return $this->baseurl;
     }
 
     /**
@@ -120,77 +90,43 @@ class InterfaceService extends Service
     }
 
     /**
-     * 设置接口网关地址
-     * @param string $getway 网关地址
-     * @return $this
-     */
-    public function getway(string $getway): InterfaceService
-    {
-        $this->baseurl = $getway;
-        return $this;
-    }
-
-    /**
-     * 获取请求数据
-     * @param boolean $check 验证数据
-     * @return array|InterfaceService
-     */
-    public function getInput(bool $check = true)
-    {
-        // 基础参数获取
-        $this->input = ValidateHelper::instance()->init([
-            'appid.require' => lang('think_library_params_failed_empty', ['appid']),
-            'nostr.require' => lang('think_library_params_failed_empty', ['nostr']),
-            'time.require'  => lang('think_library_params_failed_empty', ['time']),
-            'sign.require'  => lang('think_library_params_failed_empty', ['sign']),
-            'data.require'  => lang('think_library_params_failed_empty', ['data']),
-        ], 'request', [$this, 'baseError']);
-        // 请求时间检查
-        if (abs($this->input['time'] - time()) > 30) {
-            $this->baseError(lang('think_library_params_failed_time'));
-        }
-        return $check ? $this->showCheck() : $this->input;
-    }
-
-    /**
-     * 请求数据签名验证
-     * @return bool|null
-     */
-    public function checkInput(): ?bool
-    {
-        if ($this->debug) return true;
-        if (empty($this->input)) $this->getInput(false);
-        if ($this->input['appid'] !== $this->appid) return null;
-        return md5("{$this->appid}#{$this->input['data']}#{$this->input['time']}#{$this->appkey}#{$this->input['nostr']}") === $this->input['sign'];
-    }
-
-    /**
-     * 显示检查结果
-     * @return $this
-     */
-    public function showCheck(): InterfaceService
-    {
-        if ($this->debug) return $this;
-        if (is_null($check = $this->checkInput())) {
-            $this->baseError(lang('think_library_params_failed_auth'));
-        } elseif ($check === false) {
-            $this->baseError(lang('think_library_params_failed_sign'));
-        }
-        return $this;
-    }
-
-    /**
      * 获取请求参数
      * @return array
      */
     public function getData(): array
     {
-        if ($this->debug) {
-            return $this->app->request->request();
-        } else {
-            if (empty($this->input)) $this->getInput();
-            return json_decode($this->input['data'], true) ?: [];
+        // 基础参数获取
+        $input = ValidateHelper::instance()->init([
+            'time.require'  => lang('think_library_params_failed_empty', ['time']),
+            'sign.require'  => lang('think_library_params_failed_empty', ['sign']),
+            'data.require'  => lang('think_library_params_failed_empty', ['data']),
+            'appid.require' => lang('think_library_params_failed_empty', ['appid']),
+            'nostr.require' => lang('think_library_params_failed_empty', ['nostr']),
+        ], 'post', [$this, 'baseError']);
+
+        // 检查请求签名，使用通用签名方式
+        $build = $this->signString($input['data'], $input['time'], $input['nostr']);
+        if ($build['sign'] !== $input['sign']) {
+            $this->baseError(lang('think_library_params_failed_sign'));
         }
+
+        // 检查请求时间，与服务差不能超过 30 秒
+        if (abs($input['time'] / 1000 - time()) > 30) {
+            $this->baseError(lang('think_library_params_failed_time'));
+        }
+
+        // 返回并解析数据内容，如果解析失败返回空数组
+        return json_decode($input['data'], true) ?: [];
+    }
+
+    /**
+     * 获取对象参数
+     * @param string $name
+     * @return mixed
+     */
+    public function __get(string $name)
+    {
+        return $this->$name ?? null;
     }
 
     /**
@@ -201,8 +137,10 @@ class InterfaceService extends Service
      */
     public function error($info, $data = '{-null-}', $code = 0): void
     {
-        if ($data === '{-null-}') $data = new stdClass();
-        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data]);
+        if ($data === '{-null-}') $data = new \stdClass();
+        $this->baseResponse(lang('think_library_response_failed'), [
+            'code' => $code, 'info' => $info, 'data' => $data,
+        ]);
     }
 
     /**
@@ -213,8 +151,10 @@ class InterfaceService extends Service
      */
     public function success($info, $data = '{-null-}', $code = 1): void
     {
-        if ($data === '{-null-}') $data = new stdClass();
-        $this->baseResponse(lang('think_library_response_success'), ['code' => $code, 'info' => $info, 'data' => $data]);
+        if ($data === '{-null-}') $data = new \stdClass();
+        $this->baseResponse(lang('think_library_response_success'), [
+            'code' => $code, 'info' => $info, 'data' => $data,
+        ]);
     }
 
     /**
@@ -247,10 +187,15 @@ class InterfaceService extends Service
      */
     public function baseResponse($info, $data = [], $code = 1): void
     {
-        $array = $this->_buildSign($data);
+        $array = $this->signData($data);
         throw new HttpResponseException(json([
-            'code'  => $code, 'info' => $info, 'time' => $array['time'], 'sign' => $array['sign'],
-            'appid' => input('appid'), 'nostr' => $array['nostr'], 'data' => $data,
+            'code'  => $code,
+            'info'  => $info,
+            'time'  => $array['time'],
+            'sign'  => $array['sign'],
+            'appid' => $array['appid'],
+            'nostr' => $array['nostr'],
+            'data'  => $array['data'],
         ]));
     }
 
@@ -258,15 +203,31 @@ class InterfaceService extends Service
      * 接口数据模拟请求
      * @param string $uri 接口地址
      * @param array $data 请求数据
+     * @param boolean $check 验证结果
      * @return array
      * @throws Exception
      */
-    public function doRequest(string $uri, array $data = []): array
+    public function doRequest(string $uri, array $data = [], bool $check = true): array
     {
-        $result = json_decode(HttpExtend::post($this->baseurl . $uri, $this->_buildSign($data)), true);
-        if (empty($result)) throw new Exception(lang('think_library_response_failed'));
-        if (empty($result['code'])) throw new Exception($result['info']);
-        return $result['data'] ?? [];
+        $url = rtrim($this->getway, '/') . '/' . ltrim($uri, '/');
+        $content = HttpExtend::post($url, $this->signData($data)) ?: '';
+        // 返回结果内容验证
+        if (!($result = json_decode($content, true)) || empty($result)) {
+            throw new Exception("请求返回异常，原因：{$content}");
+        }
+        // 返回结果错误验证
+        if (empty($result['code'])) {
+            throw new Exception("接口请求错误，原因：{$result['info']}");
+        }
+        // 无需进行数据签名
+        if (empty($check)) return json_decode($result['data'] ?? '{}', true);
+        // 返回结果签名验证
+        $build = $this->signString($result['data'], $result['time'], $result['nostr']);
+        if ($build['sign'] === $result['sign']) {
+            return json_decode($result['data'] ?? '{}', true);
+        } else {
+            throw new Exception('返回结果签名验证失败！');
+        }
     }
 
     /**
@@ -274,10 +235,23 @@ class InterfaceService extends Service
      * @param array $data ['appid','nostr','time','sign','data']
      * @return array
      */
-    private function _buildSign(array $data): array
+    private function signData(array $data): array
     {
-        [$time, $nostr, $json] = [time(), uniqid(), json_encode($data, 256)];
-        $sign = md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$nostr}");
-        return ['appid' => $this->appid, 'nostr' => $nostr, 'time' => $time, 'sign' => $sign, 'data' => $json];
+        return $this->signString(json_encode($data, 256));
+    }
+
+    /**
+     * 数据字符串数据签名
+     * @param string $json
+     * @param mixed $time
+     * @param mixed $rand
+     * @return array
+     */
+    private function signString(string $json, $time = null, $rand = null): array
+    {
+        $rand = $rand ?: md5(uniqid('', true));
+        $time = $time ?: intval(microtime(true) * 1000) . '';
+        $params = join('#', [$this->appid, md5($json), $time, $rand, $this->appkey]);
+        return ['appid' => $this->appid, 'nostr' => $rand, 'time' => $time, 'sign' => md5($params), 'data' => $json];
     }
 }
