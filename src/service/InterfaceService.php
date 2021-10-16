@@ -260,7 +260,7 @@ class InterfaceService extends Service
     {
         $rand = $rand ?: md5(uniqid('', true));
         $time = $time ?: intval(microtime(true) * 1000) . '';
-        $params = join('#', [$this->appid, md5($json), $time, $rand, $this->appkey]);
+        $params = join('#', [$this->appid, $json, $time, $this->appkey, $rand]);
         return ['appid' => $this->appid, 'nostr' => $rand, 'time' => $time, 'sign' => md5($params), 'data' => $json];
     }
 }
