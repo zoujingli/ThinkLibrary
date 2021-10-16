@@ -90,6 +90,15 @@ class InterfaceService extends Service
     }
 
     /**
+     * 获取当前APPID
+     * @return string
+     */
+    public function getAppid(): string
+    {
+        return $this->appid ?: '';
+    }
+
+    /**
      * 获取请求参数
      * @return array
      */
