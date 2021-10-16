@@ -120,7 +120,7 @@ class InterfaceService extends Service
         }
 
         // 检查请求时间，与服务差不能超过 30 秒
-        if (abs($input['time'] / 1000 - time()) > 30) {
+        if (intval($input['time']) - time() > 30) {
             $this->baseError(lang('think_library_params_failed_time'));
         }
 
@@ -258,8 +258,8 @@ class InterfaceService extends Service
      */
     private function signString(string $json, $time = null, $rand = null): array
     {
-        $rand = $rand ?: md5(uniqid('', true));
-        $time = $time ?: intval(microtime(true) * 1000) . '';
+        $time = strval($time ?: time());
+        $rand = strval($rand ?: md5(uniqid('', true)));
         $sign = md5("{$this->appid}#{$json}#{$time}#{$this->appkey}#{$rand}");
         return ['appid' => $this->appid, 'nostr' => $rand, 'time' => $time, 'sign' => $sign, 'data' => $json];
     }
