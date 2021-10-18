@@ -87,15 +87,14 @@ class ExpressService extends Service
         // 0-在途，1-揽收，2-疑难，3-签收，4-退签，5-派件，6-退回
         $ckey = md5("{$code}{$number}");
         $cache = $this->app->cache->get($ckey, []);
+        $message = [1 => '新订单', 2 => '在途中', 3 => '签收', 4 => '问题件'];
         if (!empty($cache)) return $cache;
         for ($i = 0; $i < 6; $i++) if (is_array($result = $this->doExpress($code, $number))) {
             if (isset($result['data']['info']['context']) && isset($result['data']['info']['state'])) {
                 $state = intval($result['data']['info']['state']);
                 $status = in_array($state, [0, 1, 5]) ? 2 : ($state === 3 ? 3 : 4);
-                foreach ($result['data']['info']['context'] as $vo) {
-                    $list[] = ['time' => date('Y-m-d H:i:s', intval($vo['time'])), 'context' => $vo['desc']];
-                }
-                $result = ['message' => $result['msg'], 'status' => $status, 'express' => $code, 'number' => $number, 'data' => $list];
+                foreach ($result['data']['info']['context'] as $vo) $list[] = ['time' => date('Y-m-d H:i:s', intval($vo['time'])), 'context' => $vo['desc']];
+                $result = ['message' => $message[$status] ?? $result['msg'], 'status' => $status, 'express' => $code, 'number' => $number, 'data' => $list];
                 $this->app->cache->set($ckey, $result, 10);
                 return $result;
             }
