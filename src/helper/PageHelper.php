@@ -108,8 +108,9 @@ class PageHelper extends Helper
             // 数据分页处理
             if (isset($get['page']) && isset($get['limit'])) {
                 $rows = $get['limit'] ?: 20;
-                $data = $query->paginate(['list_rows' => $rows, 'query' => $get], false)->toArray();
-                $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
+                $total = $this->app->db->table($query->buildSql() . ' a')->count();
+                $data = $query->paginate(['list_rows' => $rows, 'query' => $get], $total)->toArray();
+                $result = ['msg' => '', 'code' => 0, 'count' => $total, 'data' => $data['data']];
             } else {
                 $data = $query->select()->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => count($data), 'data' => $data];
