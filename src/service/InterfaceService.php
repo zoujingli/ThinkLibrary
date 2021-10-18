@@ -216,7 +216,7 @@ class InterfaceService extends Service
         throw new HttpResponseException(json([
             'code' => $code, 'info' => $info, 'time' => $array['time'],
             'sign' => $array['sign'], 'appid' => $array['appid'], 'nostr' => $array['nostr'],
-            'data' => $this->type === 'json' ? $array['data'] : json_decode($array['data'], true),
+            'data' => $this->type !== 'json' ? json_decode($array['data'], true) : $array['data'],
         ]));
     }
 
