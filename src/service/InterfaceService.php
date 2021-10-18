@@ -99,7 +99,7 @@ class InterfaceService extends Service
      * 设置输出类型为 JSON
      * @return $this
      */
-    public function outTypeJson(): InterfaceService
+    public function setOutTypeJson(): InterfaceService
     {
         $this->type = 'json';
         return $this;
@@ -109,7 +109,7 @@ class InterfaceService extends Service
      * 设置输出类型为 Array
      * @return $this
      */
-    public function outTypeArray(): InterfaceService
+    public function setOutTypeArray(): InterfaceService
     {
         $this->type = 'array';
         return $this;
