@@ -83,8 +83,8 @@ class ExpressService extends Service
      */
     public function express(string $code, string $number, array $list = []): array
     {
-        // 1-新订单,2-在途中,3-签收,4-问题件
-        // 0-在途，1-揽收，2-疑难，3-签收，4-退签，5-派件，6-退回，7-转投，8-清关，14-拒签
+        // 新状态：1-新订单,2-在途中,3-签收,4-问题件
+        // 原状态：0-在途，1-揽收，2-疑难，3-签收，4-退签，5-派件，6-退回，7-转投，8-清关，14-拒签
         $ckey = md5("{$code}{$number}");
         $cache = $this->app->cache->get($ckey, []);
         $message = [1 => '新订单', 2 => '在途中', 3 => '签收', 4 => '问题件'];
