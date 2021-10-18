@@ -218,6 +218,10 @@ class InterfaceService extends Service
         if (empty($result['code'])) {
             throw new Exception("接口请求错误，原因：{$result['info']}");
         }
+
+        // 兼容历史数据格式
+        if (is_array($result['data'])) return $result['data'];
+
         // 无需进行数据签名
         if (empty($check)) return json_decode($result['data'] ?? '{}', true);
         // 返回结果签名验证
@@ -236,14 +240,14 @@ class InterfaceService extends Service
      */
     private function signData(array $data): array
     {
-        return $this->signString(json_encode($data, 256));
+        return $this->signString(json_encode($data, JSON_UNESCAPED_UNICODE));
     }
 
     /**
      * 数据字符串数据签名
-     * @param string $json
-     * @param mixed $time
-     * @param mixed $rand
+     * @param string $json 待签名的数据
+     * @param mixed $time 签名的时间戳
+     * @param mixed $rand 签名随机字符
      * @return array
      */
     private function signString(string $json, $time = null, $rand = null): array
