@@ -32,6 +32,12 @@ use think\exception\HttpResponseException;
 class InterfaceService extends Service
 {
     /**
+     * 输出格式
+     * @var string
+     */
+    public $type;
+
+    /**
      * 接口认证账号
      * @var string
      */
@@ -194,7 +200,7 @@ class InterfaceService extends Service
             'sign'  => $array['sign'],
             'appid' => $array['appid'],
             'nostr' => $array['nostr'],
-            'data'  => $array['data'],
+            'data'  => $this->type === 'json' ? $array['data'] : json_decode($array['data'], true),
         ]));
     }
 
@@ -218,10 +224,8 @@ class InterfaceService extends Service
         if (empty($result['code'])) {
             throw new Exception("接口请求错误，原因：{$result['info']}");
         }
-
         // 兼容历史数据格式
         if (is_array($result['data'])) return $result['data'];
-
         // 无需进行数据签名
         if (empty($check)) return json_decode($result['data'] ?? '{}', true);
         // 返回结果签名验证
