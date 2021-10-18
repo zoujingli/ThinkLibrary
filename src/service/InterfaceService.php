@@ -35,7 +35,7 @@ class InterfaceService extends Service
      * 输出格式
      * @var string
      */
-    public $type;
+    public $type = 'json';
 
     /**
      * 接口认证账号
@@ -194,13 +194,9 @@ class InterfaceService extends Service
     {
         $array = $this->signData($data);
         throw new HttpResponseException(json([
-            'code'  => $code,
-            'info'  => $info,
-            'time'  => $array['time'],
-            'sign'  => $array['sign'],
-            'appid' => $array['appid'],
-            'nostr' => $array['nostr'],
-            'data'  => $this->type === 'json' ? $array['data'] : json_decode($array['data'], true),
+            'code' => $code, 'info' => $info, 'time' => $array['time'],
+            'sign' => $array['sign'], 'appid' => $array['appid'], 'nostr' => $array['nostr'],
+            'data' => $this->type === 'json' ? $array['data'] : json_decode($array['data'], true),
         ]));
     }
 
