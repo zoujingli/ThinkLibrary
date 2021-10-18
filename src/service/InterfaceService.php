@@ -35,7 +35,7 @@ class InterfaceService extends Service
      * 输出格式
      * @var string
      */
-    public $type = 'json';
+    private $type;
 
     /**
      * 接口认证账号
@@ -92,6 +92,26 @@ class InterfaceService extends Service
     {
         $this->appid = $appid;
         $this->appkey = $appkey;
+        return $this;
+    }
+
+    /**
+     * 设置输出类型为 JSON
+     * @return $this
+     */
+    public function outTypeJson(): InterfaceService
+    {
+        $this->type = 'json';
+        return $this;
+    }
+
+    /**
+     * 设置输出类型为 Array
+     * @return $this
+     */
+    public function outTypeArray(): InterfaceService
+    {
+        $this->type = 'array';
         return $this;
     }
 
