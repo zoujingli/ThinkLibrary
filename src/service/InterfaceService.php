@@ -231,10 +231,10 @@ class InterfaceService extends Service
     public function doRequest(string $uri, array $data = [], bool $check = true): array
     {
         $url = rtrim($this->getway, '/') . '/' . ltrim($uri, '/');
-        $result = HttpExtend::post($url, $this->signData($data)) ?: '';
+        $content = HttpExtend::post($url, $this->signData($data)) ?: '';
         // 解析返回的结果
-        if (!($result = json_decode($result, true)) || empty($result)) {
-            throw new Exception("请求返回异常，内容：{$result}");
+        if (!($result = json_decode($content, true)) || empty($result)) {
+            throw new Exception("解析响应异常，内容：{$content}");
         }
         // 返回业务异常结果
         if (empty($result['code'])) throw new Exception($result['info']);
