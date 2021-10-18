@@ -31,6 +31,6 @@ return [
     'think_library_response_success'    => 'Server interface response succeeded.',
     'think_library_params_failed_auth'  => 'Interface account authentication failed.',
     'think_library_params_failed_time'  => 'Interface request time difference is too large.',
-    'think_library_params_failed_sign'  => 'Interface request signature verification failed.',
-    'think_library_params_failed_empty' => 'Interface request parameter %s cannot be empty.',
+    'think_library_params_failed_sign'  => 'Interface signature verification failed.',
+    'think_library_params_failed_empty' => 'Request parameter %s cannot be empty.',
 ];
