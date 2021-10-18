@@ -231,26 +231,21 @@ class InterfaceService extends Service
     public function doRequest(string $uri, array $data = [], bool $check = true): array
     {
         $url = rtrim($this->getway, '/') . '/' . ltrim($uri, '/');
-        $content = HttpExtend::post($url, $this->signData($data)) ?: '';
-        // 返回结果内容验证
-        if (!($result = json_decode($content, true)) || empty($result)) {
-            throw new Exception("请求返回异常，原因：{$content}");
+        $result = HttpExtend::post($url, $this->signData($data)) ?: '';
+        // 解析返回的结果
+        if (!($result = json_decode($result, true)) || empty($result)) {
+            throw new Exception("请求返回异常，内容：{$result}");
         }
-        // 返回结果错误验证
-        if (empty($result['code'])) {
-            throw new Exception("接口请求错误，原因：{$result['info']}");
-        }
-        // 兼容历史数据格式
-        if (is_array($result['data'])) return $result['data'];
-        // 无需进行数据签名
-        if (empty($check)) return json_decode($result['data'] ?? '{}', true);
+        // 返回业务异常结果
+        if (empty($result['code'])) throw new Exception($result['info']);
+        $array = is_array($result['data']) ? $result['data'] : json_decode($result['data'], true);
+        // 无需验证直接返回
+        if (empty($check)) return $array;
         // 返回结果签名验证
-        $build = $this->signString($result['data'], $result['time'], $result['nostr']);
-        if ($build['sign'] === $result['sign']) {
-            return json_decode($result['data'] ?? '{}', true);
-        } else {
-            throw new Exception('返回结果签名验证失败！');
-        }
+        $json = is_string($result['data']) ? $result['data'] : json_encode($result['data'], JSON_UNESCAPED_UNICODE);
+        $build = $this->signString($json, $result['time'], $result['nostr']);
+        if ($build['sign'] === $result['sign']) return $array ?: [];
+        throw new Exception('返回结果签名验证失败！');
     }
 
     /**
