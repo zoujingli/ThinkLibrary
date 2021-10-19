@@ -36,7 +36,7 @@ class InterfaceService extends Service
      * 输出格式
      * @var string
      */
-    private $type;
+    private $type = 'json';
 
     /**
      * 接口认证账号
