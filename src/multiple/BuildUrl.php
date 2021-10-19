@@ -43,8 +43,7 @@ class BuildUrl extends Url
         } elseif (0 === strpos($url, '@')) {
             $url = substr($url, 1);
         } elseif ('' === $url) {
-            $node = NodeService::instance()->getCurrent();
-            $url = $this->app->route->buildUrl($node)->suffix(false)->domain(false)->build();
+            $url = NodeService::instance()->getCurrent();
         } else {
             $path = explode('/', $url);
             $action = empty($path) ? $request->action() : array_pop($path);
@@ -188,7 +187,7 @@ class BuildUrl extends Url
         }
         // 检测域名
         $domain = $this->parseDomain($url, $domain);
-        // URL组装
+        // URL 组装
         return $domain . rtrim($this->root, '/') . '/' . ltrim($url, '/');
     }
 }
