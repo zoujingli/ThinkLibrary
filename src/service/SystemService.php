@@ -165,6 +165,7 @@ class SystemService extends Service
      */
     public function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
+        $url = $url ?: NodeService::instance()->getCurrent();
         $ext = $this->app->config->get('route.url_html_suffix', 'html');
         $pre = $this->app->route->buildUrl('@')->suffix(false)->domain($domain)->build();
         $uri = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
