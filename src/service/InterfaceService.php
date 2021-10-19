@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
+use stdClass;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\helper\ValidateHelper;
@@ -162,7 +163,7 @@ class InterfaceService extends Service
      */
     public function error($info, $data = '{-null-}', $code = 0): void
     {
-        if ($data === '{-null-}') $data = new \stdClass();
+        if ($data === '{-null-}') $data = new stdClass();
         $this->baseResponse(lang('think_library_response_failed'), [
             'code' => $code, 'info' => $info, 'data' => $data,
         ]);
@@ -176,7 +177,7 @@ class InterfaceService extends Service
      */
     public function success($info, $data = '{-null-}', $code = 1): void
     {
-        if ($data === '{-null-}') $data = new \stdClass();
+        if ($data === '{-null-}') $data = new stdClass();
         $this->baseResponse(lang('think_library_response_success'), [
             'code' => $code, 'info' => $info, 'data' => $data,
         ]);
