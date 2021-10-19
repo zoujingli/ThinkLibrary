@@ -235,7 +235,7 @@ class InterfaceService extends Service
         $content = HttpExtend::post($url, $this->signData($data)) ?: '';
         // 解析返回的结果
         if (!($result = json_decode($content, true)) || empty($result)) {
-            throw new Exception("解析响应异常，内容：{$content}");
+            throw new Exception('接口异常，请检查接口是否正确！');
         }
         // 返回业务异常结果
         if (empty($result['code'])) throw new Exception($result['info']);
