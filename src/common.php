@@ -76,7 +76,7 @@ if (!function_exists('sysuri')) {
         return SystemService::instance()->sysuri($url, $vars, $suffix, $domain);
     }
 }
-if (!function_exists('adminuri')) {
+if (!function_exists('admuri')) {
     /**
      * 生成后台 URL 地址
      * @param string $url 路由地址
@@ -85,7 +85,7 @@ if (!function_exists('adminuri')) {
      * @param boolean|string $domain 域名
      * @return string
      */
-    function adminuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    function admuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         return sysuri('admin/index/index') . '#' . url($url, $vars, $suffix, $domain)->build();
     }
