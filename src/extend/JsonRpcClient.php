@@ -44,8 +44,8 @@ class JsonRpcClient
      */
     public function __construct(string $proxy)
     {
+        $this->id = time();
         $this->proxy = $proxy;
-        $this->id = CodeExtend::uniqidNumber();
     }
 
     /**
