@@ -42,13 +42,11 @@ class BuildUrl extends Url
             $url = ltrim(str_replace('\\', '/', $url), '/');
         } elseif (0 === strpos($url, '@')) {
             $url = substr($url, 1);
-        } elseif ('' === $url) {
-            $url = NodeService::instance()->getCurrent();
         } else {
-            $path = explode('/', $url);
-            $action = empty($path) ? $request->action() : array_pop($path);
-            $contrl = empty($path) ? $request->controller() : array_pop($path);
-            $module = empty($path) ? $this->app->http->getName() : array_pop($path);
+            $attrs = explode('/', $url !== '' ? $url : NodeService::instance()->getCurrent());
+            $action = empty($attrs) ? $request->action() : array_pop($attrs);
+            $contrl = empty($attrs) ? $request->controller() : array_pop($attrs);
+            $module = empty($attrs) ? $this->app->http->getName() : array_pop($attrs);
             // 拼装新的链接地址
             $url = NodeService::nameTolower($contrl) . '/' . $action;
             $bind = $this->app->config->get('app.domain_bind', []);
