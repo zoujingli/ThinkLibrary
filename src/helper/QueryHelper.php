@@ -183,7 +183,7 @@ class QueryHelper extends Helper
      */
     public function valueBetween($fields, string $split = ' ', $input = null, string $alias = '#'): QueryHelper
     {
-        return $this->_setBetweenWhere($fields, $split, $input, $alias);
+        return $this->setBetweenWhere($fields, $split, $input, $alias);
     }
 
     /**
@@ -196,7 +196,7 @@ class QueryHelper extends Helper
      */
     public function dateBetween($fields, string $split = ' - ', $input = null, string $alias = '#'): QueryHelper
     {
-        return $this->_setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
+        return $this->setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
             if (preg_match('#^\d{4}(-\d\d){2}\s+\d\d(:\d\d){2}$#', $value)) return $value;
             else return $type === 'after' ? "{$value} 23:59:59" : "{$value} 00:00:00";
         });
@@ -212,7 +212,7 @@ class QueryHelper extends Helper
      */
     public function timeBetween($fields, string $split = ' - ', $input = null, string $alias = '#'): QueryHelper
     {
-        return $this->_setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
+        return $this->setBetweenWhere($fields, $split, $input, $alias, function ($value, $type) {
             if (preg_match('#^\d{4}(-\d\d){2}\s+\d\d(:\d\d){2}$#', $value)) return strtotime($value);
             else return $type === 'after' ? strtotime("{$value} 23:59:59") : strtotime("{$value} 00:00:00");
         });
@@ -306,7 +306,7 @@ class QueryHelper extends Helper
      * @param callable|null $callback 回调函数
      * @return $this
      */
-    private function _setBetweenWhere($fields, string $split = ' ', $input = null, string $alias = '#', ?callable $callback = null): QueryHelper
+    private function setBetweenWhere($fields, string $split = ' ', $input = null, string $alias = '#', ?callable $callback = null): QueryHelper
     {
         $data = $this->getInputData($input ?: $this->input);
         foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
