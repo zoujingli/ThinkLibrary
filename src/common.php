@@ -201,13 +201,13 @@ if (!function_exists('str2arr')) {
      */
     function str2arr(string $text, string $separ = ',', ?array $allow = null): array
     {
-        $data = explode($separ, trim($text, $separ));
-        foreach ($data as $key => $item) {
-            if ($item === '' || (is_array($allow) && !in_array($item, $allow))) {
-                unset($data[$key]);
+        $items = [];
+        foreach (explode($separ, trim($text, $separ)) as $item) {
+            if ($item !== '' && (!is_array($allow) || in_array($item, $allow))) {
+                $items[] = $item;
             }
         }
-        return $data;
+        return $items;
     }
 }
 if (!function_exists('arr2str')) {

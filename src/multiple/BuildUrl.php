@@ -43,7 +43,7 @@ class BuildUrl extends Url
         } elseif (0 === strpos($url, '@')) {
             $url = substr($url, 1);
         } else {
-            $attrs = explode('/', $url !== '' ? $url : NodeService::instance()->getCurrent());
+            $attrs = str2arr($url, '/');
             $action = empty($attrs) ? $request->action() : array_pop($attrs);
             $contrl = empty($attrs) ? $request->controller() : array_pop($attrs);
             $module = empty($attrs) ? $this->app->http->getName() : array_pop($attrs);
