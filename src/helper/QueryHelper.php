@@ -145,6 +145,34 @@ class QueryHelper extends Helper
         return $this;
     }
 
+
+    /**
+     * 两字段范围查询
+     * @example field1:field2#field,field11:field22#field00
+     * @param string|array $fields 查询字段
+     * @param string|array|null $input 输入数据
+     * @param string $alias 别名分割符
+     * @return $this
+     */
+    public function valueRange($fields, $input = null, string $alias = '#'): QueryHelper
+    {
+        $data = $this->getInputData($input ?: $this->input);
+        foreach (is_array($fields) ? $fields : explode(',', $fields) as $field) {
+            if (strpos($field, ':') !== false) {
+                if (stripos($field, $alias) !== false) {
+                    [$dk0, $qk0] = explode($alias, $field);
+                    [$dk1, $dk2] = explode(':', $dk0);
+                } else {
+                    [$qk0] = [$dk1, $dk2] = explode(':', $field, 2);
+                }
+                if (isset($data[$qk0]) && $data[$qk0] !== '') {
+                    $this->query->where([[$dk1, '<=', $data[$qk0]], [$dk2, '>=', $data[$qk0]]]);
+                }
+            }
+        }
+        return $this;
+    }
+
     /**
      * 设置内容区间查询
      * @param string|array $fields 查询字段
