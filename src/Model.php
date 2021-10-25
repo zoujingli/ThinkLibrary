@@ -111,9 +111,6 @@ abstract class Model extends \think\Model
      * @param string $method 方法名称
      * @param array $args 调用参数
      * @return mixed|false|integer|QueryHelper
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic($method, $args)
     {
