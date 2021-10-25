@@ -20,6 +20,7 @@ use think\admin\helper\FormHelper;
 use think\admin\helper\QueryHelper;
 use think\admin\helper\SaveHelper;
 use think\admin\service\SystemService;
+use think\Container;
 
 /**
  * 基础模型类
@@ -105,18 +106,27 @@ abstract class Model extends \think\Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
+    /**
+     * 静态魔术方法
+     * @param string $method 方法名称
+     * @param array $args 调用参数
+     * @return mixed|false|integer|QueryHelper
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
     public static function __callStatic($method, $args)
     {
         $helpers = [
-            'mForm'   => FormHelper::class,
-            'mSave'   => SaveHelper::class,
-            'mQuery'  => QueryHelper::class,
-            'mDelete' => DeleteHelper::class,
+            'mForm'   => [FormHelper::class, 'init'],
+            'mSave'   => [SaveHelper::class, 'init'],
+            'mQuery'  => [QueryHelper::class, 'init'],
+            'mDelete' => [DeleteHelper::class, 'init'],
+            'mUpdate' => [SystemService::class, 'save'],
         ];
-        if ($method === 'mUpdate') {
-            return SystemService::instance()->save(static::class, ...$args);
-        } elseif (isset($helpers[$method])) {
-            return app($helpers[$method], [], true)->init(static::class, ...$args);
+        if (isset($helpers[$method])) {
+            [$class, $method] = $helpers[$method];
+            return Container::getInstance()->invokeClass($class)->$method(static::class, ...$args);
         } else {
             return parent::__callStatic($method, $args);
         }
