@@ -207,29 +207,23 @@ class SystemService extends Service
     }
 
     /**
-     * 相同表结构复制内容
-     * @param string $from 来源表名
-     * @param string $target 目标表名
-     * @param mixed $where 查询条件
-     */
-    public function copyTableData(string $from, string $target, $where = [])
-    {
-        $sql1 = $this->app->db->name($from)->where($where)->buildSql(false);
-        $this->app->db->query("INSERT INTO {$target} {$sql1}");
-    }
-
-    /**
      * 复制并创建表结构
      * @param string $from 来源表名
      * @param string $create 创建表名
      * @param array $tables 现有表集合
+     * @param boolean $copy 是否复制
+     * @param mixed $where 复制条件
      * @throws \think\admin\Exception
      */
-    public function copyTableStruct(string $from, string $create, array $tables = [])
+    public function copyTableStruct(string $from, string $create, array $tables = [], bool $copy = false, $where = [])
     {
         if (empty($tables)) [$tables] = $this->getTables();
         if (!in_array($from, $tables)) throw new Exception("来源表 {$from} 不存在！");
         $this->app->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
+        if ($copy) {
+            $sql1 = $this->app->db->name($from)->where($where)->buildSql(false);
+            $this->app->db->query("INSERT INTO {$create} {$sql1}");
+        }
     }
 
     /**
