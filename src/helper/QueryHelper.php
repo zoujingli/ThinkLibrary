@@ -268,9 +268,7 @@ class QueryHelper extends Helper
      */
     public function layTable(?callable $befor = null, ?callable $after = null, string $template = '')
     {
-        if ($this->output === 'get.json') {
-            $this->page->init($this->query);
-        } elseif ($this->output === 'get.layui.table') {
+        if (in_array($this->output, ['get.layui.table', 'get.json'])) {
             if (is_callable($after)) {
                 call_user_func($after, $this, $this->query);
             }
