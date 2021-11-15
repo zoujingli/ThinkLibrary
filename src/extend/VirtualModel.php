@@ -82,9 +82,9 @@ class VirtualModel
     {
         if (!class_exists($class = "\\virtual\\model\\{$name}")) {
             if (!in_array('model', stream_get_wrappers())) {
-                stream_wrapper_register('model', self::class);
+                stream_wrapper_register('model', static::class);
             }
-            includeFile('model://' . $name . '#' . $conn);
+            includeFile("model://{$name}#{$conn}");
         }
         return new $class($data);
     }
