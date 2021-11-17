@@ -31,7 +31,7 @@ abstract class Service
      * 应用实例
      * @var App
      */
-    protected $app;
+    public $app;
 
     /**
      * Service constructor.
