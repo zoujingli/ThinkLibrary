@@ -142,11 +142,11 @@ class PageHelper extends Helper
 
     /**
      * 查询对象数量统计
-     * @param BaseQuery $query
+     * @param BaseQuery|Query $query
      * @param boolean|integer $total
      * @return integer|boolean|string
      */
-    private function getCount(BaseQuery $query, $total = false)
+    private function getCount($query, $total = false)
     {
         if ($total === true || is_numeric($total)) return $total;
         [$query, $options] = [clone $query, $query->getOptions()];
