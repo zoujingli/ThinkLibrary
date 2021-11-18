@@ -46,6 +46,7 @@ class PageHelper extends Helper
      */
     public function init($dbQuery, bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
+        $query = $this->autoSortQuery($dbQuery);
         if ($page) {
             $limits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
             if ($limit <= 1) {
@@ -58,7 +59,7 @@ class PageHelper extends Helper
             $inner = strpos($get['spm'] ?? '', 'm-') === 0;
             $prefix = $inner ? (sysuri('admin/index/index') . '#') : '';
             // 生成分页数据
-            $data = ($paginate = $this->autoSortQuery($dbQuery)->paginate(['list_rows' => $limit, 'query' => $get], $total))->toArray();
+            $data = ($paginate = $query->paginate(['list_rows' => $limit, 'query' => $get], $this->getCount($query, $total)))->toArray();
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
             // 分页跳转参数
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
@@ -72,7 +73,7 @@ class PageHelper extends Helper
             $link = $inner ? str_replace('<a href=', '<a data-open=', $paginate->render() ?: '') : ($paginate->render() ?: '');
             $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
-            $result = ['list' => $this->autoSortQuery($dbQuery)->select()->toArray()];
+            $result = ['list' => $query->select()->toArray()];
         }
         if (false !== $this->class->callback('_page_filter', $result['list']) && $display) {
             if ($this->output === 'get.json') {
@@ -107,10 +108,9 @@ class PageHelper extends Helper
             }
             // 数据分页处理
             if (isset($get['page']) && isset($get['limit'])) {
-                $rows = $get['limit'] ?: 20;
-                $total = $this->app->db->table($query->buildSql() . ' a')->count();
-                $data = $query->paginate(['list_rows' => $rows, 'query' => $get], $total)->toArray();
-                $result = ['msg' => '', 'code' => 0, 'count' => $total, 'data' => $data['data']];
+                $cfg = ['list_rows' => $get['limit'] ?: 20, 'query' => $get];
+                $data = $query->paginate($cfg, $this->getCount($query))->toArray();
+                $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
             } else {
                 $data = $query->select()->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => count($data), 'data' => $data];
@@ -137,6 +137,24 @@ class PageHelper extends Helper
             $this->xssFilter($item);
         } elseif (is_string($item)) {
             $item = htmlspecialchars($item, ENT_QUOTES);
+        }
+    }
+
+    /**
+     * 查询对象数量统计
+     * @param BaseQuery $query
+     * @param boolean|integer $total
+     * @return integer|boolean|string
+     */
+    private function getCount(BaseQuery $query, $total = false)
+    {
+        if ($total === true || is_numeric($total)) return $total;
+        [$query, $options] = [clone $query, $query->getOptions()];
+        if (isset($options['union'])) {
+            $table = [$query->buildSql() => '_union_count_'];
+            return $query->newQuery()->table($table)->count();
+        } else {
+            return $query->count();
         }
     }
 
