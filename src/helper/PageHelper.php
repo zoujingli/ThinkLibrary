@@ -48,14 +48,14 @@ class PageHelper extends Helper
     {
         $query = $this->autoSortQuery($dbQuery);
         if ($page) {
+            $get = $this->app->request->get();
             $limits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
             if ($limit <= 1) {
-                $limit = $this->app->request->get('limit', $this->app->cookie->get('limit', 20));
-                if (in_array($limit, $limits) && intval($this->app->request->get('not_cache_limit', 0)) < 1) {
+                $limit = $get['limit'] ?? $this->app->cookie->get('limit', 20);
+                if (in_array($limit, $limits) && $get['not_cache_limit'] ?? 0 < 1) {
                     $this->app->cookie->set('limit', ($limit = intval($limit >= 5 ? $limit : 20)) . '');
                 }
             }
-            $get = $this->app->request->get();
             $inner = strpos($get['spm'] ?? '', 'm-') === 0;
             $prefix = $inner ? (sysuri('admin/index/index') . '#') : '';
             // 生成分页数据
