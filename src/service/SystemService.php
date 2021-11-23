@@ -263,10 +263,11 @@ class SystemService extends Service
     public function getOplog(string $action, string $content): array
     {
         return [
-            'node'     => NodeService::instance()->getCurrent(),
-            'action'   => $action, 'content' => $content,
-            'geoip'    => $this->app->request->ip() ?: '127.0.0.1',
-            'username' => AdminService::instance()->getUserName() ?: '-',
+            'node'      => NodeService::instance()->getCurrent(),
+            'action'    => $action, 'content' => $content,
+            'geoip'     => $this->app->request->ip() ?: '127.0.0.1',
+            'username'  => AdminService::instance()->getUserName() ?: '-',
+            'create_at' => date('Y-m-d H:i:s')
         ];
     }
 
