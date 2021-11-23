@@ -135,7 +135,7 @@ class QueueService extends Service
             throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
         }
         $this->code = CodeExtend::uniqidDate(16, 'Q');
-        SystemQueue::mk()->strict(false)->failException(true)->insert([
+        SystemQueue::mk()->failException(true)->insert([
             'code'       => $this->code,
             'title'      => $title,
             'command'    => $command,
