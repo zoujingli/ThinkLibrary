@@ -28,10 +28,10 @@ class SystemQueue extends Model
 {
     /**
      * 格式化计划时间
-     * @param float $value
+     * @param mixed $value
      * @return string
      */
-    public function getExecTimeAttr(float $value): string
+    public function getExecTimeAttr($value): string
     {
         return format_datetime($value);
     }
