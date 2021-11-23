@@ -90,7 +90,7 @@ class SystemService extends Service
         } elseif (isset($this->data[$type])) {
             $group = $this->data[$type];
             if ($outer !== 'raw') foreach ($group as $kk => $vo) {
-                $group[$kk] = htmlspecialchars($vo);
+                $group[$kk] = htmlspecialchars(strval($vo));
             }
             return $field ? ($group[$field] ?? $default) : $group;
         } else {
