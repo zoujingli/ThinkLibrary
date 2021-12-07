@@ -72,7 +72,6 @@ class ValidateHelper extends Helper
             return call_user_func($callable, $validate->getError());
         } else {
             $this->class->error($validate->getError());
-            return $data;
         }
     }
 }
