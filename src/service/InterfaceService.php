@@ -147,7 +147,7 @@ class InterfaceService extends Service
         }
 
         // 检查请求时间，与服务差不能超过 30 秒
-        if (intval($input['time']) - time() > 30) {
+        if (abs(intval($input['time']) - time()) > 30) {
             $this->baseError(lang('think_library_params_failed_time'));
         }
 
