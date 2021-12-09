@@ -52,7 +52,7 @@ class NodeService extends Service
     {
         $prefix = strtolower($this->app->http->getName());
         // 获取应用前缀节点
-        if (in_array($type, ['app', ['module']])) return $prefix;
+        if (in_array($type, ['app', 'module'])) return $prefix;
         // 获取控制器前缀节点
         $middle = $this->nameTolower($this->app->request->controller());
         if ($type === 'controller') return $prefix . '/' . $middle;
