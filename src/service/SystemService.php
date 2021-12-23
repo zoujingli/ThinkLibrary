@@ -175,8 +175,8 @@ class SystemService extends Service
         // 替换省略链接路径
         return preg_replace([
             "#^({$pre}){$app}/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)?#i",
-            "#^({$pre}[\w\.]+)/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)#i",
-            "#^({$pre}[\w\.]+)(/[\w\.]+)/{$act}(\.{$ext}|^\w|\?|$)#i",
+            "#^({$pre}[\w.]+)/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)#i",
+            "#^({$pre}[\w.]+)(/[\w.]+)/{$act}(\.{$ext}|^\w|\?|$)#i",
             "#/\.{$ext}$#i",
         ], ['$1$2', '$1$2', '$1$2$3', ''], $uri);
     }
