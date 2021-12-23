@@ -116,7 +116,7 @@ class QueryHelper extends Helper
                 [$dk, $qk] = explode($alias, $field);
             }
             if (isset($data[$qk]) && $data[$qk] !== '') {
-                $this->query->where($dk, "{$data[$qk]}");
+                $this->query->where($dk, strval($data[$qk]));
             }
         }
         return $this;
@@ -139,7 +139,7 @@ class QueryHelper extends Helper
                 [$dk, $qk] = explode($alias, $field);
             }
             if (isset($data[$qk]) && $data[$qk] !== '') {
-                $this->query->whereIn($dk, explode($split, $data[$qk]));
+                $this->query->whereIn($dk, explode($split, strval($data[$qk])));
             }
         }
         return $this;
@@ -313,7 +313,7 @@ class QueryHelper extends Helper
                 [$dk, $qk] = explode($alias, $field);
             }
             if (isset($data[$qk]) && $data[$qk] !== '') {
-                [$begin, $after] = explode($split, $data[$qk]);
+                [$begin, $after] = explode($split, strval($data[$qk]));
                 if (is_callable($callback)) {
                     $after = call_user_func($callback, $after, 'after');
                     $begin = call_user_func($callback, $begin, 'begin');
