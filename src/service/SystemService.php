@@ -165,13 +165,14 @@ class SystemService extends Service
      */
     public function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
-        $ext = $this->app->config->get('route.url_html_suffix', 'html');
-        $pre = $this->app->route->buildUrl('@')->suffix(false)->domain($domain)->build();
-        $uri = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
-        // 默认节点配置数据
+        // 读取默认节点配置
         $app = $this->app->config->get('route.default_app') ?: 'index';
+        $ext = $this->app->config->get('route.url_html_suffix') ?: 'html';
         $act = Str::lower($this->app->config->get('route.default_action') ?: 'index');
         $ctr = Str::snake($this->app->config->get('route.default_controller') ?: 'index');
+        // 生成完整链接地址
+        $pre = $this->app->route->buildUrl('@')->suffix(false)->domain($domain)->build();
+        $uri = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
         // 替换省略链接路径
         return preg_replace([
             "#^({$pre}){$app}/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)?#i",
