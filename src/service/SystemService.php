@@ -112,13 +112,8 @@ class SystemService extends Service
     public function save($query, array &$data, string $key = 'id', $map = [])
     {
         $query = Helper::buildQuery($query)->master()->strict(false);
-        if (empty($map[$key])) {
-            $value = $data[$key] ?? null;
-            if (is_string($value) && strpos($value, ',') !== false) {
-                $query->whereIn($key, str2arr($value));
-            } else {
-                $query->where([$key => $value]);
-            }
+        if (empty($map[$key]) && isset($data[$key])) {
+            $query->where([$key => strval($data[$key])]);
         }
         $model = $query->where($map)->findOrEmpty();
         $method = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
