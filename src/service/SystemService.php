@@ -114,12 +114,13 @@ class SystemService extends Service
         $query = Helper::buildQuery($query)->master()->strict(false);
         if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
         $model = $query->where($map)->findOrEmpty();
-        $method = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
+        // 当前操作方法描述
+        $action = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
         // 写入或更新模型数据
         if ($model->save($data) === false) return false;
         // 模型自定义事件回调
         if ($model instanceof \think\admin\Model) {
-            $model->$method(strval($model[$key] ?? ''));
+            $model->$action(strval($model[$key] ?? ''));
         }
         $data = $model->toArray();
         return $model[$key] ?? true;
