@@ -219,11 +219,15 @@ class SystemService extends Service
     public function copyTableStruct(string $from, string $create, array $tables = [], bool $copy = false, $where = [])
     {
         if (empty($tables)) [$tables] = $this->getTables();
-        if (!in_array($from, $tables)) throw new Exception("来源表 {$from} 不存在！");
-        $this->app->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
-        if ($copy) {
-            $sql1 = $this->app->db->name($from)->where($where)->buildSql(false);
-            $this->app->db->query("INSERT INTO {$create} {$sql1}");
+        if (!in_array($from, $tables)) {
+            throw new Exception("待复制的数据表 {$from} 不存在！");
+        }
+        if (!in_array($create, $tables)) {
+            $this->app->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
+            if ($copy) {
+                $sql1 = $this->app->db->name($from)->where($where)->buildSql(false);
+                $this->app->db->query("INSERT INTO {$create} {$sql1}");
+            }
         }
     }
 
