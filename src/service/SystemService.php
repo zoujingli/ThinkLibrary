@@ -120,24 +120,16 @@ class SystemService extends Service
                 $query->where([$key => $value]);
             }
         }
-        if (($model = $query->where($map)->find()) && !empty($model)) {
-            if ($model->save($data) === false) return false;
-            // 模型自定义事件回调
-            if ($model instanceof \think\admin\Model) {
-                $model->onAdminUpdate(strval($model[$key] ?? ''));
-            }
-            $data = $model->toArray();
-            return $data[$key] ?? true;
-        } else {
-            $model = $query->getModel();
-            if ($model->data($data)->save() === false) return false;
-            // 模型自定义事件回调
-            if ($model instanceof \think\admin\Model) {
-                $model->onAdminInsert(strval($model[$key] ?? ''));
-            }
-            $data = $model->toArray();
-            return $model[$key] ?? true;
+        $model = $query->where($map)->findOrEmpty();
+        $method = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
+        // 写入或更新模型数据
+        if ($model->save($data) === false) return false;
+        // 模型自定义事件回调
+        if ($model instanceof \think\admin\Model) {
+            $model->$method(strval($model[$key] ?? ''));
         }
+        $data = $model->toArray();
+        return $model[$key] ?? true;
     }
 
     /**
