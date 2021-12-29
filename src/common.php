@@ -321,6 +321,19 @@ if (!function_exists('data_save')) {
         return SystemService::instance()->save($dbQuery, $data, $key, $where);
     }
 }
+if (!function_exists('down_file')) {
+    /**
+     * 下载远程文件到本地
+     * @param string $source 远程文件地址
+     * @param boolean $force 是否强制重新下载
+     * @param integer $expire 强制本地存储时间
+     * @return string
+     */
+    function down_file(string $source, bool $force = false, int $expire = 0): string
+    {
+        return Storage::down($source, $force, $expire)['url'] ?? $source;
+    }
+}
 if (!function_exists('format_bytes')) {
     /**
      * 文件字节单位转换
@@ -355,16 +368,24 @@ if (!function_exists('format_datetime')) {
         }
     }
 }
-if (!function_exists('down_file')) {
+if (!function_exists('trace_exception')) {
     /**
-     * 下载远程文件到本地
-     * @param string $source 远程文件地址
-     * @param boolean $force 是否强制重新下载
-     * @param integer $expire 强制本地存储时间
-     * @return string
+     * 输出异常数据到文件
+     * @param \Exception $exception
+     * @return void
      */
-    function down_file(string $source, bool $force = false, int $expire = 0): string
+    function trace_exception(Exception $exception)
     {
-        return Storage::down($source, $force, $expire)['url'] ?? $source;
+        $path = app()->getRuntimePath() . 'trace';
+        if (!file_exists($path)) mkdir($path, 0755, true);
+        $name = substr($exception->getFile(), strlen(app()->getRootPath()));
+        $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
+        $class = get_class($exception);
+        file_put_contents($file,
+            "[INFO] [ {$exception->getCode()} ] {$exception->getMessage()}" . PHP_EOL .
+            "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL .
+            "[TIME] " . date('Y-m-d H:i:s') . PHP_EOL .
+            '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
+        );
     }
 }
