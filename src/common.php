@@ -368,13 +368,13 @@ if (!function_exists('format_datetime')) {
         }
     }
 }
-if (!function_exists('trace_exception')) {
+if (!function_exists('trace_file')) {
     /**
      * 输出异常数据到文件
      * @param \Exception $exception
      * @return void
      */
-    function trace_exception(Exception $exception)
+    function trace_file(Exception $exception)
     {
         $path = app()->getRuntimePath() . 'trace';
         if (!file_exists($path)) mkdir($path, 0755, true);
