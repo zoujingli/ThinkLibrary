@@ -107,7 +107,7 @@ class PageHelper extends Helper
                 $query->order("{$get['_field_']} {$get['_order_']}");
             }
             // 数据分页处理
-            if (isset($get['page']) && isset($get['limit'])) {
+            if (isset($get['page']) && isset($get['limit']) && is_numeric($get['limit'])) {
                 $cfg = ['list_rows' => $get['limit'] ?: 20, 'query' => $get];
                 $data = $query->paginate($cfg, $this->getCount($query))->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
