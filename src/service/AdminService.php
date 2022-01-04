@@ -141,11 +141,12 @@ class AdminService extends Service
     {
         if ($force) $this->clearCache();
         if (($uid = $this->getUserId()) <= 0) return $this;
-        $user = SystemUser::mk()->where(['id' => $uid])->findOrEmpty()->data(['nodes' => []])->toArray();
+        $user = SystemUser::mk()->where(['id' => $uid])->findOrEmpty()->toArray();
         if (!$this->isSuper() && !empty($user['authorize']) && count($ids = str2arr($user['authorize'])) > 0) {
             $ids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $ids)->column('id');
-            if (!empty($ids)) $user['nodes'] = SystemNode::mk()->distinct(true)->whereIn('auth', $ids)->column('node');
+            if (!empty($ids)) $nodes = SystemNode::mk()->distinct(true)->whereIn('auth', $ids)->column('node');
         }
+        $user['nodes'] = $nodes ?? [];
         $this->app->session->set('user', $user);
         return $this;
     }
