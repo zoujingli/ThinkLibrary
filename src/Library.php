@@ -42,7 +42,7 @@ class Library extends Service
     /**
      * 版本号
      */
-    const VERSION = '6.0.24';
+    const VERSION = '6.0.25';
 
     /**
      * 启动服务
@@ -84,6 +84,11 @@ class Library extends Service
         // 加载中文及英文语言包
         $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
         $this->app->lang->load(__DIR__ . '/lang/en-us.php', 'en-us');
+
+        // 动态加载应用初始化系统函数
+        [$ds, $base] = [DIRECTORY_SEPARATOR, $this->app->getBasePath()];
+        foreach (glob("{$base}*{$ds}sys.php") as $file) includeFile($file);
+
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
             // 如果是 YAR 接口或指定情况下，不需要初始化会话和语言包，否则有可能会报错
@@ -122,8 +127,6 @@ class Library extends Service
                 }
             }, 'route');
         }
-        // 动态加载应用初始化系统函数
-        [$ds, $base] = [DIRECTORY_SEPARATOR, $this->app->getBasePath()];
-        foreach (glob("{$base}*{$ds}sys.php") as $file) includeFile($file);
+
     }
 }

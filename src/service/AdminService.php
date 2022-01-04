@@ -85,23 +85,25 @@ class AdminService extends Service
      */
     public function check(?string $node = ''): bool
     {
-        if ($this->isSuper()) return true;
         $service = NodeService::instance();
-        [$real, $nodes] = [$service->fullnode($node), $service->getMethods()];
-        // 以下代码为兼容 win 控制器不区分大小写的验证问题
-        foreach ($nodes as $key => $rule) {
-            if (strpos($key, '_') !== false && strpos($key, '/') !== false) {
+        $methods = $service->getMethods();
+        // 兼容 windows 控制器不区分大小写的验证问题
+        foreach ($methods as $key => $rule) {
+            if (preg_match('#.*?/.*?_.*?#', $key)) {
                 $attr = explode('/', $key);
                 $attr[1] = strtr($attr[1], ['_' => '']);
-                $nodes[join('/', $attr)] = $rule;
+                $methods[join('/', $attr)] = $rule;
             }
         }
+        $current = $service->fullnode($node);
         if (function_exists('admin_check_filter')) {
-            return admin_check_filter($real, $nodes, $this->app->session->get('user.nodes', []));
-        } elseif (empty($nodes[$real]['isauth'])) {
-            return !(!empty($nodes[$real]['islogin']) && !$this->isLogin());
+            return admin_check_filter($current, $methods, $this->app->session->get('user.nodes', []));
+        } elseif ($this->isSuper()) {
+            return true;
+        } elseif (empty($methods[$current]['isauth'])) {
+            return !(!empty($methods[$current]['islogin']) && !$this->isLogin());
         } else {
-            return in_array($real, $this->app->session->get('user.nodes', []));
+            return in_array($current, $this->app->session->get('user.nodes', []));
         }
     }
 
