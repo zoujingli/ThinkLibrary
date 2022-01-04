@@ -97,7 +97,7 @@ class AdminService extends Service
             }
         }
         if (function_exists('admin_check_filter')) {
-            return admin_check_filter($real, $this->app->session->get('user.nodes', []), $nodes);
+            return admin_check_filter($real, $nodes, $this->app->session->get('user.nodes', []));
         } elseif (empty($nodes[$real]['isauth'])) {
             return !(!empty($nodes[$real]['islogin']) && !$this->isLogin());
         } else {
