@@ -54,8 +54,12 @@ class MenuService extends Service
      */
     public function getTree(): array
     {
-        $query = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc');
-        return $this->_buildData(DataExtend::arr2tree($query->select()->toArray()));
+        $query = SystemMenu::mk()->where(['status' => 1]);
+        $list = $query->order('sort desc,id asc')->select()->toArray();
+        if (function_exists('admin_menu_filter')) {
+            admin_menu_filter($list);
+        }
+        return $this->build(DataExtend::arr2tree($list));
     }
 
     /**
@@ -64,12 +68,12 @@ class MenuService extends Service
      * @return array
      * @throws \ReflectionException
      */
-    private function _buildData(array $menus): array
+    private function build(array $menus): array
     {
         $service = AdminService::instance();
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
-                $menu['sub'] = $this->_buildData($menu['sub']);
+                $menu['sub'] = $this->build($menu['sub']);
             }
             if (!empty($menu['sub'])) {
                 $menu['url'] = '#';

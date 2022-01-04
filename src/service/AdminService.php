@@ -96,10 +96,13 @@ class AdminService extends Service
                 $nodes[join('/', $attr)] = $rule;
             }
         }
-        if (!empty($nodes[$real]['isauth'])) {
-            return in_array($real, $this->app->session->get('user.nodes', []));
-        } else {
+        if (function_exists('admin_check_filter')) {
+            return admin_check_filter($real, $this->app->session->get('user.nodes', []));
+        }
+        if (empty($nodes[$real]['isauth'])) {
             return !(!empty($nodes[$real]['islogin']) && !$this->isLogin());
+        } else {
+            return in_array($real, $this->app->session->get('user.nodes', []));
         }
     }
 
@@ -133,23 +136,17 @@ class AdminService extends Service
      * 初始化用户权限
      * @param boolean $force 强刷权限
      * @return $this
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function apply(bool $force = false): AdminService
     {
         if ($force) $this->clearCache();
-        if (($uid = $this->app->session->get('user.id'))) {
-            $user = SystemUser::mk()->where(['id' => $uid])->find();
-            if (!empty($user['authorize']) && !$this->isSuper()) {
-                $db = SystemAuth::mk()->field('id')->where(['status' => 1])->whereIn('id', str2arr($user['authorize']));
-                $user['nodes'] = array_unique(SystemNode::mk()->whereRaw("auth in {$db->buildSql()}")->column('node'));
-            } else {
-                $user['nodes'] = [];
-            }
-            $this->app->session->set('user', $user->toArray());
+        if (($uid = $this->getUserId()) <= 0) return $this;
+        $user = SystemUser::mk()->where(['id' => $uid])->findOrEmpty()->append(['nodes' => []])->toArray();
+        if (!$this->isSuper() && !empty($user['authorize']) && count($ids = str2arr($user['authorize'])) > 0) {
+            $ids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $ids)->column('id');
+            if (!empty($ids)) $user['nodes'] = SystemNode::mk()->distinct(true)->whereIn('auth', $ids)->column('node');
         }
+        $this->app->session->set('user', $user);
         return $this;
     }
 

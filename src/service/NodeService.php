@@ -121,12 +121,15 @@ class NodeService extends Service
                 [, $namespace, $appname, $classname] = $matches;
                 $class = new ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\'));
                 $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
-                $data[$prefix] = $this->_parseComment($class->getDocComment() ?: '', $classname);
+                $data[$prefix] = $this->parseComment($class->getDocComment() ?: '', $classname);
                 foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                     if (in_array($metname = $method->getName(), $ignores)) continue;
-                    $data[strtolower("{$prefix}/{$metname}")] = $this->_parseComment($method->getDocComment() ?: '', $metname);
+                    $data[strtolower("{$prefix}/{$metname}")] = $this->parseComment($method->getDocComment() ?: '', $metname);
                 }
             }
+        }
+        if (function_exists('admin_node_filter')) {
+            admin_node_filter($data);
         }
         $this->app->cache->set('SystemAuthNode', $data);
         return $data;
@@ -138,7 +141,7 @@ class NodeService extends Service
      * @param string $default 默认标题
      * @return array
      */
-    private function _parseComment(string $comment, string $default = ''): array
+    private function parseComment(string $comment, string $default = ''): array
     {
         $text = strtr($comment, "\n", ' ');
         $title = preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $text);
