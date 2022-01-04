@@ -56,9 +56,7 @@ class MenuService extends Service
     {
         $query = SystemMenu::mk()->where(['status' => 1]);
         $list = $query->order('sort desc,id asc')->select()->toArray();
-        if (function_exists('admin_menu_filter')) {
-            admin_menu_filter($list);
-        }
+        if (function_exists('admin_menu_filter')) admin_menu_filter($list);
         return $this->build(DataExtend::arr2tree($list));
     }
 
