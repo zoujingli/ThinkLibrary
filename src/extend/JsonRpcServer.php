@@ -17,9 +17,6 @@ declare (strict_types=1);
 
 namespace think\admin\extend;
 
-use Exception;
-use ReflectionClass;
-use ReflectionMethod;
 use think\App;
 use think\Container;
 use think\exception\HttpResponseException;
@@ -75,7 +72,7 @@ class JsonRpcServer
                 $error = ['code' => '-32600', 'message' => '无效的请求', 'meaning' => '发送的JSON不是一个有效的请求对象'];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'] ?? '0', 'result' => null, 'error' => $error];
             } else try {
-                if ($object instanceof Exception) {
+                if ($object instanceof \Exception) {
                     throw $object;
                 } elseif (strtolower($request['method']) === '_get_class_name_') {
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => get_class($object), 'error' => null];
@@ -89,7 +86,7 @@ class JsonRpcServer
             } catch (\think\admin\Exception $exception) {
                 $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage(), 'meaning' => '数据处理异常'];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => $exception->getData(), 'error' => $error];
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 $error = ['code' => $exception->getCode(), 'message' => $exception->getMessage(), 'meaning' => '系统处理异常'];
                 $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => null, 'error' => $error];
             }
@@ -105,9 +102,9 @@ class JsonRpcServer
     protected function printMethod($object)
     {
         try {
-            $object = new ReflectionClass($object);
+            $object = new \ReflectionClass($object);
             echo "<h2>{$object->getName()}</h2><hr>";
-            foreach ($object->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            foreach ($object->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                 if (stripos($method->getName(), '_') === 0) continue;
                 $params = [];
                 foreach ($method->getParameters() as $parameter) {
@@ -118,7 +115,7 @@ class JsonRpcServer
                 echo '<div style="color:#666">' . nl2br($method->getDocComment() ?: '') . '</div>';
                 echo "<div style='color:#00E'>{$object->getShortName()}::{$method->getName()}({$params})</div><br>";
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             echo "<h3>[{$exception->getCode()}] {$exception->getMessage()}</h3>";
         }
     }
