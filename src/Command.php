@@ -69,10 +69,9 @@ abstract class Command extends \think\console\Command
     /**
      * 设置失败消息并结束进程
      * @param string $message 消息内容
-     * @return static
      * @throws Exception
      */
-    protected function setQueueError(string $message): Command
+    protected function setQueueError(string $message)
     {
         if (defined('WorkQueueCode')) {
             $this->queue->error($message);
@@ -80,16 +79,14 @@ abstract class Command extends \think\console\Command
             $this->output->writeln($message);
             exit("\r\n");
         }
-        return $this;
     }
 
     /**
      * 设置成功消息并结束进程
      * @param string $message 消息内容
-     * @return static
      * @throws Exception
      */
-    protected function setQueueSuccess(string $message): Command
+    protected function setQueueSuccess(string $message)
     {
         if (defined('WorkQueueCode')) {
             $this->queue->success($message);
@@ -97,7 +94,6 @@ abstract class Command extends \think\console\Command
             $this->output->writeln($message);
             exit("\r\n");
         }
-        return $this;
     }
 
     /**
@@ -127,7 +123,7 @@ abstract class Command extends \think\console\Command
      */
     public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Command
     {
-        $total = $total < 1 ? 1 : $total;
+        $total = max($total, 1);
         $prefix = str_pad("{$count}", strlen("{$total}"), '0', STR_PAD_LEFT);
         return $this->setQueueProgress("[{$prefix}/{$total}] {$message}", sprintf("%.2f", $count / $total * 100), $backline);
     }

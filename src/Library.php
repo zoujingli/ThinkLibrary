@@ -127,6 +127,5 @@ class Library extends Service
                 }
             }, 'route');
         }
-
     }
 }

@@ -79,7 +79,7 @@ abstract class Queue
      * @param string $message 消息内容
      * @throws Exception
      */
-    protected function setQueueError(string $message): void
+    protected function setQueueError(string $message)
     {
         $this->queue->error($message);
     }
@@ -89,7 +89,7 @@ abstract class Queue
      * @param string $message 消息内容
      * @throws Exception
      */
-    protected function setQueueSuccess(string $message): void
+    protected function setQueueSuccess(string $message)
     {
         $this->queue->success($message);
     }

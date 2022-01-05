@@ -28,6 +28,7 @@ use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
+use think\Model;
 use Throwable;
 
 /**
@@ -174,8 +175,8 @@ class Queue extends Command
      */
     protected function queryAction()
     {
-        $list = $this->process->thinkQuery('xadmin:queue');
-        if (count($list) > 0) foreach ($list as $item) {
+        $items = $this->process->thinkQuery('xadmin:queue');
+        if (count($items) > 0) foreach ($items as $item) {
             $this->output->writeln("># {$item['pid']}\t{$item['cmd']}");
         } else {
             $this->output->writeln('># No related task process found');
@@ -190,13 +191,13 @@ class Queue extends Command
     {
         // 清理 7 天前的历史任务记录
         $map = [['exec_time', '<', time() - 7 * 24 * 3600]];
-        $clear = SystemQueue::mk()->where($map)->delete();
+        $clean = SystemQueue::mk()->where($map)->delete();
         // 标记超过 1 小时未完成的任务为失败状态，循环任务失败重置
         $map1 = [['loops_time', '>', 0], ['status', '=', 4]]; // 执行失败的循环任务
         $map2 = [['exec_time', '<', time() - 3600], ['status', '=', 2]]; // 执行超时的任务
         [$timeout, $loops, $total] = [0, 0, SystemQueue::mk()->whereOr([$map1, $map2])->count()];
-        SystemQueue::mk()->whereOr([$map1, $map2])->chunk(100, function (Collection $result) use ($total, &$loops, &$timeout) {
-            foreach ($result->toArray() as $item) {
+        SystemQueue::mk()->whereOr([$map1, $map2])->chunk(100, function (Collection $items) use ($total, &$loops, &$timeout) {
+            $items->map(function (Model $item) use ($total, &$loops, &$timeout) {
                 $item['loops_time'] > 0 ? $loops++ : $timeout++;
                 if ($item['loops_time'] > 0) {
                     $this->queue->message($total, $timeout + $loops, "正在重置任务 {$item['code']} 为运行");
@@ -206,9 +207,9 @@ class Queue extends Command
                     [$status, $message] = [4, '任务执行超时，已自动标识为失败！'];
                 }
                 SystemQueue::mk()->where(['id' => $item['id']])->update(['status' => $status, 'exec_desc' => $message]);
-            }
+            });
         });
-        $this->setQueueSuccess("清理 {$clear} 条历史任务，关闭 {$timeout} 条超时任务，重置 {$loops} 条循环任务");
+        $this->setQueueSuccess("清理 {$clean} 条历史任务，关闭 {$timeout} 条超时任务，重置 {$loops} 条循环任务");
     }
 
     /**
@@ -298,7 +299,7 @@ class Queue extends Command
                     $this->updateQueue(3, $this->app->console->call(array_shift($attr), $attr)->fetch(), false);
                 }
             }
-        } catch (Exception | Throwable | Error  $exception) {
+        } catch (Exception|Throwable|Error $exception) {
             $code = $exception->getCode();
             if (intval($code) !== 3) $code = 4;
             $this->updateQueue($code, $exception->getMessage());
@@ -332,7 +333,7 @@ class Queue extends Command
         if (isset($this->queue->record['loops_time']) && $this->queue->record['loops_time'] > 0) {
             try {
                 $this->queue->initialize($this->code)->reset($this->queue->record['loops_time']);
-            } catch (Exception | Throwable | Error  $exception) {
+            } catch (Exception|Throwable|Error  $exception) {
                 $this->app->log->error("Queue {$this->queue->record['code']} Loops Failed. {$exception->getMessage()}");
             }
         }
