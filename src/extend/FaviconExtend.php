@@ -77,16 +77,16 @@ class FaviconExtend
         }
 
         [$width, $height] = $size;
-        $newIm = imagecreatetruecolor($width, $height);
-        imagecolortransparent($newIm, imagecolorallocatealpha($newIm, 0, 0, 0, 127));
-        imagealphablending($newIm, false);
-        imagesavealpha($newIm, true);
+        $image = imagecreatetruecolor($width, $height);
+        imagecolortransparent($image, imagecolorallocatealpha($image, 0, 0, 0, 127));
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
 
         [$sourceWidth, $sourceHeight] = [imagesx($im), imagesy($im)];
-        if (false === imagecopyresampled($newIm, $im, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight)) {
+        if (false === imagecopyresampled($image, $im, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight)) {
             throw new Exception('Parse and process picture Failed.');
         }
-        $this->addImageData($newIm);
+        $this->addImageData($image);
         return $this;
     }
 
