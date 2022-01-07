@@ -124,7 +124,7 @@ class FaviconExtend
         $data = pack('vvv', 0, 1, count($this->images));
         $offset = 6 + ($entrySize * count($this->images));
         foreach ($this->images as $image) {
-            $data .= pack('CCCCvvVV', $image['width'], $image['height'], $image['color_palette_colors'], 0, 1, $image['bits_per_pixel'], $image['size'], $offset);
+            $data .= pack('CCCCvvVV', $image['width'], $image['height'], $image['colors'], 0, 1, $image['pixel'], $image['size'], $offset);
             $pixelData .= $image['data'];
             $offset += $image['size'];
         }
@@ -172,26 +172,24 @@ class FaviconExtend
         foreach ($opacityData as $opacity) $data .= pack('N', $opacity);
 
         $this->images[] = [
-            'data'                 => $data,
-            'size'                 => $imageHeaderSize + $colorMaskSize + $opacityMaskSize,
-            'width'                => $width,
-            'height'               => $height,
-            'bits_per_pixel'       => 32,
-            'color_palette_colors' => 0,
+            'data'  => $data,
+            'size'  => $imageHeaderSize + $colorMaskSize + $opacityMaskSize,
+            'width' => $width, 'height' => $height,
+            'pixel' => 32, 'colors' => 0,
         ];
     }
 
     /**
      * 读取图片资源
-     * @param string $filename
+     * @param string $file 文件路径
      * @return false|\GdImage|resource
      */
-    private function loadImageFile(string $filename)
+    private function loadImageFile(string $file)
     {
-        if (false === getimagesize($filename)) {
+        if (false === getimagesize($file)) {
             return false;
         }
-        if (false === ($filedata = file_get_contents($filename))) {
+        if (false === ($filedata = file_get_contents($file))) {
             return false;
         }
         if (false === ($im = imagecreatefromstring($filedata))) {
