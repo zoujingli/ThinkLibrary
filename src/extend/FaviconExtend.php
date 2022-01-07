@@ -189,13 +189,13 @@ class FaviconExtend
         if (false === getimagesize($file)) {
             return false;
         }
-        if (false === ($filedata = file_get_contents($file))) {
+        if (false === ($data = file_get_contents($file))) {
             return false;
         }
-        if (false === ($im = imagecreatefromstring($filedata))) {
+        if (false === ($image = imagecreatefromstring($data))) {
             return false;
         }
-        unset($filedata);
-        return $im;
+        unset($data);
+        return $image;
     }
 }
