@@ -32,5 +32,5 @@ return [
     'think_library_params_failed_auth'  => '接口账号认证失败！',
     'think_library_params_failed_time'  => '接口请求时差过大！',
     'think_library_params_failed_sign'  => '接口签名验证失败！',
-    'think_library_params_failed_empty' => '请求参数%s不能为空！',
+    'think_library_params_failed_empty' => '请求参数 %s 不能为空！',
 ];
