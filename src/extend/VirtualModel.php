@@ -126,6 +126,26 @@ class VirtualModel
         return strlen($data);
     }
 
+    public function dir_closedir(): bool
+    {
+        return true;
+    }
+
+    public function dir_opendir(): bool
+    {
+        return true;
+    }
+
+    public function dir_readdir(): string
+    {
+        return __DIR__;
+    }
+
+    public function dir_rewinddir(): bool
+    {
+        return true;
+    }
+
     public function unlink(): bool
     {
         return true;
