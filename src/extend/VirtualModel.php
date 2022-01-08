@@ -63,9 +63,32 @@ class VirtualModel
         return $this->position >= strlen($this->template);
     }
 
-    public function stream_stat()
+    public function rmdir(): bool
     {
-        return stat(__FILE__);
+        return true;
+    }
+
+    public function rename(): bool
+    {
+        return true;
+    }
+
+    public function stream_cast()
+    {
+    }
+
+    public function stream_close()
+    {
+    }
+
+    public function stream_flush(): bool
+    {
+        return true;
+    }
+
+    public function stream_lock(): bool
+    {
+        return true;
     }
 
     public function stream_set_option(): bool
@@ -73,9 +96,29 @@ class VirtualModel
         return true;
     }
 
+    public function stream_metadata(): bool
+    {
+        return true;
+    }
+
+    public function stream_stat()
+    {
+        return stat(__FILE__);
+    }
+
     public function stream_tell(): int
     {
         return $this->position;
+    }
+
+    public function stream_truncate(): bool
+    {
+        return true;
+    }
+
+    public function stream_seek(): bool
+    {
+        return true;
     }
 
     public function stream_write(string $data): int
