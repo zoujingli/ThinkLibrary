@@ -65,10 +65,32 @@ class VirtualModel
 
     public function stream_stat()
     {
+        return stat(__FILE__);
     }
 
-    public function stream_set_option()
+    public function stream_set_option(): bool
     {
+        return true;
+    }
+
+    public function stream_tell(): int
+    {
+        return $this->position;
+    }
+
+    public function stream_write(string $data): int
+    {
+        return strlen($data);
+    }
+
+    public function unlink(): bool
+    {
+        return true;
+    }
+
+    public function url_stat()
+    {
+        return stat(__FILE__);
     }
 
     /**
