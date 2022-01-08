@@ -63,16 +63,6 @@ class VirtualModel
         return $this->position >= strlen($this->template);
     }
 
-    public function rmdir(): bool
-    {
-        return true;
-    }
-
-    public function rename(): bool
-    {
-        return true;
-    }
-
     public function stream_cast()
     {
     }
@@ -126,11 +116,6 @@ class VirtualModel
         return strlen($data);
     }
 
-    public function dir_closedir(): bool
-    {
-        return true;
-    }
-
     public function dir_opendir(): bool
     {
         return true;
@@ -141,7 +126,22 @@ class VirtualModel
         return __DIR__;
     }
 
+    public function dir_closedir(): bool
+    {
+        return true;
+    }
+
     public function dir_rewinddir(): bool
+    {
+        return true;
+    }
+
+    public function rmdir(): bool
+    {
+        return true;
+    }
+
+    public function rename(): bool
     {
         return true;
     }
