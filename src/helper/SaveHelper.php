@@ -35,7 +35,7 @@ class SaveHelper extends Helper
      * @param array $edata 表单扩展数据
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件
-     * @return boolean|void
+     * @return bool
      * @throws \think\db\exception\DbException
      */
     public function init($dbQuery, array $edata = [], string $field = '', $where = []): bool
@@ -46,8 +46,8 @@ class SaveHelper extends Helper
         $value = $this->app->request->post($field);
 
         // 主键限制处理
-        if (!isset($where[$field]) && is_string($value)) {
-            $query->whereIn($field, str2arr($value));
+        if (!isset($where[$field]) && !is_null($value)) {
+            $query->whereIn($field, str2arr(strval($value)));
             if (isset($edata)) unset($edata[$field]);
         }
 
