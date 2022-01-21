@@ -77,6 +77,61 @@ class AdminService extends Service
     }
 
     /**
+     * 获取用户扩展数据
+     * @param null|string $field
+     * @param null|mixed $default
+     * @return array|mixed
+     */
+    public function getUserData(?string $field = null, $default = null)
+    {
+        $keys = "UserData_{$this->getUserId()}";
+        $data = SystemService::instance()->getData($keys, []);
+        return is_null($field) ? $data : ($data[$field] ?? $default);
+    }
+
+    /**
+     * 设置用户扩展数据
+     * @param array $data
+     * @param boolean $replace
+     * @return boolean|integer
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function setUserData(array $data, bool $replace = false)
+    {
+        $keys = "UserData_{$this->getUserId()}";
+        $data = $replace ? $data : array_merge($this->getUserData(), $data);
+        return SystemService::instance()->setData($keys, $data);
+    }
+
+    /**
+     * 获取用户主题名称
+     * @return string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function getUserTheme(): string
+    {
+        $default = sysconf('base.site_theme') ?: 'default';
+        return $this->getUserData('site_theme', $default);
+    }
+
+    /**
+     * 设置用户主题名称
+     * @param string $theme 主题名称
+     * @return boolean|integer
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function setUserTheme(string $theme)
+    {
+        return $this->setUserData(['site_theme' => $theme]);
+    }
+
+    /**
      * 检查指定节点授权
      * --- 需要读取缓存或扫描所有节点
      * @param null|string $node
