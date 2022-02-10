@@ -1,7 +1,7 @@
 .git
 .svn
 .idea
-/composer.lock
 /vendor
+/composer.lock
 !.gitignore
 !composer.json
