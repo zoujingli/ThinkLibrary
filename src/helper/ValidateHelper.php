@@ -69,7 +69,7 @@ class ValidateHelper extends Helper
         if ($validate->rule($rule)->message($info)->check($data)) {
             return $data;
         } elseif (is_callable($callable)) {
-            return call_user_func($callable, $validate->getError());
+            return call_user_func($callable, $validate->getError(), $data);
         } else {
             $this->class->error($validate->getError());
         }
