@@ -64,7 +64,7 @@ class Menu extends Command
                 }
             }
         }
-        $this->setQueueSuccess("完成重置系统菜单编号！");
+        $this->setQueueMessage($total, $total, "完成重置系统菜单编号！");
     }
 
     /**
