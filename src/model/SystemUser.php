@@ -72,6 +72,16 @@ class SystemUser extends Model
     }
 
     /**
+     * 默认头像处理
+     * @param mixed $value
+     * @return string
+     */
+    public function getHeadimgAttr($value): string
+    {
+        return empty($value) ? 'https://v6.thinkadmin.top/static/theme/img/headimg.png' : $value;
+    }
+
+    /**
      * 格式化登录时间
      * @param string $value
      * @return string
