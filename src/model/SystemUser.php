@@ -78,7 +78,14 @@ class SystemUser extends Model
      */
     public function getHeadimgAttr($value): string
     {
-        return empty($value) ? 'https://v6.thinkadmin.top/static/theme/img/headimg.png' : $value;
+        if (empty($value)) try {
+            $host = sysconf('base.site_host') ?: 'https://v6.thinkadmin.top';
+            return "{$host}/static/theme/img/headimg.png";
+        } catch (\Exception $exception) {
+            return "https://v6.thinkadmin.top/static/theme/img/headimg.png";
+        } else {
+            return $value;
+        }
     }
 
     /**
