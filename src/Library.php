@@ -18,6 +18,7 @@ namespace think\admin;
 use Closure;
 use think\admin\command\Database;
 use think\admin\command\Install;
+use think\admin\command\Menu;
 use think\admin\command\Queue;
 use think\admin\command\Replace;
 use think\admin\command\Version;
@@ -71,7 +72,7 @@ class Library extends Service
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class]);
         // 注册 ThinkAdmin 指令
-        $this->commands([Queue::class, Install::class, Version::class, Database::class, Replace::class]);
+        $this->commands([Menu::class, Queue::class, Install::class, Version::class, Database::class, Replace::class]);
         // 动态应用运行参数
         SystemService::instance()->bindRuntime();
     }
