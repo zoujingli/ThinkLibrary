@@ -37,7 +37,7 @@ class Menu extends Command
     public function configure()
     {
         $this->setName('xadmin:sysmenu');
-        $this->setDescription('Reset and Clean System Menu ID for ThinkAdmin');
+        $this->setDescription('Reset and Clean System Menu Data for ThinkAdmin');
     }
 
     /**
