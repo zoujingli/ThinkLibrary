@@ -70,10 +70,10 @@ class Menu extends Command
     /**
      * 写入单项菜单数据
      * @param array $arr 单项菜单数据
-     * @param integer $pid 上级菜单编号
-     * @return integer
+     * @param mixed $pid 上级菜单编号
+     * @return int|string
      */
-    private function write(array $arr, int $pid = 0): int
+    private function write(array $arr, $pid = 0)
     {
         return SystemMenu::mk()->insertGetId([
             'pid'    => $pid,
