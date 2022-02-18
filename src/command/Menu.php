@@ -21,8 +21,6 @@ use think\admin\Command;
 use think\admin\Exception;
 use think\admin\extend\DataExtend;
 use think\admin\model\SystemMenu;
-use think\console\Input;
-use think\console\Output;
 
 /**
  * 重置并清理系统菜单
