@@ -161,10 +161,7 @@ if (!function_exists('xss_safe')) {
             '#\s+on\w+=[\'\"]+.*?(\'|\")+#i' => '',
             '#\s+on\w+=\s*.*?(\s|>)+#i'      => '$1',
         ];
-        foreach ($rules as $rule => $value) {
-            $text = preg_replace($rule, $value, trim($text));
-        }
-        return $text;
+        return preg_replace(array_keys($rules), array_values($rules), trim($text));
     }
 }
 if (!function_exists('systoken')) {
