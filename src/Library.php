@@ -54,7 +54,7 @@ class Library extends Service
         $this->app->event->listen('HttpRun', function (Request $request) {
             // 配置默认输入过滤
             $request->filter([function ($value) {
-                return is_string($value) ? xss_safe(trim($value)) : $value;
+                return is_string($value) ? xss_safe($value) : $value;
             }]);
             // 注册多应用中间键
             $this->app->middleware->add(Multiple::class);

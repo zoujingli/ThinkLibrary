@@ -162,7 +162,7 @@ if (!function_exists('xss_safe')) {
             '#\s+on\w+=\s*.*?(\s|>)+#i'      => '$1',
         ];
         foreach ($rules as $rule => $value) {
-            $text = preg_replace($rule, $value, $text);
+            $text = preg_replace($rule, $value, trim($text));
         }
         return $text;
     }
