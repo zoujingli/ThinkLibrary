@@ -96,7 +96,7 @@ class Library extends Service
         if ($this->app->request->isGet()) {
             $this->app->route->get('/favicon.ico', function () {
                 if (!SystemService::instance()->setFavicon()) return '';
-                return download("{$this->app->getRootPath()}public/favicon.ico");
+                return download("{$this->app->getRootPath()}public/favicon.ico", 'favicon.ico');
             });
         }
 
