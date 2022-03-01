@@ -92,14 +92,6 @@ class Library extends Service
         [$ds, $base] = [DIRECTORY_SEPARATOR, $this->app->getBasePath()];
         foreach (glob("{$base}*{$ds}sys.php") as $file) includeFile($file);
 
-        // 注册网页图标处理路由
-        if ($this->app->request->isGet()) {
-            $this->app->route->get('/favicon.ico', function () {
-                $state = SystemService::instance()->setFavicon();
-                return $state ? redirect('/favicon.ico?t=' . time()) : '';
-            });
-        }
-
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
             // 如果是 YAR 接口或指定情况下，不需要初始化会话和语言包，否则有可能会报错
@@ -109,6 +101,18 @@ class Library extends Service
                 $this->app->middleware->add(SessionInit::class);
                 // 注册语言包处理中间键
                 $this->app->middleware->add(LoadLangPack::class);
+            }
+            if ($this->app->request->isGet()) {
+                // 注册网页图标处理路由
+                $this->app->route->get('/favicon.ico', function () {
+                    if (($time = time()) > $this->app->cache->get('favicon', 0)) {
+                        $this->app->cache->set('favicon', $time + 3600);
+                        $state = SystemService::instance()->setFavicon();
+                        return $state ? redirect("/favicon.ico?t={$time}") : '';
+                    } else {
+                        return '';
+                    }
+                });
             }
             // 注册访问处理中间键
             $this->app->middleware->add(function (Request $request, Closure $next) {

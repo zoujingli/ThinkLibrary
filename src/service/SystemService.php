@@ -260,7 +260,7 @@ class SystemService extends Service
             'action'    => $action, 'content' => $content,
             'geoip'     => $this->app->request->ip() ?: '127.0.0.1',
             'username'  => AdminService::instance()->getUserName() ?: '-',
-            'create_at' => date('Y-m-d H:i:s')
+            'create_at' => date('Y-m-d H:i:s'),
         ];
     }
 
