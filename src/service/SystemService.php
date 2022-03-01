@@ -279,6 +279,35 @@ class SystemService extends Service
     }
 
     /**
+     * 设置网页标签图标
+     * @param ?string $icon 网页标签图标
+     * @return boolean
+     * @throws \think\admin\Exception
+     */
+    public function setFavicon(?string $icon = null): bool
+    {
+        try {
+            $icon = $icon ?: sysconf('base.site_icon');
+            if (!preg_match('#^https?://#i', $icon)) {
+                throw new Exception('无效的原文件地址！');
+            }
+            if (preg_match('#/upload/(\w{2}/\w{30}.\w+)$#i', $icon, $vars)) {
+                $info = LocalStorage::instance()->info($vars[1]);
+            }
+            if (empty($info) || empty($info['file'])) {
+                $info = LocalStorage::down($icon);
+            }
+            if (empty($info) || empty($info['file'])) return false;
+            $favicon = new FaviconExtend($info['file'], [48, 48]);
+            return $favicon->saveIco("{$this->app->getRootPath()}public/favicon.ico");
+        } catch (Exception $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
      * 判断运行环境
      * @param string $type 运行模式（dev|demo|local）
      * @return boolean
@@ -326,35 +355,6 @@ class SystemService extends Service
     public function isDebug(): bool
     {
         return $this->getRuntime('mode') !== 'product';
-    }
-
-    /**
-     * 设置网页标签图标
-     * @param ?string $icon 网页标签图标
-     * @return boolean
-     * @throws \think\admin\Exception
-     */
-    public function setFavicon(?string $icon = null): bool
-    {
-        try {
-            $icon = $icon ?: sysconf('base.site_icon');
-            if (!preg_match('#^https?://#i', $icon)) {
-                throw new Exception('无效的原文件地址！');
-            }
-            if (preg_match('#/upload/(\w{2}/\w{30}.\w+)$#i', $icon, $vars)) {
-                $info = LocalStorage::instance()->info($vars[1]);
-            }
-            if (empty($info) || empty($info['file'])) {
-                $info = LocalStorage::down($icon);
-            }
-            if (empty($info) || empty($info['file'])) return false;
-            $favicon = new FaviconExtend($info['file'], [48, 48]);
-            return $favicon->saveIco("{$this->app->getRootPath()}public/favicon.ico");
-        } catch (Exception $exception) {
-            throw $exception;
-        } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage(), $exception->getCode());
-        }
     }
 
     /**
