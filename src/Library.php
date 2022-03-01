@@ -90,6 +90,14 @@ class Library extends Service
         [$ds, $base] = [DIRECTORY_SEPARATOR, $this->app->getBasePath()];
         foreach (glob("{$base}*{$ds}sys.php") as $file) includeFile($file);
 
+        // 注册网页图标处理路由
+        if ($this->app->request->isGet()) {
+            $this->app->route->get('/favicon.ico', function () {
+                if (!SystemService::instance()->setFavicon()) return '';
+                return download("{$this->app->getRootPath()}public/favicon.ico");
+            });
+        }
+
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
             // 如果是 YAR 接口或指定情况下，不需要初始化会话和语言包，否则有可能会报错
