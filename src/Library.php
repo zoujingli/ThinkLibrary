@@ -95,8 +95,8 @@ class Library extends Service
         // 注册网页图标处理路由
         if ($this->app->request->isGet()) {
             $this->app->route->get('/favicon.ico', function () {
-                if (!SystemService::instance()->setFavicon()) return '';
-                return download("{$this->app->getRootPath()}public/favicon.ico", 'favicon.ico');
+                $state = SystemService::instance()->setFavicon();
+                return $state ? redirect('/favicon.ico?t=' . time()) : '';
             });
         }
 
