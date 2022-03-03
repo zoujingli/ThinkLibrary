@@ -172,7 +172,7 @@ class PageHelper extends Helper
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
                     $data = ['sort' => intval($this->app->request->post('sort', 0))];
-                    if ($this->app->db->table($query->getTable())->where($map)->update($data) !== false) {
+                    if ($query->newQuery()->where($map)->update($data) !== false) {
                         $this->class->success(lang('think_library_sort_success'), '');
                     }
                 }

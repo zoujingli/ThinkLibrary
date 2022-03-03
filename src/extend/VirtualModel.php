@@ -39,13 +39,18 @@ class VirtualModel
 
     public function stream_open($path, $mode, $options, &$opened_path): bool
     {
-        $uri = parse_url($path);
+        // 解析链接参数
+        $attr = parse_url($path);
+        if (empty($attr['fragment'])) $attr['fragment'] = '';
+        $type = strtolower($attr['fragment'] ?: 'default');
+
+        // 生成模型代码
         $this->position = 0;
         $this->template = '<?php ';
-        $this->template .= 'namespace virtual\\model; ';
-        $this->template .= "class {$uri['host']} extends \\think\\Model{ ";
-        if (isset($uri['fragment']) && !empty($uri['fragment'])) {
-            $this->template .= 'protected $connection="' . $uri['fragment'] . '"; ';
+        $this->template .= "namespace virtual\\model\\_{$type}; ";
+        $this->template .= "class {$attr['host']} extends \\think\\Model{ ";
+        if (!empty($attr['fragment'])) {
+            $this->template .= "protected \$connection='{$attr['fragment']}'; ";
         }
         $this->template .= '}';
         return true;
@@ -165,8 +170,8 @@ class VirtualModel
      */
     public static function mk(string $name, array $data = [], string $conn = ''): Model
     {
-        $type = $conn ?: 'default';
-        if (!class_exists($class = "\\virtual\\model\\{$type}\\{$name}")) {
+        $type = strtolower($conn ?: 'default');
+        if (!class_exists($class = "\\virtual\\model\\_{$type}\\{$name}")) {
             if (!in_array('model', stream_get_wrappers())) {
                 stream_wrapper_register('model', static::class);
             }
