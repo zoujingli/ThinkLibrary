@@ -243,12 +243,11 @@ class QueryHelper extends Helper
     public function empty(): QueryHelper
     {
         $table = $this->query->getTable();
-        $conne = $this->query->getConnection();
         $ctype = strtolower($this->query->getConfig('type'));
         if ($ctype === 'mysql') {
-            $conne->execute("truncate table `{$table}`");
+            $this->query->getConnection()->execute("truncate table `{$table}`");
         } elseif (in_array($ctype, ['sqlsrv', 'oracle', 'pgsql'])) {
-            $conne->execute("truncate table {$table}");
+            $this->query->getConnection()->execute("truncate table {$table}");
         } else {
             $this->query->newQuery()->whereRaw('1=1')->delete();
         }
