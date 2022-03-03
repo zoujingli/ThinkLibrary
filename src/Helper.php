@@ -93,8 +93,11 @@ abstract class Helper
         }
         if ($query instanceof Model) return $query->db();
         if ($query instanceof BaseQuery && !$query->getModel()) {
-            $conn = $query->getConfig('name') ?: '';
-            $query->model(static::buildModel($query->getName(), [], $conn));
+            $name = $query->getConfig('name') ?: '';
+            if (is_string($name) && strlen($name) > 0) {
+                $name = config("database.connections.{$name}") ? $name : '';
+            }
+            $query->model(static::buildModel($query->getName(), [], $name));
         }
         return $query;
     }
