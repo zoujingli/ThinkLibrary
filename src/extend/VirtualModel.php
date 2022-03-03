@@ -165,7 +165,8 @@ class VirtualModel
      */
     public static function mk(string $name, array $data = [], string $conn = ''): Model
     {
-        if (!class_exists($class = "\\virtual\\model\\{$name}")) {
+        $type = $conn ?: 'default';
+        if (!class_exists($class = "\\virtual\\model\\{$type}\\{$name}")) {
             if (!in_array('model', stream_get_wrappers())) {
                 stream_wrapper_register('model', static::class);
             }
