@@ -210,7 +210,7 @@ class QueueService extends Service
      */
     public function message(int $total, int $count, string $message = '', int $backline = 0): void
     {
-        $total = $total < 1 ? 1 : $total;
+        $total = max($total, 1);
         $prefix = str_pad("{$count}", strlen("{$total}"), '0', STR_PAD_LEFT);
         $message = "[{$prefix}/{$total}] {$message}";
         if (defined('WorkQueueCode')) {
