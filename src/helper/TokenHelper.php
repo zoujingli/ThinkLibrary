@@ -32,7 +32,7 @@ class TokenHelper extends Helper
     /**
      * 初始化验证码器
      * @param boolean $return
-     * @return boolean|void
+     * @return boolean
      */
     public function init(bool $return = false): bool
     {

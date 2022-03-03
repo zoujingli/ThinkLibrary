@@ -18,7 +18,6 @@ declare (strict_types=1);
 namespace think\admin\command;
 
 use think\admin\Command;
-use think\admin\Exception;
 use think\admin\extend\DataExtend;
 use think\admin\model\SystemMenu;
 
@@ -41,7 +40,6 @@ class Menu extends Command
     /**
      * 任务执行入口
      * @return void
-     * @throws Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
