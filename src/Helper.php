@@ -89,11 +89,12 @@ abstract class Helper
     public static function buildQuery($query)
     {
         if (is_string($query)) {
-            return self::buildModel($query)->db();
+            return static::buildModel($query)->db();
         }
         if ($query instanceof Model) return $query->db();
         if ($query instanceof BaseQuery && !$query->getModel()) {
-            $query->model(self::buildModel($query->getName()));
+            $conn = $query->getConfig('name') ?: '';
+            $query->model(static::buildModel($query->getName(), [], $conn));
         }
         return $query;
     }
