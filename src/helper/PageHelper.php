@@ -75,7 +75,7 @@ class PageHelper extends Helper
         } else {
             $result = ['list' => $query->select()->toArray()];
         }
-        if (false !== $this->class->callback('_page_filter', $result['list']) && $display) {
+        if (false !== $this->class->callback('_page_filter', $result['list'], $result) && $display) {
             if ($this->output === 'get.json') {
                 $this->class->success('JSON-DATA', $result);
             } else {
@@ -116,7 +116,7 @@ class PageHelper extends Helper
                 $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
             }
             $this->xssFilter($result['data']);
-            if (false !== $this->class->callback('_page_filter', $result['data'])) {
+            if (false !== $this->class->callback('_page_filter', $result['data'], $result)) {
                 throw new HttpResponseException(json($result));
             } else {
                 return $result;
