@@ -61,7 +61,7 @@ class DataExtend
             $attr['sub'] = $attr['sub'] ?? [];
             $attr['spc'] = count($attr['sub']);
             $attr['spt'] = substr_count($ppath, '-');
-            $attr['spl'] = str_repeat("　├　", $attr['spt']);
+            $attr['spl'] = str_repeat('ㅤ├ㅤ', $attr['spt']);
             $sub = $attr['sub'];
             unset($attr['sub']);
             $tree[] = $attr;
