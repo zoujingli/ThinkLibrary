@@ -238,11 +238,15 @@ class QueryHelper extends Helper
     /**
      * 清空数据并保留表结构
      * @return $this
+     * @throws \think\db\exception\DbException
      */
     public function empty(): QueryHelper
     {
-        $table = $this->query->getTable();
-        $this->app->db->execute("truncate table `{$table}`");
+        if (strtolower($this->query->getConfig('type')) === 'mysql') {
+            $this->query->newQuery()->execute("truncate table `{$this->query->getTable()}`");
+        } else {
+            $this->query->newQuery()->whereRaw('1=1')->delete();
+        }
         return $this;
     }
 
