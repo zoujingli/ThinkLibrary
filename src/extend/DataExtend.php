@@ -57,7 +57,7 @@ class DataExtend
                 $item[$path] = "{$parent}-{$item[$cid]}";
                 $item['spc'] = count($list);
                 $item['spt'] = substr_count($parent, '-');
-                $item['spl'] = str_repeat('├ㅤ', $item['spt']);
+                $item['spl'] = str_repeat('ㅤ├ㅤ', $item['spt']);
                 $item['sps'] = ",{$item[$cid]},";
                 array_walk_recursive($list, function ($val, $key) use ($cid, &$item) {
                     if ($key === $cid) $item['sps'] .= "{$val},";
