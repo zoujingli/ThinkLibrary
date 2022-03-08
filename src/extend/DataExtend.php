@@ -42,33 +42,33 @@ class DataExtend
 
     /**
      * 一维数组生成数据树
-     * @param array $list 待处理数据
+     * @param array $its 待处理数据
      * @param string $cid 自己的主键
      * @param string $pid 上级的主键
      * @param string $path 当前 PATH
      * @return array
      */
-    public static function arr2table(array $list, string $cid = 'id', string $pid = 'pid', string $path = 'path'): array
+    public static function arr2table(array $its, string $cid = 'id', string $pid = 'pid', string $path = 'path'): array
     {
-        $call = function (array $list, callable $call, array &$data = [], string $parent = '') use ($cid, $pid, $path) {
-            foreach ($list as $item) {
-                $list = $item['sub'] ?? [];
-                unset($item['sub']);
-                $item[$path] = "{$parent}-{$item[$cid]}";
-                $item['spc'] = count($list);
-                $item['spt'] = substr_count($parent, '-');
-                $item['spl'] = str_repeat('ㅤ├ㅤ', $item['spt']);
-                $item['sps'] = ",{$item[$cid]},";
-                array_walk_recursive($list, function ($val, $key) use ($cid, &$item) {
-                    if ($key === $cid) $item['sps'] .= "{$val},";
+        $call = function (array $its, callable $call, array &$data = [], string $parent = '') use ($cid, $pid, $path) {
+            foreach ($its as $it) {
+                $is = $it['sub'] ?? [];
+                unset($it['sub']);
+                $it[$path] = "{$parent}-{$it[$cid]}";
+                $it['spc'] = count($is);
+                $it['spt'] = substr_count($parent, '-');
+                $it['spl'] = str_repeat('ㅤ├ㅤ', $it['spt']);
+                $it['sps'] = ",{$it[$cid]},";
+                array_walk_recursive($is, function ($val, $key) use ($cid, &$it) {
+                    if ($key === $cid) $it['sps'] .= "{$val},";
                 });
-                $data[] = $item;
-                if (empty($list)) continue;
-                $call($list, $call, $data, $item[$path]);
+                $data[] = $it;
+                if (empty($is)) continue;
+                $call($is, $call, $data, $it[$path]);
             }
             return $data;
         };
-        return $call(static::arr2tree($list, $cid, $pid), $call);
+        return $call(static::arr2tree($its, $cid, $pid), $call);
     }
 
     /**
