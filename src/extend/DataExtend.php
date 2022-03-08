@@ -52,19 +52,19 @@ class DataExtend
     {
         $call = function (array $its, callable $call, array &$data = [], string $parent = '') use ($cid, $pid, $path) {
             foreach ($its as $it) {
-                $is = $it['sub'] ?? [];
+                $ts = $it['sub'] ?? [];
                 unset($it['sub']);
                 $it[$path] = "{$parent}-{$it[$cid]}";
-                $it['spc'] = count($is);
+                $it['spc'] = count($ts);
                 $it['spt'] = substr_count($parent, '-');
                 $it['spl'] = str_repeat('ㅤ├ㅤ', $it['spt']);
                 $it['sps'] = ",{$it[$cid]},";
-                array_walk_recursive($is, function ($val, $key) use ($cid, &$it) {
+                array_walk_recursive($ts, function ($val, $key) use ($cid, &$it) {
                     if ($key === $cid) $it['sps'] .= "{$val},";
                 });
                 $data[] = $it;
-                if (empty($is)) continue;
-                $call($is, $call, $data, $it[$path]);
+                if (empty($ts)) continue;
+                $call($ts, $call, $data, $it[$path]);
             }
             return $data;
         };
