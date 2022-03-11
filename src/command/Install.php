@@ -167,7 +167,7 @@ class Install extends Command
     {
         if ($type === 'static') {
             $frdir = dirname(__DIR__) . "/service/bin/{$type}/";
-            $todir = "{$this->app->getRootPath()}public/extra/";
+            $todir = "{$this->app->getRootPath()}public/static/extra/";
             foreach (['script.js', 'style.css'] as $file) {
                 if (!file_exists($todir . $file)) {
                     file_exists($todir) || mkdir($todir, 0755, true);
