@@ -111,11 +111,11 @@ class Install extends Command
                 $this->rules = array_merge($this->rules, $bind['rules']);
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
-            $this->installFile() && $this->installData();
+            $this->copyFile('static') && $this->installFile();
         } elseif (isset($this->bind[$this->name])) {
             $this->rules = $this->bind[$this->name]['rules'] ?? [];
             $this->ignore = $this->bind[$this->name]['ignore'] ?? [];
-            $this->installFile() && $this->installData();
+            $this->copyFile($this->name) && $this->installFile();
         } else {
             $this->output->writeln("The specified module {$this->name} is not configured with install rules");
         }
@@ -155,6 +155,26 @@ class Install extends Command
      */
     protected function installData(): bool
     {
+        return true;
+    }
+
+    /**
+     * 初始化安装文件
+     * @param string $type
+     * @return boolean
+     */
+    private function copyFile(string $type): bool
+    {
+        if ($type === 'static') {
+            $frdir = dirname(__DIR__) . "/service/bin/{$type}/";
+            $todir = "{$this->app->getRootPath()}public/extra/";
+            foreach (['script.js', 'style.css'] as $file) {
+                if (!file_exists($todir . $file)) {
+                    file_exists($todir) || mkdir($todir, 0755, true);
+                    copy($frdir . $file, $todir . $file);
+                }
+            }
+        }
         return true;
     }
 }
