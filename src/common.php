@@ -201,7 +201,7 @@ if (!function_exists('str2arr')) {
         $items = [];
         foreach (explode($separ, trim($text, $separ)) as $item) {
             if ($item !== '' && (!is_array($allow) || in_array($item, $allow))) {
-                $items[] = $item;
+                $items[] = trim($item);
             }
         }
         return $items;
