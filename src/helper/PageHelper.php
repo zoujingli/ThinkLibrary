@@ -87,13 +87,17 @@ class PageHelper extends Helper
             $page = $this->query->paginate($limit, $this->total, ['query' => ($query = $this->controller->request->get())]);
             foreach ([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as $num) {
                 list($query['limit'], $query['page'], $selected) = [$num, '1', $limit === $num ? 'selected' : ''];
-                $url = url('@admin') . '#' . $this->controller->request->baseUrl() . '?' . urldecode(http_build_query($query));
+                // 由于加上 / 如做绑定admin模块单独入口 会导致找不到模块 在此去掉 /
+                $url = rtrim(url('@admin'), '/') . '#' . $this->controller->request->baseUrl() . '?' . urldecode(http_build_query($query));
                 array_push($rows, "<option data-num='{$num}' value='{$url}' {$selected}>{$num}</option>");
             }
             $selects = "<select onchange='location.href=this.options[this.selectedIndex].value' data-auto-none>" . join('', $rows) . "</select>";
             $pagetext = lang('think_library_page_html', [$page->total(), $selects, $page->lastPage(), $page->currentPage()]);
             $pagehtml = "<div class='pagination-container nowrap'><span>{$pagetext}</span>{$page->render()}</div>";
-            $this->controller->assign('pagehtml', preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $pagehtml));
+            $pagehtml = preg_replace('|href="(.*?)"|', 'data-open="$1" onclick="return false" href="$1"', $pagehtml);
+            // 由于部分自动生成的分页是href是带单引号的
+            $pagehtml = preg_replace("|href='(.*?)'|", 'data-open="$1" onclick="return false" href="$1"', $pagehtml);
+            $this->controller->assign('pagehtml', $pagehtml);
             $result = ['page' => ['limit' => intval($limit), 'total' => intval($page->total()), 'pages' => intval($page->lastPage()), 'current' => intval($page->currentPage())], 'list' => $page->items()];
         } else {
             $result = ['list' => $this->query->select()];
