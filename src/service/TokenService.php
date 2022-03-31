@@ -36,7 +36,7 @@ class TokenService extends Service
      * 当前缓存数据
      * @var array
      */
-    private $cache = [];
+    private $items = [];
 
     /**
      * 令牌有效时间
@@ -50,7 +50,7 @@ class TokenService extends Service
     protected function initialize()
     {
         $this->name = $this->getCacheName();
-        $this->cache = $this->getCacheList(true);
+        $this->items = $this->getCacheList(true);
         $this->app->event->listen('HttpEnd', function () {
             TokenService::instance()->saveCacheData();
         });
@@ -72,7 +72,7 @@ class TokenService extends Service
     public function saveCacheData()
     {
         $this->clearTimeoutCache();
-        $this->app->cache->set($this->name, $this->cache, $this->expire);
+        $this->app->cache->set($this->name, $this->items, $this->expire);
     }
 
     /**
@@ -136,7 +136,7 @@ class TokenService extends Service
      */
     private function setCacheItem(string $token, array $value)
     {
-        $this->cache[$token] = $value;
+        $this->items[$token] = $value;
     }
 
     /**
@@ -145,7 +145,7 @@ class TokenService extends Service
      */
     private function delCacheItem(string $token)
     {
-        unset($this->cache[$token]);
+        unset($this->items[$token]);
     }
 
     /**
@@ -156,7 +156,7 @@ class TokenService extends Service
     private function getCacheItem(string $token)
     {
         $this->clearTimeoutCache();
-        return $this->cache[$token] ?? [];
+        return $this->items[$token] ?? [];
     }
 
     /**
@@ -166,9 +166,9 @@ class TokenService extends Service
      */
     private function getCacheList(bool $clear = false): array
     {
-        $this->cache = $this->app->cache->get($this->name, []);
-        if ($clear) $this->cache = $this->clearTimeoutCache();
-        return $this->cache;
+        $this->items = $this->app->cache->get($this->name, []);
+        if ($clear) $this->items = $this->clearTimeoutCache();
+        return $this->items;
     }
 
     /**
@@ -178,14 +178,14 @@ class TokenService extends Service
     private function clearTimeoutCache(): array
     {
         $time = time();
-        foreach ($this->cache as $key => $item) {
+        foreach ($this->items as $key => $item) {
             if (empty($item['time']) || $item['time'] + $this->expire < $time) {
-                unset($this->cache[$key]);
+                unset($this->items[$key]);
             }
         }
-        if (count($this->cache) > 999) {
-            $this->cache = array_slice($this->cache, -999);
+        if (count($this->items) > 999) {
+            $this->items = array_slice($this->items, -999);
         }
-        return $this->cache;
+        return $this->items;
     }
 }
