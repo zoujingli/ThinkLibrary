@@ -49,7 +49,7 @@ class TokenService extends Service
     protected function initialize()
     {
         $this->name = $this->getCacheName();
-        $this->cache = $this->_getCacheList(true);
+        $this->cache = $this->getCacheList(true);
         $this->app->event->listen('HttpEnd', function () {
             TokenService::instance()->saveCacheData();
         });
@@ -70,7 +70,7 @@ class TokenService extends Service
      */
     public function saveCacheData()
     {
-        $this->_clearTimeoutCache();
+        $this->clearTimeoutCache();
         $this->app->cache->set($this->name, $this->cache, $this->expire);
     }
 
@@ -91,7 +91,7 @@ class TokenService extends Service
      */
     public function checkFormToken(?string $token = null, ?string $node = null): bool
     {
-        $cache = $this->_getCacheItem($token ?: $this->getInputToken());
+        $cache = $this->getCacheItem($token ?: $this->getInputToken());
         if (empty($cache['node']) || empty($cache['time'])) return false;
         return $cache['node'] === NodeService::instance()->fullnode($node);
     }
@@ -103,7 +103,7 @@ class TokenService extends Service
      */
     public function clearFormToken(?string $token = null): TokenService
     {
-        $this->_delCacheItem($token ?: $this->getInputToken());
+        $this->delCacheItem($token ?: $this->getInputToken());
         return $this;
     }
 
@@ -115,8 +115,8 @@ class TokenService extends Service
     public function buildFormToken(?string $node = null): array
     {
         $cnode = NodeService::instance()->fullnode($node);
-        [$token, $time] = [uniqid() . rand(100000, 999999), time()];
-        $this->_setCacheItem($token, $item = ['node' => $cnode, 'time' => $time]);
+        [$token, $time] = [md5(uniqid(strval(rand(100000, 999999)))), time()];
+        $this->setCacheItem($token, $item = ['node' => $cnode, 'time' => $time]);
         return array_merge($item, ['token' => $token]);
     }
 
@@ -133,7 +133,7 @@ class TokenService extends Service
      * @param string $token
      * @param array $value
      */
-    private function _setCacheItem(string $token, array $value)
+    private function setCacheItem(string $token, array $value)
     {
         $this->cache[$token] = $value;
     }
@@ -142,7 +142,7 @@ class TokenService extends Service
      * 删除缓存
      * @param string $token
      */
-    private function _delCacheItem(string $token)
+    private function delCacheItem(string $token)
     {
         unset($this->cache[$token]);
     }
@@ -152,9 +152,9 @@ class TokenService extends Service
      * @param string $token
      * @return mixed
      */
-    private function _getCacheItem(string $token)
+    private function getCacheItem(string $token)
     {
-        $this->_clearTimeoutCache();
+        $this->clearTimeoutCache();
         return $this->cache[$token] ?? [];
     }
 
@@ -163,10 +163,10 @@ class TokenService extends Service
      * @param bool $clear 强制清理
      * @return array
      */
-    private function _getCacheList(bool $clear = false): array
+    private function getCacheList(bool $clear = false): array
     {
         $this->cache = $this->app->cache->get($this->name, []);
-        if ($clear) $this->cache = $this->_clearTimeoutCache();
+        if ($clear) $this->cache = $this->clearTimeoutCache();
         return $this->cache;
     }
 
@@ -174,7 +174,7 @@ class TokenService extends Service
      * 清理超时的缓存
      * @return array
      */
-    private function _clearTimeoutCache(): array
+    private function clearTimeoutCache(): array
     {
         $time = time();
         foreach ($this->cache as $key => $item) {
