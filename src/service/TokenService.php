@@ -37,6 +37,7 @@ class TokenService extends Service
      * @var array
      */
     private $cache = [];
+
     /**
      * 令牌有效时间
      * @var integer
