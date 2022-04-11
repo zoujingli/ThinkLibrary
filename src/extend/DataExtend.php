@@ -62,6 +62,7 @@ class DataExtend
                 array_walk_recursive($ts, function ($val, $key) use ($cid, &$it) {
                     if ($key === $cid) $it['sps'] .= "{$val},";
                 });
+                $it['spp'] = arr2str(str2arr(strtr($parent . $it['sps'], '-', ',')));
                 $data[] = $it;
                 if (empty($ts)) continue;
                 $call($ts, $call, $data, $it[$path]);
