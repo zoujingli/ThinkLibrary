@@ -63,12 +63,11 @@ abstract class Controller extends \stdClass
 
     /**
      * Controller constructor.
-     * @param App $app
      */
-    public function __construct(App $app)
+    public function __construct()
     {
-        $this->app = $app;
-        $this->request = $app->request;
+        $this->app = app();
+        $this->request = $this->app->request;
         // 控制器注入容器
         Container::set('library\Controller', $this);
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
