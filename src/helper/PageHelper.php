@@ -64,7 +64,8 @@ class PageHelper extends Helper
             // 分页跳转参数
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
             if (in_array($limit, $limits)) foreach ($limits as $num) {
-                $url = $this->app->request->baseUrl() . '?' . http_build_query(array_merge($get, ['limit' => $num, 'page' => 1]));
+                $get = array_merge($get, ['limit' => $num, 'page' => 1]);
+                $url = $this->app->request->baseUrl() . '?' . http_build_query($get, '', '&', PHP_QUERY_RFC3986);
                 $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
             } else {
                 $select .= "<option selected>{$limit}</option>";
