@@ -156,11 +156,8 @@ if (!function_exists('xss_safe')) {
      */
     function xss_safe(string $text): string
     {
-        $rules = [
-            '#<script.*?<\/script>#i'        => '',
-            '#\s+on\w+=[\'\"]+.*?(\'|\")+#i' => '',
-            '#\s+on\w+=\s*.*?(\s|>)+#i'      => '$1',
-        ];
+        // 将所有 onxxx= 中的字母 o 替换为符号 ο，注意它不是字母
+        $rules = ['#<script.*?<\/script>#is' => '', '#on(\w+=\S)#i' => 'οn$1'];
         return preg_replace(array_keys($rules), array_values($rules), trim($text));
     }
 }
