@@ -131,20 +131,24 @@ class ExpressService extends Service
      * @param integer $type 类型数据
      * @return string|array
      */
-    private function getQueryData(int $type)
+    private function getQueryData(int $type, $times = 0)
     {
         $expressUri = $this->app->cache->get('express_kuaidi_uri', '');
         if ($type == 1 && !empty($expressUri)) return $expressUri;
         $expressCom = $this->app->cache->get('express_kuaidi_com', []);
         if ($type === 2 && !empty($expressCom)) return $expressCom;
         while (true) {
-            [$ssid, $input] = [CodeExtend::random(20, 3), CodeExtend::random(5)];
-            $content = HttpExtend::get("https://m.baidu.com/ssid={$ssid}/s?word=快递查询&ts=2027226&t_kt=0&ie=utf-8&rsv_iqid=&rsv_t=&sa=&rsv_pq=&rsv_sug4=&tj=1&inputT={$input}&sugid=&ss=", [], $this->options);
-            if (preg_match('#"checkExpUrl":"(.*?)"#i', $content, $matches)) {
-                $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[1], 3600);
-                if (preg_match('#"isShowScan":false,"common":.*?(\[.*?\]).*?#i', $content, $items)) {
+            if ($times++ >= 10) {
+                $times = 0;
+                @unlink($this->options['cookie_file']);
+            }
+            [$ts, $ssid, $input] = [mt_rand(2000000, 2900000), CodeExtend::random(20, 3), CodeExtend::random(5)];
+            $content = HttpExtend::get("https://m.baidu.com/s?word=快递查询&ts={$ts}&t_kt=0&ie=utf-8&rsv_iqid=&rsv_t=&sa=&rsv_pq=&rsv_sug4=&tj=1&inputT={$input}&sugid=&ss=", [], $this->options);
+            if (preg_match('#"(expSearchApi|checkExpUrl)":"(.*?)"#i', $content, $matches)) {
+                $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[2], 3600);
+                if (preg_match('#"text":"快递查询","option":.*?(\[.*?\]).*?#i', $content, $items)) {
                     $attr = json_decode($items[1], true);
-                    $expressCom = array_combine(array_column($attr, 'code'), array_column($attr, 'name'));
+                    $expressCom = array_combine(array_column($attr, 'value'), array_column($attr, 'text'));
                     $this->app->cache->set('express_kuaidi_com', $expressCom, 3600);
                     if ($type === 2) return $expressCom;
                 }
