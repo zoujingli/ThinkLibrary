@@ -45,9 +45,9 @@ class SystemAuth extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function items(): array
+    public static function items(): array
     {
-        return $this->where(['status' => 1])->order('sort desc,id desc')->select()->toArray();
+        return static::mk()->where(['status' => 1])->order('sort desc,id desc')->select()->toArray();
     }
 
     /**

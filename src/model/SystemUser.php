@@ -48,9 +48,9 @@ class SystemUser extends Model
      * @param string $fields 关联数据字段
      * @return array
      */
-    public function items($map, array &$data = [], string $field = 'uuid', string $target = 'user_info', string $fields = 'username,nickname,headimg,status,is_deleted'): array
+    public static function items($map, array &$data = [], string $field = 'uuid', string $target = 'user_info', string $fields = 'username,nickname,headimg,status,is_deleted'): array
     {
-        $query = $this->where($map)->order('sort desc,id desc');
+        $query = static::mk()->where($map)->order('sort desc,id desc');
         if (count($data) > 0) {
             $users = $query->whereIn('id', array_unique(array_column($data, $field)))->column($fields, 'id');
             foreach ($data as &$vo) $vo[$target] = $users[$vo[$field]] ?? [];
