@@ -65,12 +65,8 @@ class ExpressService extends Service
             $clentip = join('.', [rand(1, 254), rand(1, 254), rand(1, 254), rand(1, 254)]);
         }
         // 创建 CURL 请求模拟参数
+        $this->options['cookie_file'] = "{$this->app->getRootPath()}runtime/.cok";
         $this->options['headers'] = ['Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}"];
-        $this->options['cookie_file'] = $this->app->getRootPath() . 'runtime/.cok';
-        // 每 10 秒重置 cookie 文件
-        if (file_exists($this->options['cookie_file']) && filectime($this->options['cookie_file']) + 10 < time()) {
-            @unlink($this->options['cookie_file']);
-        }
         return $this;
     }
 
@@ -139,13 +135,13 @@ class ExpressService extends Service
             [$ssid, $input] = [CodeExtend::random(20, 3), CodeExtend::random(5)];
             $content = HttpExtend::get("https://m.baidu.com/ssid={$ssid}/s?word=快递查询&ts=2027226&t_kt=0&ie=utf-8&rsv_iqid=&rsv_t=&sa=&rsv_pq=&rsv_sug4=&tj=1&inputT={$input}&sugid=&ss=", [], $this->options);
             if ($type === 1 && preg_match('#"checkExpUrl":"(.*?)"#i', $content, $matches)) {
-                $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[1], 20);
+                $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[1], 3600);
                 return $expressUri;
             }
             if ($type === 2 && preg_match('#"isShowScan":false,"common":.*?(\[.*?\]).*?#i', $content, $items)) {
                 $attr = json_decode($items[1], true);
                 $expressCom = array_combine(array_column($attr, 'code'), array_column($attr, 'name'));
-                $this->app->cache->set('express_kuaidi_com', $expressCom, 20);
+                $this->app->cache->set('express_kuaidi_com', $expressCom, 3600);
                 return $expressCom;
             }
             usleep(100000);
