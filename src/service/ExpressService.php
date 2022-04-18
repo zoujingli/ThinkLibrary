@@ -148,7 +148,7 @@ class ExpressService extends Service
                 $this->app->cache->set('express_kuaidi_com', $expressCom, 20);
                 return $expressCom;
             }
-            sleep(1);
+            usleep(100000);
         }
     }
 }
