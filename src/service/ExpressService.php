@@ -131,8 +131,9 @@ class ExpressService extends Service
      * @param integer $type 类型数据
      * @return string|array
      */
-    private function getQueryData(int $type, $times = 0)
+    private function getQueryData(int $type)
     {
+        $times = 0;
         $expressUri = $this->app->cache->get('express_kuaidi_uri', '');
         if ($type == 1 && !empty($expressUri)) return $expressUri;
         $expressCom = $this->app->cache->get('express_kuaidi_com', []);
