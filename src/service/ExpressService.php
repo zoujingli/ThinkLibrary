@@ -142,7 +142,7 @@ class ExpressService extends Service
                 $times = 0;
                 @unlink($this->options['cookie_file']);
             }
-            [$ts, $ssid, $input] = [mt_rand(2000000, 2900000), CodeExtend::random(20, 3), CodeExtend::random(5)];
+            [$ts, $input] = [mt_rand(2000000, 2900000), CodeExtend::random(5)];
             $content = HttpExtend::get("https://m.baidu.com/s?word=快递查询&ts={$ts}&t_kt=0&ie=utf-8&rsv_iqid=&rsv_t=&sa=&rsv_pq=&rsv_sug4=&tj=1&inputT={$input}&sugid=&ss=", [], $this->options);
             if (preg_match('#"(expSearchApi|checkExpUrl)":"(.*?)"#i', $content, $matches)) {
                 $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[2], 3600);
