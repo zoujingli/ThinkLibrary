@@ -229,12 +229,21 @@ class SystemService extends Service
     {
         try {
             $value = SystemData::mk()->where(['name' => $name])->value('value');
-            return is_null($value) ? $default : unserialize(preg_replace_callback('/(?=^|i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{)s:(\d+):"(.*?)";(?=i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{|}+$)/', function ($attr) {
-                return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
-            }, $value));
+            if (is_null($value)) return $default;
         } catch (\Exception $exception) {
+            trace_file($exception);
             return $default;
         }
+        try {
+            return unserialize($value);
+        } catch (\Exception $exception) {
+            trace_file($exception);
+        }
+        // 尝试修复数据后再进行返序列化
+        $preg = '/(?=^|i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{)s:(\d+):"(.*?)";(?=i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{|}+$)/';
+        return unserialize(preg_replace_callback($preg, function ($attr) {
+            return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
+        }, $value));
     }
 
     /**
