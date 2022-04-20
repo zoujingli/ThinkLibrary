@@ -239,11 +239,16 @@ class SystemService extends Service
         } catch (\Exception $exception) {
             trace_file($exception);
         }
-        // 尝试修复数据后再进行返序列化
-        $preg = '/(?=^|i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{)s:(\d+):"(.*?)";(?=i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{|}+$)/';
-        return unserialize(preg_replace_callback($preg, function ($attr) {
-            return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
-        }, $value));
+        try {
+            // 尝试修复数据后再进行返序列化
+            $preg = '/(?=^|i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{)s:(\d+):"(.*?)";(?=i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{|}+$)/';
+            return unserialize(preg_replace_callback($preg, function ($attr) {
+                return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
+            }, $value));
+        } catch (\Exception $exception) {
+            trace_file($exception);
+            return $default;
+        }
     }
 
     /**
