@@ -229,7 +229,7 @@ class SystemService extends Service
     {
         try {
             $value = SystemData::mk()->where(['name' => $name])->value('value');
-            return is_null($value) ? $default : unserialize(preg_replace_callback('/(?=^|i:\d+;|b:[01];|s:\d+:".*?";|O:8:".*?":\d+:\{)s:(\d+):"(.*?)";(?=i:\d+;|b:[01];|s:\d+:".*?";|O:8:".*?":\d+:\{|}+$)/', function ($attr) {
+            return is_null($value) ? $default : unserialize(preg_replace_callback('/(?=^|i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{)s:(\d+):"(.*?)";(?=i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{|}+$)/', function ($attr) {
                 return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
             }, $value));
         } catch (\Exception $exception) {
