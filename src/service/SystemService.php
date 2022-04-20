@@ -228,6 +228,7 @@ class SystemService extends Service
     public function getData(string $name, $default = [])
     {
         try {
+            // 读取原始序列化数据
             $value = SystemData::mk()->where(['name' => $name])->value('value');
             if (is_null($value)) return $default;
         } catch (\Exception $exception) {
@@ -235,13 +236,15 @@ class SystemService extends Service
             return $default;
         }
         try {
+            // 尝试正常反序列解析
             return unserialize($value);
         } catch (\Exception $exception) {
             trace_file($exception);
         }
         try {
-            // 尝试修复数据后再进行返序列化
-            $preg = '/(?=^|i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{)s:(\d+):"(.*?)";(?=i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{|}+$)/';
+            // 尝试修复反序列解析
+            $unit = 'i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{';
+            $preg = '/(?=^|' . $unit . ')s:(\d+):"(.*?)";(?=' . $unit . '|}+$)/';
             return unserialize(preg_replace_callback($preg, function ($attr) {
                 return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
             }, $value));
