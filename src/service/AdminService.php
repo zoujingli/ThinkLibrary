@@ -100,9 +100,8 @@ class AdminService extends Service
      */
     public function setUserData(array $data, bool $replace = false)
     {
-        $keys = "UserData_{$this->getUserId()}";
         $data = $replace ? $data : array_merge_recursive($this->getUserData(), $data);
-        return SystemService::instance()->setData($keys, $data);
+        return SystemService::instance()->setData("UserData_{$this->getUserId()}", $data);
     }
 
     /**
