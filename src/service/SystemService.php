@@ -382,12 +382,21 @@ class SystemService extends Service
     }
 
     /**
-     * 判断实时运行模式
+     * 是否为开发模式运行
      * @return boolean
      */
     public function isDebug(): bool
     {
         return $this->getRuntime('mode') !== 'product';
+    }
+
+    /**
+     * 是否为产品模式运行
+     * @return bool
+     */
+    public function isProduct(): bool
+    {
+        return $this->getRuntime('mode') === 'product';
     }
 
     /**
