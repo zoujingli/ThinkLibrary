@@ -50,7 +50,7 @@ class SystemService extends Service
      * @param string $path 后缀路径
      * @return string|array
      */
-    public function uri(string $type = '__ROOT__', string $path = ''): array
+    public function uri(string $path = '', string $type = '__ROOT__'): array
     {
         static $app, $root, $full;
         empty($app) && $app = rtrim(url('@')->build(), '\\/');
@@ -58,6 +58,16 @@ class SystemService extends Service
         empty($full) && $full = rtrim(dirname($this->app->request->basefile(true)), '\\/');
         $data = ['__APP__' => $app . $path, '__ROOT__' => $root . $path, '__FULL__' => $full . $path];
         return $data[$type] ?? $data;
+    }
+
+    /**
+     * 生成全部静态路径
+     * @param string $path
+     * @return string[]
+     */
+    public function uris(string $path = ''): array
+    {
+        return $this->uri($path, '');
     }
 
     /**
