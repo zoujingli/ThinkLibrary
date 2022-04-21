@@ -391,15 +391,6 @@ class SystemService extends Service
     }
 
     /**
-     * 是否为产品模式运行
-     * @return bool
-     */
-    public function isProduct(): bool
-    {
-        return $this->getRuntime('mode') === 'product';
-    }
-
-    /**
      * 设置实时运行配置
      * @param null|mixed $mode 支持模式
      * @param null|array $appmap 应用映射
