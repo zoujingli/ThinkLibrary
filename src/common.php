@@ -96,20 +96,6 @@ if (!function_exists('admuri')) {
 
     }
 }
-
-if (!function_exists('static_url')) {
-    /**
-     * 生成静态资源链接
-     * @param string $path 静态文件位置
-     * @param boolean $domain 是否添加域名
-     * @return string
-     */
-    function static_url(string $path = '', bool $domain = false): string
-    {
-        return rtrim(dirname(request()->baseFile($domain)), '\\/') . $path;
-    }
-}
-
 if (!function_exists('sysconf')) {
     /**
      * 获取或配置系统参数

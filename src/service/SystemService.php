@@ -171,6 +171,20 @@ class SystemService extends Service
     }
 
     /**
+     * 生成静态路径链接
+     * @param string $path
+     * @return string[]
+     */
+    public function paths(string $path = ''): array
+    {
+        return [
+            '__APP__'  => rtrim(url('@')->build(), '\\/') . $path,
+            '__ROOT__' => rtrim(dirname($this->app->request->basefile()), '\\/') . $path,
+            '__FULL__' => rtrim(dirname($this->app->request->basefile(true)), '\\/') . $path,
+        ];
+    }
+
+    /**
      * 保存数据内容
      * @param string $name
      * @param mixed $value
