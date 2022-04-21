@@ -50,7 +50,7 @@ class SystemService extends Service
      * @param ?string $type 路径类型
      * @return string|array
      */
-    public function uri(string $path = '', ?string $type = '__ROOT__'): array
+    public function uri(string $path = '', ?string $type = '__ROOT__')
     {
         static $app, $root, $full;
         empty($app) && $app = rtrim(url('@')->build(), '\\/');
