@@ -46,8 +46,8 @@ class SystemService extends Service
 
     /**
      * 生成静态路径链接
-     * @param string $path 后缀路径
      * @param string $type 路径类型
+     * @param string $path 后缀路径
      * @return string|array
      */
     public function uri(string $type = '__ROOT__', string $path = ''): array
