@@ -46,18 +46,18 @@ class SystemService extends Service
 
     /**
      * 生成静态路径链接
-     * @param string $type 路径类型
      * @param string $path 后缀路径
+     * @param ?string $type 路径类型
      * @return string|array
      */
-    public function uri(string $path = '', string $type = '__ROOT__'): array
+    public function uri(string $path = '', ?string $type = '__ROOT__'): array
     {
         static $app, $root, $full;
         empty($app) && $app = rtrim(url('@')->build(), '\\/');
         empty($root) && $root = rtrim(dirname($this->app->request->basefile()), '\\/');
         empty($full) && $full = rtrim(dirname($this->app->request->basefile(true)), '\\/');
         $data = ['__APP__' => $app . $path, '__ROOT__' => $root . $path, '__FULL__' => $full . $path];
-        return $data[$type] ?? $data;
+        return is_null($type) ? $data : ($data[$type] ?? $data);
     }
 
     /**
