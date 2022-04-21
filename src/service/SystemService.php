@@ -45,6 +45,22 @@ class SystemService extends Service
     protected $data = [];
 
     /**
+     * 生成静态路径链接
+     * @param string $path 后缀路径
+     * @param string $type 路径类型
+     * @return string|array
+     */
+    public function uri(string $type = '__ROOT__', string $path = ''): array
+    {
+        static $app, $root, $full;
+        empty($app) && $app = rtrim(url('@')->build(), '\\/');
+        empty($root) && $root = rtrim(dirname($this->app->request->basefile()), '\\/');
+        empty($full) && $full = rtrim(dirname($this->app->request->basefile(true)), '\\/');
+        $data = ['__APP__' => $app . $path, '__ROOT__' => $root . $path, '__FULL__' => $full . $path];
+        return $data[$type] ?? $data;
+    }
+
+    /**
      * 设置配置数据
      * @param string $name 配置名称
      * @param mixed $value 配置内容
@@ -168,22 +184,6 @@ class SystemService extends Service
             "#^({$pre}[\w.]+)(/[\w.]+)/{$act}(\.{$ext}|^\w|\?|$)#i",
             "#/\.{$ext}$#i",
         ], ['$1$2', '$1$2', '$1$2$3', ''], $uri);
-    }
-
-    /**
-     * 生成静态路径链接
-     * @param string $path 后缀路径
-     * @param string $type 路径类型
-     * @return string|array
-     */
-    public function uris(string $path = '', string $type = '__ROOT__'): array
-    {
-        static $app, $root, $full;
-        empty($app) && $app = rtrim(url('@')->build(), '\\/');
-        empty($root) && $root = rtrim(dirname($this->app->request->basefile()), '\\/');
-        empty($full) && $full = rtrim(dirname($this->app->request->basefile(true)), '\\/');
-        $paths = ['__APP__' => $app . $path, '__ROOT__' => $root . $path, '__FULL__' => $full . $path];
-        return $paths[$type] ?? $paths;
     }
 
     /**
