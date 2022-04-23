@@ -56,7 +56,7 @@ class SystemBase extends Model
 
     /**
      * 获取所有数据类型
-     * @param boolean $simple
+     * @param boolean $simple 加载默认值
      * @return array
      */
     public static function types(bool $simple = false): array
