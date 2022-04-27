@@ -23,6 +23,8 @@ use think\admin\Helper;
 use think\admin\model\SystemConfig;
 use think\admin\model\SystemData;
 use think\admin\model\SystemOplog;
+use think\admin\multiple\BuildUrl;
+use think\admin\multiple\Route;
 use think\admin\Service;
 use think\admin\storage\LocalStorage;
 use think\App;
@@ -43,6 +45,17 @@ class SystemService extends Service
      * @var array
      */
     protected $data = [];
+
+    /**
+     * 系统服务初始化
+     * @return void
+     */
+    protected function initialize()
+    {
+        // 替换 ThinkPHP 地址
+        $this->app->bind('think\Route', Route::class);
+        $this->app->bind('think\route\Url', BuildUrl::class);
+    }
 
     /**
      * 生成静态路径链接

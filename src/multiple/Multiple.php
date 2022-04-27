@@ -173,6 +173,9 @@ class Multiple
         foreach ($files as $file) {
             $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
         }
+        if (method_exists($this->app->route, 'reload')) {
+            $this->app->route->reload();
+        }
         if (is_file($appPath . 'event.php')) {
             $this->app->loadEvent(include $appPath . 'event.php');
         }

@@ -25,6 +25,7 @@ use think\admin\command\Version;
 use think\admin\multiple\BuildUrl;
 use think\admin\multiple\command\Build;
 use think\admin\multiple\Multiple;
+use think\admin\multiple\Route;
 use think\admin\service\AdminService;
 use think\admin\service\SystemService;
 use think\middleware\LoadLangPack;
@@ -70,6 +71,7 @@ class Library extends Service
             }
         });
         // 替换 ThinkPHP 地址
+        $this->app->bind('think\Route', Route::class);
         $this->app->bind('think\route\Url', BuildUrl::class);
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class]);
