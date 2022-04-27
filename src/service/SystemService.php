@@ -61,16 +61,17 @@ class SystemService extends Service
      * 生成静态路径链接
      * @param string $path 后缀路径
      * @param ?string $type 路径类型
+     * @param mixed $default 默认数据
      * @return string|array
      */
-    public function uri(string $path = '', ?string $type = '__ROOT__')
+    public function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
     {
         static $app, $root, $full;
         empty($app) && $app = rtrim(url('@')->build(), '\\/');
         empty($root) && $root = rtrim(dirname($this->app->request->basefile()), '\\/');
         empty($full) && $full = rtrim(dirname($this->app->request->basefile(true)), '\\/');
         $data = ['__APP__' => $app . $path, '__ROOT__' => $root . $path, '__FULL__' => $full . $path];
-        return is_null($type) ? $data : ($data[$type] ?? $data);
+        return is_null($type) ? $data : ($data[$type] ?? $default);
     }
 
     /**
@@ -80,7 +81,7 @@ class SystemService extends Service
      */
     public function uris(string $path = ''): array
     {
-        return $this->uri($path, '');
+        return $this->uri($path, null);
     }
 
     /**
