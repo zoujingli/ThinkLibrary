@@ -169,11 +169,13 @@ class Multiple
         if (is_file($appPath . 'common.php')) {
             include_once $appPath . 'common.php';
         }
+        $fmaps = [];
         $files = glob($appPath . 'config' . DIRECTORY_SEPARATOR . '*' . $this->app->getConfigExt());
         foreach ($files as $file) {
-            $this->app->config->load($file, pathinfo($file, PATHINFO_FILENAME));
+            $name = pathinfo($file, PATHINFO_FILENAME);
+            $this->app->config->load($file, $fmaps[] = $name);
         }
-        if (method_exists($this->app->route, 'reload')) {
+        if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();
         }
         if (is_file($appPath . 'event.php')) {
