@@ -119,7 +119,7 @@ class Library extends Service
             // 注册访问处理中间键
             $this->app->middleware->add(function (Request $request, Closure $next) {
                 $header = [];
-                // CORS 跨域规则配置
+                // HTTP.CORS 跨域规则配置
                 if (($origin = $request->header('origin', '*')) !== '*') {
                     if (is_string($hosts = $this->app->config->get('app.cors_host', []))) $hosts = str2arr($hosts);
                     if ($this->app->config->get('app.cors_auto', 1) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
