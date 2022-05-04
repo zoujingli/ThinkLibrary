@@ -1,6 +1,6 @@
 // --------------------------------------------------
 // 自定义后台扩展脚本，需要在加载 admin.js 后载入
-// 使用 php think xadmin:install static 时不会更新此文件
+// 使用 php think xadmin:install static 时不会更新
 // --------------------------------------------------
 $(function () {
     window.$body = $('body');
