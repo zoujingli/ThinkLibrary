@@ -98,8 +98,9 @@ class PageHelper extends Helper
     public function layTable($dbQuery, string $template = ''): array
     {
         if ($this->output === 'get.json') {
-            // 根据参数排序
+            $get = $this->app->request->get();
             $query = $this->buildQuery($dbQuery);
+            // 根据参数排序
             if (isset($get['_field_']) && isset($get['_order_'])) {
                 $dbQuery->order("{$get['_field_']} {$get['_order_']}");
             }
