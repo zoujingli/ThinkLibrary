@@ -375,7 +375,7 @@ class SystemService extends Service
     {
         $domain = $this->app->request->host(true);
         $isDemo = is_numeric(stripos($domain, 'thinkadmin.top'));
-        $isLocal = in_array($domain, ['127.0.0.1', 'localhost']);
+        $isLocal = $domain === '127.0.0.1' || is_numeric(stripos($domain, 'localhost'));
         if ($type === 'dev') return $isLocal || $isDemo;
         if ($type === 'demo') return $isDemo;
         if ($type === 'local') return $isLocal;
