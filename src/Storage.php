@@ -213,6 +213,7 @@ abstract class Storage
             $compress = [
                 'LocalStorage'  => '',
                 'QiniuStorage'  => '?imageslim',
+                'UpyunStorage'  => '!/format/webp',
                 'TxcosStorage'  => '?imageMogr2/format/webp',
                 'AliossStorage' => '?x-oss-process=image/format,webp',
             ];
@@ -221,7 +222,11 @@ abstract class Storage
             $suffix = in_array($extens, ['png', 'jpg', 'jpeg']) ? ($compress[$class] ?? '') : '';
         }
         if (is_string($attname) && strlen($attname) > 0 && stripos($this->link, 'full') !== false) {
-            $suffix .= ($suffix ? '&' : '?') . 'attname=' . urlencode($attname);
+            if ($this->type === 'upyun') {
+                $suffix .= ($suffix ? '&' : '?') . '_upd=' . urlencode($attname);
+            } else {
+                $suffix .= ($suffix ? '&' : '?') . 'attname=' . urlencode($attname);
+            }
         }
         return $suffix;
     }
@@ -235,6 +240,9 @@ abstract class Storage
     {
         if (strpos($name, '?') !== false) {
             return strstr($name, '?', true);
+        }
+        if (stripos($name, '!') !== false) {
+            return strstr($name, '!', true);
         }
         return $name;
     }
