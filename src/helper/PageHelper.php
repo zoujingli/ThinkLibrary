@@ -157,6 +157,7 @@ class PageHelper extends Helper
     {
         if ($total === true || is_numeric($total)) return $total;
         [$query, $options] = [clone $query, $query->getOptions()];
+        if (isset($options['order'])) $query->removeOption('order');
         if (empty($options['union'])) return $query->count();
         $table = [$query->buildSql() => '_union_count_'];
         return $query->newQuery()->table($table)->count();
