@@ -100,10 +100,10 @@ class SystemUser extends Model
 
     /**
      * 格式化创建时间
-     * @param string $value
+     * @param mixed $value
      * @return string
      */
-    public function getCreateAtAttr(string $value): string
+    public function getCreateAtAttr($value): string
     {
         return format_datetime($value);
     }
