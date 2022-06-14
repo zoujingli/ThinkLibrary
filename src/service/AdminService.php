@@ -151,7 +151,8 @@ class AdminService extends Service
         }
         $current = $service->fullnode($node);
         if (function_exists('admin_check_filter')) {
-            return admin_check_filter($current, $methods, $this->app->session->get('user.nodes', []), $this);
+            $nodes = $this->app->session->get('user.nodes', []);
+            return admin_check_filter($current, $methods, $nodes, $this);
         } elseif ($this->isSuper()) {
             return true;
         } elseif (empty($methods[$current]['isauth'])) {

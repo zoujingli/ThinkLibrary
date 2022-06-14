@@ -119,18 +119,18 @@ class NodeService extends Service
             $name = substr($file, strlen(strtr($this->app->getRootPath(), '\\', '/')) - 1);
             if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
                 [, $namespace, $appname, $classname] = $matches;
-                $class = new ReflectionClass(strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\'));
-                $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
-                $data[$prefix] = $this->parseComment($class->getDocComment() ?: '', $classname);
-                foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    if (in_array($metname = $method->getName(), $ignores)) continue;
-                    $data[strtolower("{$prefix}/{$metname}")] = $this->parseComment($method->getDocComment() ?: '', $metname);
+                $classfull = strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\');
+                if (class_exists($classfull) && ($class = new ReflectionClass($classfull))) {
+                    $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
+                    $data[$prefix] = $this->parseComment($class->getDocComment() ?: '', $classname);
+                    foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                        if (in_array($metname = $method->getName(), $ignores)) continue;
+                        $data[strtolower("{$prefix}/{$metname}")] = $this->parseComment($method->getDocComment() ?: '', $metname);
+                    }
                 }
             }
         }
-        if (function_exists('admin_node_filter')) {
-            admin_node_filter($data);
-        }
+        if (function_exists('admin_node_filter')) admin_node_filter($data);
         $this->app->cache->set('SystemAuthNode', $data);
         return $data;
     }
