@@ -44,7 +44,7 @@ class Library extends Service
     /**
      * 版本号
      */
-    const VERSION = '6.0.32';
+    const VERSION = '6.0.33';
 
     /**
      * 启动服务
