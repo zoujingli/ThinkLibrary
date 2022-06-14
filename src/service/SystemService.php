@@ -470,6 +470,10 @@ class SystemService extends Service
         $bind['app_map'] = $this->uniqueArray($this->app->config->get('app.app_map', []), $data['appmap']);
         $bind['domain_bind'] = $this->uniqueArray($this->app->config->get('app.domain_bind', []), $data['domain']);
         $this->app->config->set($bind, 'app');
+        // 模板常用变量
+        $vars = array_merge($this->uris(), $this->app->config->get('view.tpl_replace_string', []));
+        $this->app->config->set(['tpl_replace_string' => $vars], 'view');
+        // 初始化配置信息
         return $this->app->debug($data['mode'] !== 'product')->isDebug();
     }
 
