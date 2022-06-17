@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\model;
 
 use think\admin\Model;
+use think\model\relation\HasOne;
 
 /**
  * 文件管理系统
@@ -28,6 +29,15 @@ class SystemFile extends Model
 {
     protected $createTime = 'create_at';
     protected $updateTime = 'update_at';
+
+    /**
+     * 关联用户数据
+     * @return \think\model\relation\HasOne
+     */
+    public function user(): HasOne
+    {
+        return $this->hasOne(SystemUser::class, 'id', 'uuid')->field('id,username,nickname');
+    }
 
     /**
      * 格式化创建时间
