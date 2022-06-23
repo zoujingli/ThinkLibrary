@@ -35,7 +35,7 @@ class MenuService extends Service
      * @return array
      * @throws \ReflectionException
      */
-    public function getList(bool $force = false): array
+    public static function getList(bool $force = false): array
     {
         if (empty($force)) {
             static $nodes = [];
@@ -57,12 +57,12 @@ class MenuService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getTree(): array
+    public static function getTree(): array
     {
         $query = SystemMenu::mk()->where(['status' => 1]);
-        $list = $query->order('sort desc,id asc')->select()->toArray();
-        if (function_exists('admin_menu_filter')) admin_menu_filter($list);
-        return $this->build(DataExtend::arr2tree($list));
+        $menus = $query->order('sort desc,id asc')->select()->toArray();
+        if (function_exists('admin_menu_filter')) admin_menu_filter($menus);
+        return static::build(DataExtend::arr2tree($menus));
     }
 
     /**
@@ -71,29 +71,29 @@ class MenuService extends Service
      * @return array
      * @throws \ReflectionException
      */
-    private function build(array $menus): array
+    private static function build(array $menus): array
     {
-        $service = AdminService::instance();
+        $admin = AdminService::instance();
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
-                $menu['sub'] = $this->build($menu['sub']);
+                $menu['sub'] = static::build($menu['sub']);
             }
             if (!empty($menu['sub'])) {
                 $menu['url'] = '#';
             } elseif ($menu['url'] === '#') {
                 unset($menus[$key]);
             } elseif (preg_match('/^(https?:)?(\/\/|\\\\)/i', $menu['url'])) {
-                if (!!$menu['node'] && !$service->check($menu['node'])) {
+                if (!!$menu['node'] && !$admin->check($menu['node'])) {
                     unset($menus[$key]);
                 } elseif ($menu['params']) {
                     $menu['url'] .= (strpos($menu['url'], '?') === false ? '?' : '&') . $menu['params'];
                 }
-            } elseif (!!$menu['node'] && !$service->check($menu['node'])) {
+            } elseif (!!$menu['node'] && !$admin->check($menu['node'])) {
                 unset($menus[$key]);
             } else {
                 $node = join('/', array_slice(explode('/', $menu['url']), 0, 3));
                 $menu['url'] = url($menu['url'])->build() . ($menu['params'] ? '?' . $menu['params'] : '');
-                if (!$service->check($node)) unset($menus[$key]);
+                if (!$admin->check($node)) unset($menus[$key]);
             }
         }
         return $menus;
