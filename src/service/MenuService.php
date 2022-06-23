@@ -31,14 +31,19 @@ class MenuService extends Service
 
     /**
      * 获取可选菜单节点
+     * @param boolean $force 强制刷新
      * @return array
      * @throws \ReflectionException
      */
-    public function getList(): array
+    public function getList(bool $force = false): array
     {
-        static $nodes = [];
-        if (count($nodes) > 0) return $nodes;
-        foreach (NodeService::instance()->getMethods() as $node => $method) {
+        if (empty($force)) {
+            static $nodes = [];
+            if (count($nodes) > 0) return $nodes;
+        } else {
+            $nodes = [];
+        }
+        foreach (NodeService::instance()->getMethods($force) as $node => $method) {
             if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => $method['title']];
         }
         return $nodes;
