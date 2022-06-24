@@ -48,7 +48,7 @@ class TokenHelper extends Helper
     /**
      * 清理表单令牌
      */
-    public function clear()
+    public static function clear()
     {
         TokenService::instance()->clearFormToken();
     }
