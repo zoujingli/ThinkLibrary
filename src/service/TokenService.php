@@ -50,9 +50,9 @@ class TokenService extends Service
      */
     protected function initialize()
     {
-        $this->name = static::getCacheName()();
+        $this->name = static::getCacheName();
         $this->items = $this->getCacheList(true);
-        $this->app->event->listen('HttpEnd', function () {
+        Library::$sapp->event->listen('HttpEnd', function () {
             TokenService::instance()->saveCacheData();
         });
     }
@@ -73,16 +73,16 @@ class TokenService extends Service
     public function saveCacheData()
     {
         $this->clearTimeoutCache();
-        $this->app->cache->set($this->name, $this->items, $this->expire);
+        Library::$sapp->cache->set($this->name, $this->items, $this->expire);
     }
 
     /**
      * 获取当前请求 CSRF 值
      * @return array|string
      */
-    public function getInputToken(): string
+    public static function getInputToken(): string
     {
-        return $this->app->request->header('user-form-token') ?: input('_csrf_', '');
+        return Library::$sapp->request->header('user-form-token') ?: input('_csrf_', '');
     }
 
     /**
@@ -105,7 +105,7 @@ class TokenService extends Service
      */
     public function clearFormToken(?string $token = null): TokenService
     {
-        $this->delCacheItem($token ?: $this->getInputToken());
+        $this->delCacheItem($token ?: static::getInputToken());
         return $this;
     }
 
@@ -167,7 +167,7 @@ class TokenService extends Service
      */
     private function getCacheList(bool $clear = false): array
     {
-        $this->items = $this->app->cache->get($this->name, []);
+        $this->items = Library::$sapp->cache->get($this->name, []);
         if ($clear) $this->items = $this->clearTimeoutCache();
         return $this->items;
     }
