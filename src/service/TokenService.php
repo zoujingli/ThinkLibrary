@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
+use think\admin\Library;
 use think\admin\Service;
 
 /**
@@ -49,7 +50,7 @@ class TokenService extends Service
      */
     protected function initialize()
     {
-        $this->name = $this->getCacheName();
+        $this->name = static::getCacheName()();
         $this->items = $this->getCacheList(true);
         $this->app->event->listen('HttpEnd', function () {
             TokenService::instance()->saveCacheData();
@@ -60,9 +61,9 @@ class TokenService extends Service
      * 获取缓存名称
      * @return string
      */
-    public function getCacheName(): string
+    public static function getCacheName(): string
     {
-        $sid = $this->app->session->getId();
+        $sid = Library::$sapp->session->getId();
         return 'systoken_' . ($sid ?: 'default');
     }
 
@@ -124,9 +125,9 @@ class TokenService extends Service
     /**
      * 清空所有 CSRF 数据
      */
-    public function clearCache()
+    public static function clearCache()
     {
-        $this->app->cache->delete($this->name);
+        Library::$sapp->cache->delete(static::getCacheName());
     }
 
     /**
