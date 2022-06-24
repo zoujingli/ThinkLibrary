@@ -20,6 +20,7 @@ namespace think\admin\service;
 use think\admin\Exception;
 use think\admin\extend\FaviconExtend;
 use think\admin\Helper;
+use think\admin\Library;
 use think\admin\model\SystemConfig;
 use think\admin\model\SystemData;
 use think\admin\model\SystemOplog;
@@ -28,6 +29,7 @@ use think\admin\multiple\Route;
 use think\admin\Service;
 use think\admin\storage\LocalStorage;
 use think\App;
+use think\Container;
 use think\db\Query;
 use think\helper\Str;
 use think\Model;
@@ -39,12 +41,11 @@ use think\Model;
  */
 class SystemService extends Service
 {
-
     /**
      * 配置数据缓存
      * @var array
      */
-    protected $data = [];
+    protected static $data = [];
 
     /**
      * 系统服务初始化
@@ -52,9 +53,21 @@ class SystemService extends Service
      */
     protected function initialize()
     {
-        // 替换 ThinkPHP 地址
-        $this->app->bind('think\Route', Route::class);
-        $this->app->bind('think\route\Url', BuildUrl::class);
+        static::init($this->app);
+    }
+
+    /**
+     * 系统服务初始化
+     * @param ?\think\App $app
+     * @return void
+     */
+    private static function init(?App $app): void
+    {
+        // 替换 ThinkPHP 地址，并初始化运行环境
+        Library::$sapp = $app ?: Container::getInstance()->make(App::class);
+        Library::$sapp->bind('think\Route', Route::class);
+        Library::$sapp->bind('think\route\Url', BuildUrl::class);
+        Library::$sapp->debug(static::isDebug());
     }
 
     /**
@@ -64,12 +77,12 @@ class SystemService extends Service
      * @param mixed $default 默认数据
      * @return string|array
      */
-    public function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
+    public static function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
     {
         static $app, $root, $full;
         empty($app) && $app = rtrim(url('@')->build(), '\\/');
-        empty($root) && $root = rtrim(dirname($this->app->request->basefile()), '\\/');
-        empty($full) && $full = rtrim(dirname($this->app->request->basefile(true)), '\\/');
+        empty($root) && $root = rtrim(dirname(Library::$sapp->request->basefile()), '\\/');
+        empty($full) && $full = rtrim(dirname(Library::$sapp->request->basefile(true)), '\\/');
         $data = ['__APP__' => $app . $path, '__ROOT__' => $root . $path, '__FULL__' => $full . $path];
         return is_null($type) ? $data : ($data[$type] ?? $default);
     }
@@ -79,9 +92,9 @@ class SystemService extends Service
      * @param string $path
      * @return string[]
      */
-    public function uris(string $path = ''): array
+    public static function uris(string $path = ''): array
     {
-        return $this->uri($path, null);
+        return static::uri($path, null);
     }
 
     /**
@@ -91,18 +104,18 @@ class SystemService extends Service
      * @return integer|string
      * @throws \think\db\exception\DbException
      */
-    public function set(string $name, $value = '')
+    public static function set(string $name, $value = '')
     {
-        $this->data = [];
-        [$type, $field] = $this->_parse($name);
+        static::$data = [];
+        [$type, $field] = static::_parse($name);
         if (is_array($value)) {
             $count = 0;
             foreach ($value as $kk => $vv) {
-                $count += $this->set("{$field}.{$kk}", $vv);
+                $count += static::set("{$field}.{$kk}", $vv);
             }
             return $count;
         } else {
-            $this->app->cache->delete('SystemConfig');
+            Library::$sapp->cache->delete('SystemConfig');
             $map = ['type' => $type, 'name' => $field];
             $data = array_merge($map, ['value' => $value]);
             $query = SystemConfig::mk()->master(true)->where($map);
@@ -119,18 +132,18 @@ class SystemService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function get(string $name = '', string $default = '')
+    public static function get(string $name = '', string $default = '')
     {
-        if (empty($this->data)) {
+        if (empty(static::$data)) {
             SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) {
-                $this->data[$item['type']][$item['name']] = $item['value'];
+                static::$data[$item['type']][$item['name']] = $item['value'];
             });
         }
-        [$type, $field, $outer] = $this->_parse($name);
+        [$type, $field, $outer] = static::_parse($name);
         if (empty($name)) {
-            return $this->data;
-        } elseif (isset($this->data[$type])) {
-            $group = $this->data[$type];
+            return static::$data;
+        } elseif (isset(static::$data[$type])) {
+            $group = static::$data[$type];
             if ($outer !== 'raw') foreach ($group as $kk => $vo) {
                 $group[$kk] = htmlspecialchars(strval($vo));
             }
@@ -173,7 +186,7 @@ class SystemService extends Service
      * @param string $rule 配置名称
      * @return array
      */
-    private function _parse(string $rule): array
+    private static function _parse(string $rule): array
     {
         $type = 'base';
         if (stripos($rule, '.') !== false) {
@@ -191,16 +204,16 @@ class SystemService extends Service
      * @param boolean|string $domain 域名
      * @return string
      */
-    public function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    public static function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         // 读取默认节点配置
-        $app = $this->app->config->get('route.default_app') ?: 'index';
-        $ext = $this->app->config->get('route.url_html_suffix') ?: 'html';
-        $act = Str::lower($this->app->config->get('route.default_action') ?: 'index');
-        $ctr = Str::snake($this->app->config->get('route.default_controller') ?: 'index');
+        $app = Library::$sapp->config->get('route.default_app') ?: 'index';
+        $ext = Library::$sapp->config->get('route.url_html_suffix') ?: 'html';
+        $act = Str::lower(Library::$sapp->config->get('route.default_action') ?: 'index');
+        $ctr = Str::snake(Library::$sapp->config->get('route.default_controller') ?: 'index');
         // 生成完整链接地址
-        $pre = $this->app->route->buildUrl('@')->suffix(false)->domain($domain)->build();
-        $uri = $this->app->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
+        $pre = Library::$sapp->route->buildUrl('@')->suffix(false)->domain($domain)->build();
+        $uri = Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
         // 替换省略链接路径
         return preg_replace([
             "#^({$pre}){$app}/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)?#i",
@@ -208,6 +221,40 @@ class SystemService extends Service
             "#^({$pre}[\w.]+)(/[\w.]+)/{$act}(\.{$ext}|^\w|\?|$)#i",
             "#/\.{$ext}$#i",
         ], ['$1$2', '$1$2', '$1$2$3', ''], $uri);
+    }
+
+    /**
+     * 获取数据库所有数据表
+     * @return array [table, total, count]
+     */
+    public static function getTables(): array
+    {
+        $tables = Library::$sapp->db->getTables();
+        return [$tables, count($tables), 0];
+    }
+
+    /**
+     * 复制并创建表结构
+     * @param string $from 来源表名
+     * @param string $create 创建表名
+     * @param array $tables 现有表集合
+     * @param boolean $copy 是否复制
+     * @param mixed $where 复制条件
+     * @throws \think\admin\Exception
+     */
+    public static function copyTableStruct(string $from, string $create, array $tables = [], bool $copy = false, $where = [])
+    {
+        if (empty($tables)) [$tables] = static::getTables();
+        if (!in_array($from, $tables)) {
+            throw new Exception("待复制的数据表 {$from} 不存在！");
+        }
+        if (!in_array($create, $tables)) {
+            Library::$sapp->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
+            if ($copy) {
+                $sql1 = Library::$sapp->db->name($from)->where($where)->buildSql(false);
+                Library::$sapp->db->query("INSERT INTO {$create} {$sql1}");
+            }
+        }
     }
 
     /**
@@ -223,40 +270,6 @@ class SystemService extends Service
     {
         $data = ['name' => $name, 'value' => serialize($value)];
         return static::save('SystemData', $data, 'name');
-    }
-
-    /**
-     * 获取数据库所有数据表
-     * @return array [table, total, count]
-     */
-    public function getTables(): array
-    {
-        $tables = $this->app->db->getTables();
-        return [$tables, count($tables), 0];
-    }
-
-    /**
-     * 复制并创建表结构
-     * @param string $from 来源表名
-     * @param string $create 创建表名
-     * @param array $tables 现有表集合
-     * @param boolean $copy 是否复制
-     * @param mixed $where 复制条件
-     * @throws \think\admin\Exception
-     */
-    public function copyTableStruct(string $from, string $create, array $tables = [], bool $copy = false, $where = [])
-    {
-        if (empty($tables)) [$tables] = $this->getTables();
-        if (!in_array($from, $tables)) {
-            throw new Exception("待复制的数据表 {$from} 不存在！");
-        }
-        if (!in_array($create, $tables)) {
-            $this->app->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
-            if ($copy) {
-                $sql1 = $this->app->db->name($from)->where($where)->buildSql(false);
-                $this->app->db->query("INSERT INTO {$create} {$sql1}");
-            }
-        }
     }
 
     /**
@@ -300,9 +313,9 @@ class SystemService extends Service
      * @param string $content
      * @return boolean
      */
-    public function setOplog(string $action, string $content): bool
+    public static function setOplog(string $action, string $content): bool
     {
-        $oplog = $this->getOplog($action, $content);
+        $oplog = static::getOplog($action, $content);
         return SystemOplog::mk()->insert($oplog) !== false;
     }
 
@@ -312,13 +325,13 @@ class SystemService extends Service
      * @param string $content
      * @return array
      */
-    public function getOplog(string $action, string $content): array
+    public static function getOplog(string $action, string $content): array
     {
         return [
-            'node'      => NodeService::instance()->getCurrent(),
+            'node'      => NodeService::getCurrent(),
             'action'    => $action, 'content' => $content,
-            'geoip'     => $this->app->request->ip() ?: '127.0.0.1',
-            'username'  => AdminService::instance()->getUserName() ?: '-',
+            'geoip'     => Library::$sapp->request->ip() ?: '127.0.0.1',
+            'username'  => AdminService::getUserName() ?: '-',
             'create_at' => date('Y-m-d H:i:s'),
         ];
     }
@@ -330,9 +343,9 @@ class SystemService extends Service
      * @param string|null $file 文件名称
      * @return false|int
      */
-    public function putDebug($data, bool $new = false, ?string $file = null)
+    public static function putDebug($data, bool $new = false, ?string $file = null)
     {
-        if (is_null($file)) $file = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log';
+        if (is_null($file)) $file = Library::$sapp->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log';
         $str = (is_string($data) ? $data : ((is_array($data) || is_object($data)) ? print_r($data, true) : var_export($data, true))) . PHP_EOL;
         return $new ? file_put_contents($file, $str) : file_put_contents($file, $str, FILE_APPEND);
     }
@@ -343,7 +356,7 @@ class SystemService extends Service
      * @return boolean
      * @throws \think\admin\Exception
      */
-    public function setFavicon(?string $icon = null): bool
+    public static function setFavicon(?string $icon = null): bool
     {
         try {
             $icon = $icon ?: sysconf('base.site_icon');
@@ -358,7 +371,7 @@ class SystemService extends Service
             }
             if (empty($info) || empty($info['file'])) return false;
             $favicon = new FaviconExtend($info['file'], [48, 48]);
-            return $favicon->saveIco("{$this->app->getRootPath()}public/favicon.ico");
+            return $favicon->saveIco(Library::$sapp->getRootPath() . 'public/favicon.ico');
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -371,9 +384,9 @@ class SystemService extends Service
      * @param string $type 运行模式（dev|demo|local）
      * @return boolean
      */
-    public function checkRunMode(string $type = 'dev'): bool
+    public static function checkRunMode(string $type = 'dev'): bool
     {
-        $domain = $this->app->request->host(true);
+        $domain = Library::$sapp->request->host(true);
         $isDemo = is_numeric(stripos($domain, 'thinkadmin.top'));
         $isLocal = $domain === '127.0.0.1' || is_numeric(stripos($domain, 'localhost'));
         if ($type === 'dev') return $isLocal || $isDemo;
@@ -385,35 +398,35 @@ class SystemService extends Service
     /**
      * 压缩发布项目
      */
-    public function pushRuntime(): void
+    public static function pushRuntime(): void
     {
-        $connection = $this->app->db->getConfig('default');
-        $this->app->console->call("optimize:schema", ["--connection={$connection}"]);
-        foreach (NodeService::instance()->getModules() as $module) {
-            $path = $this->app->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $module;
+        $connection = Library::$sapp->db->getConfig('default');
+        Library::$sapp->console->call("optimize:schema", ["--connection={$connection}"]);
+        foreach (NodeService::getModules() as $module) {
+            $path = Library::$sapp->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $module;
             file_exists($path) && is_dir($path) || mkdir($path, 0755, true);
-            $this->app->console->call("optimize:route", [$module]);
+            Library::$sapp->console->call("optimize:route", [$module]);
         }
     }
 
     /**
      * 清理运行缓存
      */
-    public function clearRuntime(): void
+    public static function clearRuntime(): void
     {
-        $data = $this->getRuntime();
-        $this->app->cache->clear();
-        $this->app->console->call('clear', ['--dir']);
-        $this->setRuntime($data['mode'], $data['appmap'], $data['domain']);
+        $data = static::getRuntime();
+        Library::$sapp->cache->clear();
+        Library::$sapp->console->call('clear', ['--dir']);
+        static::setRuntime($data['mode'], $data['appmap'], $data['domain']);
     }
 
     /**
      * 是否为开发模式运行
      * @return boolean
      */
-    public function isDebug(): bool
+    public static function isDebug(): bool
     {
-        return $this->getRuntime('mode') !== 'product';
+        return static::getRuntime('mode') !== 'product';
     }
 
     /**
@@ -423,12 +436,12 @@ class SystemService extends Service
      * @param null|array $domain 域名映射
      * @return boolean 是否调试模式
      */
-    public function setRuntime(?string $mode = null, ?array $appmap = [], ?array $domain = []): bool
+    public static function setRuntime(?string $mode = null, ?array $appmap = [], ?array $domain = []): bool
     {
-        $data = $this->getRuntime();
+        $data = static::getRuntime();
         $data['mode'] = $mode ?: $data['mode'];
-        $data['appmap'] = $this->uniqueArray($data['appmap'], $appmap);
-        $data['domain'] = $this->uniqueArray($data['domain'], $domain);
+        $data['appmap'] = static::uniqueArray($data['appmap'], $appmap);
+        $data['domain'] = static::uniqueArray($data['domain'], $domain);
 
         // 组装配置文件格式
         $rows[] = "mode = {$data['mode']}";
@@ -436,9 +449,9 @@ class SystemService extends Service
         foreach ($data['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
 
         // 数据配置保存文件
-        $env = $this->app->getRootPath() . 'runtime/.env';
+        $env = Library::$sapp->getRootPath() . 'runtime/.env';
         file_put_contents($env, "[RUNTIME]\n" . join("\n", $rows));
-        return $this->bindRuntime($data);
+        return static::bindRuntime($data);
     }
 
     /**
@@ -447,14 +460,14 @@ class SystemService extends Service
      * @param array $default 配置内容
      * @return array|string
      */
-    public function getRuntime(?string $name = null, array $default = [])
+    public static function getRuntime(?string $name = null, array $default = [])
     {
-        $env = $this->app->getRootPath() . 'runtime/.env';
-        if (file_exists($env)) $this->app->env->load($env);
+        $env = Library::$sapp->getRootPath() . 'runtime/.env';
+        if (file_exists($env)) Library::$sapp->env->load($env);
         $data = [
-            'mode'   => $this->app->env->get('RUNTIME_MODE') ?: 'debug',
-            'appmap' => $this->app->env->get('RUNTIME_APPMAP') ?: [],
-            'domain' => $this->app->env->get('RUNTIME_DOMAIN') ?: [],
+            'mode'   => Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug',
+            'appmap' => Library::$sapp->env->get('RUNTIME_APPMAP') ?: [],
+            'domain' => Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [],
         ];
         return is_null($name) ? $data : ($data[$name] ?? $default);
     }
@@ -464,41 +477,39 @@ class SystemService extends Service
      * @param array $data 配置数据
      * @return boolean 是否调试模式
      */
-    public function bindRuntime(array $data = []): bool
+    public static function bindRuntime(array $data = []): bool
     {
-        if (empty($data)) $data = $this->getRuntime();
-        $bind['app_map'] = $this->uniqueArray($this->app->config->get('app.app_map', []), $data['appmap']);
-        $bind['domain_bind'] = $this->uniqueArray($this->app->config->get('app.domain_bind', []), $data['domain']);
-        $this->app->config->set($bind, 'app');
+        if (empty($data)) $data = static::getRuntime();
+        $bind['app_map'] = static::uniqueArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']);
+        $bind['domain_bind'] = static::uniqueArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']);
+        Library::$sapp->config->set($bind, 'app');
         // 模板常用变量
-        $vars = array_merge($this->uris(), $this->app->config->get('view.tpl_replace_string', []));
-        $this->app->config->set(['tpl_replace_string' => $vars], 'view');
+        $vars = array_merge(static::uris(), Library::$sapp->config->get('view.tpl_replace_string', []));
+        Library::$sapp->config->set(['tpl_replace_string' => $vars], 'view');
         // 初始化配置信息
-        return $this->app->debug($data['mode'] !== 'product')->isDebug();
+        return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
     }
 
     /**
      * 初始化并运行主程序
-     * @param null|App $app
+     * @param ?\think\App $app
      */
-    public function doInit(?App $app = null)
+    public static function doInit(?App $app = null)
     {
-        $this->app = $app ?: $this->app;
-        $this->app->debug($this->isDebug());
-        ($response = $this->app->http->run())->send();
-        $this->app->http->end($response);
+        static::init($app ?: app());
+        ($response = Library::$sapp->http->run())->send();
+        Library::$sapp->http->end($response);
     }
 
     /**
      * 初始化命令行主程序
-     * @param \think\App|null $app
+     * @param ?\think\App $app
      * @throws \Exception
      */
-    public function doConsoleInit(?App $app = null)
+    public static function doConsoleInit(?App $app = null)
     {
-        $this->app = $app ?: $this->app;
-        $this->app->debug($this->isDebug());
-        $this->app->console->run();
+        static::init($app ?: app());
+        Library::$sapp->console->run();
     }
 
     /**
@@ -506,7 +517,7 @@ class SystemService extends Service
      * @param array ...$args
      * @return array
      */
-    private function uniqueArray(...$args): array
+    private static function uniqueArray(...$args): array
     {
         return array_unique(array_reverse(array_merge(...$args)));
     }

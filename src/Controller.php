@@ -90,7 +90,7 @@ class Controller extends stdClass
             $this->error('Access without permission.');
         }
         $this->get = $this->request->get();
-        $this->node = NodeService::instance()->getCurrent();
+        $this->node = NodeService::getCurrent();
         $this->initialize();
     }
 
@@ -152,7 +152,7 @@ class Controller extends stdClass
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
         if ($this->csrf_state) {
-            TokenHelper::instance()->fetchTemplate($tpl, $vars, $node);
+            TokenHelper::fetchTemplate($tpl, $vars, $node);
         } else {
             throw new HttpResponseException(view($tpl, $vars));
         }
@@ -303,7 +303,7 @@ class Controller extends stdClass
     protected function _queue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0)
     {
         try {
-            $queue = QueueService::instance()->register($title, $command, $later, $data, $rscript, $loops);
+            $queue = QueueService::register($title, $command, $later, $data, $rscript, $loops);
             $this->success('创建任务成功！', $queue->code);
         } catch (Exception $exception) {
             $code = $exception->getData();

@@ -55,7 +55,7 @@ class Replace extends Command
         $repalce = $input->getArgument('replace');
         if ($search === '') $this->setQueueError('查找替换字符内容不能为空！');
         if ($repalce === '') $this->setQueueError('目标替换字符内容不能为空！');
-        [$tables, $total, $count] = SystemService::instance()->getTables();
+        [$tables, $total, $count] = SystemService::getTables();
         foreach ($tables as $table) {
             $data = [];
             $this->setQueueMessage($total, ++$count, sprintf("准备替换数据表 %s", Str::studly($table)));

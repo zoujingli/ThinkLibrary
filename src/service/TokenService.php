@@ -94,7 +94,7 @@ class TokenService extends Service
     {
         $cache = $this->getCacheItem($token ?: $this->getInputToken());
         if (empty($cache['node']) || empty($cache['time'])) return false;
-        return $cache['node'] === NodeService::instance()->fullNode($node);
+        return $cache['node'] === NodeService::fullNode($node);
     }
 
     /**
@@ -115,7 +115,7 @@ class TokenService extends Service
      */
     public function buildFormToken(?string $node = null): array
     {
-        $cnode = NodeService::instance()->fullNode($node);
+        $cnode = NodeService::fullNode($node);
         [$token, $time] = [md5(uniqid(strval(rand(100000, 999999)))), time()];
         $this->setCacheItem($token, $item = ['node' => $cnode, 'time' => $time]);
         return array_merge($item, ['token' => $token]);

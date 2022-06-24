@@ -84,8 +84,7 @@ class AdminService extends Service
      */
     public static function getUserData(?string $field = null, $default = null)
     {
-        $keys = 'UserData_' . static::getUserId();
-        $data = SystemService::instance()->getData($keys, []);
+        $data = SystemService::getData('UserData_' . static::getUserId(), []);
         return is_null($field) ? $data : ($data[$field] ?? $default);
     }
 

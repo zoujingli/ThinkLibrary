@@ -34,7 +34,7 @@ if (!function_exists('p')) {
      */
     function p($data, bool $new = false, ?string $file = null)
     {
-        return SystemService::instance()->putDebug($data, $new, $file);
+        return SystemService::putDebug($data, $new, $file);
     }
 }
 if (!function_exists('M')) {
@@ -59,7 +59,7 @@ if (!function_exists('auth')) {
      */
     function auth(?string $node): bool
     {
-        return AdminService::instance()->check($node);
+        return AdminService::check($node);
     }
 }
 if (!function_exists('sysuri')) {
@@ -73,7 +73,7 @@ if (!function_exists('sysuri')) {
      */
     function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
-        return SystemService::instance()->sysuri($url, $vars, $suffix, $domain);
+        return SystemService::sysuri($url, $vars, $suffix, $domain);
     }
 }
 if (!function_exists('admuri')) {
@@ -89,12 +89,6 @@ if (!function_exists('admuri')) {
     {
         return sysuri('admin/index/index') . '#' . url($url, $vars, $suffix, $domain)->build();
     }
-
-    function stauri(string $uri = '', array $var = [], $suffix = false, $domain = false)
-    {
-        url('@', $var, $suffix, $domain);
-
-    }
 }
 if (!function_exists('sysconf')) {
     /**
@@ -109,9 +103,9 @@ if (!function_exists('sysconf')) {
     function sysconf(string $name = '', $value = null)
     {
         if (is_null($value) && is_string($name)) {
-            return SystemService::instance()->get($name);
+            return SystemService::get($name);
         } else {
-            return SystemService::instance()->set($name, $value);
+            return SystemService::set($name, $value);
         }
     }
 }
@@ -128,9 +122,9 @@ if (!function_exists('sysdata')) {
     function sysdata(string $name, $value = null)
     {
         if (is_null($value)) {
-            return SystemService::instance()->getData($name);
+            return SystemService::getData($name);
         } else {
-            return SystemService::instance()->setData($name, $value);
+            return SystemService::setData($name, $value);
         }
     }
 }
@@ -151,7 +145,7 @@ if (!function_exists('sysqueue')) {
      */
     function sysqueue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 1, int $loops = 0): string
     {
-        return QueueService::instance()->register($title, $command, $later, $data, $rscript, $loops)->code;
+        return QueueService::register($title, $command, $later, $data, $rscript, $loops)->code;
     }
 }
 if (!function_exists('xss_safe')) {
@@ -188,7 +182,7 @@ if (!function_exists('sysoplog')) {
      */
     function sysoplog(string $action, string $content): bool
     {
-        return SystemService::instance()->setOplog($action, $content);
+        return SystemService::setOplog($action, $content);
     }
 }
 if (!function_exists('str2arr')) {
@@ -318,7 +312,7 @@ if (!function_exists('data_save')) {
      */
     function data_save($dbQuery, array $data, string $key = 'id', $where = [])
     {
-        return SystemService::instance()->save($dbQuery, $data, $key, $where);
+        return SystemService::save($dbQuery, $data, $key, $where);
     }
 }
 if (!function_exists('down_file')) {

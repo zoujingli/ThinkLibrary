@@ -173,7 +173,7 @@ class PageHelper extends Helper
     {
         $query = $this->buildQuery($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            if (!AdminService::instance()->isLogin()) {
+            if (!AdminService::isLogin()) {
                 $this->class->error(lang('think_library_not_login'));
             }
             if (method_exists($query, 'getTableFields') && in_array('sort', $query->getTableFields())) {

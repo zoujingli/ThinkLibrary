@@ -111,7 +111,7 @@ class QueueService extends Service
      */
     public function addCleanQueue(int $loops = 3600): QueueService
     {
-        return $this->register('定时清理系统任务数据', "xadmin:service clean", 0, [], 0, $loops);
+        return static::register('定时清理系统任务数据', "xadmin:service clean", 0, [], 0, $loops);
     }
 
     /**
@@ -128,15 +128,15 @@ class QueueService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function register(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): QueueService
+    public static function register(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): QueueService
     {
         $map = [['title', '=', $title], ['status', 'in', [1, 2]]];
         if (empty($rscript) && ($queue = SystemQueue::mk()->where($map)->find())) {
             throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
         }
-        $this->code = CodeExtend::uniqidDate(16, 'Q');
+        $code = CodeExtend::uniqidDate(16, 'Q');
         SystemQueue::mk()->failException(true)->insert([
-            'code'       => $this->code,
+            'code'       => $code,
             'title'      => $title,
             'command'    => $command,
             'attempts'   => 0,
@@ -148,8 +148,9 @@ class QueueService extends Service
             'loops_time' => $loops,
             'create_at'  => date('Y-m-d H:i:s')
         ]);
-        $this->progress(1, '>>> 任务创建成功 <<<', '0.00');
-        return $this->initialize($this->code);
+        $that = static::instance([], true)->initialize($code);
+        $that->progress(1, '>>> 任务创建成功 <<<', '0.00');
+        return $that;
     }
 
     /**
@@ -175,7 +176,7 @@ class QueueService extends Service
             $data = $this->app->cache->get($ckey, [
                 'code' => $this->code, 'status' => $status, 'message' => $message, 'progress' => $progress, 'history' => [],
             ]);
-        } catch (\Exception | Error $exception) {
+        } catch (\Exception|Error $exception) {
             return $this->progress($status, $message, $progress, $backline);
         }
         while (--$backline > -1 && count($data['history']) > 0) array_pop($data['history']);

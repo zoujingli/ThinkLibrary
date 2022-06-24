@@ -87,7 +87,7 @@ class Library extends Service
         // 注册 ThinkAdmin 指令
         $this->commands([Menu::class, Queue::class, Install::class, Version::class, Database::class, Replace::class]);
         // 动态应用运行参数
-        SystemService::instance()->bindRuntime();
+        SystemService::bindRuntime();
     }
 
     /**
@@ -118,7 +118,7 @@ class Library extends Service
                 $this->app->route->get('/favicon.ico', function () {
                     if (($time = time()) > $this->app->cache->get('favicon', 0)) {
                         $this->app->cache->set('favicon', $time + 3600);
-                        $state = SystemService::instance()->setFavicon();
+                        $state = SystemService::setFavicon();
                         return $state ? redirect("/favicon.ico?t={$time}") : '';
                     } else {
                         return '';
@@ -143,10 +143,10 @@ class Library extends Service
                 // 访问模式及访问权限检查
                 if ($request->isOptions()) {
                     return response()->code(204)->header($header);
-                } elseif (AdminService::instance()->check()) {
+                } elseif (AdminService::check()) {
                     $header['X-Frame-Options'] = 'sameorigin';
                     return $next($request)->header($header);
-                } elseif (AdminService::instance()->isLogin()) {
+                } elseif (AdminService::isLogin()) {
                     return json(['code' => 0, 'info' => lang('think_library_not_auth')])->header($header);
                 } else {
                     return json(['code' => 0, 'info' => lang('think_library_not_login'), 'url' => sysuri('admin/login/index')])->header($header);

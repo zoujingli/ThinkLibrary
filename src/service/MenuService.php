@@ -43,7 +43,7 @@ class MenuService extends Service
         } else {
             $nodes = [];
         }
-        foreach (NodeService::instance()->getMethods($force) as $node => $method) {
+        foreach (NodeService::getMethods($force) as $node => $method) {
             if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => $method['title']];
         }
         return $nodes;
@@ -73,7 +73,6 @@ class MenuService extends Service
      */
     private static function build(array $menus): array
     {
-        $admin = AdminService::instance();
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
                 $menu['sub'] = static::build($menu['sub']);
@@ -83,17 +82,17 @@ class MenuService extends Service
             } elseif ($menu['url'] === '#') {
                 unset($menus[$key]);
             } elseif (preg_match('/^(https?:)?(\/\/|\\\\)/i', $menu['url'])) {
-                if (!!$menu['node'] && !$admin->check($menu['node'])) {
+                if (!!$menu['node'] && !AdminService::check($menu['node'])) {
                     unset($menus[$key]);
                 } elseif ($menu['params']) {
                     $menu['url'] .= (strpos($menu['url'], '?') === false ? '?' : '&') . $menu['params'];
                 }
-            } elseif (!!$menu['node'] && !$admin->check($menu['node'])) {
+            } elseif (!!$menu['node'] && !AdminService::check($menu['node'])) {
                 unset($menus[$key]);
             } else {
                 $node = join('/', array_slice(explode('/', $menu['url']), 0, 3));
                 $menu['url'] = url($menu['url'])->build() . ($menu['params'] ? '?' . $menu['params'] : '');
-                if (!$admin->check($node)) unset($menus[$key]);
+                if (!AdminService::check($node)) unset($menus[$key]);
             }
         }
         return $menus;
