@@ -68,21 +68,29 @@ class TokenService extends Service
     }
 
     /**
-     * 保存缓存到文件
-     */
-    public function saveCacheData()
-    {
-        $this->clearTimeoutCache();
-        Library::$sapp->cache->set($this->name, $this->items, $this->expire);
-    }
-
-    /**
      * 获取当前请求 CSRF 值
      * @return array|string
      */
     public static function getInputToken(): string
     {
         return Library::$sapp->request->header('user-form-token') ?: input('_csrf_', '');
+    }
+
+    /**
+     * 清空所有 CSRF 数据
+     */
+    public static function clearCache()
+    {
+        Library::$sapp->cache->delete(static::getCacheName());
+    }
+
+    /**
+     * 保存缓存到文件
+     */
+    public function saveCacheData()
+    {
+        $this->clearTimeoutCache();
+        Library::$sapp->cache->set($this->name, $this->items, $this->expire);
     }
 
     /**
@@ -120,14 +128,6 @@ class TokenService extends Service
         [$token, $time] = [md5(uniqid(strval(rand(100000, 999999)))), time()];
         $this->setCacheItem($token, $item = ['node' => $cnode, 'time' => $time]);
         return array_merge($item, ['token' => $token]);
-    }
-
-    /**
-     * 清空所有 CSRF 数据
-     */
-    public static function clearCache()
-    {
-        Library::$sapp->cache->delete(static::getCacheName());
     }
 
     /**
