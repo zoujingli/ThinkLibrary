@@ -20,6 +20,7 @@ namespace think\admin\service;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use think\admin\Library;
 use think\admin\Service;
 
 /**
@@ -48,16 +49,17 @@ class NodeService extends Service
      * @param string $type
      * @return string
      */
-    public function getCurrent(string $type = ''): string
+    public static function getCurrent(string $type = ''): string
     {
-        $prefix = strtolower($this->app->http->getName());
-        // 获取应用前缀节点
+        $prefix = strtolower(Library::$sapp->http->getName());
+        // 获取应用节点
         if (in_array($type, ['app', 'module'])) return $prefix;
-        // 获取控制器前缀节点
-        $middle = $this->nameTolower($this->app->request->controller());
-        if ($type === 'controller') return $prefix . '/' . $middle;
-        // 获取完整的权限节点
-        return $prefix . '/' . $middle . '/' . strtolower($this->app->request->action());
+        // 获取控制器节点
+        $middle = static::nameTolower(Library::$sapp->request->controller());
+        if ($type === 'controller') return "{$prefix}/{$middle}";
+        // 获取方法权限节点
+        $method = strtolower(Library::$sapp->request->action());
+        return "{$prefix}/{$middle}/{$method}";
     }
 
     /**
@@ -65,19 +67,19 @@ class NodeService extends Service
      * @param null|string $node
      * @return string
      */
-    public function fullnode(?string $node = ''): string
+    public static function fullNode(?string $node = ''): string
     {
         if (empty($node)) {
-            return $this->getCurrent();
+            return static::getCurrent();
         }
         switch (count($attrs = explode('/', $node))) {
             case 2:
-                $suffix = $this->nameTolower($attrs[0]) . '/' . $attrs[1];
-                return $this->getCurrent('module') . '/' . strtolower($suffix);
+                $suffix = static::nameTolower($attrs[0]) . '/' . $attrs[1];
+                return static::getCurrent('module') . '/' . strtolower($suffix);
             case 1:
-                return $this->getCurrent('controller') . '/' . strtolower($node);
+                return static::getCurrent('controller') . '/' . strtolower($node);
             default:
-                $attrs[1] = $this->nameTolower($attrs[1]);
+                $attrs[1] = static::nameTolower($attrs[1]);
                 return strtolower(join('/', $attrs));
         }
     }
@@ -87,9 +89,9 @@ class NodeService extends Service
      * @param array $data
      * @return array
      */
-    public function getModules(array $data = []): array
+    public static function getModules(array $data = []): array
     {
-        $path = $this->app->getBasePath();
+        $path = Library::$sapp->getBasePath();
         foreach (scandir($path) as $item) if ($item[0] !== '.') {
             if (is_dir(realpath($path . $item))) $data[] = $item;
         }
@@ -102,12 +104,12 @@ class NodeService extends Service
      * @return array
      * @throws ReflectionException
      */
-    public function getMethods(bool $force = false): array
+    public static function getMethods(bool $force = false): array
     {
         static $data = [];
         if (empty($force)) {
             if (count($data) > 0) return $data;
-            $data = $this->app->cache->get('SystemAuthNode', []);
+            $data = Library::$sapp->cache->get('SystemAuthNode', []);
             if (count($data) > 0) return $data;
         } else {
             $data = [];
@@ -115,23 +117,23 @@ class NodeService extends Service
         /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\think\admin\Controller');
         /*! 扫描所有代码控制器节点，更新节点缓存 */
-        foreach ($this->scanDirectory($this->app->getBasePath()) as $file) {
-            $name = substr($file, strlen(strtr($this->app->getRootPath(), '\\', '/')) - 1);
+        foreach (static::scanDirectory(Library::$sapp->getBasePath()) as $file) {
+            $name = substr($file, strlen(strtr(Library::$sapp->getRootPath(), '\\', '/')) - 1);
             if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
                 [, $namespace, $appname, $classname] = $matches;
                 $classfull = strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\');
                 if (class_exists($classfull) && ($class = new ReflectionClass($classfull))) {
-                    $prefix = strtolower(strtr("{$appname}/{$this->nameTolower($classname)}", '\\', '/'));
-                    $data[$prefix] = $this->parseComment($class->getDocComment() ?: '', $classname);
+                    $prefix = strtolower(strtr("{$appname}/" . static::nameTolower($classname), '\\', '/'));
+                    $data[$prefix] = static::_parseComment($class->getDocComment() ?: '', $classname);
                     foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                         if (in_array($metname = $method->getName(), $ignores)) continue;
-                        $data[strtolower("{$prefix}/{$metname}")] = $this->parseComment($method->getDocComment() ?: '', $metname);
+                        $data[strtolower("{$prefix}/{$metname}")] = static::_parseComment($method->getDocComment() ?: '', $metname);
                     }
                 }
             }
         }
         if (function_exists('admin_node_filter')) admin_node_filter($data);
-        $this->app->cache->set('SystemAuthNode', $data);
+        Library::$sapp->cache->set('SystemAuthNode', $data);
         return $data;
     }
 
@@ -141,7 +143,7 @@ class NodeService extends Service
      * @param string $default 默认标题
      * @return array
      */
-    private function parseComment(string $comment, string $default = ''): array
+    private static function _parseComment(string $comment, string $default = ''): array
     {
         $text = strtr($comment, "\n", ' ');
         $title = preg_replace('/^\/\*\s*\*\s*\*\s*(.*?)\s*\*.*?$/', '$1', $text);
@@ -158,17 +160,17 @@ class NodeService extends Service
      * 获取所有PHP文件列表
      * @param string $path 扫描目录
      * @param array $data 额外数据
-     * @param null|string $ext 文件后缀
+     * @param ?string $ext 文件后缀
      * @return array
      */
-    public function scanDirectory(string $path, array $data = [], ?string $ext = 'php'): array
+    public static function scanDirectory(string $path, array $data = [], ?string $ext = 'php'): array
     {
         if (file_exists($path)) if (is_file($path)) {
             $data[] = strtr($path, '\\', '/');
         } elseif (is_dir($path)) foreach (scandir($path) as $item) if ($item[0] !== '.') {
             $real = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $item;
             if (is_readable($real)) if (is_dir($real)) {
-                $data = $this->scanDirectory($real, $data, $ext);
+                $data = static::scanDirectory($real, $data, $ext);
             } elseif (is_file($real) && (is_null($ext) || pathinfo($real, 4) === $ext)) {
                 $data[] = strtr($real, '\\', '/');
             }

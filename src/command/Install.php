@@ -128,7 +128,7 @@ class Install extends Command
     private function installFile(): bool
     {
         $module = ModuleService::instance();
-        $data = $module->grenerateDifference($this->rules, $this->ignore);
+        $data = $module->grenDifference($this->rules, $this->ignore);
         if (empty($data)) {
             $this->output->writeln('No need to update the file if the file comparison is consistent');
             return false;

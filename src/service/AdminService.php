@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\DataExtend;
+use think\admin\Library;
 use think\admin\model\SystemAuth;
 use think\admin\model\SystemNode;
 use think\admin\model\SystemUser;
@@ -30,50 +31,49 @@ use think\admin\Service;
  */
 class AdminService extends Service
 {
-
     /**
      * 是否已经登录
      * @return boolean
      */
-    public function isLogin(): bool
+    public static function isLogin(): bool
     {
-        return $this->getUserId() > 0;
+        return static::getUserId() > 0;
     }
 
     /**
      * 是否为超级用户
      * @return boolean
      */
-    public function isSuper(): bool
+    public static function isSuper(): bool
     {
-        return $this->getUserName() === $this->getSuperName();
+        return static::getUserName() === static::getSuperName();
     }
 
     /**
      * 获取超级用户账号
      * @return string
      */
-    public function getSuperName(): string
+    public static function getSuperName(): string
     {
-        return $this->app->config->get('app.super_user', 'admin');
+        return Library::$sapp->config->get('app.super_user', 'admin');
     }
 
     /**
      * 获取后台用户ID
      * @return integer
      */
-    public function getUserId(): int
+    public static function getUserId(): int
     {
-        return intval($this->app->session->get('user.id', 0));
+        return intval(Library::$sapp->session->get('user.id', 0));
     }
 
     /**
      * 获取后台用户名称
      * @return string
      */
-    public function getUserName(): string
+    public static function getUserName(): string
     {
-        return $this->app->session->get('user.username', '');
+        return Library::$sapp->session->get('user.username', '');
     }
 
     /**
@@ -82,9 +82,9 @@ class AdminService extends Service
      * @param null|mixed $default
      * @return array|mixed
      */
-    public function getUserData(?string $field = null, $default = null)
+    public static function getUserData(?string $field = null, $default = null)
     {
-        $keys = "UserData_{$this->getUserId()}";
+        $keys = 'UserData_' . static::getUserId();
         $data = SystemService::instance()->getData($keys, []);
         return is_null($field) ? $data : ($data[$field] ?? $default);
     }
@@ -98,10 +98,10 @@ class AdminService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function setUserData(array $data, bool $replace = false)
+    public static function setUserData(array $data, bool $replace = false)
     {
-        $data = $replace ? $data : array_merge($this->getUserData(), $data);
-        return SystemService::instance()->setData("UserData_{$this->getUserId()}", $data);
+        $data = $replace ? $data : array_merge(static::getUserData(), $data);
+        return SystemService::setData('UserData_' . static::getUserId(), $data);
     }
 
     /**
@@ -111,10 +111,10 @@ class AdminService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function getUserTheme(): string
+    public static function getUserTheme(): string
     {
         $default = sysconf('base.site_theme') ?: 'default';
-        return $this->getUserData('site_theme', $default);
+        return static::getUserData('site_theme', $default);
     }
 
     /**
@@ -125,9 +125,9 @@ class AdminService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function setUserTheme(string $theme)
+    public static function setUserTheme(string $theme)
     {
-        return $this->setUserData(['site_theme' => $theme]);
+        return static::setUserData(['site_theme' => $theme]);
     }
 
     /**
@@ -137,10 +137,9 @@ class AdminService extends Service
      * @return boolean
      * @throws \ReflectionException
      */
-    public function check(?string $node = ''): bool
+    public static function check(?string $node = ''): bool
     {
-        $service = NodeService::instance();
-        $methods = $service->getMethods();
+        $methods = NodeService::getMethods();
         // 兼容 windows 控制器不区分大小写的验证问题
         foreach ($methods as $key => $rule) {
             if (preg_match('#.*?/.*?_.*?#', $key)) {
@@ -149,16 +148,16 @@ class AdminService extends Service
                 $methods[join('/', $attr)] = $rule;
             }
         }
-        $current = $service->fullnode($node);
+        $current = NodeService::fullNode($node);
         if (function_exists('admin_check_filter')) {
-            $nodes = $this->app->session->get('user.nodes', []);
-            return admin_check_filter($current, $methods, $nodes, $this);
-        } elseif ($this->isSuper()) {
+            $nodes = Library::$sapp->session->get('user.nodes', []);
+            return admin_check_filter($current, $methods, $nodes);
+        } elseif (static::isSuper()) {
             return true;
         } elseif (empty($methods[$current]['isauth'])) {
-            return !(!empty($methods[$current]['islogin']) && !$this->isLogin());
+            return !(!empty($methods[$current]['islogin']) && !static::isLogin());
         } else {
-            return in_array($current, $this->app->session->get('user.nodes', []));
+            return in_array($current, Library::$sapp->session->get('user.nodes', []));
         }
     }
 
@@ -168,9 +167,9 @@ class AdminService extends Service
      * @return array
      * @throws \ReflectionException
      */
-    public function getTree(array $checkeds = []): array
+    public static function getTree(array $checkeds = []): array
     {
-        [$nodes, $pnodes, $methods] = [[], [], array_reverse(NodeService::instance()->getMethods())];
+        [$nodes, $pnodes, $methods] = [[], [], array_reverse(NodeService::getMethods())];
         foreach ($methods as $node => $method) {
             [$count, $pnode] = [substr_count($node, '/'), substr($node, 0, strripos($node, '/'))];
             if ($count === 2 && !empty($method['isauth'])) {
@@ -191,30 +190,28 @@ class AdminService extends Service
     /**
      * 初始化用户权限
      * @param boolean $force 强刷权限
-     * @return $this
+     * @return void
      */
-    public function apply(bool $force = false): AdminService
+    public static function apply(bool $force = false)
     {
-        if ($force) $this->clearCache();
-        if (($uid = $this->getUserId()) <= 0) return $this;
+        if ($force) static::clearCache();
+        if (($uid = static::getUserId()) <= 0) return;
         $user = SystemUser::mk()->where(['id' => $uid])->findOrEmpty()->toArray();
-        if (!$this->isSuper() && count($aids = str2arr($user['authorize'])) > 0) {
+        if (!static::isSuper() && count($aids = str2arr($user['authorize'])) > 0) {
             $aids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $aids)->column('id');
             if (!empty($aids)) $nodes = SystemNode::mk()->distinct(true)->whereIn('auth', $aids)->column('node');
         }
         $user['nodes'] = $nodes ?? [];
-        $this->app->session->set('user', $user);
-        return $this;
+        Library::$sapp->session->set('user', $user);
     }
 
     /**
      * 清理节点缓存
-     * @return $this
+     * @return void
      */
-    public function clearCache(): AdminService
+    public static function clearCache()
     {
         TokenService::instance()->clearCache();
-        $this->app->cache->delete('SystemAuthNode');
-        return $this;
+        Library::$sapp->cache->delete('SystemAuthNode');
     }
 }

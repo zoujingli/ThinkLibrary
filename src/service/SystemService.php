@@ -151,7 +151,7 @@ class SystemService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function save($query, array &$data, string $key = 'id', $map = [])
+    public static function save($query, array &$data, string $key = 'id', $map = [])
     {
         $query = Helper::buildQuery($query)->master()->strict(false);
         if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
@@ -219,10 +219,10 @@ class SystemService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function setData(string $name, $value)
+    public static function setData(string $name, $value)
     {
         $data = ['name' => $name, 'value' => serialize($value)];
-        return $this->save('SystemData', $data, 'name');
+        return static::save('SystemData', $data, 'name');
     }
 
     /**
@@ -265,7 +265,7 @@ class SystemService extends Service
      * @param mixed $default
      * @return mixed
      */
-    public function getData(string $name, $default = [])
+    public static function getData(string $name, $default = [])
     {
         try {
             // 读取原始序列化数据

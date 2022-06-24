@@ -28,6 +28,7 @@ use think\admin\multiple\Multiple;
 use think\admin\multiple\Route;
 use think\admin\service\AdminService;
 use think\admin\service\SystemService;
+use think\App;
 use think\middleware\LoadLangPack;
 use think\middleware\SessionInit;
 use think\Request;
@@ -42,15 +43,23 @@ use function Composer\Autoload\includeFile;
 class Library extends Service
 {
     /**
-     * 版本号
+     * 组件库版本号
      */
     const VERSION = '6.0.33';
+
+    /**
+     * 静态应用实例
+     * @var App
+     */
+    public static $sapp;
 
     /**
      * 启动服务
      */
     public function boot()
     {
+        // 静态应用赋值
+        static::$sapp = $this->app;
         // 服务初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
             // 配置默认输入过滤
