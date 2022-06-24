@@ -71,9 +71,7 @@ class QueryHelper extends Helper
         $this->page = PageHelper::instance();
         $this->input = $this->getInputData($input);
         $this->query = $this->page->autoSortQuery($dbQuery);
-        if (is_callable($callable)) {
-            call_user_func($callable, $this, $this->query);
-        }
+        is_callable($callable) && call_user_func($callable, $this, $this->query);
         return $this;
     }
 

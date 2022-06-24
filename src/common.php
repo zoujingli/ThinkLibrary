@@ -16,6 +16,7 @@
 use think\admin\extend\CodeExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\Helper;
+use think\admin\Library;
 use think\admin\service\AdminService;
 use think\admin\service\QueueService;
 use think\admin\service\SystemService;
@@ -370,9 +371,9 @@ if (!function_exists('trace_file')) {
      */
     function trace_file(Exception $exception)
     {
-        $path = app()->getRuntimePath() . 'trace';
+        $path = Library::$sapp->getRuntimePath() . 'trace';
         if (!file_exists($path)) mkdir($path, 0755, true);
-        $name = substr($exception->getFile(), strlen(app()->getRootPath()));
+        $name = substr($exception->getFile(), strlen(Library::$sapp->getRootPath()));
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
         $class = get_class($exception);
         file_put_contents($file,
