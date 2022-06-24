@@ -30,59 +30,31 @@ use think\admin\Service;
 class ModuleService extends Service
 {
     /**
-     * 代码根目录
-     * @var string
-     */
-    protected $root;
-
-    /**
-     * 官方应用地址
-     * @var string
-     */
-    protected $server;
-
-    /**
-     * 官方应用版本
-     * @var string
-     */
-    protected $version;
-
-    /**
-     * 模块服务初始化
-     */
-    public function initialize()
-    {
-        $this->root = $this->app->getRootPath();
-        $this->version = trim(Library::VERSION, 'v');
-        $maxVersion = strstr($this->version, '.', true);
-        $this->server = "https://v{$maxVersion}.thinkadmin.top";
-    }
-
-    /**
      * 获取服务端地址
      * @return string
      */
-    public function getServer(): string
+    public static function getServer(): string
     {
-        return $this->server;
+        $maxVersion = strstr(static::getVersion(), '.', true);
+        return "https://v{$maxVersion}.thinkadmin.top";
     }
 
     /**
      * 获取版本号信息
      * @return string
      */
-    public function getVersion(): string
+    public static function getVersion(): string
     {
-        return $this->version;
+        return trim(Library::VERSION, 'v');
     }
 
     /**
      * 获取模块变更
      * @return array
      */
-    public function change(): array
+    public static function change(): array
     {
-        [$online, $locals] = [$this->online(), $this->getModules()];
+        [$online, $locals] = [static::online(), static::getModules()];
         foreach ($online as &$item) if (isset($locals[$item['name']])) {
             $item['local'] = $locals[$item['name']];
             if ($item['local']['version'] < $item['version']) {
@@ -104,13 +76,13 @@ class ModuleService extends Service
      * 获取线上模块数据
      * @return array
      */
-    public function online(): array
+    public static function online(): array
     {
-        $data = $this->app->cache->get('moduleOnlineData', []);
+        $data = Library::$sapp->cache->get('moduleOnlineData', []);
         if (!empty($data)) return $data;
-        $result = json_decode(HttpExtend::get($this->server . '/admin/api.update/version'), true);
+        $result = json_decode(HttpExtend::get(static::getServer() . '/admin/api.update/version'), true);
         if (isset($result['code']) && $result['code'] > 0 && isset($result['data']) && is_array($result['data'])) {
-            $this->app->cache->set('moduleOnlineData', $result['data'], 30);
+            Library::$sapp->cache->set('moduleOnlineData', $result['data'], 30);
             return $result['data'];
         } else {
             return [];
@@ -122,14 +94,14 @@ class ModuleService extends Service
      * @param string $name 模块名称
      * @return array
      */
-    public function install(string $name): array
+    public static function install(string $name): array
     {
-        $this->app->cache->set('moduleOnlineData', []);
-        $data = $this->grenDifference(['app' . '/' . $name]);
+        Library::$sapp->cache->set('moduleOnlineData', []);
+        $data = static::grenDifference(['app' . '/' . $name]);
         if (empty($data)) return [0, '没有需要安装的文件', []];
         $lines = [];
         foreach ($data as $file) {
-            [$state, $mode, $name] = $this->updateFileByDownload($file);
+            [$state, $mode, $name] = static::updateFileByDownload($file);
             if ($state) {
                 if ($mode === 'add') $lines[] = "add {$name} successed";
                 if ($mode === 'mod') $lines[] = "modify {$name} successed";
@@ -148,13 +120,13 @@ class ModuleService extends Service
      * @param array $data
      * @return array
      */
-    public function getModules(array $data = []): array
+    public static function getModules(array $data = []): array
     {
         foreach (NodeService::getModules() as $name) {
-            $vars = $this->getModuleVersion($name);
+            $vars = static::getModuleVersion($name);
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
                 $data[$name] = array_merge($vars, ['change' => []]);
-                foreach (NodeService::scanDirectory($this->getModuleInfoPath($name) . 'change', [], 'md') as $file) {
+                foreach (NodeService::scanDirectory(static::getModuleInfoPath($name) . 'change', [], 'md') as $file) {
                     $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = Parsedown::instance()->parse(file_get_contents($file));
                 }
             }
@@ -169,12 +141,12 @@ class ModuleService extends Service
      * @param array $data 扫描结果列表
      * @return array
      */
-    public function getChanges(array $rules, array $ignore = [], array $data = []): array
+    public static function getChanges(array $rules, array $ignore = [], array $data = []): array
     {
         // 扫描规则文件
         foreach ($rules as $rule) {
-            $path = $this->root . strtr(trim($rule, '\\/'), '\\', '/');
-            $data = array_merge($data, $this->scanLocalFileHashList($path));
+            $path = Library::$sapp->getRootPath() . strtr(trim($rule, '\\/'), '\\', '/');
+            $data = array_merge($data, static::scanLocalFileHashList($path));
         }
         // 清除忽略文件
         foreach ($data as $key => $item) foreach ($ignore as $ign) {
@@ -189,7 +161,7 @@ class ModuleService extends Service
      * @param string $name 文件名称
      * @return boolean
      */
-    public function checkAllowDownload(string $name): bool
+    public static function checkAllowDownload(string $name): bool
     {
         // 禁止目录上跳级别
         if (stripos($name, '..') !== false) {
@@ -200,7 +172,7 @@ class ModuleService extends Service
             return false;
         }
         // 检查允许下载的文件规则列表
-        foreach ($this->getAllowDownloadRule() as $rule) {
+        foreach (static::getAllowDownloadRule() as $rule) {
             if (stripos($name, $rule) === 0) return true;
         }
         // 不在允许下载的文件规则
@@ -214,14 +186,14 @@ class ModuleService extends Service
      * @param array $result 差异数据
      * @return array
      */
-    public function grenDifference(array $rules = [], array $ignore = [], array $result = []): array
+    public static function grenDifference(array $rules = [], array $ignore = [], array $result = []): array
     {
-        $online = json_decode(HttpExtend::post($this->server . '/admin/api.update/node', [
+        $online = json_decode(HttpExtend::post(static::getServer() . '/admin/api.update/node', [
             'rules' => json_encode($rules), 'ignore' => json_encode($ignore),
         ]), true);
         if (empty($online['code'])) return $result;
-        $change = $this->getChanges($online['data']['rules'] ?? [], $online['data']['ignore'] ?? []);
-        foreach ($this->grenDifferenceContrast($online['data']['list'], $change['list']) as $file) {
+        $change = static::getChanges($online['data']['rules'] ?? [], $online['data']['ignore'] ?? []);
+        foreach (static::grenDifferenceContrast($online['data']['list'], $change['list']) as $file) {
             if (in_array($file['type'], ['add', 'del', 'mod'])) foreach ($rules as $rule) {
                 if (stripos($file['name'], $rule) === 0) $result[] = $file;
             }
@@ -234,18 +206,18 @@ class ModuleService extends Service
      * @param array $file 文件信息
      * @return array
      */
-    public function updateFileByDownload(array $file): array
+    public static function updateFileByDownload(array $file): array
     {
         if (in_array($file['type'], ['add', 'mod'])) {
-            if ($this->downloadUpdateFile(encode($file['name']))) {
+            if (static::downloadUpdateFile(encode($file['name']))) {
                 return [true, $file['type'], $file['name']];
             } else {
                 return [false, $file['type'], $file['name']];
             }
         } elseif ($file['type'] == 'del') {
-            $real = $this->root . $file['name'];
+            $real = Library::$sapp->getRootPath() . $file['name'];
             if (is_file($real) && unlink($real)) {
-                $this->removeEmptyDirectory(dirname($real));
+                static::removeEmptyDirectory(dirname($real));
                 return [true, $file['type'], $file['name']];
             } else {
                 return [false, $file['type'], $file['name']];
@@ -259,13 +231,13 @@ class ModuleService extends Service
      * 获取允许下载的规则
      * @return array
      */
-    private function getAllowDownloadRule(): array
+    private static function getAllowDownloadRule(): array
     {
-        $data = $this->app->cache->get('moduleAllowDownloadRule', []);
+        $data = Library::$sapp->cache->get('moduleAllowDownloadRule', []);
         if (is_array($data) && count($data) > 0) return $data;
         $data = ['think', 'config', 'public/static', 'public/router.php', 'public/index.php'];
-        foreach (array_keys($this->getModules()) as $name) $data[] = 'app/' . $name;
-        $this->app->cache->set('moduleAllowDownloadRule', $data, 30);
+        foreach (array_keys(static::getModules()) as $name) $data[] = 'app/' . $name;
+        Library::$sapp->cache->set('moduleAllowDownloadRule', $data, 30);
         return $data;
     }
 
@@ -274,9 +246,9 @@ class ModuleService extends Service
      * @param string $name 模块名称
      * @return bool|array|null
      */
-    private function getModuleVersion(string $name)
+    private static function getModuleVersion(string $name)
     {
-        $filename = $this->getModuleInfoPath($name) . 'module.json';
+        $filename = static::getModuleInfoPath($name) . 'module.json';
         if (file_exists($filename) && is_file($filename) && is_readable($filename)) {
             $vars = json_decode(file_get_contents($filename), true);
             return isset($vars['name']) && isset($vars['version']) ? $vars : null;
@@ -290,12 +262,12 @@ class ModuleService extends Service
      * @param string $encode
      * @return boolean|integer
      */
-    private function downloadUpdateFile(string $encode)
+    private static function downloadUpdateFile(string $encode)
     {
-        $source = $this->server . '/admin/api.update/get?encode=' . $encode;
+        $source = static::getServer() . '/admin/api.update/get?encode=' . $encode;
         $result = json_decode(HttpExtend::get($source), true);
         if (empty($result['code'])) return false;
-        $filename = $this->root . decode($encode);
+        $filename = Library::$sapp->getRootPath() . decode($encode);
         file_exists(dirname($filename)) || mkdir(dirname($filename), 0755, true);
         return file_put_contents($filename, base64_decode($result['data']['content']));
     }
@@ -304,10 +276,10 @@ class ModuleService extends Service
      * 清理空目录
      * @param string $path
      */
-    private function removeEmptyDirectory(string $path)
+    private static function removeEmptyDirectory(string $path)
     {
         if (is_dir($path) && count(scandir($path)) === 2 && rmdir($path)) {
-            $this->removeEmptyDirectory(dirname($path));
+            static::removeEmptyDirectory(dirname($path));
         }
     }
 
@@ -316,9 +288,9 @@ class ModuleService extends Service
      * @param string $name 模块名称
      * @return string
      */
-    private function getModuleInfoPath(string $name): string
+    private static function getModuleInfoPath(string $name): string
     {
-        $appdir = $this->app->getBasePath() . $name;
+        $appdir = Library::$sapp->getBasePath() . $name;
         return $appdir . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR;
     }
 
@@ -328,7 +300,7 @@ class ModuleService extends Service
      * @param array $local 本地文件数据
      * @return array
      */
-    private function grenDifferenceContrast(array $serve = [], array $local = []): array
+    private static function grenDifferenceContrast(array $serve = [], array $local = []): array
     {
         $diffy = [];
         $serve = array_combine(array_column($serve, 'name'), array_column($serve, 'hash'));
@@ -349,11 +321,11 @@ class ModuleService extends Service
      * @param mixed $path 扫描目录
      * @return array
      */
-    private function scanLocalFileHashList(string $path): array
+    private static function scanLocalFileHashList(string $path): array
     {
         $data = [];
         foreach (NodeService::scanDirectory($path, [], null) as $file) {
-            if ($this->checkAllowDownload($name = substr($file, strlen($this->root)))) {
+            if (static::checkAllowDownload($name = substr($file, strlen(Library::$sapp->getRootPath())))) {
                 $data[] = ['name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file)))];
             }
         }
