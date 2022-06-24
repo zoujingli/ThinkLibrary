@@ -496,7 +496,7 @@ class SystemService extends Service
      */
     public static function doInit(?App $app = null)
     {
-        static::init($app ?: app());
+        static::init($app);
         ($response = Library::$sapp->http->run())->send();
         Library::$sapp->http->end($response);
     }
@@ -508,7 +508,7 @@ class SystemService extends Service
      */
     public static function doConsoleInit(?App $app = null)
     {
-        static::init($app ?: app());
+        static::init($app);
         Library::$sapp->console->run();
     }
 
