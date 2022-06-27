@@ -65,7 +65,7 @@ class Database extends Command
         $this->setQueueProgress("总共需要修复 {$total} 张数据表", '0');
         foreach ($tables as $table) {
             $this->setQueueMessage($total, ++$count, "正在修复数据表 {$table}");
-            $this->app->db->master()->query("REPAIR TABLE `{$table}`");
+            $this->app->db->connect()->query("REPAIR TABLE `{$table}`");
             $this->setQueueMessage($total, $count, "完成修复数据表 {$table}", 1);
         }
         $this->setQueueSuccess("已完成对 {$total} 张数据表修复操作");
@@ -82,7 +82,7 @@ class Database extends Command
         $this->setQueueProgress("总共需要优化 {$total} 张数据表", '0');
         foreach ($tables as $table) {
             $this->setQueueMessage($total, ++$count, "正在优化数据表 {$table}");
-            $this->app->db->master()->query("OPTIMIZE TABLE `{$table}`");
+            $this->app->db->connect()->query("OPTIMIZE TABLE `{$table}`");
             $this->setQueueMessage($total, $count, "完成优化数据表 {$table}", 1);
         }
         $this->setQueueSuccess("已完成对 {$total} 张数据表优化操作");
