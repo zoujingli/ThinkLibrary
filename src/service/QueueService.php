@@ -109,7 +109,7 @@ class QueueService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function addCleanQueue(int $loops = 3600): QueueService
+    public static function addCleanQueue(int $loops = 3600): QueueService
     {
         return static::register('定时清理系统任务数据', "xadmin:service clean", 0, [], 0, $loops);
     }

@@ -49,12 +49,9 @@ class Database extends Command
      */
     protected function execute(Input $input, Output $output): void
     {
-        $method = $input->getArgument('action');
-        if (in_array($method, ['repair', 'optimize'])) {
-            $this->{"_{$method}"}();
-        } else {
-            $this->output->error("Wrong operation, currently allow repair|optimize");
-        }
+        $action = $input->getArgument('action');
+        if (method_exists($this, $method = "_{$action}")) $this->$method();
+        else $this->output->error("Wrong operation, currently allow repair|optimize");
     }
 
     /**

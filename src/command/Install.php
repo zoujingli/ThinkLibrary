@@ -184,7 +184,7 @@ class Install extends Command
         $config = $this->app->db->connect()->getConfig();
         [$type, $prefix] = [$config['type'] ?? '', $config['prefix'] ?? ''];
         if ($type === 'mysql' && !in_array($table = "{$prefix}system_file", $tables)) {
-            $this->app->db->connect()->query(<<<SQL
+            $this->app->db->master()->query(<<<SQL
 CREATE TABLE {$table} (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `type` varchar(20) NULL DEFAULT '' COMMENT '上传类型',
