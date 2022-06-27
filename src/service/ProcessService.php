@@ -37,9 +37,10 @@ class ProcessService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function think(string $args = '', bool $simple = false): string
+    public static function think(string $args = '', bool $simple = false): string
     {
-        $command = trim("{$this->app->getRootPath()}think {$args}");
+        $root = Library::$sapp->getRootPath();
+        $command = trim("{$root}think {$args}");
         if ($simple) return $command;
         $binary = sysconf('base.binary') ?: PHP_BINARY;
         if (in_array(basename($binary), ['php', 'php.exe'])) {
@@ -57,42 +58,37 @@ class ProcessService extends Service
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function thinkQuery(string $args): array
+    public static function thinkQuery(string $args): array
     {
-        return $this->query($this->think($args, true));
+        return static::query(static::think($args, true));
     }
 
     /**
      * 执行 Think 指令内容
      * @param string $args 执行参数
      * @param integer $usleep 延时时间
-     * @return ProcessService
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function thinkCreate(string $args, int $usleep = 0): ProcessService
+    public static function thinkCreate(string $args, int $usleep = 0)
     {
-        return $this->create($this->think($args), $usleep);
+        static::create(static::think($args), $usleep);
     }
 
     /**
      * 创建异步进程
      * @param string $command 任务指令
      * @param integer $usleep 延时时间
-     * @return $this
      */
-    public function create(string $command, int $usleep = 0): ProcessService
+    public static function create(string $command, int $usleep = 0)
     {
-        if ($this->iswin()) {
-            $this->exec(__DIR__ . "/bin/console.exe {$command}");
+        if (static::iswin()) {
+            static::exec(__DIR__ . "/bin/console.exe {$command}");
         } else {
-            $this->exec("{$command} > /dev/null 2>&1 &");
+            static::exec("{$command} > /dev/null 2>&1 &");
         }
-        if ($usleep > 0) {
-            usleep($usleep);
-        }
-        return $this;
+        $usleep > 0 && usleep($usleep);
     }
 
     /**
@@ -101,19 +97,19 @@ class ProcessService extends Service
      * @param string $name 进程名称
      * @return array
      */
-    public function query(string $cmd, string $name = 'php.exe'): array
+    public static function query(string $cmd, string $name = 'php.exe'): array
     {
         $list = [];
-        if ($this->iswin()) {
-            $lines = $this->exec('wmic process where name="' . $name . '" get processid,CommandLine', true);
-            foreach ($lines as $line) if ($this->_issub($line, $cmd) !== false) {
-                $attr = explode(' ', $this->_space($line));
+        if (static::iswin()) {
+            $lines = static::exec('wmic process where name="' . $name . '" get processid,CommandLine', true);
+            foreach ($lines as $line) if (static::_issub($line, $cmd) !== false) {
+                $attr = explode(' ', static::_space($line));
                 $list[] = ['pid' => array_pop($attr), 'cmd' => join(' ', $attr)];
             }
         } else {
-            $lines = $this->exec("ps ax|grep -v grep|grep \"{$cmd}\"", true);
-            foreach ($lines as $line) if ($this->_issub($line, $cmd) !== false) {
-                $attr = explode(' ', $this->_space($line));
+            $lines = static::exec("ps ax|grep -v grep|grep \"{$cmd}\"", true);
+            foreach ($lines as $line) if (static::_issub($line, $cmd) !== false) {
+                $attr = explode(' ', static::_space($line));
                 [$pid] = [array_shift($attr), array_shift($attr), array_shift($attr), array_shift($attr)];
                 $list[] = ['pid' => $pid, 'cmd' => join(' ', $attr)];
             }
@@ -126,12 +122,12 @@ class ProcessService extends Service
      * @param integer $pid 进程号
      * @return boolean
      */
-    public function close(int $pid): bool
+    public static function close(int $pid): bool
     {
-        if ($this->iswin()) {
-            $this->exec("wmic process {$pid} call terminate");
+        if (static::iswin()) {
+            static::exec("wmic process {$pid} call terminate");
         } else {
-            $this->exec("kill -9 {$pid}");
+            static::exec("kill -9 {$pid}");
         }
         return true;
     }
@@ -142,7 +138,7 @@ class ProcessService extends Service
      * @param boolean|array $outarr 返回类型
      * @return string|array
      */
-    public function exec(string $command, $outarr = false)
+    public static function exec(string $command, $outarr = false)
     {
         exec($command, $output);
         return $outarr ? $output : join("\n", $output);
@@ -152,7 +148,7 @@ class ProcessService extends Service
      * 判断系统类型
      * @return boolean
      */
-    public function iswin(): bool
+    public static function iswin(): bool
     {
         return PATH_SEPARATOR === ';';
     }
@@ -161,7 +157,7 @@ class ProcessService extends Service
      * 读取组件版本号
      * @return string
      */
-    public function version(): string
+    public static function version(): string
     {
         return Library::VERSION;
     }
@@ -171,7 +167,7 @@ class ProcessService extends Service
      * @param string $content
      * @return string
      */
-    private function _space(string $content): string
+    private static function _space(string $content): string
     {
         return preg_replace('|\s+|', ' ', strtr(trim($content), '\\', '/'));
     }
@@ -182,8 +178,8 @@ class ProcessService extends Service
      * @param string $substr
      * @return boolean
      */
-    private function _issub(string $content, string $substr): bool
+    private static function _issub(string $content, string $substr): bool
     {
-        return stripos($this->_space($content), $this->_space($substr)) !== false;
+        return stripos(static::_space($content), static::_space($substr)) !== false;
     }
 }
