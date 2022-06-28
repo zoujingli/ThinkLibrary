@@ -156,7 +156,7 @@ abstract class Storage
     }
 
     /**
-     * 根据文件后缀获取文件MINE
+     * 获取后缀类型
      * @param array|string $exts 文件后缀
      * @param array $mime 文件信息
      * @return string
@@ -171,7 +171,7 @@ abstract class Storage
     }
 
     /**
-     * 获取所有文件的信息
+     * 获取所有类型
      * @return array
      */
     public static function mimes(): array
@@ -179,6 +179,21 @@ abstract class Storage
         static $mimes = [];
         if (count($mimes) > 0) return $mimes;
         return $mimes = include __DIR__ . '/storage/bin/mimes.php';
+    }
+
+    /**
+     * 获取存储类型
+     * @return array
+     */
+    public static function types(): array
+    {
+        return [
+            'local'  => lang('本地服务器存储'),
+            'qiniu'  => lang('七牛云对象存储'),
+            'upyun'  => lang('又拍云USS存储'),
+            'alioss' => lang('阿里云OSS存储'),
+            'txcos'  => lang('腾讯云COS存储'),
+        ];
     }
 
     /**
