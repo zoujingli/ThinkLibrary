@@ -118,8 +118,7 @@ class Library extends Service
                 $this->app->route->get('/favicon.ico', function () {
                     if (($time = time()) > $this->app->cache->get('favicon', 0)) {
                         $this->app->cache->set('favicon', $time + 3600);
-                        $state = SystemService::setFavicon();
-                        return $state ? redirect("/favicon.ico?t={$time}") : '';
+                        return SystemService::setFavicon() ? redirect("/favicon.ico?t={$time}") : '';
                     } else {
                         return '';
                     }
