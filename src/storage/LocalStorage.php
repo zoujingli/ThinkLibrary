@@ -38,7 +38,7 @@ class LocalStorage extends Storage
     {
         $type = sysconf('storage.local_http_protocol') ?: 'follow';
         if ($type === 'follow') $type = $this->app->request->scheme();
-        $this->prefix = trim(dirname($this->app->request->baseFile(false)), '\\/');
+        $this->prefix = trim(dirname($this->app->request->baseFile()), '\\/');
         if ($type !== 'path') {
             $domain = sysconf('storage.local_http_domain') ?: $this->app->request->host();
             if ($type === 'auto') {

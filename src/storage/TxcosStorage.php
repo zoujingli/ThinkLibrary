@@ -54,13 +54,15 @@ class TxcosStorage extends Storage
         $this->secretId = sysconf('storage.txcos_access_key');
         $this->secretKey = sysconf('storage.txcos_secret_key');
         // 计算链接前缀
+        $host = strtolower(sysconf('storage.txcos_http_domain'));
         $type = strtolower(sysconf('storage.txcos_http_protocol'));
-        $domain = strtolower(sysconf('storage.txcos_http_domain'));
         if ($type === 'auto') {
-            $this->prefix = "//{$domain}";
+            $this->prefix = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {
-            $this->prefix = "{$type}://{$domain}";
-        } else throw new Exception('未配置腾讯云COS访问域名哦');
+            $this->prefix = "{$type}://{$host}";
+        } else {
+            throw new Exception('未配置腾讯云COS访问域名哦');
+        }
     }
 
     /**

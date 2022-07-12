@@ -60,13 +60,15 @@ class UpyunStorage extends Storage
         $this->accessKey = sysconf('storage.upyun_access_key');
         $this->secretKey = sysconf('storage.upyun_secret_key');
         // 计算链接前缀
+        $host = strtolower(sysconf('storage.upyun_http_domain'));
         $type = strtolower(sysconf('storage.upyun_http_protocol'));
-        $domain = strtolower(sysconf('storage.upyun_http_domain'));
         if ($type === 'auto') {
-            $this->prefix = "//{$domain}";
+            $this->prefix = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {
-            $this->prefix = "{$type}://{$domain}";
-        } else throw new Exception('未配置又拍云URL域名哦');
+            $this->prefix = "{$type}://{$host}";
+        } else {
+            throw new Exception('未配置又拍云URL域名哦');
+        }
     }
 
     /**
