@@ -127,7 +127,7 @@ class ModuleService extends Service
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
                 $data[$name] = array_merge($vars, ['change' => []]);
                 foreach (NodeService::scanDirectory(static::getModuleInfoPath($name) . 'change', [], 'md') as $file) {
-                    $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = Parsedown::instance()->parse(file_get_contents($file));
+                    $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = file_get_contents($file);
                 }
             }
         }
