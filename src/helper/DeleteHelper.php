@@ -38,7 +38,7 @@ class DeleteHelper extends Helper
      */
     public function init($dbQuery, string $field = '', $where = []): ?bool
     {
-        $query = $this->buildQuery($dbQuery);
+        $query = static::buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $this->app->request->post($field);
 

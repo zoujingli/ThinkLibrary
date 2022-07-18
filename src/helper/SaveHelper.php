@@ -40,7 +40,7 @@ class SaveHelper extends Helper
      */
     public function init($dbQuery, array $edata = [], string $field = '', $where = []): bool
     {
-        $query = $this->buildQuery($dbQuery);
+        $query = static::buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
         $edata = $edata ?: $this->app->request->post();
         $value = $this->app->request->post($field);

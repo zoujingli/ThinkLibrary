@@ -45,7 +45,7 @@ class Library extends Service
     /**
      * 组件库版本号
      */
-    const VERSION = '6.0.34';
+    const VERSION = '6.0.35';
 
     /**
      * 静态应用实例

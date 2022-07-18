@@ -44,7 +44,7 @@ class FormHelper extends Helper
      */
     public function init($dbQuery, string $template = '', string $field = '', $where = [], array $edata = [])
     {
-        $query = $this->buildQuery($dbQuery);
+        $query = static::buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
         $value = $edata[$field] ?? input($field);
         if ($this->app->request->isGet()) {
