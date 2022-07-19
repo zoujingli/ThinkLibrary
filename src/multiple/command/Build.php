@@ -33,6 +33,12 @@ class Build extends Command
         $this->setName('build')->addArgument('app', Argument::OPTIONAL, 'app name .')->setDescription('Build App Dirs');
     }
 
+    /**
+     * @param \think\console\Input $input
+     * @param \think\console\Output $output
+     * @return int|void|null
+     * @codeCoverageIgnore
+     */
     protected function execute(Input $input, Output $output)
     {
         $this->basePath = $this->app->getBasePath();

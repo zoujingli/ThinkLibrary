@@ -61,7 +61,7 @@ class SystemBase extends Model
      */
     public static function types(bool $simple = false): array
     {
-        $types = static::mk()->where(['deleted' => 0])->distinct(true)->column('type');
+        $types = static::mk()->where(['deleted' => 0])->distinct()->column('type');
         if (empty($types) && empty($simple)) $types = ['身份权限'];
         return $types;
     }

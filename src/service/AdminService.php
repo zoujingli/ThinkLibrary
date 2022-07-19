@@ -198,7 +198,7 @@ class AdminService extends Service
         $user = SystemUser::mk()->where(['id' => $uid])->findOrEmpty()->toArray();
         if (!static::isSuper() && count($aids = str2arr($user['authorize'])) > 0) {
             $aids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $aids)->column('id');
-            if (!empty($aids)) $nodes = SystemNode::mk()->distinct(true)->whereIn('auth', $aids)->column('node');
+            if (!empty($aids)) $nodes = SystemNode::mk()->distinct()->whereIn('auth', $aids)->column('node');
         }
         $user['nodes'] = $nodes ?? [];
         Library::$sapp->session->set('user', $user);

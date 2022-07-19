@@ -94,7 +94,7 @@ class QueueService extends Service
             $this->app->log->error("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
             throw new Exception("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
         }
-        SystemQueue::mk()->where(['code' => $this->code])->strict(false)->failException(true)->update([
+        SystemQueue::mk()->where(['code' => $this->code])->strict(false)->failException()->update([
             'exec_pid' => 0, 'exec_time' => time() + $wait, 'status' => 1,
         ]);
         return $this->initialize($this->code);
@@ -135,7 +135,7 @@ class QueueService extends Service
             throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
         }
         $code = CodeExtend::uniqidDate(16, 'Q');
-        SystemQueue::mk()->failException(true)->insert([
+        SystemQueue::mk()->failException()->insert([
             'code'       => $code,
             'title'      => $title,
             'command'    => $command,

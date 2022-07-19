@@ -201,11 +201,10 @@ class UpyunStorage extends Storage
      * @param string $name 文件名称
      * @param integer $expires 有效时间
      * @param string|null $attname 下载名称
-     * @param integer|null $fileSize 文件大小
      * @param string|null $fileHash 文件哈希
      * @return array
      */
-    public function buildUploadToken(string $name, int $expires = 3600, ?string $attname = null, ?int $fileSize = null, ?string $fileHash = ''): array
+    public function buildUploadToken(string $name, int $expires = 3600, ?string $attname = null, ?string $fileHash = ''): array
     {
         $policy = ['save-key' => $name];
         $policy['date'] = gmdate('D, d M Y H:i:s \G\M\T');

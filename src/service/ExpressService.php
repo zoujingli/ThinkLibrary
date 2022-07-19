@@ -147,7 +147,7 @@ class ExpressService extends Service
             $content = HttpExtend::get("https://m.baidu.com/s?word=快递查询&ts={$ts}&t_kt=0&ie=utf-8&rsv_iqid=&rsv_t=&sa=&rsv_pq=&rsv_sug4=&tj=1&inputT={$input}&sugid=&ss=", [], $this->options);
             if (preg_match('#"(expSearchApi|checkExpUrl)":"(.*?)"#i', $content, $matches)) {
                 $this->app->cache->set('express_kuaidi_uri', $expressUri = $matches[2], 3600);
-                if (preg_match('#"text":"快递查询","option":.*?(\[.*?\]).*?#i', $content, $items)) {
+                if (preg_match('#"text":"快递查询","option":.*?(\[.*?]).*?#i', $content, $items)) {
                     $attr = json_decode($items[1], true);
                     $expressCom = array_combine(array_column($attr, 'value'), array_column($attr, 'text'));
                     $this->app->cache->set('express_kuaidi_com', $expressCom, 3600);

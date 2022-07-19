@@ -65,7 +65,7 @@ class Replace extends Command
                 }
             }
             if (count($data) > 0) {
-                if ($this->app->db->table($table)->master(true)->where('1=1')->update($data) !== false) {
+                if ($this->app->db->table($table)->master()->where('1=1')->update($data) !== false) {
                     $this->setQueueMessage($total, $count, sprintf("成功替换数据表 %s", Str::studly($table)), 1);
                 } else {
                     $this->setQueueMessage($total, $count, sprintf("失败替换数据表 %s", Str::studly($table)), 1);

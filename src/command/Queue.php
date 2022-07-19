@@ -186,6 +186,7 @@ class Queue extends Command
     /**
      * 清理所有任务
      * @throws \think\admin\Exception
+     * @throws \think\db\exception\DbException
      */
     protected function cleanAction()
     {
