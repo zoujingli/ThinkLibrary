@@ -28,7 +28,6 @@ use think\exception\HttpResponseException;
  */
 class TokenHelper extends Helper
 {
-
     /**
      * 初始化验证码器
      * @param boolean $return
@@ -37,12 +36,11 @@ class TokenHelper extends Helper
     public function init(bool $return = false): bool
     {
         $this->class->csrf_state = true;
-        if ($this->app->request->isPost() && !$this->app->request->checkToken('_token_')) {
-            if ($return) return false;
-            $this->class->error($this->class->csrf_message ?: lang('think_library_csrf_error'));
-        } else {
-            return true;
-        }
+        if (!$this->app->request->isPost()) return true;
+        $token = $this->app->request->post('_token_');
+        $extra = ['_token_' => $token ?: $this->app->request->header('User-Form-Token')];
+        if ($this->app->request->checkToken('_token_', $extra)) return true; elseif ($return) return false;
+        $this->class->error($this->class->csrf_message ?: lang('think_library_csrf_error'));
     }
 
     /**
