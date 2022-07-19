@@ -45,7 +45,7 @@ class SystemService extends Service
      * 配置数据缓存
      * @var array
      */
-    protected static $data = [];
+    private static $data = [];
 
     /**
      * 系统服务初始化
@@ -59,15 +59,15 @@ class SystemService extends Service
     /**
      * 系统服务初始化
      * @param ?\think\App $app
-     * @return void
+     * @return App
      */
-    private static function init(?App $app): void
+    private static function init(?App $app): App
     {
         // 替换 ThinkPHP 地址，并初始化运行环境
         Library::$sapp = $app ?: Container::getInstance()->make(App::class);
         Library::$sapp->bind('think\Route', Route::class);
         Library::$sapp->bind('think\route\Url', BuildUrl::class);
-        Library::$sapp->debug(static::isDebug());
+        return Library::$sapp->debug(static::isDebug());
     }
 
     /**
@@ -118,7 +118,7 @@ class SystemService extends Service
             Library::$sapp->cache->delete('SystemConfig');
             $map = ['type' => $type, 'name' => $field];
             $data = array_merge($map, ['value' => $value]);
-            $query = SystemConfig::mk()->master(true)->where($map);
+            $query = SystemConfig::mk()->master()->where($map);
             return (clone $query)->count() > 0 ? $query->update($data) : $query->insert($data);
         }
     }
@@ -480,6 +480,7 @@ class SystemService extends Service
     public static function bindRuntime(array $data = []): bool
     {
         if (empty($data)) $data = static::getRuntime();
+        // 设置模块绑定
         $bind['app_map'] = static::uniqueArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']);
         $bind['domain_bind'] = static::uniqueArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']);
         Library::$sapp->config->set($bind, 'app');
@@ -496,8 +497,7 @@ class SystemService extends Service
      */
     public static function doInit(?App $app = null)
     {
-        static::init($app);
-        ($response = Library::$sapp->http->run())->send();
+        ($response = static::init($app)->http->run())->send();
         Library::$sapp->http->end($response);
     }
 
@@ -508,8 +508,7 @@ class SystemService extends Service
      */
     public static function doConsoleInit(?App $app = null)
     {
-        static::init($app);
-        Library::$sapp->console->run();
+        static::init($app)->console->run();
     }
 
     /**
