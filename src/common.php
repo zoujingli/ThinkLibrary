@@ -20,7 +20,6 @@ use think\admin\Library;
 use think\admin\service\AdminService;
 use think\admin\service\QueueService;
 use think\admin\service\SystemService;
-use think\admin\service\TokenService;
 use think\admin\Storage;
 use think\db\Query;
 use think\Model;
@@ -165,13 +164,11 @@ if (!function_exists('xss_safe')) {
 if (!function_exists('systoken')) {
     /**
      * 生成 CSRF-TOKEN 参数
-     * @param null|string $node
      * @return string
      */
-    function systoken(?string $node = null): string
+    function systoken(): string
     {
-        $result = TokenService::instance()->buildFormToken($node);
-        return $result['token'] ?? '';
+        return Library::$sapp->request->buildToken('_token_');
     }
 }
 if (!function_exists('sysoplog')) {

@@ -210,7 +210,6 @@ class AdminService extends Service
      */
     public static function clearCache()
     {
-        TokenService::clearCache();
         Library::$sapp->cache->delete('SystemAuthNode');
     }
 }

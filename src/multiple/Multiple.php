@@ -80,33 +80,23 @@ class Multiple
     protected function parseMultiApp(): bool
     {
         $defaultApp = $this->app->config->get('route.default_app') ?: 'index';
-        [$script, $path] = [$this->scriptName(), $this->app->request->pathinfo()];
+        [$script, $pathinfo] = [$this->scriptName(), $this->app->request->pathinfo()];
         if ($this->name || ($script && !in_array($script, ['index', 'router', 'think']))) {
-            $appName = $this->name ?: $script;
-            $this->app->http->setBind(true);
-            $this->app->request->setPathinfo(preg_replace("#^{$script}\.php(/|\.|$)#i", '', $path) ?: '/');
+            [$appName] = [$this->name ?: $script, $this->app->http->setBind()];
+            $this->app->request->setPathinfo(preg_replace("#^{$script}\.php(/|\.|$)#i", '', $pathinfo) ?: '/');
         } else {
-            $appName = null;
             $this->app->http->setBind(false);
-            $bind = $this->app->config->get('app.domain_bind', []);
-            if (!empty($bind)) {
-                $domain = $this->app->request->host(true);
-                $subDomain = $this->app->request->subDomain();
-                if (isset($bind[$domain])) {
-                    $appName = $bind[$domain];
-                    $this->app->http->setBind(true);
-                } elseif (isset($bind[$subDomain])) {
-                    $appName = $bind[$subDomain];
-                    $this->app->http->setBind(true);
-                } elseif (isset($bind['*'])) {
-                    $appName = $bind['*'];
-                    $this->app->http->setBind(true);
+            if (($bind = $this->app->config->get('app.domain_bind', [])) && !empty($bind)) {
+                $keys = [$this->app->request->host(true), $this->app->request->subDomain(), '*'];
+                foreach ($keys as $key) if (isset($bind[$key])) {
+                    [$appName] = [$bind[$key], $this->app->http->setBind()];
+                    break;
                 }
             }
             if (!$this->app->http->isBind()) {
                 $map = $this->app->config->get('app.app_map', []);
                 $deny = $this->app->config->get('app.deny_app_list', []);
-                $name = current(explode('/', $path));
+                $name = current(explode('/', $pathinfo));
                 if (strpos($name, '.')) {
                     $name = strstr($name, '.', true);
                 }
@@ -123,48 +113,44 @@ class Multiple
                 } else {
                     $appName = $name ?: $defaultApp;
                     if (!is_dir($this->path ?: $this->app->getBasePath() . $appName)) {
-                        if ($this->app->config->get('app.app_express', false)) {
-                            $this->setApp($defaultApp);
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp);
                     }
                 }
                 if ($name) {
                     $this->app->request->setRoot('/' . $name);
-                    $this->app->request->setPathinfo(strpos($path, '/') ? ltrim(strstr($path, '/'), '/') : '');
+                    $this->app->request->setPathinfo(strpos($pathinfo, '/') ? ltrim(strstr($pathinfo, '/'), '/') : '');
                 }
             }
         }
-        $this->setApp($appName ?: $defaultApp);
-        return true;
+        return $this->setMultiApp($appName ?? $defaultApp);
     }
 
     /**
      * 设置应用参数
      * @param string $appName 应用名称
+     * @return boolean
      */
-    private function setApp(string $appName): void
+    private function setMultiApp(string $appName): bool
     {
-        $space = $this->app->config->get('app.app_namespace') ?: 'app';
         $appPath = $this->path ?: $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR;
-        // 动态设置多应用变量
-        $this->app->setAppPath($appPath);
-        $this->app->setNamespace("{$space}\\{$appName}");
-        $this->app->http->name($appName);
         if (is_dir($appPath)) {
-            $this->app->http->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
-            $this->loadApp($appPath);
+            $appSpec = $this->app->config->get('app.app_namespace') ?: 'app';
+            $this->app->setNamespace("{$appSpec}\\{$appName}")->setAppPath($appPath);
+            $this->app->http->name($appName)->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
+            $this->loadMultiApp($appPath);
+            return true;
+        } else {
+            return false;
         }
     }
 
     /**
      * 加载应用文件
      * @param string $appPath 应用路径
+     * @codeCoverageIgnore
      * @return void
      */
-    private function loadApp(string $appPath): void
+    private function loadMultiApp(string $appPath): void
     {
         if (is_file($appPath . 'common.php')) {
             include_once $appPath . 'common.php';
@@ -187,7 +173,7 @@ class Multiple
         if (is_file($appPath . 'provider.php')) {
             $this->app->bind(include $appPath . 'provider.php');
         }
-        $this->app->loadLangPack($this->app->lang->defaultLangSet());
+        $this->app->loadLangPack();
     }
 
     /**

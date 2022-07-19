@@ -18,7 +18,7 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
-use think\admin\service\TokenService;
+use think\admin\Library;
 use think\exception\HttpResponseException;
 
 /**
@@ -37,20 +37,12 @@ class TokenHelper extends Helper
     public function init(bool $return = false): bool
     {
         $this->class->csrf_state = true;
-        if ($this->app->request->isPost() && !TokenService::instance()->checkFormToken()) {
+        if ($this->app->request->isPost() && !$this->app->request->checkToken('_token_')) {
             if ($return) return false;
             $this->class->error($this->class->csrf_message ?: lang('think_library_csrf_error'));
         } else {
             return true;
         }
-    }
-
-    /**
-     * 清理表单令牌
-     */
-    public static function clear()
-    {
-        TokenService::instance()->clearFormToken();
     }
 
     /**
@@ -63,10 +55,9 @@ class TokenHelper extends Helper
     {
         throw new HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
             return preg_replace_callback('/<\/form>/i', function () use ($node) {
-                $csrf = TokenService::instance()->buildFormToken($node);
-                return "<input type='hidden' name='_token_' value='{$csrf['token']}'></form>";
+                $token = Library::$sapp->request->buildToken('_token_');
+                return "<input type='hidden' name='_token_' value='{$token}'></form>";
             }, $html);
         }));
     }
-
 }
