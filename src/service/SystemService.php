@@ -497,8 +497,9 @@ class SystemService extends Service
      */
     public static function doInit(?App $app = null)
     {
-        ($response = static::init($app)->http->run())->send();
-        Library::$sapp->http->end($response);
+        $http = static::init($app)->http;
+        ($response = $http->run())->send();
+        $http->end($response);
     }
 
     /**
