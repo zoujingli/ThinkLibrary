@@ -52,11 +52,20 @@ class CaptchaService extends Service
             $this->code .= $this->charset[mt_rand(0, $length)];
         }
         // 设置字体文件路径
-        $this->fontfile = __DIR__ . '/bin/captcha.ttf';
+        $this->fontfile = static::font();
         // 缓存验证码字符串
         $this->app->cache->set($this->uniqid, $this->code, 360);
         // 返回当前对象
         return $this;
+    }
+
+    /**
+     * 获取字体文件
+     * @return string
+     */
+    public static function font(): string
+    {
+        return __DIR__ . '/bin/captcha.ttf';
     }
 
     /**
