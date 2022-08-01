@@ -194,7 +194,7 @@ class FaviconExtend
         if (false === ($data = file_get_contents($file))) {
             return false;
         }
-        if (false === ($image = imagecreatefromstring($data))) {
+        if (false === ($image = @imagecreatefromstring($data))) {
             return false;
         }
         unset($data);
