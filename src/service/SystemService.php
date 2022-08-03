@@ -315,8 +315,7 @@ class SystemService extends Service
      */
     public static function setOplog(string $action, string $content): bool
     {
-        $oplog = static::getOplog($action, $content);
-        return SystemOplog::mk()->insert($oplog) !== false;
+        return SystemOplog::mk()->save(static::getOplog($action, $content)) !== false;
     }
 
     /**
