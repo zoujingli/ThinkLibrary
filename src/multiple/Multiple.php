@@ -77,66 +77,54 @@ class Multiple
      * 解析多应用
      * @return bool
      */
-    protected function parseMultiApp(): bool
+    private function parseMultiApp(): bool
     {
         $defaultApp = $this->app->config->get('route.default_app') ?: 'index';
         [$script, $pathinfo] = [$this->scriptName(), $this->app->request->pathinfo()];
         if ($this->name || ($script && !in_array($script, ['index', 'router', 'think']))) {
-            [$appName] = [$this->name ?: $script, $this->app->http->setBind()];
             $this->app->request->setPathinfo(preg_replace("#^{$script}\.php(/|\.|$)#i", '', $pathinfo) ?: '/');
+            return $this->setMultiApp($this->name ?: $script, true);
         } else {
-            $this->app->http->setBind(false);
-            if (($bind = $this->app->config->get('app.domain_bind', [])) && !empty($bind)) {
-                $keys = [$this->app->request->host(true), $this->app->request->subDomain(), '*'];
-                foreach ($keys as $key) if (isset($bind[$key])) {
-                    [$appName] = [$bind[$key], $this->app->http->setBind()];
-                    break;
+            // 域名绑定处理
+            $domains = $this->app->config->get('app.domain_bind', []);
+            if (!empty($domains)) foreach ([$this->app->request->host(true), $this->app->request->subDomain(), '*'] as $key) {
+                if (isset($domains[$key])) return $this->setMultiApp($domains[$key], true);
+            }
+            $name = current(explode('/', $pathinfo));
+            if (strpos($name, '.')) $name = strstr($name, '.', true);
+            // 应用绑定处理
+            $map = $this->app->config->get('app.app_map', []);
+            if (isset($map[$name])) {
+                $appName = $map[$name] instanceof Closure ? (call_user_func_array($map[$name], [$this->app]) ?: $name) : $map[$name];
+            } elseif ($name && (in_array($name, $map) || in_array($name, $this->app->config->get('app.deny_app_list', [])))) {
+                throw new HttpException(404, 'app not exists:' . $name);
+            } elseif ($name && isset($map['*'])) {
+                $appName = $map['*'];
+            } else {
+                $appName = $name ?: $defaultApp;
+                if (!is_dir($this->path ?: $this->app->getBasePath() . $appName)) {
+                    return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp, false);
                 }
             }
-            if (!$this->app->http->isBind()) {
-                $map = $this->app->config->get('app.app_map', []);
-                $deny = $this->app->config->get('app.deny_app_list', []);
-                $name = current(explode('/', $pathinfo));
-                if (strpos($name, '.')) {
-                    $name = strstr($name, '.', true);
-                }
-                if (isset($map[$name])) {
-                    if ($map[$name] instanceof Closure) {
-                        $appName = call_user_func_array($map[$name], [$this->app]) ?: $name;
-                    } else {
-                        $appName = $map[$name];
-                    }
-                } elseif ($name && (in_array($name, $map) || in_array($name, $deny))) {
-                    throw new HttpException(404, 'app not exists:' . $name);
-                } elseif ($name && isset($map['*'])) {
-                    $appName = $map['*'];
-                } else {
-                    $appName = $name ?: $defaultApp;
-                    if (!is_dir($this->path ?: $this->app->getBasePath() . $appName)) {
-                        return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp);
-                    }
-                }
-                if ($name) {
-                    $this->app->request->setRoot('/' . $name);
-                    $this->app->request->setPathinfo(strpos($pathinfo, '/') ? ltrim(strstr($pathinfo, '/'), '/') : '');
-                }
+            if ($name) {
+                $this->app->request->setRoot('/' . $name);
+                $this->app->request->setPathinfo(strpos($pathinfo, '/') ? ltrim(strstr($pathinfo, '/'), '/') : '');
             }
         }
-        return $this->setMultiApp($appName ?? $defaultApp);
+        return $this->setMultiApp($appName ?? $defaultApp, $this->app->http->isBind());
     }
 
     /**
      * 设置应用参数
      * @param string $appName 应用名称
+     * @param boolean $appBind 应用绑定
      * @return boolean
      */
-    private function setMultiApp(string $appName): bool
+    private function setMultiApp(string $appName, bool $appBind): bool
     {
-        $appPath = $this->path ?: $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR;
-        if (is_dir($appPath)) {
-            $appSpec = $this->app->config->get('app.app_namespace') ?: 'app';
-            $this->app->setNamespace("{$appSpec}\\{$appName}")->setAppPath($appPath);
-            $this->app->http->name($appName)->path($appPath)->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
+        if (is_dir($appPath = $this->path ?: $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR)) {
+            $this->app->setNamespace(($this->app->config->get('app.app_namespace') ?: 'app') . "\\{$appName}")->setAppPath($appPath);
+            $this->app->http->setBind($appBind)->name($appName)->path($appPath)->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
             $this->loadMultiApp($appPath);
             return true;
         } else {
