@@ -387,7 +387,7 @@ class SystemService extends Service
     {
         $domain = Library::$sapp->request->host(true);
         $isDemo = is_numeric(stripos($domain, 'thinkadmin.top'));
-        $isLocal = $domain === '127.0.0.1' || is_numeric(stripos($domain, 'localhost'));
+        $isLocal = $domain === '127.0.0.1' || is_numeric(stripos($domain, 'local'));
         if ($type === 'dev') return $isLocal || $isDemo;
         if ($type === 'demo') return $isDemo;
         if ($type === 'local') return $isLocal;
