@@ -136,7 +136,7 @@ class Multiple
         if (is_dir($appPath)) {
             $appSpec = $this->app->config->get('app.app_namespace') ?: 'app';
             $this->app->setNamespace("{$appSpec}\\{$appName}")->setAppPath($appPath);
-            $this->app->http->name($appName)->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
+            $this->app->http->name($appName)->path($appPath)->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
             $this->loadMultiApp($appPath);
             return true;
         } else {
