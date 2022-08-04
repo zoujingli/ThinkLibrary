@@ -105,19 +105,19 @@ class ZtSmsService extends Service
         $cache = $this->app->cache->get($ckey = md5("code-{$template}-{$phone}"), []);
         if (is_array($cache) && isset($cache['time']) && $cache['time'] + $wait > $time) {
             $dtime = $cache['time'] + $wait < $time ? 0 : $cache['time'] + $wait - $time;
-            return [1, '短信验证码已经发送！', ['time' => $dtime]];
+            return [1, lang('短信验证码已经发送！'), ['time' => $dtime]];
         }
         // 生成新的验证码
         $code = (string)rand(100000, 999999);
         $this->app->cache->set($ckey, ['code' => $code, 'time' => $time], 600);
         // 尝试发送短信内容
-        $content = sysconf($template) ?: '您的验证码为{code}，请在十分钟内完成操作！';
+        $content = sysconf($template) ?: lang('您的验证码为{code}，请在十分钟内完成操作！');
         [$state] = $this->timeSend($phone, str_replace('{code}', $code, $content));
         if ($state) {
-            return [1, '短信验证码发送成功！', ['time' => $wait]];
+            return [1, lang('短信验证码发送成功！'), ['time' => $wait]];
         } else {
             $this->app->cache->delete($ckey);
-            return [0, '短信发送失败，请稍候再试！', ['time' => 0]];
+            return [0, lang('短信发送失败，请稍候再试！'), ['time' => 0]];
         }
     }
 
@@ -243,11 +243,11 @@ class ZtSmsService extends Service
         $extends = ['username' => $this->username, 'password' => $encode, 'tKey' => $tkey];
         $result = json_decode(HttpExtend::post($this->api . $uri, json_encode(array_merge($data, $extends)), $options), true);
         if (empty($result['code'])) {
-            return [0, [], '接口请求网络异常'];
+            return [0, [], lang('接口请求网络异常')];
         } elseif (intval($result['code']) === 200) {
-            return [1, $result, $this->error($result['code'])];
+            return [1, $result, lang($this->error($result['code']))];
         } else {
-            return [0, $result, $this->error($result['code'])];
+            return [0, $result, lang($this->error($result['code']))];
         }
     }
 
