@@ -360,7 +360,7 @@ class SystemService extends Service
         try {
             $icon = $icon ?: sysconf('base.site_icon');
             if (!preg_match('#^https?://#i', $icon)) {
-                throw new Exception('无效的原文件地址！');
+                throw new Exception(lang('无效的原文件地址！'));
             }
             if (preg_match('#/upload/(\w{2}/\w{30}.\w+)$#i', $icon, $vars)) {
                 $info = LocalStorage::instance()->info($vars[1]);

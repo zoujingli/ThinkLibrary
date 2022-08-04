@@ -170,18 +170,18 @@ class MessageService extends Service
         $cache = $this->app->cache->get($ckey = "{$type}_{$phone}", []);
         if (is_array($cache) && isset($cache['time']) && $cache['time'] > time() - $wait) {
             $dtime = ($cache['time'] + $wait < time()) ? 0 : ($wait - time() + $cache['time']);
-            return [1, '短信验证码已经发送！', ['time' => $dtime]];
+            return [1, lang('短信验证码已经发送！'), ['time' => $dtime]];
         }
         [$code, $content] = [rand(1000, 9999) . '', sysconf($type)];
         if (empty($content) || stripos($content, '{code}') === false) {
-            $content = '您的验证码为{code}，请在十分钟内完成操作！';
+            $content = lang('您的验证码为{code}，请在十分钟内完成操作！');
         }
         $this->app->cache->set($ckey, $cache = ['code' => $code, 'time' => time()], 600);
         if ($this->sendChinaSms($phone, str_replace('{code}', $code, $content))) {
             $dtime = ($cache['time'] + $wait < time()) ? 0 : ($wait - time() + $cache['time']);
-            return [1, '短信验证码发送成功！', ['time' => $dtime]];
+            return [1, lang('短信验证码发送成功！'), ['time' => $dtime]];
         } else {
-            return [0, '短信发送失败，请稍候再试！', []];
+            return [0, lang('短信发送失败，请稍候再试！'), []];
         }
     }
 
@@ -210,15 +210,15 @@ class MessageService extends Service
             'password' => md5(md5($this->chinaPassword) . $tkey),
         ]);
         if ($result > -1) {
-            return ['code' => 1, 'num' => $result, 'msg' => '获取短信剩余条数成功！'];
+            return ['code' => 1, 'num' => $result, 'msg' => lang('获取短信剩余条数成功！')];
         } elseif ($result > -2) {
-            return ['code' => 0, 'num' => '0', 'msg' => '用户名或者密码不正确！'];
+            return ['code' => 0, 'num' => '0', 'msg' => lang('用户名或者密码不正确！')];
         } elseif ($result > -3) {
-            return ['code' => 0, 'num' => '0', 'msg' => 'tkey不正确！'];
+            return ['code' => 0, 'num' => '0', 'msg' => lang('tkey不正确！')];
         } elseif ($result > -4) {
-            return ['code' => 0, 'num' => '0', 'msg' => '用户不存在或用户停用！'];
+            return ['code' => 0, 'num' => '0', 'msg' => lang('用户不存在或用户停用！')];
         } else {
-            return ['code' => 0, 'num' => '0', 'msg' => '未知错误原因！'];
+            return ['code' => 0, 'num' => '0', 'msg' => lang('未知错误原因！')];
         }
     }
 
@@ -273,9 +273,9 @@ class MessageService extends Service
             'username' => $this->globeUsername, 'tkey' => $tkey, 'password' => md5(md5($this->globePassword) . $tkey),
         ]);
         if (!is_numeric($result) && ($state = intval($result)) && isset($this->globeMessageMap[$state])) {
-            return ['code' => 0, 'num' => 0, 'msg' => $this->globeMessageMap[$state]];
+            return ['code' => 0, 'num' => 0, 'msg' => lang($this->globeMessageMap[$state])];
         } else {
-            return ['code' => 1, 'num' => $result, 'msg' => '查询成功'];
+            return ['code' => 1, 'num' => $result, 'msg' => lang('查询成功')];
         }
     }
 
@@ -506,5 +506,4 @@ class MessageService extends Service
             ['title' => '黑山共和国', 'english' => 'The Republic of Montenegro', 'code' => 382],
         ];
     }
-
 }

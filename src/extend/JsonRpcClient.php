@@ -76,11 +76,11 @@ class JsonRpcClient
             while ($line = fgets($fp)) $response .= trim($line) . "\n";
             [, $response] = [fclose($fp), json_decode($response, true)];
         } else {
-            throw new Exception("无法连接到 {$this->proxy}");
+            throw new Exception(lang("无法连接到 %s", [$this->proxy]));
         }
         // Final checks and return
         if ($response['id'] != $this->id) {
-            throw new Exception("错误标记 (请求标记: {$this->id}, 响应标记: {$response['id']}）");
+            throw new Exception(lang("错误标记 (请求标记: %v, 响应标记: %v）", [$this->id, $response['id']]));
         }
         if (is_null($response['error'])) {
             return $response['result'];
