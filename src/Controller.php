@@ -301,18 +301,18 @@ class Controller extends stdClass
     {
         try {
             $queue = QueueService::register($title, $command, $later, $data, $rscript, $loops);
-            $this->success('创建任务成功！', $queue->code);
+            $this->success(lang('创建任务成功！'), $queue->code);
         } catch (Exception $exception) {
             $code = $exception->getData();
             if (is_string($code) && stripos($code, 'Q') === 0) {
-                $this->success('任务已经存在，无需再次创建！', $code);
+                $this->success(lang('任务已经存在，无需再次创建！'), $code);
             } else {
                 $this->error($exception->getMessage());
             }
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
-            $this->error("创建任务失败，{$exception->getMessage()}");
+            $this->error(lang('创建任务失败，%s', [$exception->getMessage()]));
         }
     }
 }

@@ -54,7 +54,7 @@ class FaviconExtend
         ];
 
         foreach ($functions as $function) if (!function_exists($function)) {
-            throw new Exception(sprintf('Required %s function not found.', $function));
+            throw new Exception(lang('Required %s function not found.', [$function]));
         }
 
         if (is_string($file)) {
@@ -72,7 +72,7 @@ class FaviconExtend
     public function addImage(string $file, array $size = []): FaviconExtend
     {
         if (false === ($im = $this->loadImageFile($file))) {
-            throw new Exception('Read picture file Failed.');
+            throw new Exception(lang('Read picture file Failed.'));
         }
         if (empty($size)) {
             $size = [imagesx($im), imagesy($im)];
@@ -86,7 +86,7 @@ class FaviconExtend
 
         [$sourceWidth, $sourceHeight] = [imagesx($im), imagesy($im)];
         if (false === imagecopyresampled($image, $im, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight)) {
-            throw new Exception('Parse and process picture Failed.');
+            throw new Exception(lang('Parse and process picture Failed.'));
         }
         $this->addImageData($image);
         return $this;
