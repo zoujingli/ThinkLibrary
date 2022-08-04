@@ -67,7 +67,7 @@ class UpyunStorage extends Storage
         } elseif (in_array($type, ['http', 'https'])) {
             $this->prefix = "{$type}://{$host}";
         } else {
-            throw new Exception('未配置又拍云URL域名哦');
+            throw new Exception(lang('未配置又拍云URL域名哦'));
         }
     }
 

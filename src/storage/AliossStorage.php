@@ -74,7 +74,7 @@ class AliossStorage extends Storage
         } elseif (in_array($type, ['http', 'https'])) {
             $this->prefix = "{$type}://{$host}";
         } else {
-            throw new Exception('未配置阿里云URL域名哦');
+            throw new Exception(lang('未配置阿里云URL域名哦'));
         }
     }
 
@@ -264,30 +264,30 @@ class AliossStorage extends Storage
     public static function region(): array
     {
         return [
-            'oss-cn-hangzhou.aliyuncs.com'    => '华东 1（杭州）',
-            'oss-cn-shanghai.aliyuncs.com'    => '华东 2（上海）',
-            'oss-cn-qingdao.aliyuncs.com'     => '华北 1（青岛）',
-            'oss-cn-beijing.aliyuncs.com'     => '华北 2（北京）',
-            'oss-cn-zhangjiakou.aliyuncs.com' => '华北 3（张家口）',
-            'oss-cn-huhehaote.aliyuncs.com'   => '华北 5（呼和浩特）',
-            'oss-cn-wulanchabu.aliyuncs.com'  => '华北 6（乌兰察布）',
-            'oss-cn-shenzhen.aliyuncs.com'    => '华南 1（深圳）',
-            'oss-cn-heyuan.aliyuncs.com'      => '华南 2（河源）',
-            'oss-cn-guangzhou.aliyuncs.com'   => '华南 3（广州）',
-            'oss-cn-chengdu.aliyuncs.com'     => '西南 1（成都）',
-            'oss-cn-hongkong.aliyuncs.com'    => '中国（香港）',
-            'oss-us-west-1.aliyuncs.com'      => '美国（硅谷）',
-            'oss-us-east-1.aliyuncs.com'      => '美国（弗吉尼亚）',
-            'oss-ap-southeast-1.aliyuncs.com' => '亚太东南 1（新加坡）',
-            'oss-ap-southeast-2.aliyuncs.com' => '亚太东南 2（悉尼）',
-            'oss-ap-southeast-3.aliyuncs.com' => '亚太东南 3（吉隆坡）',
-            'oss-ap-southeast-5.aliyuncs.com' => '亚太东南 5（雅加达）',
-            'oss-ap-southeast-6.aliyuncs.com' => '亚太东南 6（马尼拉）',
-            'oss-ap-northeast-1.aliyuncs.com' => '亚太东北 1（日本）',
-            'oss-ap-south-1.aliyuncs.com'     => '亚太南部 1（孟买）',
-            'oss-eu-central-1.aliyuncs.com'   => '欧洲中部 1（法兰克福）',
-            'oss-eu-west-1.aliyuncs.com'      => '英国（伦敦）',
-            'oss-me-east-1.aliyuncs.com'      => '中东东部 1（迪拜）',
+            'oss-cn-hangzhou.aliyuncs.com'    => lang('华东 1（杭州）'),
+            'oss-cn-shanghai.aliyuncs.com'    => lang('华东 2（上海）'),
+            'oss-cn-qingdao.aliyuncs.com'     => lang('华北 1（青岛）'),
+            'oss-cn-beijing.aliyuncs.com'     => lang('华北 2（北京）'),
+            'oss-cn-zhangjiakou.aliyuncs.com' => lang('华北 3（张家口）'),
+            'oss-cn-huhehaote.aliyuncs.com'   => lang('华北 5（呼和浩特）'),
+            'oss-cn-wulanchabu.aliyuncs.com'  => lang('华北 6（乌兰察布）'),
+            'oss-cn-shenzhen.aliyuncs.com'    => lang('华南 1（深圳）'),
+            'oss-cn-heyuan.aliyuncs.com'      => lang('华南 2（河源）'),
+            'oss-cn-guangzhou.aliyuncs.com'   => lang('华南 3（广州）'),
+            'oss-cn-chengdu.aliyuncs.com'     => lang('西南 1（成都）'),
+            'oss-cn-hongkong.aliyuncs.com'    => lang('中国（香港）'),
+            'oss-us-west-1.aliyuncs.com'      => lang('美国（硅谷）'),
+            'oss-us-east-1.aliyuncs.com'      => lang('美国（弗吉尼亚）'),
+            'oss-ap-southeast-1.aliyuncs.com' => lang('亚太东南 1（新加坡）'),
+            'oss-ap-southeast-2.aliyuncs.com' => lang('亚太东南 2（悉尼）'),
+            'oss-ap-southeast-3.aliyuncs.com' => lang('亚太东南 3（吉隆坡）'),
+            'oss-ap-southeast-5.aliyuncs.com' => lang('亚太东南 5（雅加达）'),
+            'oss-ap-southeast-6.aliyuncs.com' => lang('亚太东南 6（马尼拉）'),
+            'oss-ap-northeast-1.aliyuncs.com' => lang('亚太东北 1（日本）'),
+            'oss-ap-south-1.aliyuncs.com'     => lang('亚太南部 1（孟买）'),
+            'oss-eu-central-1.aliyuncs.com'   => lang('欧洲中部 1（法兰克福）'),
+            'oss-eu-west-1.aliyuncs.com'      => lang('英国（伦敦）'),
+            'oss-me-east-1.aliyuncs.com'      => lang('中东东部 1（迪拜）'),
         ];
     }
 }

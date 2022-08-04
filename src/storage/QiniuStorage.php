@@ -54,7 +54,7 @@ class QiniuStorage extends Storage
         } elseif (in_array($type, ['http', 'https'])) {
             $this->prefix = "{$type}://{$host}";
         } else {
-            throw new Exception('未配置七牛云URL域名哦');
+            throw new Exception(lang('未配置七牛云URL域名哦'));
         }
     }
 
@@ -193,7 +193,7 @@ class QiniuStorage extends Storage
             case '东南亚':
                 return "{$protocol}://up-as0.qiniup.com";
             default:
-                throw new Exception('未配置七牛云空间区域哦');
+                throw new Exception(lang('未配置七牛云空间区域哦'));
         }
     }
 
@@ -243,11 +243,11 @@ class QiniuStorage extends Storage
     public static function region(): array
     {
         return [
-            'up.qiniup.com'     => '华东',
-            'up-z1.qiniup.com'  => '华北',
-            'up-z2.qiniup.com'  => '华南',
-            'up-na0.qiniup.com' => '北美',
-            'up-as0.qiniup.com' => '东南亚',
+            'up.qiniup.com'     => lang('华东'),
+            'up-z1.qiniup.com'  => lang('华北'),
+            'up-z2.qiniup.com'  => lang('华南'),
+            'up-na0.qiniup.com' => lang('北美'),
+            'up-as0.qiniup.com' => lang('东南亚'),
         ];
     }
 }

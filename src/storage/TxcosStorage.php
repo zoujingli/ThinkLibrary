@@ -61,7 +61,7 @@ class TxcosStorage extends Storage
         } elseif (in_array($type, ['http', 'https'])) {
             $this->prefix = "{$type}://{$host}";
         } else {
-            throw new Exception('未配置腾讯云COS访问域名哦');
+            throw new Exception(lang('未配置腾讯云COS访问域名哦'));
         }
     }
 
@@ -274,27 +274,27 @@ class TxcosStorage extends Storage
     public static function region(): array
     {
         return [
-            'cos.ap-beijing-1.myqcloud.com'     => '中国大陆 公有云地域 北京一区',
-            'cos.ap-beijing.myqcloud.com'       => '中国大陆 公有云地域 北京',
-            'cos.ap-nanjing.myqcloud.com'       => '中国大陆 公有云地域 南京',
-            'cos.ap-shanghai.myqcloud.com'      => '中国大陆 公有云地域 上海',
-            'cos.ap-guangzhou.myqcloud.com'     => '中国大陆 公有云地域 广州',
-            'cos.ap-chengdu.myqcloud.com'       => '中国大陆 公有云地域 成都',
-            'cos.ap-chongqing.myqcloud.com'     => '中国大陆 公有云地域 重庆',
-            'cos.ap-shenzhen-fsi.myqcloud.com'  => '中国大陆 金融云地域 深圳金融',
-            'cos.ap-shanghai-fsi.myqcloud.com'  => '中国大陆 金融云地域 上海金融',
-            'cos.ap-beijing-fsi.myqcloud.com'   => '中国大陆 金融云地域 北京金融',
-            'cos.ap-hongkong.myqcloud.com'      => '亚太地区 公有云地域 中国香港',
-            'cos.ap-singapore.myqcloud.com'     => '亚太地区 公有云地域 新加坡',
-            'cos.ap-mumbai.myqcloud.com'        => '亚太地区 公有云地域 孟买',
-            'cos.ap-seoul.myqcloud.com'         => '亚太地区 公有云地域 首尔',
-            'cos.ap-bangkok.myqcloud.com'       => '亚太地区 公有云地域 曼谷',
-            'cos.ap-tokyo.myqcloud.com'         => '亚太地区 公有云地域 东京',
-            'cos.na-siliconvalley.myqcloud.com' => '北美地区 公有云地域 硅谷',
-            'cos.na-ashburn.myqcloud.com'       => '北美地区 公有云地域 弗吉尼亚',
-            'cos.na-toronto.myqcloud.com'       => '北美地区 公有云地域 多伦多',
-            'cos.eu-frankfurt.myqcloud.com'     => '欧洲地区 公有云地域 法兰克福',
-            'cos.eu-moscow.myqcloud.com'        => '欧洲地区 公有云地域 莫斯科	',
+            'cos.ap-beijing-1.myqcloud.com'     => lang('中国大陆 公有云地域 北京一区'),
+            'cos.ap-beijing.myqcloud.com'       => lang('中国大陆 公有云地域 北京'),
+            'cos.ap-nanjing.myqcloud.com'       => lang('中国大陆 公有云地域 南京'),
+            'cos.ap-shanghai.myqcloud.com'      => lang('中国大陆 公有云地域 上海'),
+            'cos.ap-guangzhou.myqcloud.com'     => lang('中国大陆 公有云地域 广州'),
+            'cos.ap-chengdu.myqcloud.com'       => lang('中国大陆 公有云地域 成都'),
+            'cos.ap-chongqing.myqcloud.com'     => lang('中国大陆 公有云地域 重庆'),
+            'cos.ap-shenzhen-fsi.myqcloud.com'  => lang('中国大陆 金融云地域 深圳金融'),
+            'cos.ap-shanghai-fsi.myqcloud.com'  => lang('中国大陆 金融云地域 上海金融'),
+            'cos.ap-beijing-fsi.myqcloud.com'   => lang('中国大陆 金融云地域 北京金融'),
+            'cos.ap-hongkong.myqcloud.com'      => lang('亚太地区 公有云地域 中国香港'),
+            'cos.ap-singapore.myqcloud.com'     => lang('亚太地区 公有云地域 新加坡'),
+            'cos.ap-mumbai.myqcloud.com'        => lang('亚太地区 公有云地域 孟买'),
+            'cos.ap-seoul.myqcloud.com'         => lang('亚太地区 公有云地域 首尔'),
+            'cos.ap-bangkok.myqcloud.com'       => lang('亚太地区 公有云地域 曼谷'),
+            'cos.ap-tokyo.myqcloud.com'         => lang('亚太地区 公有云地域 东京'),
+            'cos.na-siliconvalley.myqcloud.com' => lang('北美地区 公有云地域 硅谷'),
+            'cos.na-ashburn.myqcloud.com'       => lang('北美地区 公有云地域 弗吉尼亚'),
+            'cos.na-toronto.myqcloud.com'       => lang('北美地区 公有云地域 多伦多'),
+            'cos.eu-frankfurt.myqcloud.com'     => lang('欧洲地区 公有云地域 法兰克福'),
+            'cos.eu-moscow.myqcloud.com'        => lang('欧洲地区 公有云地域 莫斯科'),
         ];
     }
 
