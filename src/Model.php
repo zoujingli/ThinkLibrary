@@ -80,10 +80,10 @@ abstract class Model extends \think\Model
     public function __call($method, $args)
     {
         $oplogs = [
-            'onAdminSave'   => "修改{$this->oplogName}[%s]状态",
-            'onAdminUpdate' => "更新{$this->oplogName}[%s]记录",
-            'onAdminInsert' => "增加{$this->oplogName}[%s]成功",
-            "onAdminDelete" => "删除{$this->oplogName}[%s]成功",
+            'onAdminSave'   => "修改%s[%s]状态",
+            'onAdminUpdate' => "更新%s[%s]记录",
+            'onAdminInsert' => "增加%s[%s]成功",
+            "onAdminDelete" => "删除%s[%s]成功",
         ];
         if (isset($oplogs[$method])) {
             if ($this->oplogType && $this->oplogName) {
@@ -91,7 +91,7 @@ abstract class Model extends \think\Model
                 if (is_callable(static::$oplogCall)) {
                     $changeIds = call_user_func(static::$oplogCall, $method, $changeIds, $this);
                 }
-                sysoplog($this->oplogType, sprintf($oplogs[$method], $changeIds));
+                sysoplog($this->oplogType, lang($oplogs[$method], [$this->oplogName, $changeIds]));
             }
             return $this;
         } else {
