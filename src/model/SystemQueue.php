@@ -43,7 +43,7 @@ class SystemQueue extends Model
      */
     public function getEnterTimeAttr($value): string
     {
-        return floatval($value) > 0 ? format_datetime($value) : '';
+        return floatval($value) > 0 ? format_datetime(intval($value)) : '';
     }
 
     /**
