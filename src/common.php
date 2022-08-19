@@ -352,8 +352,9 @@ if (!function_exists('format_datetime')) {
      */
     function format_datetime($datetime, string $format = 'Y年m月d日 H:i:s'): string
     {
-        if (empty($datetime)) return '-';
-        if (is_numeric($datetime)) {
+        if (empty($datetime)) {
+            return '-';
+        } elseif (is_numeric($datetime)) {
             return date($format, intval($datetime));
         } else {
             return date($format, strtotime($datetime));
