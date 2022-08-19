@@ -354,7 +354,7 @@ if (!function_exists('format_datetime')) {
     {
         if (empty($datetime)) return '-';
         if (is_numeric($datetime)) {
-            return date($format, $datetime);
+            return date($format, intval($datetime));
         } else {
             return date($format, strtotime($datetime));
         }
