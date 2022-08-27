@@ -115,17 +115,6 @@ class Library extends Service
                 // 注册语言包处理中间键
                 $this->app->middleware->add(LoadLangPack::class);
             }
-            if ($this->app->request->isGet()) {
-                // 注册网页图标处理路由
-                $this->app->route->get('/favicon.ico', function () {
-                    if (($time = time()) > $this->app->cache->get('favicon', 0)) {
-                        $this->app->cache->set('favicon', $time + 3600);
-                        return SystemService::setFavicon() ? redirect("/favicon.ico?t={$time}") : '';
-                    } else {
-                        return '';
-                    }
-                });
-            }
             // 注册访问处理中间键
             $this->app->middleware->add(function (Request $request, Closure $next) {
                 $header = [];
