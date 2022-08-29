@@ -231,7 +231,7 @@ if (!function_exists('encode')) {
     function encode(string $content): string
     {
         [$chars, $length] = ['', strlen($string = iconv('UTF-8', 'GBK//TRANSLIT', $content))];
-        for ($i = 0; $i < $length; $i++) $chars .= str_pad(base_convert(ord($string[$i]), 10, 36), 2, 0, 0);
+        for ($i = 0; $i < $length; $i++) $chars .= str_pad(base_convert(strval(ord($string[$i])), 10, 36), 2, '0', 0);
         return $chars;
     }
 }
