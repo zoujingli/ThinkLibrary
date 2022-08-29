@@ -96,7 +96,7 @@ class UpyunStorage extends Storage
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
     {
         $data = [];
-        $token = $this->buildUploadToken($name, 3600, $attname, strlen($file), md5($file));
+        $token = $this->buildUploadToken($name, 3600, $attname, md5($file));
         $data['policy'] = $token['policy'];
         $data['authorization'] = $token['authorization'];
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
