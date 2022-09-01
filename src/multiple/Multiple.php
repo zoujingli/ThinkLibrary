@@ -140,26 +140,23 @@ class Multiple
      */
     private function loadMultiApp(string $appPath): void
     {
-        if (is_file($appPath . 'common.php')) {
-            include_once $appPath . 'common.php';
-        }
-        $fmaps = [];
-        $files = glob($appPath . 'config' . DIRECTORY_SEPARATOR . '*' . $this->app->getConfigExt());
-        foreach ($files as $file) {
+        [$ext, $fmaps] = [$this->app->getConfigExt(), []];
+        if (is_file($file = $appPath . 'common' . $ext)) include_once $file;
+        foreach (glob($appPath . 'config' . DIRECTORY_SEPARATOR . '*' . $ext) as $file) {
             $name = pathinfo($file, PATHINFO_FILENAME);
             $this->app->config->load($file, $fmaps[] = $name);
         }
         if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();
         }
-        if (is_file($appPath . 'event.php')) {
-            $this->app->loadEvent(include $appPath . 'event.php');
+        if (is_file($file = $appPath . 'event' . $ext)) {
+            $this->app->loadEvent(include $file);
         }
-        if (is_file($appPath . 'middleware.php')) {
-            $this->app->middleware->import(include $appPath . 'middleware.php', 'app');
+        if (is_file($file = $appPath . 'middleware' . $ext)) {
+            $this->app->middleware->import(include $file);
         }
-        if (is_file($appPath . 'provider.php')) {
-            $this->app->bind(include $appPath . 'provider.php');
+        if (is_file($file = $appPath . 'provider' . $ext)) {
+            $this->app->bind(include $file);
         }
         $this->app->lang->switchLangSet($this->app->lang->getLangSet());;
     }
