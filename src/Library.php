@@ -24,6 +24,7 @@ use think\admin\command\Menu;
 use think\admin\command\Queue;
 use think\admin\command\Replace;
 use think\admin\command\Version;
+use think\admin\model\SystemBase;
 use think\admin\multiple\BuildUrl;
 use think\admin\multiple\command\Build;
 use think\admin\multiple\Multiple;
@@ -54,6 +55,7 @@ class Library extends Service
      * @var App
      */
     public static $sapp;
+
 
     /**
      * 启动服务
@@ -98,7 +100,10 @@ class Library extends Service
     public function register()
     {
         // 动态加载应用初始化系统函数
-        foreach (glob("{$this->app->getBasePath()}*/sys.php") as $file) includeFile($file);
+        $this->app->lang->load(__DIR__ . "/lang/zh-cn.php", 'zh-cn');
+        foreach (glob($this->app->getBasePath() . '*/sys.php') as $file) {
+            includeFile($file);
+        }
 
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
@@ -109,14 +114,17 @@ class Library extends Service
                 $this->app->middleware->add(SessionInit::class);
                 // 注册语言包处理中间键
                 $this->app->middleware->add(LoadLangPack::class);
-                // 加载对应组件的语言包
-                $langSet = $this->app->lang->getLangSet();
-                file_exists(__DIR__ . "/lang/{$langSet}.php") or $langSet = 'zh-cn';
-                $this->app->lang->load(__DIR__ . "/lang/{$langSet}.php", $langSet);
             }
             // 注册访问处理中间键
             $this->app->middleware->add(function (Request $request, Closure $next) {
                 $header = [];
+
+                // 加载对应组件的语言包
+                $langSet = $this->app->lang->getLangSet();
+                if (file_exists($file = __DIR__ . "/lang/{$langSet}.php")) {
+                    $this->app->lang->load($file, $langSet);
+                }
+
                 // HTTP.CORS 跨域规则配置
                 if (($origin = $request->header('origin', '*')) !== '*') {
                     if (is_string($hosts = $this->app->config->get('app.cors_host', []))) $hosts = str2arr($hosts);
@@ -129,6 +137,7 @@ class Library extends Service
                         $header['Access-Control-Allow-Credentials'] = 'true';
                     }
                 }
+
                 // 访问模式及访问权限检查
                 if ($request->isOptions()) {
                     return response()->code(204)->header($header);
