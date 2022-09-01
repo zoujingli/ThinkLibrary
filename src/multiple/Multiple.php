@@ -161,7 +161,7 @@ class Multiple
         if (is_file($appPath . 'provider.php')) {
             $this->app->bind(include $appPath . 'provider.php');
         }
-        $this->app->loadLangPack();
+        $this->app->lang->setLangSet($this->app->lang->getLangSet());;
     }
 
     /**

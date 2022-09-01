@@ -97,13 +97,8 @@ class Library extends Service
      */
     public function register()
     {
-        // 加载中文及英文语言包
-        $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
-        $this->app->lang->load(__DIR__ . '/lang/en-us.php', 'en-us');
-
         // 动态加载应用初始化系统函数
-        [$ds, $base] = [DIRECTORY_SEPARATOR, $this->app->getBasePath()];
-        foreach (glob("{$base}*{$ds}sys.php") as $file) includeFile($file);
+        foreach (glob("{$this->app->getBasePath()}*/sys.php") as $file) includeFile($file);
 
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
@@ -114,6 +109,10 @@ class Library extends Service
                 $this->app->middleware->add(SessionInit::class);
                 // 注册语言包处理中间键
                 $this->app->middleware->add(LoadLangPack::class);
+                // 加载对应组件的语言包
+                $langSet = $this->app->lang->getLangSet();
+                file_exists(__DIR__ . "/lang/{$langSet}.php") or $langSet = 'zh-cn';
+                $this->app->lang->load(__DIR__ . "/lang/{$langSet}.php", $langSet);
             }
             // 注册访问处理中间键
             $this->app->middleware->add(function (Request $request, Closure $next) {
