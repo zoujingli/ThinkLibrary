@@ -24,7 +24,6 @@ use think\admin\command\Menu;
 use think\admin\command\Queue;
 use think\admin\command\Replace;
 use think\admin\command\Version;
-use think\admin\model\SystemBase;
 use think\admin\multiple\BuildUrl;
 use think\admin\multiple\command\Build;
 use think\admin\multiple\Multiple;
@@ -46,16 +45,15 @@ use function Composer\Autoload\includeFile;
 class Library extends Service
 {
     /**
-     * 组件库版本号
+     * 组件版本号
      */
-    const VERSION = '6.0.36DEV';
+    const VERSION = '6.0.36';
 
     /**
      * 静态应用实例
      * @var App
      */
     public static $sapp;
-
 
     /**
      * 启动服务
