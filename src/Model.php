@@ -91,7 +91,7 @@ abstract class Model extends \think\Model
                 if (is_callable(static::$oplogCall)) {
                     $changeIds = call_user_func(static::$oplogCall, $method, $changeIds, $this);
                 }
-                sysoplog($this->oplogType, lang($oplogs[$method], [$this->oplogName, $changeIds]));
+                sysoplog($this->oplogType, lang($oplogs[$method], [lang($this->oplogName), $changeIds]));
             }
             return $this;
         } else {
