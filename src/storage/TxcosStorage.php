@@ -287,15 +287,16 @@ class TxcosStorage extends Storage
             'cos.ap-hongkong.myqcloud.com'      => lang('亚太地区 公有云地域 中国香港'),
             'cos.ap-singapore.myqcloud.com'     => lang('亚太地区 公有云地域 新加坡'),
             'cos.ap-mumbai.myqcloud.com'        => lang('亚太地区 公有云地域 孟买'),
+            'cos.ap-jakarta.myqcloud.com'       => lang('亚太地区 公有云地域 雅加达'),
             'cos.ap-seoul.myqcloud.com'         => lang('亚太地区 公有云地域 首尔'),
             'cos.ap-bangkok.myqcloud.com'       => lang('亚太地区 公有云地域 曼谷'),
             'cos.ap-tokyo.myqcloud.com'         => lang('亚太地区 公有云地域 东京'),
             'cos.na-siliconvalley.myqcloud.com' => lang('北美地区 公有云地域 硅谷'),
             'cos.na-ashburn.myqcloud.com'       => lang('北美地区 公有云地域 弗吉尼亚'),
             'cos.na-toronto.myqcloud.com'       => lang('北美地区 公有云地域 多伦多'),
+            'cos.sa-saopaulo.myqcloud.com'      => lang('北美地区 公有云地域 圣保罗'),
             'cos.eu-frankfurt.myqcloud.com'     => lang('欧洲地区 公有云地域 法兰克福'),
             'cos.eu-moscow.myqcloud.com'        => lang('欧洲地区 公有云地域 莫斯科'),
         ];
     }
-
 }
