@@ -184,22 +184,29 @@ class QiniuStorage extends Storage
         switch (sysconf('storage.qiniu_region')) {
             case '华东':
             case '华东-浙江':
+            case 'up.qiniup.com':
                 return "{$protocol}://up.qiniup.com";
             case '华东-浙江2':
+            case 'up-cn-east-2.qiniup.com':
                 return "{$protocol}://up-cn-east-2.qiniup.com";
             case '华北':
             case '华北-河北':
+            case 'up-z1.qiniup.com':
                 return "{$protocol}://up-z1.qiniup.com";
             case '华南':
             case '华南-广东':
+            case 'up-z2.qiniup.com':
                 return "{$protocol}://up-z2.qiniup.com";
             case '北美':
             case '北美-洛杉矶':
+            case 'up-na0.qiniup.com':
                 return "{$protocol}://up-na0.qiniup.com";
             case '东南亚':
             case '亚太-新加坡':
+            case 'up-as0.qiniup.com':
                 return "{$protocol}://up-as0.qiniup.com";
             case '亚太-首尔':
+            case 'up-ap-northeast-1.qiniup.com':
                 return "{$protocol}://up-ap-northeast-1.qiniup.com";
             default:
                 throw new Exception(lang('未配置七牛云空间区域哦'));
