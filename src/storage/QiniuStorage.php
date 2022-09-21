@@ -183,15 +183,24 @@ class QiniuStorage extends Storage
         $protocol = $this->app->request->isSsl() ? 'https' : 'http';
         switch (sysconf('storage.qiniu_region')) {
             case '华东':
+            case '华东-浙江':
                 return "{$protocol}://up.qiniup.com";
+            case '华东-浙江2':
+                return "{$protocol}://up-cn-east-2.qiniup.com";
             case '华北':
+            case '华北-河北':
                 return "{$protocol}://up-z1.qiniup.com";
             case '华南':
+            case '华南-广东':
                 return "{$protocol}://up-z2.qiniup.com";
             case '北美':
+            case '北美-洛杉矶':
                 return "{$protocol}://up-na0.qiniup.com";
             case '东南亚':
+            case '亚太-新加坡':
                 return "{$protocol}://up-as0.qiniup.com";
+            case '亚太-首尔':
+                return "{$protocol}://up-ap-northeast-1.qiniup.com";
             default:
                 throw new Exception(lang('未配置七牛云空间区域哦'));
         }
@@ -243,11 +252,13 @@ class QiniuStorage extends Storage
     public static function region(): array
     {
         return [
-            'up.qiniup.com'     => lang('华东'),
-            'up-z1.qiniup.com'  => lang('华北'),
-            'up-z2.qiniup.com'  => lang('华南'),
-            'up-na0.qiniup.com' => lang('北美'),
-            'up-as0.qiniup.com' => lang('东南亚'),
+            'up.qiniup.com'                => lang('华东-浙江'),
+            'up-cn-east-2.qiniup.com'      => lang('华东-浙江2'),
+            'up-z1.qiniup.com'             => lang('华北-河北'),
+            'up-z2.qiniup.com'             => lang('华南-广东'),
+            'up-na0.qiniup.com'            => lang('北美-洛杉矶'),
+            'up-as0.qiniup.com'            => lang('亚太-新加坡'),
+            'up-ap-northeast-1.qiniup.com' => lang('亚太-首尔'),
         ];
     }
 }
