@@ -131,9 +131,6 @@ class Queue extends Command
 
     /**
      * 停止所有任务
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function stopAction()
     {
@@ -169,9 +166,6 @@ class Queue extends Command
 
     /**
      * 查询所有任务
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function queryAction()
     {
@@ -215,9 +209,6 @@ class Queue extends Command
 
     /**
      * 查询兼听状态
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function statusAction()
     {

@@ -249,5 +249,4 @@ class QueueService extends Service
     public function execute(array $data = [])
     {
     }
-
 }

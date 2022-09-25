@@ -30,22 +30,26 @@ class ProcessService extends Service
 
     /**
      * 获取 Think 指令内容
-     * @param string $args 指定参数
+     * @param string $arguments 指定参数
      * @param boolean $simple 指令内容
      * @return string
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function think(string $args = '', bool $simple = false): string
+    public static function think(string $arguments = '', bool $simple = false): string
     {
-        $root = Library::$sapp->getRootPath();
-        $command = trim("{$root}think {$args}");
-        if ($simple) return $command;
-        $binary = sysconf('base.binary') ?: PHP_BINARY;
-        if (in_array(basename($binary), ['php', 'php.exe'])) {
+        try {
+            $root = Library::$sapp->getRootPath();
+            $command = trim("{$root}think {$arguments}");
+            if ($simple) return $command;
+            if (!($binary = sysconf('base.binary')) || empty($binary)) {
+                $attrs = pathinfo(PHP_BINARY);
+                $attrs['dirname'] = $attrs['dirname'] . DIRECTORY_SEPARATOR;
+                $attrs['filename'] = preg_replace('#-cgi$#', '', $attrs['filename']);
+                $attrs['extension'] = empty($attrs['extension']) ? '' : ".{$attrs['extension']}";
+                $binary = $attrs['dirname'] . $attrs['filename'] . $attrs['extension'];
+            }
             return "{$binary} {$command}";
-        } else {
+        } catch (\Exception $exception) {
+            trace_file($exception);
             return "php {$command}";
         }
     }
@@ -54,9 +58,6 @@ class ProcessService extends Service
      * 检查 Think 运行进程
      * @param string $args
      * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function thinkQuery(string $args): array
     {
@@ -67,9 +68,6 @@ class ProcessService extends Service
      * 执行 Think 指令内容
      * @param string $args 执行参数
      * @param integer $usleep 延时时间
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function thinkCreate(string $args, int $usleep = 0)
     {
