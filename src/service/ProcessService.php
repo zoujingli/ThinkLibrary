@@ -31,7 +31,7 @@ class ProcessService extends Service
 
     /**
      * 获取 Think 指令内容
-     * @param string $arguments 指定参数
+     * @param string $arguments 指令参数
      * @param boolean $simple 指令内容
      * @return string
      */
