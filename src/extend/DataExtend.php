@@ -26,6 +26,18 @@ class DataExtend
 {
 
     /**
+     * 内容转换为UTF8编码
+     * @param string $text
+     * @return string
+     */
+    public static function text2utf8(string $text): string
+    {
+        return mb_convert_encoding($text, 'UTF-8', mb_detect_encoding($text, [
+            "ASCII", 'UTF-8', "GB2312", "GBK", 'BIG5',
+        ]));
+    }
+
+    /**
      * 一维数组生成数据树
      * @param array $its 待处理数据
      * @param string $cid 自己的主键

@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
+use think\admin\extend\DataExtend;
 use think\admin\Library;
 use think\admin\Service;
 
@@ -47,7 +48,7 @@ class ProcessService extends Service
                 $attrs['extension'] = empty($attrs['extension']) ? '' : ".{$attrs['extension']}";
                 $binary = $attrs['dirname'] . $attrs['filename'] . $attrs['extension'];
             }
-            return "{$binary} {$command}";
+            return (static::isfile($binary) ? $binary : 'php') . " {$command}";
         } catch (\Exception $exception) {
             trace_file($exception);
             return "php {$command}";
@@ -139,7 +140,21 @@ class ProcessService extends Service
     public static function exec(string $command, $outarr = false)
     {
         exec($command, $output);
-        return $outarr ? $output : join("\n", $output);
+        return $outarr ? $output : DataExtend::text2utf8(join("\n", $output));
+    }
+
+    /**
+     * 检查文件是否存在
+     * @param string $file 待检查的文件
+     * @return boolean
+     */
+    public static function isfile(string $file): bool
+    {
+        if (static::iswin()) {
+            return static::exec("if exist {$file} echo 1") === '1';
+        } else {
+            return static::exec("if [ -f {$file} ];then echo 1;fi") === '1';
+        }
     }
 
     /**
