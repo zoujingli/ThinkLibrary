@@ -29,7 +29,7 @@ class ProcessService extends Service
 {
 
     /**
-     * 获取 Think 指令内容
+    修复指令目录计算     * 获取 Think 指令内容
      * @param string $arguments 指定参数
      * @param boolean $simple 指令内容
      * @return string
@@ -41,7 +41,7 @@ class ProcessService extends Service
             $command = trim("{$root}think {$arguments}");
             if ($simple) return $command;
             if (!($binary = sysconf('base.binary')) || empty($binary)) {
-                $attrs = pathinfo(PHP_BINARY);
+                $attrs = pathinfo(preg_replace('#(\\|/)sbin(\\|/)php-fpm#', '$1bin$2php', PHP_BINARY));
                 $attrs['dirname'] = $attrs['dirname'] . DIRECTORY_SEPARATOR;
                 $attrs['filename'] = preg_replace('#-cgi$#', '', $attrs['filename']);
                 $attrs['extension'] = empty($attrs['extension']) ? '' : ".{$attrs['extension']}";
