@@ -36,7 +36,6 @@ class ProcessService extends Service
      */
     public static function think(string $arguments = '', bool $simple = false): string
     {
-        // sudo -u www /www/server/php/74/sbin/php-fpm /home/wwwroot/zhongcaoji.app.cuci.cc/think xadmin:queue start
         try {
             $root = Library::$sapp->getRootPath();
             $command = trim("{$root}think {$arguments}");
