@@ -151,9 +151,9 @@ class ProcessService extends Service
     public static function isfile(string $file): bool
     {
         if (static::iswin()) {
-            return static::exec("if exist {$file} echo 1") === '1';
+            return static::exec("if exist \"{$file}\" echo 1") === '1';
         } else {
-            return static::exec("if [ -f {$file} ];then echo 1;fi") === '1';
+            return static::exec("if [ -f \"{$file}\" ];then echo 1;fi") === '1';
         }
     }
 
