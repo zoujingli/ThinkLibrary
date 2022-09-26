@@ -57,7 +57,7 @@ class ProcessService extends Service
 
     /**
      * 检查 Think 运行进程
-     * @param string $args
+     * @param string $args 执行参数
      * @return array
      */
     public static function thinkQuery(string $args): array
