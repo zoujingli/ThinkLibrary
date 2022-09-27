@@ -220,13 +220,30 @@ class Queue extends Command
     }
 
     /**
-     * 立即监听任务
+     * 启动任务监听
+     * @return void
      */
     protected function listenAction()
     {
-        set_time_limit(0);
-        ignore_user_abort(true);
+        set_time_limit(0) && ignore_user_abort(true);
         $this->app->db->setLog(new NullLogger());
+        try {
+            $this->doListen();
+        } catch (Exception $exception) {
+            trace_file($exception) && usleep(1000000);
+            $this->output->write('=============== EXCEPTION ===============');
+            $this->output->write($exception->getMessage());
+            $this->output->writeln('=============== TRY-REBOOT ===============');
+            $this->doListen();
+        }
+    }
+
+    /**
+     * 执行任务监听
+     * @return void
+     */
+    private function doListen()
+    {
         $this->output->writeln("\tYou can exit with <info>`CTRL-C`</info>");
         $this->output->writeln('=============== LISTENING ===============');
         while (true) {
@@ -255,8 +272,7 @@ class Queue extends Command
      */
     protected function doRunAction()
     {
-        set_time_limit(0);
-        ignore_user_abort(true);
+        set_time_limit(0) && ignore_user_abort(true);
         $this->code = trim($this->input->getArgument('code'));
         if (empty($this->code)) {
             $this->output->error('Task number needs to be specified for task execution');

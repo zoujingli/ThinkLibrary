@@ -368,21 +368,21 @@ if (!function_exists('trace_file')) {
     /**
      * 输出异常数据到文件
      * @param \Exception $exception
-     * @return void
+     * @return boolean
      */
-    function trace_file(Exception $exception)
+    function trace_file(Exception $exception): bool
     {
         $path = Library::$sapp->getRuntimePath() . 'trace';
         if (!file_exists($path)) mkdir($path, 0755, true);
         $name = substr($exception->getFile(), strlen(Library::$sapp->getRootPath()));
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
         $class = get_class($exception);
-        file_put_contents($file,
-            "[CODE] {$exception->getCode()}" . PHP_EOL .
-            "[INFO] {$exception->getMessage()}" . PHP_EOL .
-            "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL .
-            "[TIME] " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL .
-            '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
-        );
+        return false !== file_put_contents($file,
+                "[CODE] {$exception->getCode()}" . PHP_EOL .
+                "[INFO] {$exception->getMessage()}" . PHP_EOL .
+                "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL .
+                "[TIME] " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL .
+                '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
+            );
     }
 }
