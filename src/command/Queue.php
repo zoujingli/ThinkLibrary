@@ -225,16 +225,16 @@ class Queue extends Command
      */
     protected function listenAction()
     {
-        set_time_limit(0) && ignore_user_abort(true);
-        $this->app->db->setLog(new NullLogger());
         try {
-            $this->doListen();
+            set_time_limit(0) && ignore_user_abort(true);
+            $this->app->db->setLog(new NullLogger());
+            $this->createListenProcess();
         } catch (Exception $exception) {
-            trace_file($exception) && usleep(1000000);
+            trace_file($exception) && usleep(3000000);
             $this->output->write('=============== EXCEPTION ===============');
             $this->output->write($exception->getMessage());
             $this->output->writeln('=============== TRY-REBOOT ===============');
-            $this->doListen();
+            $this->createListenProcess();
         }
     }
 
@@ -242,7 +242,7 @@ class Queue extends Command
      * 执行任务监听
      * @return void
      */
-    private function doListen()
+    private function createListenProcess()
     {
         $this->output->writeln("\tYou can exit with <info>`CTRL-C`</info>");
         $this->output->writeln('=============== LISTENING ===============');
