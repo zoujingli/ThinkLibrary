@@ -25,14 +25,14 @@ use think\Container;
  * 文件存储引擎管理
  * Class Storage
  * @package think\admin
- * @method array info($name, $safe = false, $attname = null) static 文件存储信息
- * @method array set($name, $file, $safe = false, $attname = null) static 储存文件
- * @method string url($name, $safe = false, $attname = null) static 获取文件链接
- * @method string get($name, $safe = false) static 读取文件内容
- * @method string path($name, $safe = false) static 文件存储路径
- * @method boolean del($name, $safe = false) static 删除存储文件
- * @method boolean has($name, $safe = false) static 检查是否存在
- * @method string upload() static 获取上传地址
+ * @method static array info($name, $safe = false, $attname = null) static 文件存储信息
+ * @method static array set($name, $file, $safe = false, $attname = null) static 储存文件
+ * @method static string url($name, $safe = false, $attname = null) static 获取文件链接
+ * @method static string get($name, $safe = false) static 读取文件内容
+ * @method static string path($name, $safe = false) static 文件存储路径
+ * @method static boolean del($name, $safe = false) static 删除存储文件
+ * @method static boolean has($name, $safe = false) static 检查是否存在
+ * @method static string upload() static 获取上传地址
  */
 abstract class Storage
 {
@@ -91,7 +91,8 @@ abstract class Storage
      */
     public static function __callStatic(string $method, array $arguments)
     {
-        if (method_exists($class = static::instance(), $method)) {
+        $name = self::class !== static::class ? static::class : null;
+        if (method_exists($class = static::instance($name), $method)) {
             return call_user_func_array([$class, $method], $arguments);
         } else {
             throw new Exception("method not exists: " . get_class($class) . "->{$method}()");
