@@ -195,7 +195,7 @@ class Queue extends Command
      */
     protected function cleanAction()
     {
-        // 清理 7 天前的历史任务记录
+        // 清理任务历史记录
         $days = intval(sysconf('base.queue_clean_days') ?: 7);
         $clean = SystemQueue::mk()->where('exec_time', '<', time() - $days * 24 * 3600)->delete();
         // 标记超过 1 小时未完成的任务为失败状态，循环任务失败重置
@@ -237,7 +237,7 @@ class Queue extends Command
     protected function listenAction()
     {
         try {
-            set_time_limit(0) && ignore_user_abort(true);
+            set_time_limit(0) && PHP_SAPI !== 'cli' && ignore_user_abort(true);
             $this->app->db->setLog(new NullLogger());
             $this->createListenProcess();
         } catch (Exception $exception) {
@@ -282,11 +282,11 @@ class Queue extends Command
      */
     protected function doRunAction()
     {
-        set_time_limit(0) && ignore_user_abort(true);
         $this->code = trim($this->input->getArgument('code'));
         if (empty($this->code)) {
             $this->output->error('Task number needs to be specified for task execution');
         } else try {
+            set_time_limit(0) && PHP_SAPI !== 'cli' && ignore_user_abort(true);
             $this->queue->initialize($this->code);
             if (empty($this->queue->record) || intval($this->queue->record['status']) !== static::STATE_WAIT) {
                 // 这里不做任何处理（该任务可能在其它地方已经在执行）
@@ -308,7 +308,7 @@ class Queue extends Command
                     } elseif ($class instanceof QueueService) {
                         $this->updateQueue(static::STATE_DONE, $class->initialize($this->queue->code)->execute($this->queue->data) ?: '');
                     } else {
-                        throw new \think\admin\Exception("自定义 {$command} 未继承 think\admin\Queue 或 think\service\QueueService");
+                        throw new \think\admin\Exception("自定义 {$command} 未继承 think\admin\Queue 或 think\admin\service\QueueService");
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
@@ -317,8 +317,8 @@ class Queue extends Command
                 }
             }
         } catch (Exception|Throwable|Error $exception) {
-            $isok = intval($exception->getCode()) === static::STATE_DONE;
-            $this->updateQueue($isok ? static::STATE_DONE : static::STATE_ERROR, $exception->getMessage());
+            $isDone = intval($exception->getCode()) === static::STATE_DONE;
+            $this->updateQueue($isDone ? static::STATE_DONE : static::STATE_ERROR, $exception->getMessage());
         }
     }
 

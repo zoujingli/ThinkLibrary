@@ -244,6 +244,7 @@ class QueueService extends Service
     /**
      * 执行任务处理
      * @param array $data 任务参数
+     * @return void|string
      */
     public function execute(array $data = [])
     {

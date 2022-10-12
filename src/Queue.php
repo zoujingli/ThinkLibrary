@@ -71,6 +71,7 @@ abstract class Queue
     /**
      * 执行任务处理内容
      * @param array $data
+     * @return void|string
      */
     abstract public function execute(array $data = []);
 
