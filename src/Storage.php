@@ -110,19 +110,16 @@ abstract class Storage
      */
     public static function instance(?string $name = null, ?string $class = null)
     {
-        // 通过子类实例对象
-        if (is_null($name)) {
-            if (is_null($class) && static::class !== self::class) {
+        if (is_null($class)) {
+            if (is_null($name) && static::class !== self::class) {
                 $class = static::class;
-            }
-            if (is_string($class) && class_exists($class)) {
-                return Container::getInstance()->make($class);
+            } else {
+                $type = ucfirst(strtolower($name ?: sysconf('storage.type')));
+                $class = "think\\admin\\storage\\{$type}Storage";
             }
         }
-        // 实例默认配置对象
-        $class = ucfirst(strtolower($name ?: sysconf('storage.type')));
-        if (class_exists($object = "think\\admin\\storage\\{$class}Storage")) {
-            return Container::getInstance()->make($object);
+        if (class_exists($class)) {
+            return Container::getInstance()->make($class);
         } else {
             throw new Exception("File driver [{$class}] does not exist.");
         }
