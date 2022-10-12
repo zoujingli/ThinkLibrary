@@ -111,11 +111,13 @@ abstract class Storage
     public static function instance(?string $name = null, ?string $class = null)
     {
         // 通过子类实例对象
-        if (is_null($name) && is_null($class) && static::class !== self::class) {
-            $class = static::class;
-        }
-        if (is_null($name) && is_string($class) && class_exists($class)) {
-            return Container::getInstance()->make($class);
+        if (is_null($name)) {
+            if (is_null($class) && static::class !== self::class) {
+                $class = static::class;
+            }
+            if (is_string($class) && class_exists($class)) {
+                return Container::getInstance()->make($class);
+            }
         }
         // 实例默认配置对象
         $class = ucfirst(strtolower($name ?: sysconf('storage.type')));
