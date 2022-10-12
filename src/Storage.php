@@ -91,25 +91,33 @@ abstract class Storage
      */
     public static function __callStatic(string $method, array $arguments)
     {
-        $name = self::class !== static::class ? static::class : null;
-        if (method_exists($class = static::instance($name), $method)) {
-            return call_user_func_array([$class, $method], $arguments);
+        if (method_exists($storage = static::instance(), $method)) {
+            return call_user_func_array([$storage, $method], $arguments);
         } else {
-            throw new Exception("method not exists: " . get_class($class) . "->{$method}()");
+            throw new Exception("method not exists: " . get_class($storage) . "->{$method}()");
         }
     }
 
     /**
-     * 设置文件驱动名称
+     * 实例化存储操作对象
      * @param null|string $name 驱动名称
-     * @return static
+     * @param null|string $class 驱动类名
+     * @return mixed|object|string|static
      * @throws \think\admin\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function instance(?string $name = null)
+    public static function instance(?string $name = null, ?string $class = null)
     {
+        // 通过子类实例对象
+        if (is_null($name) && is_null($class) && static::class !== self::class) {
+            $class = static::class;
+        }
+        if (is_null($name) && is_string($class) && class_exists($class)) {
+            return Container::getInstance()->make($class);
+        }
+        // 实例默认配置对象
         $class = ucfirst(strtolower($name ?: sysconf('storage.type')));
         if (class_exists($object = "think\\admin\\storage\\{$class}Storage")) {
             return Container::getInstance()->make($object);
