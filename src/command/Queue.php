@@ -39,23 +39,38 @@ use Throwable;
 class Queue extends Command
 {
 
-    // 任务等待处理
+    /**
+     * 任务等待处理
+     * @var integer
+     */
     const STATE_WAIT = 1;
 
-    // 任务正在处理
+    /**
+     * 任务正在处理
+     * @var integer
+     */
     const STATE_LOCK = 2;
 
-    // 任务处理完成
+    /**
+     * 任务处理完成
+     * @var integer
+     */
     const STATE_DONE = 3;
 
-    // 任务处理失败
+    /**
+     * 任务处理失败
+     * @var integer
+     */
     const STATE_ERROR = 4;
 
-    // 监听进程指令
+    /**
+     * 监听进程指令
+     * @var string
+     */
     const QUEUE_LISTEN = 'xadmin:queue listen';
 
     /**
-     * 任务编号
+     * 当前任务编号
      * @var string
      */
     protected $code;
