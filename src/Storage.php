@@ -121,7 +121,7 @@ abstract class Storage
         if (class_exists($class)) {
             return Container::getInstance()->make($class);
         } else {
-            throw new Exception("File driver [{$class}] does not exist.");
+            throw new Exception("Storage driver [{$class}] does not exist.");
         }
     }
 
