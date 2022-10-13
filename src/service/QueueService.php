@@ -217,7 +217,7 @@ class QueueService extends Service
         if (defined('WorkQueueCode')) {
             $this->progress(2, $message, sprintf("%.2f", $count / $total * 100), $backline);
         } else {
-            echo $message . PHP_EOL;
+            print_r(($backline > 0 ? "\r" : PHP_EOL) . $message);
         }
     }
 
