@@ -45,7 +45,7 @@ class ToolsExtend
      * @param null|array $tables
      * @return string
      */
-    public static function mysql2phinx(?array $tables): string
+    public static function mysql2phinx(?array $tables = null): string
     {
         $content = "<?php\n\n";
         foreach ($tables ?: Library::$sapp->db->getTables() as $table) {
@@ -58,7 +58,7 @@ class ToolsExtend
      */
     public function change() {
         
-        // 当前操作
+        // 当前数据表
         \$table = '{$table}';
     
         // 存在则跳过
@@ -87,7 +87,7 @@ CODE;
                     $type = 'decimal';
                     $data = array_merge(['precision' => intval($attr[1]), 'scale' => intval($attr[2])], $data);
                 }
-                $params = preg_replace(['#\s+#', '#, \)$#'], [' ', ' )'], var_export($data, true));
+                $params = preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ']', '[',], var_export($data, true));
                 $content .= "\n\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
             }
             $content .= "\n\t\t->save();\n\n\t}\n\n";
