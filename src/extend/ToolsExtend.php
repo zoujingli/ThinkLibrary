@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\extend;
 
+use think\admin\Exception;
 use think\admin\Library;
 use think\helper\Str;
 
@@ -41,21 +42,26 @@ class ToolsExtend
     }
 
     /**
-     * 生成 Phinx 的 SQL 脚本
+     * 生成 Phinx 的迁移脚本
      * @param null|array $tables
      * @return string
+     * @throws Exception
      */
     public static function mysql2phinx(?array $tables = null): string
     {
+        $connect = Library::$sapp->db->connect();
+        if ($connect->getConfig('type') !== 'mysql') {
+            throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
+        }
         $content = "<?php\n\n";
-        $database = Library::$sapp->db->connect()->getConfig('database');
+        $database = $connect->getConfig('database');
         foreach ($tables ?: Library::$sapp->db->getTables() as $table) {
 
-            // 读取数据表 备注参数
+            // 读取数据表 - 备注参数
             $map = ['TABLE_SCHEMA' => $database, 'TABLE_NAME' => $table];
             $comment = Library::$sapp->db->table('information_schema.TABLES')->where($map)->value('TABLE_COMMENT', '');
 
-            // 读取数据表 索引数据
+            // 读取数据表 - 索引数据
             $indexs = Library::$sapp->db->query("show index from {$table}");
 
             $class = Str::studly($table);
