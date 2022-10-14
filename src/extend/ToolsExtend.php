@@ -48,12 +48,20 @@ class ToolsExtend
     public static function mysql2phinx(?array $tables = null): string
     {
         $content = "<?php\n\n";
+        $database = Library::$sapp->db->connect()->getConfig('database');
         foreach ($tables ?: Library::$sapp->db->getTables() as $table) {
+
+            // 读取数据表 备注参数
+            $map = ['TABLE_SCHEMA' => $database, 'TABLE_NAME' => $table];
+            $comment = Library::$sapp->db->table('information_schema.TABLES')->where($map)->value('TABLE_COMMENT', '');
+
+            // 读取数据表 索引数据
+            $indexs = Library::$sapp->db->query("show index from {$table}");
+
             $class = Str::studly($table);
             $content .= <<<CODE
     /**
-     * 创建数据对象 {$class}
-     * 创建数据表格 {$table}
+     * 创建数据表 {$table} ( {$class} )
      * @return void
      */
     public function change() {
@@ -66,12 +74,11 @@ class ToolsExtend
         
          // 创建数据表
         \$this->table(\$table, [
-            'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '',
+            'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
         ])
 CODE;
-            $fields = Library::$sapp->db->getFields($table);
-            unset($fields['id']);
-            foreach ($fields as $field) {
+            foreach (Library::$sapp->db->getFields($table) as $field) {
+                if ($field['name'] === 'id') continue;
                 $type = $field['type'];
                 $data = ['default' => $field['default'], 'comment' => $field['comment'] ?? ''];
                 if (preg_match('/(longtext)/', $field['type'])) {
@@ -87,11 +94,29 @@ CODE;
                     $type = 'decimal';
                     $data = array_merge(['precision' => intval($attr[1]), 'scale' => intval($attr[2])], $data);
                 }
-                $params = preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ']', '[',], var_export($data, true));
+                $params = static::array2string($data);
                 $content .= "\n\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
+            }
+            // 自动生成索引
+            foreach ($indexs as $index) {
+                if ($index['Key_name'] === 'PRIMARY') continue;
+                $params = static::array2string([
+                    'name' => "idx_{$index['Table']}_{$index["Column_name"]}",
+                ]);
+                $content .= "\n\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
             $content .= "\n\t\t->save();\n\n\t}\n\n\n";
         }
         return highlight_string($content, true);
+    }
+
+    /**
+     * 数组转代码
+     * @param array $data
+     * @return string
+     */
+    public static function array2string(array $data): string
+    {
+        return preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ' ]', '[ ',], var_export($data, true));
     }
 }
