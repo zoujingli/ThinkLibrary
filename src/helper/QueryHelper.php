@@ -218,7 +218,7 @@ class QueryHelper extends Helper
 
     /**
      * 实例化分页管理器
-     * @param boolean $page 是否启用分页
+     * @param boolean|integer $page 是否启用分页
      * @param boolean $display 是否渲染模板
      * @param boolean|integer $total 集合分页记录数
      * @param integer $limit 集合每页记录数
@@ -228,7 +228,7 @@ class QueryHelper extends Helper
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function page(bool $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
+    public function page($page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
         return $this->page->init($this->query, $page, $display, $total, $limit, $template);
     }
