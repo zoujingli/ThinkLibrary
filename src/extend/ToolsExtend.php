@@ -90,7 +90,7 @@ CODE;
                 $params = preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ']', '[',], var_export($data, true));
                 $content .= "\n\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
             }
-            $content .= "\n\t\t->save();\n\n\t}\n\n";
+            $content .= "\n\t\t->save();\n\n\t}\n\n\n";
         }
         return highlight_string($content, true);
     }
