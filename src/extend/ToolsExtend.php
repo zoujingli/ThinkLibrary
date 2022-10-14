@@ -61,7 +61,9 @@ class ToolsExtend
             $class = Str::studly($table);
             $content .= <<<CODE
     /**
-     * 创建数据表 {$table} ( {$class} )
+     * 创建数据对象
+     * @class {$class}
+     * @table {$table}
      * @return void
      */
     public function change() {
