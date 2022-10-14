@@ -158,7 +158,7 @@ class Multiple
         if (is_file($file = $appPath . 'provider' . $ext)) {
             $this->app->bind(include $file);
         }
-        $this->app->lang->switchLangSet($this->app->lang->getLangSet());;
+        $this->app->lang->switchLangSet($this->app->lang->getLangSet());
     }
 
     /**
