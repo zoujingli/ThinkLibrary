@@ -29,36 +29,37 @@ class ToolsExtend
 {
 
     /**
-     * 内容转换为UTF8编码
-     * @param string $text
+     * 文本转为UTF8编码
+     * @param string $content
      * @return string
      */
-    public static function text2utf8(string $text): string
+    public static function text2utf8(string $content): string
     {
-        return mb_convert_encoding($text, 'UTF-8', mb_detect_encoding($text, [
-            "ASCII", 'UTF-8', "GB2312", "GBK", 'BIG5',
+        return mb_convert_encoding($content, 'UTF-8', mb_detect_encoding($content, [
+            'ASCII', 'UTF-8', 'GB2312', 'GBK', 'BIG5',
         ]));
     }
 
     /**
      * 生成 Phinx 的 SQL 脚本
+     * @param null|array $tables
      * @return string
      */
-    public static function db2phinx(): string
+    public static function mysql2phinx(?array $tables): string
     {
         $content = "<?php\n\n";
-        foreach (Library::$sapp->db->getTables() as $table) {
+        foreach ($tables ?: Library::$sapp->db->getTables() as $table) {
             $class = Str::studly($table);
             $content .= <<<CODE
-
     /**
-     * 创建数据对应 {$class}
+     * 创建数据对象 {$class}
+     * 创建数据表格 {$table}
      * @return void
      */
     public function change() {
         
         // 当前操作
-        \$table = "{$table}";
+        \$table = '{$table}';
     
         // 存在则跳过
         if (\$this->hasTable(\$table)) return;
@@ -89,7 +90,7 @@ CODE;
                 $params = preg_replace(['#\s+#', '#, \)$#'], [' ', ' )'], var_export($data, true));
                 $content .= "\n\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
             }
-            $content .= "\n\t\t->save();\n\n\t}";
+            $content .= "\n\t\t->save();\n\n\t}\n\n";
         }
         return highlight_string($content, true);
     }
