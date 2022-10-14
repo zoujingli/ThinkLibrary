@@ -85,9 +85,9 @@ CODE;
                 $data = ['default' => $field['default'], 'comment' => $field['comment'] ?? ''];
                 if (preg_match('/(longtext)/', $field['type'])) {
                     $type = 'text';
-                } elseif (preg_match('/varchar\((\d+)\)/', $field['type'], $attr)) {
+                } elseif (preg_match('/(char|varchar)\((\d+)\)/', $field['type'], $attr)) {
                     $type = 'string';
-                    $data = array_merge(['limit' => intval($attr[1])], $data);
+                    $data = array_merge(['limit' => intval($attr[2])], $data);
                 } elseif (preg_match('/(bigint|tinyint|int)\((\d+)\)/', $field['type'], $attr)) {
                     $type = 'integer';
                     $data = array_merge(['limit' => intval($attr[2])], $data);
