@@ -85,7 +85,7 @@ class ToolsExtend
         // 存在则跳过
         if (\$this->hasTable(\$table)) return;
         
-         // 创建数据表
+        // 创建数据表
         \$this->table(\$table, [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
         ])
