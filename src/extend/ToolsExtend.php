@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\extend;
 
+use think\admin\Exception;
 use think\admin\Library;
 use think\helper\Str;
 
@@ -41,32 +42,42 @@ class ToolsExtend
     }
 
     /**
-     * 生成 Phinx 的 SQL 脚本
+     * 生成 Phinx 的迁移脚本
      * @param null|array $tables
      * @return string
+     * @throws Exception
      */
     public static function mysql2phinx(?array $tables = null): string
     {
-        $content = "<?php\n\n";
-        $database = Library::$sapp->db->connect()->getConfig('database');
-        foreach ($tables ?: Library::$sapp->db->getTables() as $table) {
+        $connect = Library::$sapp->db->connect();
+        if ($connect->getConfig('type') !== 'mysql') {
+            throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
+        }
+        $tables = $tables ?: Library::$sapp->db->getTables();
 
-            // 读取数据表 备注参数
-            $map = ['TABLE_SCHEMA' => $database, 'TABLE_NAME' => $table];
+        $content = "<?php\n\n\t/**\n\t * 创建数据库\n\t */\n\t public function change() {";
+        foreach ($tables as $table) $content .= "\n\t\t\$this->_{$table}_change();";
+        $content .= "\n\n\t}\n\n";
+
+        foreach ($tables as $table) {
+
+            // 读取数据表 - 备注参数
+            $map = ['TABLE_SCHEMA' => $connect->getConfig('database'), 'TABLE_NAME' => $table];
             $comment = Library::$sapp->db->table('information_schema.TABLES')->where($map)->value('TABLE_COMMENT', '');
 
-            // 读取数据表 索引数据
+            // 读取数据表 - 索引数据
             $indexs = Library::$sapp->db->query("show index from {$table}");
 
             $class = Str::studly($table);
             $content .= <<<CODE
+    
     /**
      * 创建数据对象
      * @class {$class}
      * @table {$table}
      * @return void
      */
-    public function change() {
+    private function _{$table}_change() {
         
         // 当前数据表
         \$table = '{$table}';
@@ -85,7 +96,7 @@ CODE;
                 $data = ['default' => $field['default'], 'comment' => $field['comment'] ?? ''];
                 if (preg_match('/(longtext)/', $field['type'])) {
                     $type = 'text';
-                } elseif (preg_match('/(char|varchar)\((\d+)\)/', $field['type'], $attr)) {
+                } elseif (preg_match('/(varchar|char)\((\d+)\)/', $field['type'], $attr)) {
                     $type = 'string';
                     $data = array_merge(['limit' => intval($attr[2])], $data);
                 } elseif (preg_match('/(bigint|tinyint|int)\((\d+)\)/', $field['type'], $attr)) {
@@ -107,7 +118,7 @@ CODE;
                 ]);
                 $content .= "\n\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
-            $content .= "\n\t\t->save();\n\n\t}\n\n\n";
+            $content .= "\n\t\t->save();\n\n\t}\n\n";
         }
         return highlight_string($content, true);
     }
