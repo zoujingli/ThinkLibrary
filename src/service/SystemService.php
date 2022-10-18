@@ -438,7 +438,7 @@ class SystemService extends Service
      * 是否为生产模式运行
      * @return boolean
      */
-    public static function isProduction(): bool
+    public static function isOnline(): bool
     {
         return static::getRuntime('mode') === 'product';
     }
