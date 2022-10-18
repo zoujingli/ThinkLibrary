@@ -167,15 +167,6 @@ class ProcessService extends Service
     }
 
     /**
-     * 读取组件版本号
-     * @return string
-     */
-    public static function version(): string
-    {
-        return Library::VERSION;
-    }
-
-    /**
      * 清除空白字符过滤
      * @param string $content
      * @return string
