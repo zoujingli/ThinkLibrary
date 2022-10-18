@@ -55,13 +55,8 @@ abstract class Command extends \think\console\Command
     {
         $this->queue = QueueService::instance();
         $this->process = ProcessService::instance();
-        if (defined('WorkQueueCode')) {
-            if (!$this->queue instanceof QueueService) {
-                $this->queue = QueueService::instance();
-            }
-            if ($this->queue->code !== WorkQueueCode) {
-                $this->queue->initialize(WorkQueueCode);
-            }
+        if (defined('WorkQueueCode') && $this->queue->code !== WorkQueueCode) {
+            $this->queue->initialize(WorkQueueCode);
         }
         return $this;
     }
