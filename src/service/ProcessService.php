@@ -102,13 +102,13 @@ class ProcessService extends Service
         if (static::iswin()) {
             $lines = static::exec('wmic process where name="' . $name . '" get processid,CommandLine', true);
             foreach ($lines as $line) if (static::_issub($line, $cmd) !== false) {
-                $attr = explode(' ', static::_space($line));
+                $attr = explode(' ', static::_trim($line));
                 $list[] = ['pid' => array_pop($attr), 'cmd' => join(' ', $attr)];
             }
         } else {
             $lines = static::exec("ps ax|grep -v grep|grep \"{$cmd}\"", true);
             foreach ($lines as $line) if (static::_issub($line, $cmd) !== false) {
-                $attr = explode(' ', static::_space($line));
+                $attr = explode(' ', static::_trim($line));
                 [$pid] = [array_shift($attr), array_shift($attr), array_shift($attr), array_shift($attr)];
                 $list[] = ['pid' => $pid, 'cmd' => join(' ', $attr)];
             }
@@ -144,6 +144,15 @@ class ProcessService extends Service
     }
 
     /**
+     * 判断系统类型
+     * @return boolean
+     */
+    public static function iswin(): bool
+    {
+        return PATH_SEPARATOR === ';';
+    }
+
+    /**
      * 检查文件是否存在
      * @param string $file 待检查的文件
      * @return boolean
@@ -158,36 +167,6 @@ class ProcessService extends Service
     }
 
     /**
-     * 判断系统类型
-     * @return boolean
-     */
-    public static function iswin(): bool
-    {
-        return PATH_SEPARATOR === ';';
-    }
-
-    /**
-     * 清除空白字符过滤
-     * @param string $content
-     * @return string
-     */
-    private static function _space(string $content): string
-    {
-        return preg_replace('|\s+|', ' ', strtr(trim($content), '\\', '/'));
-    }
-
-    /**
-     * 判断是否包含字符串
-     * @param string $content
-     * @param string $substr
-     * @return boolean
-     */
-    private static function _issub(string $content, string $substr): bool
-    {
-        return stripos(static::_space($content), static::_space($substr)) !== false;
-    }
-
-    /**
      * 输出文档消息
      * @param string $message 输出内容
      * @param integer $backline 回退行数
@@ -197,5 +176,26 @@ class ProcessService extends Service
     {
         while ($backline-- > 0) $message = "\033[1A\r\033[K{$message}";
         print_r($message . PHP_EOL);
+    }
+
+    /**
+     * 清除空白字符过滤
+     * @param string $content
+     * @return string
+     */
+    private static function _trim(string $content): string
+    {
+        return preg_replace('|\s+|', ' ', strtr(trim($content), '\\', '/'));
+    }
+
+    /**
+     * 判断是否包含字符串
+     * @param string $content
+     * @param string $searcher
+     * @return boolean
+     */
+    private static function _issub(string $content, string $searcher): bool
+    {
+        return stripos(static::_trim($content), static::_trim($searcher)) !== false;
     }
 }
