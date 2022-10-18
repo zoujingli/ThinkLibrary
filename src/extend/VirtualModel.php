@@ -168,7 +168,7 @@ class VirtualModel
      * @param mixed $name 模型名称
      * @param array $data 模型数据
      * @param mixed $conn 默认链接
-     * @return Model
+     * @return \think\Model
      */
     public static function mk(string $name, array $data = [], string $conn = ''): Model
     {

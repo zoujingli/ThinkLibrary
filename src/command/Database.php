@@ -18,7 +18,6 @@ declare (strict_types=1);
 namespace think\admin\command;
 
 use think\admin\Command;
-use think\admin\Exception;
 use think\admin\service\SystemService;
 use think\console\Input;
 use think\console\input\Argument;
@@ -43,8 +42,8 @@ class Database extends Command
 
     /**
      * 任务执行入口
-     * @param Input $input
-     * @param Output $output
+     * @param \think\console\Input $input
+     * @param \think\console\Output $output
      * @return void
      */
     protected function execute(Input $input, Output $output): void
@@ -56,7 +55,8 @@ class Database extends Command
 
     /**
      * 修复所有数据表
-     * @throws Exception
+     * @return void
+     * @throws \think\admin\Exception
      */
     protected function _repair(): void
     {
@@ -73,7 +73,8 @@ class Database extends Command
 
     /**
      * 优化所有数据表
-     * @throws Exception
+     * @return void
+     * @throws \think\admin\Exception
      */
     protected function _optimize(): void
     {

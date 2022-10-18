@@ -44,10 +44,11 @@ class Replace extends Command
 
     /**
      * 任务执行入口
-     * @param Input $input
-     * @param Output $output
+     * @param \think\console\Input $input
+     * @param \think\console\Output $output
      * @return void
-     * @throws \Exception
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DbException
      */
     protected function execute(Input $input, Output $output)
     {

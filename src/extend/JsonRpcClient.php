@@ -53,7 +53,7 @@ class JsonRpcClient
      * @param string $method
      * @param array $params
      * @return mixed
-     * @throws Exception
+     * @throws \think\admin\Exception
      */
     public function __call(string $method, array $params = [])
     {

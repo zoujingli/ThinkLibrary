@@ -45,7 +45,7 @@ class ToolsExtend
      * 生成 Phinx 的迁移脚本
      * @param null|array $tables
      * @return string
-     * @throws Exception
+     * @throws \think\admin\Exception
      */
     public static function mysql2phinx(?array $tables = null): string
     {
