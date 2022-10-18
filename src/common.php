@@ -92,97 +92,32 @@ if (!function_exists('admuri')) {
         return sysuri('admin/index/index') . '#' . url($url, $vars, $suffix, $domain)->build();
     }
 }
-if (!function_exists('sysconf')) {
+if (!function_exists('encode')) {
     /**
-     * 获取或配置系统参数
-     * @param string $name 参数名称
-     * @param mixed $value 参数内容
-     * @return mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 加密 UTF8 字符串
+     * @param string $content
+     * @return string
      */
-    function sysconf(string $name = '', $value = null)
+    function encode(string $content): string
     {
-        if (is_null($value) && is_string($name)) {
-            return SystemService::get($name);
-        } else {
-            return SystemService::set($name, $value);
+        [$chars, $length] = ['', strlen($string = iconv('UTF-8', 'GBK//TRANSLIT', $content))];
+        for ($i = 0; $i < $length; $i++) $chars .= str_pad(base_convert(strval(ord($string[$i])), 10, 36), 2, '0', 0);
+        return $chars;
+    }
+}
+if (!function_exists('decode')) {
+    /**
+     * 解密 UTF8 字符串
+     * @param string $content
+     * @return string
+     */
+    function decode(string $content): string
+    {
+        $chars = '';
+        foreach (str_split($content, 2) as $char) {
+            $chars .= chr(intval(base_convert($char, 36, 10)));
         }
-    }
-}
-if (!function_exists('sysdata')) {
-    /**
-     * JSON 数据读取与存储
-     * @param string $name 数据名称
-     * @param mixed $value 数据内容
-     * @return mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    function sysdata(string $name, $value = null)
-    {
-        if (is_null($value)) {
-            return SystemService::getData($name);
-        } else {
-            return SystemService::setData($name, $value);
-        }
-    }
-}
-if (!function_exists('sysqueue')) {
-    /**
-     * 注册异步处理任务
-     * @param string $title 任务名称
-     * @param string $command 执行内容
-     * @param integer $later 延时执行时间
-     * @param array $data 任务附加数据
-     * @param integer $rscript 任务类型(0单例,1多例)
-     * @param integer $loops 循环等待时间
-     * @return string
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    function sysqueue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 1, int $loops = 0): string
-    {
-        return QueueService::register($title, $command, $later, $data, $rscript, $loops)->code;
-    }
-}
-if (!function_exists('xss_safe')) {
-    /**
-     * 文本内容XSS过滤
-     * @param string $text
-     * @return string
-     */
-    function xss_safe(string $text): string
-    {
-        // 将所有 onxxx= 中的字母 o 替换为符号 ο，注意它不是字母
-        $rules = ['#<script.*?<\/script>#is' => '', '#(\s)on(\w+=\S)#i' => '$1οn$2'];
-        return preg_replace(array_keys($rules), array_values($rules), trim($text));
-    }
-}
-if (!function_exists('systoken')) {
-    /**
-     * 生成 CSRF-TOKEN 参数
-     * @return string
-     */
-    function systoken(): string
-    {
-        return Library::$sapp->request->buildToken('_token_');
-    }
-}
-if (!function_exists('sysoplog')) {
-    /**
-     * 写入系统日志
-     * @param string $action 日志行为
-     * @param string $content 日志内容
-     * @return boolean
-     */
-    function sysoplog(string $action, string $content): bool
-    {
-        return SystemService::setOplog($action, $content);
+        return iconv('GBK//TRANSLIT', 'UTF-8', $chars);
     }
 }
 if (!function_exists('str2arr')) {
@@ -222,32 +157,84 @@ if (!function_exists('arr2str')) {
         return $separ . join($separ, $data) . $separ;
     }
 }
-if (!function_exists('encode')) {
+if (!function_exists('sysdata')) {
     /**
-     * 加密 UTF8 字符串
-     * @param string $content
-     * @return string
+     * JSON 数据读取与存储
+     * @param string $name 数据名称
+     * @param mixed $value 数据内容
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    function encode(string $content): string
+    function sysdata(string $name, $value = null)
     {
-        [$chars, $length] = ['', strlen($string = iconv('UTF-8', 'GBK//TRANSLIT', $content))];
-        for ($i = 0; $i < $length; $i++) $chars .= str_pad(base_convert(strval(ord($string[$i])), 10, 36), 2, '0', 0);
-        return $chars;
+        if (is_null($value)) {
+            return SystemService::getData($name);
+        } else {
+            return SystemService::setData($name, $value);
+        }
     }
 }
-if (!function_exists('decode')) {
+if (!function_exists('sysconf')) {
     /**
-     * 解密 UTF8 字符串
-     * @param string $content
+     * 获取或配置系统参数
+     * @param string $name 参数名称
+     * @param mixed $value 参数内容
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    function sysconf(string $name = '', $value = null)
+    {
+        if (is_null($value) && is_string($name)) {
+            return SystemService::get($name);
+        } else {
+            return SystemService::set($name, $value);
+        }
+    }
+}
+if (!function_exists('sysoplog')) {
+    /**
+     * 写入系统日志
+     * @param string $action 日志行为
+     * @param string $content 日志内容
+     * @return boolean
+     */
+    function sysoplog(string $action, string $content): bool
+    {
+        return SystemService::setOplog($action, $content);
+    }
+}
+if (!function_exists('systoken')) {
+    /**
+     * 生成 CSRF-TOKEN 参数
      * @return string
      */
-    function decode(string $content): string
+    function systoken(): string
     {
-        $chars = '';
-        foreach (str_split($content, 2) as $char) {
-            $chars .= chr(intval(base_convert($char, 36, 10)));
-        }
-        return iconv('GBK//TRANSLIT', 'UTF-8', $chars);
+        return Library::$sapp->request->buildToken('_token_');
+    }
+}
+if (!function_exists('sysqueue')) {
+    /**
+     * 注册异步处理任务
+     * @param string $title 任务名称
+     * @param string $command 执行内容
+     * @param integer $later 延时执行时间
+     * @param array $data 任务附加数据
+     * @param integer $rscript 任务类型(0单例,1多例)
+     * @param integer $loops 循环等待时间
+     * @return string
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    function sysqueue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 1, int $loops = 0): string
+    {
+        return QueueService::register($title, $command, $later, $data, $rscript, $loops)->code;
     }
 }
 if (!function_exists('enbase64url')) {
@@ -270,6 +257,20 @@ if (!function_exists('debase64url')) {
     function debase64url(string $string): string
     {
         return CodeExtend::deSafe64($string);
+    }
+}
+
+if (!function_exists('xss_safe')) {
+    /**
+     * 文本内容XSS过滤
+     * @param string $text
+     * @return string
+     */
+    function xss_safe(string $text): string
+    {
+        // 将所有 onxxx= 中的字母 o 替换为符号 ο，注意它不是字母
+        $rules = ['#<script.*?<\/script>#is' => '', '#(\s)on(\w+=\S)#i' => '$1οn$2'];
+        return preg_replace(array_keys($rules), array_values($rules), trim($text));
     }
 }
 if (!function_exists('http_get')) {
@@ -328,6 +329,41 @@ if (!function_exists('down_file')) {
         return Storage::down($source, $force, $expire)['url'] ?? $source;
     }
 }
+if (!function_exists('with_file')) {
+    /**
+     * 获取文件绝对路径
+     * @param string $name 文件路径
+     * @param ?string $root 程序根路径
+     * @return string
+     */
+    function with_file(string $name, ?string $root = null): string
+    {
+        if (is_null($root)) $root = Library::$sapp->getRootPath();
+        return rtrim($root, '\\/') . DIRECTORY_SEPARATOR . trim($name, '\\/');
+    }
+}
+if (!function_exists('trace_file')) {
+    /**
+     * 输出异常数据到文件
+     * @param \Exception $exception
+     * @return boolean
+     */
+    function trace_file(Exception $exception): bool
+    {
+        $path = Library::$sapp->getRuntimePath() . 'trace';
+        if (!file_exists($path)) mkdir($path, 0755, true);
+        $name = substr($exception->getFile(), strlen(Library::$sapp->getRootPath()));
+        $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
+        $class = get_class($exception);
+        return false !== file_put_contents($file,
+                "[CODE] {$exception->getCode()}" . PHP_EOL .
+                "[INFO] {$exception->getMessage()}" . PHP_EOL .
+                "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL .
+                "[TIME] " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL .
+                '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
+            );
+    }
+}
 if (!function_exists('format_bytes')) {
     /**
      * 文件字节单位转换
@@ -362,27 +398,5 @@ if (!function_exists('format_datetime')) {
         } else {
             return date(lang($format), strtotime($datetime));
         }
-    }
-}
-if (!function_exists('trace_file')) {
-    /**
-     * 输出异常数据到文件
-     * @param \Exception $exception
-     * @return boolean
-     */
-    function trace_file(Exception $exception): bool
-    {
-        $path = Library::$sapp->getRuntimePath() . 'trace';
-        if (!file_exists($path)) mkdir($path, 0755, true);
-        $name = substr($exception->getFile(), strlen(Library::$sapp->getRootPath()));
-        $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
-        $class = get_class($exception);
-        return false !== file_put_contents($file,
-                "[CODE] {$exception->getCode()}" . PHP_EOL .
-                "[INFO] {$exception->getMessage()}" . PHP_EOL .
-                "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL .
-                "[TIME] " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL .
-                '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
-            );
     }
 }

@@ -42,6 +42,12 @@ use think\Model;
 class SystemService extends Service
 {
     /**
+     * 当前环境变量
+     * @var array
+     */
+    private static $env = [];
+
+    /**
      * 配置数据缓存
      * @var array
      */
@@ -429,6 +435,15 @@ class SystemService extends Service
     }
 
     /**
+     * 是否为生产模式运行
+     * @return boolean
+     */
+    public static function isProduction(): bool
+    {
+        return static::getRuntime('mode') === 'product';
+    }
+
+    /**
      * 设置实时运行配置
      * @param null|mixed $mode 支持模式
      * @param null|array $appmap 应用映射
@@ -437,20 +452,19 @@ class SystemService extends Service
      */
     public static function setRuntime(?string $mode = null, ?array $appmap = [], ?array $domain = []): bool
     {
-        $data = static::getRuntime();
-        $data['mode'] = $mode ?: $data['mode'];
-        $data['appmap'] = static::uniqueArray($data['appmap'], $appmap);
-        $data['domain'] = static::uniqueArray($data['domain'], $domain);
+        empty(static::$env) && static::getRuntime();
+        static::$env['mode'] = is_null($mode) ? static::$env['mode'] : $mode;
+        static::$env['appmap'] = static::uniqueMergeArray(static::$env['appmap'], $appmap);
+        static::$env['domain'] = static::uniqueMergeArray(static::$env['domain'], $domain);
 
         // 组装配置文件格式
-        $rows[] = "mode = {$data['mode']}";
-        foreach ($data['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
-        foreach ($data['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
+        $rows[] = "mode = " . static::$env['mode'];
+        foreach (static::$env['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
+        foreach (static::$env['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
+        file_put_contents(with_file('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
 
-        // 数据配置保存文件
-        $env = Library::$sapp->getRootPath() . 'runtime/.env';
-        file_put_contents($env, "[RUNTIME]\n" . join("\n", $rows));
-        return static::bindRuntime($data);
+        //  应用当前的配置文件
+        return static::bindRuntime(static::$env);
     }
 
     /**
@@ -461,14 +475,17 @@ class SystemService extends Service
      */
     public static function getRuntime(?string $name = null, array $default = [])
     {
-        $env = Library::$sapp->getRootPath() . 'runtime/.env';
-        if (file_exists($env)) Library::$sapp->env->load($env);
-        $data = [
-            'mode'   => Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug',
-            'appmap' => Library::$sapp->env->get('RUNTIME_APPMAP') ?: [],
-            'domain' => Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [],
-        ];
-        return is_null($name) ? $data : ($data[$name] ?? $default);
+        if (empty(static::$env)) {
+            // 读取默认配置
+            if (file_exists($file = with_file('runtime/.env'))) {
+                Library::$sapp->env->load($file);
+            }
+            // 动态判断赋值
+            static::$env['mode'] = Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug';
+            static::$env['appmap'] = Library::$sapp->env->get('RUNTIME_APPMAP') ?: [];
+            static::$env['domain'] = Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [];
+        }
+        return is_null($name) ? static::$env : (static::$env[$name] ?? $default);
     }
 
     /**
@@ -478,15 +495,21 @@ class SystemService extends Service
      */
     public static function bindRuntime(array $data = []): bool
     {
-        if (empty($data)) $data = static::getRuntime();
+        // 应用配置参数
+        $data = array_merge(static::getRuntime(), $data);
+
         // 设置模块绑定
-        $bind['app_map'] = static::uniqueArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']);
-        $bind['domain_bind'] = static::uniqueArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']);
-        Library::$sapp->config->set($bind, 'app');
-        // 模板常用变量
-        $vars = array_merge(static::uris(), Library::$sapp->config->get('view.tpl_replace_string', []));
-        Library::$sapp->config->set(['tpl_replace_string' => $vars], 'view');
-        // 初始化配置信息
+        Library::$sapp->config->set([
+            'app_map'     => static::uniqueMergeArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']),
+            'domain_bind' => static::uniqueMergeArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']),
+        ], 'app');
+
+        // 设置模板变量
+        Library::$sapp->config->set([
+            'tpl_replace_string' => array_merge(static::uris(), Library::$sapp->config->get('view.tpl_replace_string', [])),
+        ], 'view');
+
+        // 初始化调试配置
         return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
     }
 
@@ -504,11 +527,12 @@ class SystemService extends Service
     /**
      * 初始化命令行主程序
      * @param ?\think\App $app
+     * @return integer
      * @throws \Exception
      */
-    public static function doConsoleInit(?App $app = null)
+    public static function doConsoleInit(?App $app = null): int
     {
-        static::init($app)->console->run();
+        return static::init($app)->console->run();
     }
 
     /**
@@ -516,7 +540,7 @@ class SystemService extends Service
      * @param array ...$args
      * @return array
      */
-    private static function uniqueArray(...$args): array
+    private static function uniqueMergeArray(...$args): array
     {
         return array_unique(array_reverse(array_merge(...$args)));
     }
