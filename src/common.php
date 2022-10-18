@@ -64,20 +64,6 @@ if (!function_exists('auth')) {
         return AdminService::check($node);
     }
 }
-if (!function_exists('sysuri')) {
-    /**
-     * 生成最短 URL 地址
-     * @param string $url 路由地址
-     * @param array $vars PATH 变量
-     * @param boolean|string $suffix 后缀
-     * @param boolean|string $domain 域名
-     * @return string
-     */
-    function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
-    {
-        return SystemService::sysuri($url, $vars, $suffix, $domain);
-    }
-}
 if (!function_exists('admuri')) {
     /**
      * 生成后台 URL 地址
@@ -90,6 +76,20 @@ if (!function_exists('admuri')) {
     function admuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         return sysuri('admin/index/index') . '#' . url($url, $vars, $suffix, $domain)->build();
+    }
+}
+if (!function_exists('sysuri')) {
+    /**
+     * 生成最短 URL 地址
+     * @param string $url 路由地址
+     * @param array $vars PATH 变量
+     * @param boolean|string $suffix 后缀
+     * @param boolean|string $domain 域名
+     * @return string
+     */
+    function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
+    {
+        return SystemService::sysuri($url, $vars, $suffix, $domain);
     }
 }
 if (!function_exists('encode')) {
