@@ -58,7 +58,7 @@ class Menu extends Command
                 $this->setQueueMessage($total, ++$count, "重写2级菜单：-> {$sub2['title']}");
                 if (!empty($sub2['sub'])) foreach ($sub2['sub'] as $sub3) {
                     $this->write($sub3, $pid2);
-                    $this->setQueueMessage($total, ++$count, "重写3级菜单： -> -> {$sub3['title']}");
+                    $this->setQueueMessage($total, ++$count, "重写3级菜单：-> -> {$sub3['title']}");
                 }
             }
         }
