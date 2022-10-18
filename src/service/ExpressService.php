@@ -65,7 +65,7 @@ class ExpressService extends Service
             $clentip = join('.', [rand(1, 254), rand(1, 254), rand(1, 254), rand(1, 254)]);
         }
         // 创建 CURL 请求模拟参数
-        $this->options['cookie_file'] = "{$this->app->getRootPath()}runtime/.cok";
+        $this->options['cookie_file'] = with_path('runtime/.cok');
         $this->options['headers'] = ['Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}"];
         return $this;
     }

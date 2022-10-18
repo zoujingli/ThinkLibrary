@@ -350,7 +350,7 @@ class SystemService extends Service
      */
     public static function putDebug($data, bool $new = false, ?string $file = null)
     {
-        if (is_null($file)) $file = Library::$sapp->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log';
+        if (is_null($file)) $file = with_path('runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log');
         $str = (is_string($data) ? $data : ((is_array($data) || is_object($data)) ? print_r($data, true) : var_export($data, true))) . PHP_EOL;
         return $new ? file_put_contents($file, $str) : file_put_contents($file, $str, FILE_APPEND);
     }
@@ -376,7 +376,7 @@ class SystemService extends Service
             }
             if (empty($info) || empty($info['file'])) return false;
             $favicon = new FaviconExtend($info['file'], [48, 48]);
-            return $favicon->saveIco(Library::$sapp->getRootPath() . 'public/favicon.ico');
+            return $favicon->saveIco(with_path('public/favicon.ico'));
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
@@ -408,7 +408,7 @@ class SystemService extends Service
         $connection = Library::$sapp->db->getConfig('default');
         Library::$sapp->console->call("optimize:schema", ["--connection={$connection}"]);
         foreach (NodeService::getModules() as $module) {
-            $path = Library::$sapp->getRootPath() . 'runtime' . DIRECTORY_SEPARATOR . $module;
+            $path = with_path('runtime' . DIRECTORY_SEPARATOR . $module);
             file_exists($path) && is_dir($path) || mkdir($path, 0755, true);
             Library::$sapp->console->call("optimize:route", [$module]);
         }
@@ -461,7 +461,7 @@ class SystemService extends Service
         $rows[] = "mode = " . static::$env['mode'];
         foreach (static::$env['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
         foreach (static::$env['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
-        file_put_contents(with_file('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
+        file_put_contents(with_path('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
 
         //  应用当前的配置文件
         return static::bindRuntime(static::$env);
@@ -477,7 +477,7 @@ class SystemService extends Service
     {
         if (empty(static::$env)) {
             // 读取默认配置
-            if (file_exists($file = with_file('runtime/.env'))) {
+            if (file_exists($file = with_path('runtime/.env'))) {
                 Library::$sapp->env->load($file);
             }
             // 动态判断赋值

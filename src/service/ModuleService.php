@@ -144,7 +144,7 @@ class ModuleService extends Service
     {
         // 扫描规则文件
         foreach ($rules as $rule) {
-            $path = Library::$sapp->getRootPath() . strtr(trim($rule, '\\/'), '\\', '/');
+            $path = with_path(strtr(trim($rule, '\\/'), '\\', '/'));
             $data = array_merge($data, static::scanLocalFileHashList($path));
         }
         // 清除忽略文件
@@ -214,7 +214,7 @@ class ModuleService extends Service
                 return [false, $file['type'], $file['name']];
             }
         } elseif ($file['type'] == 'del') {
-            $real = Library::$sapp->getRootPath() . $file['name'];
+            $real = with_path($file['name']);
             if (is_file($real) && unlink($real)) {
                 static::removeEmptyDirectory(dirname($real));
                 return [true, $file['type'], $file['name']];
@@ -266,7 +266,7 @@ class ModuleService extends Service
         $source = static::getServer() . '/admin/api.update/get?encode=' . $encode;
         $result = json_decode(HttpExtend::get($source), true);
         if (empty($result['code'])) return false;
-        $filename = Library::$sapp->getRootPath() . decode($encode);
+        $filename = with_path(decode($encode));
         file_exists(dirname($filename)) || mkdir(dirname($filename), 0755, true);
         return file_put_contents($filename, base64_decode($result['data']['content']));
     }
@@ -324,7 +324,7 @@ class ModuleService extends Service
     {
         $data = [];
         foreach (NodeService::scanDirectory($path, [], null) as $file) {
-            if (static::checkAllowDownload($name = substr($file, strlen(Library::$sapp->getRootPath())))) {
+            if (static::checkAllowDownload($name = substr($file, strlen(with_path())))) {
                 $data[] = ['name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file)))];
             }
         }

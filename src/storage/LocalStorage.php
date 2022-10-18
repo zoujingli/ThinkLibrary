@@ -128,9 +128,8 @@ class LocalStorage extends Storage
      */
     public function path(string $name, bool $safe = false): string
     {
-        $root = $this->app->getRootPath();
         $path = $safe ? 'safefile' : 'public/upload';
-        return strtr("{$root}{$path}/{$this->delSuffix($name)}", '\\', '/');
+        return strtr(with_path("{$path}/{$this->delSuffix($name)}"), '\\', '/');
     }
 
     /**

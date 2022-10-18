@@ -329,17 +329,17 @@ if (!function_exists('down_file')) {
         return Storage::down($source, $force, $expire)['url'] ?? $source;
     }
 }
-if (!function_exists('with_file')) {
+if (!function_exists('with_path')) {
     /**
      * 获取文件绝对路径
      * @param string $name 文件路径
      * @param ?string $root 程序根路径
      * @return string
      */
-    function with_file(string $name, ?string $root = null): string
+    function with_path(string $name = '', ?string $root = null): string
     {
         if (is_null($root)) $root = Library::$sapp->getRootPath();
-        return rtrim($root, '\\/') . DIRECTORY_SEPARATOR . trim($name, '\\/');
+        return rtrim($root, '\\/') . DIRECTORY_SEPARATOR . ltrim($name, '\\/');
     }
 }
 if (!function_exists('trace_file')) {
@@ -352,7 +352,7 @@ if (!function_exists('trace_file')) {
     {
         $path = Library::$sapp->getRuntimePath() . 'trace';
         if (!file_exists($path)) mkdir($path, 0755, true);
-        $name = substr($exception->getFile(), strlen(Library::$sapp->getRootPath()));
+        $name = substr($exception->getFile(), strlen(with_path()));
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
         $class = get_class($exception);
         return false !== file_put_contents($file,

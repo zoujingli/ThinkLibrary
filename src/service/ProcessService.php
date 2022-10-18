@@ -18,7 +18,6 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\ToolsExtend;
-use think\admin\Library;
 use think\admin\Service;
 
 /**
@@ -37,9 +36,8 @@ class ProcessService extends Service
      */
     public static function think(string $arguments = '', bool $simple = false): string
     {
+        $command = with_path("think {$arguments}");
         try {
-            $root = Library::$sapp->getRootPath();
-            $command = trim("{$root}think {$arguments}");
             if ($simple) return $command;
             if (!($binary = sysconf('base.binary')) || empty($binary)) {
                 $attrs = pathinfo(str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY));
@@ -78,7 +76,7 @@ class ProcessService extends Service
     /**
      * 创建异步进程
      * @param string $command 任务指令
-     * @param integer $usleep 延时时间
+     * @param integer $usleep 延时毫米
      */
     public static function create(string $command, int $usleep = 0)
     {

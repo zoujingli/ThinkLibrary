@@ -43,9 +43,9 @@ abstract class Command extends \think\console\Command
 
     /**
      * 初始化指令变量
-     * @param Input $input
-     * @param Output $output
-     * @return static
+     * @param \think\console\Input $input
+     * @param \think\console\Output $output
+     * @return $this
      * @throws \think\admin\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
@@ -71,8 +71,7 @@ abstract class Command extends \think\console\Command
         if (defined('WorkQueueCode')) {
             $this->queue->error($message);
         } else {
-            $this->output->writeln($message);
-            exit("\r\n");
+            $this->process->message($message);
         }
     }
 
@@ -86,7 +85,7 @@ abstract class Command extends \think\console\Command
         if (defined('WorkQueueCode')) {
             $this->queue->success($message);
         } else {
-            ProcessService::message($message);
+            $this->process->message($message);
         }
     }
 
@@ -102,7 +101,7 @@ abstract class Command extends \think\console\Command
         if (defined('WorkQueueCode')) {
             $this->queue->progress(2, $message, $progress, $backline);
         } elseif (is_string($message)) {
-            ProcessService::message($message, $backline);
+            $this->process->message($message, $backline);
         }
         return $this;
     }
@@ -117,7 +116,7 @@ abstract class Command extends \think\console\Command
      */
     public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Command
     {
-        $prefix = str_pad(strval($count), strlen(strval($total)), '0', STR_PAD_LEFT);
-        return $this->setQueueProgress("[{$prefix}/{$total}] {$message}", sprintf('%.2f', $count / max($total, 1) * 100), $backline);
+        $this->queue->message($total, $count, $message, $backline);
+        return $this;
     }
 }

@@ -211,10 +211,9 @@ class QueueService extends Service
      */
     public function message(int $total, int $count, string $message = '', int $backline = 0): void
     {
-        $total = max($total, 1);
-        $prefix = str_pad("{$count}", strlen("{$total}"), '0', STR_PAD_LEFT);
+        $prefix = str_pad("{$count}", strlen(strval($total)), '0', STR_PAD_LEFT);
         if (defined('WorkQueueCode')) {
-            $this->progress(2, "[{$prefix}/{$total}] {$message}", sprintf("%.2f", $count / $total * 100), $backline);
+            $this->progress(2, "[{$prefix}/{$total}] {$message}", sprintf("%.2f", $count / max($total, 1) * 100), $backline);
         } else {
             ProcessService::message("[{$prefix}/{$total}] {$message}", $backline);
         }
