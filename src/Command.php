@@ -86,8 +86,7 @@ abstract class Command extends \think\console\Command
         if (defined('WorkQueueCode')) {
             $this->queue->success($message);
         } else {
-            $this->output->writeln($message);
-            exit("\r\n");
+            ProcessService::message($message);
         }
     }
 
@@ -103,7 +102,7 @@ abstract class Command extends \think\console\Command
         if (defined('WorkQueueCode')) {
             $this->queue->progress(2, $message, $progress, $backline);
         } elseif (is_string($message)) {
-            $this->output->writeln($message);
+            ProcessService::message($message, $backline);
         }
         return $this;
     }
@@ -118,8 +117,7 @@ abstract class Command extends \think\console\Command
      */
     public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Command
     {
-        $total = max($total, 1);
-        $prefix = str_pad("{$count}", strlen("{$total}"), '0', STR_PAD_LEFT);
-        return $this->setQueueProgress("[{$prefix}/{$total}] {$message}", sprintf("%.2f", $count / $total * 100), $backline);
+        $prefix = str_pad(strval($count), strlen(strval($total)), '0', STR_PAD_LEFT);
+        return $this->setQueueProgress("[{$prefix}/{$total}] {$message}", sprintf('%.2f', $count / max($total, 1) * 100), $backline);
     }
 }

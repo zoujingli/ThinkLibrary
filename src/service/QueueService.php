@@ -213,11 +213,10 @@ class QueueService extends Service
     {
         $total = max($total, 1);
         $prefix = str_pad("{$count}", strlen("{$total}"), '0', STR_PAD_LEFT);
-        $message = "[{$prefix}/{$total}] {$message}";
         if (defined('WorkQueueCode')) {
-            $this->progress(2, $message, sprintf("%.2f", $count / $total * 100), $backline);
+            $this->progress(2, "[{$prefix}/{$total}] {$message}", sprintf("%.2f", $count / $total * 100), $backline);
         } else {
-            print_r(($backline > 0 ? "\033[{$backline}A" : '') . $message . PHP_EOL);
+            ProcessService::message("[{$prefix}/{$total}] {$message}", $backline);
         }
     }
 
@@ -244,7 +243,7 @@ class QueueService extends Service
     /**
      * 执行任务处理
      * @param array $data 任务参数
-     * @return void|string
+     * @return void|mixed|string
      */
     public function execute(array $data = [])
     {

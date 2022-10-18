@@ -195,4 +195,16 @@ class ProcessService extends Service
     {
         return stripos(static::_space($content), static::_space($substr)) !== false;
     }
+
+    /**
+     * 输出文档消息
+     * @param string $message 输出内容
+     * @param integer $backline 回退行数
+     * @return void
+     */
+    public static function message(string $message, int $backline = 0)
+    {
+        while ($backline-- > 0) $message = "\033[1A\r\033[K{$message}";
+        print_r($message . PHP_EOL);
+    }
 }
