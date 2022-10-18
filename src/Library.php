@@ -23,7 +23,6 @@ use think\admin\command\Install;
 use think\admin\command\Menu;
 use think\admin\command\Queue;
 use think\admin\command\Replace;
-use think\admin\command\Version;
 use think\admin\multiple\BuildUrl;
 use think\admin\multiple\command\Build;
 use think\admin\multiple\Multiple;
@@ -87,7 +86,7 @@ class Library extends Service
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class]);
         // 注册 ThinkAdmin 指令
-        $this->commands([Menu::class, Queue::class, Install::class, Version::class, Database::class, Replace::class]);
+        $this->commands([Menu::class, Queue::class, Install::class, Database::class, Replace::class]);
         // 动态应用运行参数
         SystemService::bindRuntime();
     }
