@@ -23,12 +23,10 @@ use Psr\Log\NullLogger;
 use think\admin\Command;
 use think\admin\model\SystemQueue;
 use think\admin\service\QueueService;
-use think\Collection;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
-use think\Model;
 use Throwable;
 
 /**
@@ -217,19 +215,17 @@ class Queue extends Command
         $map1 = [['loops_time', '>', 0], ['status', '=', static::STATE_ERROR]]; // 执行失败的循环任务
         $map2 = [['exec_time', '<', time() - 3600], ['status', '=', static::STATE_LOCK]]; // 执行超时的任务
         [$timeout, $loops, $total] = [0, 0, SystemQueue::mk()->whereOr([$map1, $map2])->count()];
-        SystemQueue::mk()->whereOr([$map1, $map2])->chunk(100, function (Collection $queues) use ($total, &$loops, &$timeout) {
-            $queues->map(function (Model $queue) use ($total, &$loops, &$timeout) {
-                $queue['loops_time'] > 0 ? $loops++ : $timeout++;
-                if ($queue['loops_time'] > 0) {
-                    $this->queue->message($total, $timeout + $loops, "正在重置任务 {$queue['code']} 为运行");
-                    [$status, $message] = [static::STATE_WAIT, $queue['status'] === static::STATE_ERROR ? '任务执行失败，已自动重置任务！' : '任务执行超时，已自动重置任务！'];
-                } else {
-                    $this->queue->message($total, $timeout + $loops, "正在标记任务 {$queue['code']} 为超时");
-                    [$status, $message] = [static::STATE_ERROR, '任务执行超时，已自动标识为失败！'];
-                }
-                $queue->update(['status' => $status, 'exec_desc' => $message]);
-            });
-        });
+        foreach (SystemQueue::mk()->whereOr([$map1, $map2])->cursor() as $queue) {
+            $queue['loops_time'] > 0 ? $loops++ : $timeout++;
+            if ($queue['loops_time'] > 0) {
+                $this->queue->message($total, $timeout + $loops, "正在重置任务 {$queue['code']} 为运行");
+                [$status, $message] = [static::STATE_WAIT, $queue['status'] === static::STATE_ERROR ? '任务执行失败，已自动重置任务！' : '任务执行超时，已自动重置任务！'];
+            } else {
+                $this->queue->message($total, $timeout + $loops, "正在标记任务 {$queue['code']} 为超时");
+                [$status, $message] = [static::STATE_ERROR, '任务执行超时，已自动标识为失败！'];
+            }
+            $queue->save(['status' => $status, 'exec_desc' => $message]);
+        }
         $this->setQueueSuccess("清理 {$clean} 条历史任务，关闭 {$timeout} 条超时任务，重置 {$loops} 条循环任务");
     }
 
@@ -284,7 +280,7 @@ class Queue extends Command
                     $this->output->writeln("># Created new process -> [{$queue['code']}] {$queue['title']}");
                 }
             } catch (Exception $exception) {
-                $queue->update(['status' => static::STATE_ERROR, 'outer_time' => time(), 'exec_desc' => $exception->getMessage()]);
+                $queue->save(['status' => static::STATE_ERROR, 'outer_time' => time(), 'exec_desc' => $exception->getMessage()]);
                 $this->output->error("># Execution failed -> [{$queue['code']}] {$queue['title']}，{$exception->getMessage()}");
             }
             if (microtime(true) < $start + 1) usleep(1000000);
@@ -332,6 +328,7 @@ class Queue extends Command
                 }
             }
         } catch (Exception|Throwable|Error $exception) {
+            trace_file($exception);
             $isDone = intval($exception->getCode()) === static::STATE_DONE;
             $this->updateQueue($isDone ? static::STATE_DONE : static::STATE_ERROR, $exception->getMessage());
         }
