@@ -339,7 +339,8 @@ if (!function_exists('with_path')) {
     function with_path(string $name = '', ?string $root = null): string
     {
         if (is_null($root)) $root = Library::$sapp->getRootPath();
-        return rtrim($root, '\\/') . DIRECTORY_SEPARATOR . ltrim($name, '\\/');
+        $attr = ['/' => DIRECTORY_SEPARATOR, '\\' => DIRECTORY_SEPARATOR];
+        return rtrim($root, '\\/') . DIRECTORY_SEPARATOR . ltrim(strtr($name, $attr), '\\/');
     }
 }
 if (!function_exists('trace_file')) {
