@@ -259,7 +259,26 @@ if (!function_exists('debase64url')) {
         return CodeExtend::deSafe64($string);
     }
 }
-
+if (!function_exists('is_deubg')) {
+    /**
+     * 调试模式运行
+     * @return boolean
+     */
+    function is_deubg(): bool
+    {
+        return SystemService::isDebug();
+    }
+}
+if (!function_exists('is_online')) {
+    /**
+     * 产品模式运行
+     * @return boolean
+     */
+    function is_online(): bool
+    {
+        return SystemService::isOnline();
+    }
+}
 if (!function_exists('xss_safe')) {
     /**
      * 文本内容XSS过滤
@@ -399,25 +418,5 @@ if (!function_exists('format_datetime')) {
         } else {
             return date(lang($format), strtotime($datetime));
         }
-    }
-}
-if (!function_exists('running_deubg')) {
-    /**
-     * 调试模式运行
-     * @return boolean
-     */
-    function running_deubg(): bool
-    {
-        return SystemService::isDebug();
-    }
-}
-if (!function_exists('running_online')) {
-    /**
-     * 产品模式运行
-     * @return boolean
-     */
-    function running_online(): bool
-    {
-        return SystemService::isOnline();
     }
 }
