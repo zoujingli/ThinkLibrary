@@ -380,6 +380,7 @@ class SystemService extends Service
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {
+            trace_file($exception);
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }
@@ -408,7 +409,7 @@ class SystemService extends Service
         $connection = Library::$sapp->db->getConfig('default');
         Library::$sapp->console->call("optimize:schema", ["--connection={$connection}"]);
         foreach (NodeService::getModules() as $module) {
-            $path = with_path('runtime' . DIRECTORY_SEPARATOR . $module);
+            $path = with_path("runtime/{$module}");
             file_exists($path) && is_dir($path) || mkdir($path, 0755, true);
             Library::$sapp->console->call("optimize:route", [$module]);
         }
@@ -479,13 +480,14 @@ class SystemService extends Service
     {
         if (empty(static::$env)) {
             // 读取默认配置
-            if (file_exists($file = with_path('runtime/.env'))) {
-                Library::$sapp->env->load($file);
-            }
+            $env = Library::$sapp->env;
+            $file = with_path('runtime/.env');
+            file_exists($file) && $env->load($file);
+
             // 动态判断赋值
-            static::$env['mode'] = Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug';
-            static::$env['appmap'] = Library::$sapp->env->get('RUNTIME_APPMAP') ?: [];
-            static::$env['domain'] = Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [];
+            static::$env['mode'] = $env->get('RUNTIME_MODE') ?: 'debug';
+            static::$env['appmap'] = $env->get('RUNTIME_APPMAP') ?: [];
+            static::$env['domain'] = $env->get('RUNTIME_DOMAIN') ?: [];
         }
         return is_null($name) ? static::$env : (static::$env[$name] ?? $default);
     }
@@ -498,17 +500,18 @@ class SystemService extends Service
     public static function bindRuntime(array $data = []): bool
     {
         // 应用配置参数
+        $conf = Library::$sapp->config;
         $data = array_merge(static::getRuntime(), $data);
 
         // 设置模块绑定
-        Library::$sapp->config->set([
-            'app_map'     => static::uniqueMergeArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']),
-            'domain_bind' => static::uniqueMergeArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']),
+        $conf->set([
+            'app_map'     => static::uniqueMergeArray($conf->get('app.app_map', []), $data['appmap']),
+            'domain_bind' => static::uniqueMergeArray($conf->get('app.domain_bind', []), $data['domain']),
         ], 'app');
 
         // 设置模板变量
-        Library::$sapp->config->set([
-            'tpl_replace_string' => array_merge(static::uris(), Library::$sapp->config->get('view.tpl_replace_string', [])),
+        $conf->set([
+            'tpl_replace_string' => array_merge(static::uris(), $conf->get('view.tpl_replace_string', [])),
         ], 'view');
 
         // 初始化调试配置
