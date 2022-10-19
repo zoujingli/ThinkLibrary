@@ -64,6 +64,7 @@ if (!function_exists('auth')) {
         return AdminService::check($node);
     }
 }
+
 if (!function_exists('admuri')) {
     /**
      * 生成后台 URL 地址
@@ -92,6 +93,7 @@ if (!function_exists('sysuri')) {
         return SystemService::sysuri($url, $vars, $suffix, $domain);
     }
 }
+
 if (!function_exists('encode')) {
     /**
      * 加密 UTF8 字符串
@@ -120,6 +122,7 @@ if (!function_exists('decode')) {
         return iconv('GBK//TRANSLIT', 'UTF-8', $chars);
     }
 }
+
 if (!function_exists('str2arr')) {
     /**
      * 字符串转数组
@@ -157,6 +160,28 @@ if (!function_exists('arr2str')) {
         return $separ . join($separ, $data) . $separ;
     }
 }
+
+if (!function_exists('isdebug')) {
+    /**
+     * 调试模式运行
+     * @return boolean
+     */
+    function isdebug(): bool
+    {
+        return SystemService::isDebug();
+    }
+}
+if (!function_exists('isonline')) {
+    /**
+     * 产品模式运行
+     * @return boolean
+     */
+    function isonline(): bool
+    {
+        return SystemService::isOnline();
+    }
+}
+
 if (!function_exists('sysdata')) {
     /**
      * JSON 数据读取与存储
@@ -237,6 +262,7 @@ if (!function_exists('sysqueue')) {
         return QueueService::register($title, $command, $later, $data, $rscript, $loops)->code;
     }
 }
+
 if (!function_exists('enbase64url')) {
     /**
      * Base64安全URL编码
@@ -259,26 +285,7 @@ if (!function_exists('debase64url')) {
         return CodeExtend::deSafe64($string);
     }
 }
-if (!function_exists('is_deubg')) {
-    /**
-     * 调试模式运行
-     * @return boolean
-     */
-    function is_deubg(): bool
-    {
-        return SystemService::isDebug();
-    }
-}
-if (!function_exists('is_online')) {
-    /**
-     * 产品模式运行
-     * @return boolean
-     */
-    function is_online(): bool
-    {
-        return SystemService::isOnline();
-    }
-}
+
 if (!function_exists('xss_safe')) {
     /**
      * 文本内容XSS过滤
