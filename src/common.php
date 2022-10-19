@@ -161,22 +161,22 @@ if (!function_exists('arr2str')) {
     }
 }
 
-if (!function_exists('isdebug')) {
+if (!function_exists('isDebug')) {
     /**
      * 调试模式运行
      * @return boolean
      */
-    function isdebug(): bool
+    function isDebug(): bool
     {
         return SystemService::isDebug();
     }
 }
-if (!function_exists('isonline')) {
+if (!function_exists('isOnline')) {
     /**
      * 产品模式运行
      * @return boolean
      */
-    function isonline(): bool
+    function isOnline(): bool
     {
         return SystemService::isOnline();
     }
