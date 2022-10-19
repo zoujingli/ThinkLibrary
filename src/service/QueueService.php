@@ -60,21 +60,18 @@ class QueueService extends Service
      * @param string $code
      * @return static
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function initialize(string $code = ''): QueueService
     {
         if (!empty($code)) {
             $this->code = $code;
-            $this->record = SystemQueue::mk()->where(['code' => $this->code])->find();
+            $this->record = SystemQueue::mk()->where(['code' => $code])->findOrEmpty()->toArray();
             if (empty($this->record)) {
                 $this->app->log->error("Qeueu initialize failed, Queue {$code} not found.");
                 throw new Exception("Qeueu initialize failed, Queue {$code} not found.");
             }
-            [$this->code, $this->title] = [$this->record['code'], $this->record['title']];
             $this->data = json_decode($this->record['exec_data'], true) ?: [];
+            $this->title = $this->record['title'];
         }
         return $this;
     }
@@ -84,9 +81,6 @@ class QueueService extends Service
      * @param integer $wait 等待时间
      * @return $this
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function reset(int $wait = 0): QueueService
     {

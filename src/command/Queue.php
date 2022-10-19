@@ -359,12 +359,10 @@ class Queue extends Command
             $this->queue->progress($status, '>>> 任务处理失败 <<<');
         }
         // 注册循环任务
-        if (isset($this->queue->record['loops_time']) && $this->queue->record['loops_time'] > 0) {
-            try {
-                $this->queue->initialize($this->code)->reset($this->queue->record['loops_time']);
-            } catch (Exception|Throwable|Error  $exception) {
-                $this->app->log->error("Queue {$this->queue->record['code']} Loops Failed. {$exception->getMessage()}");
-            }
+        if ($this->queue->record['loops_time'] > 0) try {
+            $this->queue->initialize($this->code)->reset(intval($this->queue->record['loops_time']));
+        } catch (Exception|Throwable|Error $exception) {
+            $this->app->log->error("Queue {$this->queue->record['code']} Loops Failed. {$exception->getMessage()}");
         }
     }
 }

@@ -47,9 +47,6 @@ abstract class Command extends \think\console\Command
      * @param \think\console\Output $output
      * @return $this
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function initialize(Input $input, Output $output): Command
     {
