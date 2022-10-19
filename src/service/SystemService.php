@@ -431,7 +431,8 @@ class SystemService extends Service
      */
     public static function isDebug(): bool
     {
-        return static::getRuntime('mode') !== 'product';
+        empty(static::$env) && static::getRuntime();
+        return static::$env['mode'] !== 'product';
     }
 
     /**
@@ -440,7 +441,8 @@ class SystemService extends Service
      */
     public static function isOnline(): bool
     {
-        return static::getRuntime('mode') === 'product';
+        empty(static::$env) && static::getRuntime();
+        return static::$env['mode'] === 'product';
     }
 
     /**

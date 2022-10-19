@@ -401,3 +401,23 @@ if (!function_exists('format_datetime')) {
         }
     }
 }
+if (!function_exists('running_deubg')) {
+    /**
+     * 调试模式运行
+     * @return boolean
+     */
+    function running_deubg(): bool
+    {
+        return SystemService::isDebug();
+    }
+}
+if (!function_exists('running_online')) {
+    /**
+     * 产品模式运行
+     * @return boolean
+     */
+    function running_online(): bool
+    {
+        return SystemService::isOnline();
+    }
+}
