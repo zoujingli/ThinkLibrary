@@ -347,7 +347,7 @@ class Queue extends Command
         SystemQueue::mk()->strict(false)->where(['code' => $this->code])->update([
             'status' => $status, 'outer_time' => microtime(true), 'exec_pid' => getmypid(), 'exec_desc' => $desc[0],
         ]);
-        $this->output->writeln($message);
+        $this->process->message($message);
         // 任务进度标记
         if (!empty($desc[0])) {
             $this->queue->progress($status, ">>> {$desc[0]} <<<");
