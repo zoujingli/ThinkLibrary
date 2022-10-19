@@ -312,6 +312,7 @@ class Controller extends stdClass
         } catch (HttpResponseException $exception) {
             throw $exception;
         } catch (\Exception $exception) {
+            trace_file($exception);
             $this->error(lang('创建任务失败，%s', [$exception->getMessage()]));
         }
     }
