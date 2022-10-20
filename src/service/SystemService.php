@@ -36,7 +36,6 @@ use think\Model;
  * Class SystemService
  * @package think\admin\service
  *
- * @deprecated
  * @method static bool isDebug() 调式模式运行
  * @method static bool isOnline() 产品模式运行
  *
