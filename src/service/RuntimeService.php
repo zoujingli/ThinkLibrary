@@ -71,7 +71,7 @@ class RuntimeService
     }
 
     /**
-     * 获取实时运行配置
+     * 获取动态运行配置
      * @param null|string $name 配置名称
      * @param array $default 配置内容
      * @return array|string
@@ -92,7 +92,7 @@ class RuntimeService
     }
 
     /**
-     * 设置实时运行配置
+     * 设置动态运行配置
      * @param null|mixed $mode 支持模式
      * @param null|array $appmap 应用映射
      * @param null|array $domain 域名映射
@@ -115,7 +115,7 @@ class RuntimeService
     }
 
     /**
-     * 绑定应用实时配置
+     * 绑定应用动态配置
      * @param array $data 配置数据
      * @return boolean 是否调试模式
      */

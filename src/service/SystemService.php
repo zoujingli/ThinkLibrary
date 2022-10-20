@@ -37,12 +37,12 @@ use think\Response;
  * Class SystemService
  * @package think\admin\service
  *
- * @method static bool isDebug() 是否调式模式运行
- * @method static bool isOnline() 是否产品模式运行
+ * @method static bool isDebug() 调式模式运行
+ * @method static bool isOnline() 产品模式运行
  *
  * 运行环境配置
- * @method static array|string getRuntime(?string $name = null, array $default = []) 获取动态运行配置
- * @method static bool setRuntime(?string $mode = null, ?array $appmap = [], ?array $domain = []) 设置动态运行配置
+ * @method static array|string getRuntime(?string $name = null, array $default = []) 获取动态配置
+ * @method static bool setRuntime(?string $mode = null, ?array $appmap = [], ?array $domain = []) 设置动态配置
  * @method static bool pushRuntime() 压缩发布项目
  * @method static bool clearRuntime() 清理运行缓存
  * @method static bool bindRuntime(array $data = []) 绑定动态配置
