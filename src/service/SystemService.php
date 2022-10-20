@@ -372,12 +372,12 @@ class SystemService extends Service
 
     /**
      * 静态方法调用
-     * @param string $func 方法名称
+     * @param string $method 方法名称
      * @param array $arguments 调用参数
      * @return mixed
      * @throws \think\admin\Exception
      */
-    public static function __callStatic(string $func, array $arguments)
+    public static function __callStatic(string $method, array $arguments)
     {
         $map = [
             'setRuntime'    => 'set',
@@ -391,10 +391,10 @@ class SystemService extends Service
             'clearRuntime'  => 'clear',
             'checkRunMode'  => 'mode',
         ];
-        if (isset($map[$func])) {
-            return RuntimeService::{$map[$func]}(...$arguments);
+        if (isset($map[$method])) {
+            return RuntimeService::{$map[$method]}(...$arguments);
         } else {
-            throw new Exception("method not exists: RuntimeService::{$func}()");
+            throw new Exception("method not exists: RuntimeService::{$method}()");
         }
     }
 }
