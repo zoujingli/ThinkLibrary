@@ -23,12 +23,9 @@ use think\admin\command\Install;
 use think\admin\command\Menu;
 use think\admin\command\Queue;
 use think\admin\command\Replace;
-use think\admin\multiple\BuildUrl;
 use think\admin\multiple\command\Build;
 use think\admin\multiple\Multiple;
-use think\admin\multiple\Route;
 use think\admin\service\AdminService;
-use think\admin\service\RuntimeService;
 use think\App;
 use think\middleware\LoadLangPack;
 use think\middleware\SessionInit;
@@ -61,6 +58,13 @@ class Library extends Service
     {
         // 静态应用赋值
         static::$sapp = $this->app;
+
+        // 替换 ThinkPHP 指令
+        $this->commands(['build' => Build::class]);
+
+        // 注册 ThinkAdmin 指令
+        $this->commands([Menu::class, Queue::class, Install::class, Database::class, Replace::class]);
+
         // 服务初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
             // 配置默认输入过滤
@@ -80,18 +84,6 @@ class Library extends Service
                 $request->setHost($request->host());
             }
         });
-        // 替换 ThinkPHP 地址
-        $this->app->bind('think\Route', Route::class);
-        $this->app->bind('think\route\Url', BuildUrl::class);
-
-        // 替换 ThinkPHP 指令
-        $this->commands(['build' => Build::class]);
-
-        // 注册 ThinkAdmin 指令
-        $this->commands([Menu::class, Queue::class, Install::class, Database::class, Replace::class]);
-
-        // 动态应用运行参数
-        RuntimeService::apply();
     }
 
     /**
