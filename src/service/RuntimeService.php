@@ -222,11 +222,16 @@ class RuntimeService
      * 初始化命令行
      * @param ?\think\App $app
      * @return integer
-     * @throws \Exception
      */
     public static function doConsoleInit(?App $app = null): int
     {
-        return static::init($app)->console->run();
+        try {
+            return static::init($app)->console->run();
+        } catch (\Exception $exception) {
+            trace_file($exception);
+            ProcessService::message($exception->getMessage());
+            return 0;
+        }
     }
 
     /**
