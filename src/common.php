@@ -21,6 +21,7 @@ use think\admin\Helper;
 use think\admin\Library;
 use think\admin\service\AdminService;
 use think\admin\service\QueueService;
+use think\admin\service\RuntimeService;
 use think\admin\service\SystemService;
 use think\admin\Storage;
 use think\db\Query;
@@ -168,7 +169,7 @@ if (!function_exists('isDebug')) {
      */
     function isDebug(): bool
     {
-        return SystemService::isDebug();
+        return RuntimeService::isDebug();
     }
 }
 if (!function_exists('isOnline')) {
@@ -178,7 +179,7 @@ if (!function_exists('isOnline')) {
      */
     function isOnline(): bool
     {
-        return SystemService::isOnline();
+        return RuntimeService::isOnline();
     }
 }
 
