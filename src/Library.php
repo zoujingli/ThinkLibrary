@@ -46,7 +46,7 @@ class Library extends Service
     /**
      * 组件版本号
      */
-    const VERSION = '6.0.38LTS';
+    const VERSION = '6.0.39DEV';
 
     /**
      * 静态应用实例
@@ -83,10 +83,13 @@ class Library extends Service
         // 替换 ThinkPHP 地址
         $this->app->bind('think\Route', Route::class);
         $this->app->bind('think\route\Url', BuildUrl::class);
+
         // 替换 ThinkPHP 指令
         $this->commands(['build' => Build::class]);
+
         // 注册 ThinkAdmin 指令
         $this->commands([Menu::class, Queue::class, Install::class, Database::class, Replace::class]);
+
         // 动态应用运行参数
         RuntimeService::apply();
     }
@@ -97,7 +100,7 @@ class Library extends Service
     public function register()
     {
         // 动态加载应用初始化系统函数
-        $this->app->lang->load(__DIR__ . "/lang/zh-cn.php", 'zh-cn');
+        $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
         foreach (glob($this->app->getBasePath() . '*/sys.php') as $file) {
             includeFile($file);
         }
