@@ -79,10 +79,12 @@ class RuntimeService
     public static function get(?string $name = null, array $default = [])
     {
         if (empty(static::$env)) {
+
             // 读取默认配置
             $env = Library::$sapp->env;
             $file = with_path('runtime/.env');
             file_exists($file) && $env->load($file);
+
             // 动态判断赋值
             static::$env['mode'] = $env->get('RUNTIME_MODE') ?: 'debug';
             static::$env['appmap'] = $env->get('RUNTIME_APPMAP') ?: [];
