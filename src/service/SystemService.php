@@ -30,7 +30,6 @@ use think\App;
 use think\db\Query;
 use think\helper\Str;
 use think\Model;
-use think\Response;
 
 /**
  * 系统参数管理服务
@@ -41,16 +40,18 @@ use think\Response;
  * @method static bool isOnline() 产品模式运行
  *
  * 运行环境配置
- * @method static array|string getRuntime(?string $name = null, array $default = []) 获取动态配置
+ * @method static array getRuntime(?string $name = null, array $default = []) 获取动态配置
  * @method static bool setRuntime(?string $mode = null, ?array $appmap = [], ?array $domain = []) 设置动态配置
+ * @method static bool bindRuntime(array $data = []) 绑定动态配置
+ *
+ * 运行缓存管理
  * @method static bool pushRuntime() 压缩发布项目
  * @method static bool clearRuntime() 清理运行缓存
- * @method static bool bindRuntime(array $data = []) 绑定动态配置
  * @method static bool checkRunMode(string $type = 'dev') 判断运行环境
  *
  * 初始化启动系统
- * @method static Response doInit(?App $app = null) 初始化主程序
- * @method static integer doConsoleInit(?App $app = null) 初始化命令行
+ * @method static mixed doInit(?App $app = null) 初始化主程序
+ * @method static mixed doConsoleInit(?App $app = null) 初始化命令行
  */
 class SystemService extends Service
 {
@@ -59,15 +60,6 @@ class SystemService extends Service
      * @var array
      */
     private static $data = [];
-
-    /**
-     * 系统服务初始化
-     * @return void
-     */
-    protected function initialize()
-    {
-        RuntimeService::init();
-    }
 
     /**
      * 生成静态路径链接
@@ -380,12 +372,12 @@ class SystemService extends Service
 
     /**
      * 静态方法调用
-     * @param string $func
-     * @param array $args
+     * @param string $func 方法名称
+     * @param array $arguments 调用参数
      * @return mixed
      * @throws \think\admin\Exception
      */
-    public static function __callStatic(string $func, array $args)
+    public static function __callStatic(string $func, array $arguments)
     {
         $map = [
             'setRuntime'    => 'set',
@@ -396,11 +388,11 @@ class SystemService extends Service
             'doInit'        => 'doWebInit',
             'doConsoleInit' => 'doConsoleInit',
             'pushRuntime'   => 'push',
-            'checkRunMode'  => 'mode',
             'clearRuntime'  => 'clear',
+            'checkRunMode'  => 'mode',
         ];
         if (isset($map[$func])) {
-            return RuntimeService::{$map[$func]}(...$args);
+            return RuntimeService::{$map[$func]}(...$arguments);
         } else {
             throw new Exception("method not exists: RuntimeService::{$func}()");
         }

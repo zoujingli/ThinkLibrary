@@ -61,7 +61,7 @@ class RuntimeService
      * @param ?\think\App $app
      * @return App
      */
-    public static function init(?App $app = null): App
+    private static function init(?App $app = null): App
     {
         // 替换 ThinkPHP 地址，并初始化运行环境
         Library::$sapp = $app ?: Container::getInstance()->make(App::class);
@@ -71,7 +71,7 @@ class RuntimeService
     }
 
     /**
-     * 获取动态运行配置
+     * 获取动态配置
      * @param null|string $name 配置名称
      * @param array $default 配置内容
      * @return array|string
@@ -92,7 +92,7 @@ class RuntimeService
     }
 
     /**
-     * 设置动态运行配置
+     * 设置动态配置
      * @param null|mixed $mode 支持模式
      * @param null|array $appmap 应用映射
      * @param null|array $domain 域名映射
@@ -110,20 +110,21 @@ class RuntimeService
         foreach (static::$env['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
         foreach (static::$env['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
         file_put_contents(with_path('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
+
         //  应用当前的配置文件
         return static::apply(static::$env);
     }
 
     /**
-     * 绑定应用动态配置
+     * 绑定动态配置
      * @param array $data 配置数据
      * @return boolean 是否调试模式
      */
     public static function apply(array $data = []): bool
     {
         // 应用配置参数
+        $data = static::get() + $data;
         $conf = Library::$sapp->config;
-        $data = array_merge(static::get(), $data);
 
         // 设置模块绑定
         $conf->set([
@@ -185,7 +186,7 @@ class RuntimeService
     }
 
     /**
-     * 是否开发模式运行
+     * 开发模式运行
      * @return boolean
      */
     public static function isDebug(): bool
@@ -195,7 +196,7 @@ class RuntimeService
     }
 
     /**
-     * 是否生产模式运行
+     * 生产模式运行
      * @return boolean
      */
     public static function isOnline(): bool
@@ -229,7 +230,7 @@ class RuntimeService
     }
 
     /**
-     * 获取唯一数组参数
+     * 生成唯一数组
      * @param array ...$args
      * @return array
      */
