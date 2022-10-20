@@ -28,7 +28,7 @@ use think\admin\multiple\command\Build;
 use think\admin\multiple\Multiple;
 use think\admin\multiple\Route;
 use think\admin\service\AdminService;
-use think\admin\service\SystemService;
+use think\admin\service\RuntimeService;
 use think\App;
 use think\middleware\LoadLangPack;
 use think\middleware\SessionInit;
@@ -88,7 +88,7 @@ class Library extends Service
         // 注册 ThinkAdmin 指令
         $this->commands([Menu::class, Queue::class, Install::class, Database::class, Replace::class]);
         // 动态应用运行参数
-        SystemService::bindRuntime();
+        RuntimeService::apply();
     }
 
     /**

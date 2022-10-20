@@ -25,14 +25,14 @@ use think\Container;
  * 文件存储引擎管理
  * Class Storage
  * @package think\admin
- * @method static array info($name, $safe = false, $attname = null) static 文件存储信息
- * @method static array set($name, $file, $safe = false, $attname = null) static 储存文件
- * @method static string url($name, $safe = false, $attname = null) static 获取文件链接
- * @method static string get($name, $safe = false) static 读取文件内容
- * @method static string path($name, $safe = false) static 文件存储路径
- * @method static boolean del($name, $safe = false) static 删除存储文件
- * @method static boolean has($name, $safe = false) static 检查是否存在
- * @method static string upload() static 获取上传地址
+ * @method static array info($name, $safe = false, $attname = null) 文件存储信息
+ * @method static array set($name, $file, $safe = false, $attname = null) 储存文件
+ * @method static string url($name, $safe = false, $attname = null) 获取文件链接
+ * @method static string get($name, $safe = false) 读取文件内容
+ * @method static string path($name, $safe = false) 文件存储路径
+ * @method static boolean del($name, $safe = false) 删除存储文件
+ * @method static boolean has($name, $safe = false) 检查是否存在
+ * @method static string upload() 获取上传地址
  */
 abstract class Storage
 {
