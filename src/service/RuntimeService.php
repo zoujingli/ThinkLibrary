@@ -67,7 +67,7 @@ class RuntimeService
         Library::$sapp = $app ?: Container::getInstance()->make(App::class);
         Library::$sapp->bind('think\Route', Route::class);
         Library::$sapp->bind('think\route\Url', BuildUrl::class);
-        return Library::$sapp->debug(static::apply());
+        return Library::$sapp->debug(static::isDebug());
     }
 
     /**
