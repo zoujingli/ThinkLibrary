@@ -385,7 +385,7 @@ class SystemService extends Service
             'bindRuntime'   => 'apply',
             'isDebug'       => 'isDebug',
             'isOnline'      => 'isOnline',
-            'doInit'        => 'doWebInit',
+            'doInit'        => 'doWebsiteInit',
             'doConsoleInit' => 'doConsoleInit',
             'pushRuntime'   => 'push',
             'clearRuntime'  => 'clear',

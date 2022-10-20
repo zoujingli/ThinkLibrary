@@ -210,7 +210,7 @@ class RuntimeService
      * @param ?\think\App $app
      * @return \think\Response
      */
-    public static function doWebInit(?App $app = null): Response
+    public static function doWebsiteInit(?App $app = null): Response
     {
         $http = static::init($app)->http;
         ($response = $http->run())->send();
