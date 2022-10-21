@@ -97,7 +97,7 @@ class Library extends Service
     {
         // 动态加载应用初始化系统函数
         $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
-        foreach (glob($this->app->getBasePath() . '*/sys.php') as $file) {
+        foreach (glob("{$this->app->getBasePath()}*/sys.php") as $file) {
             includeFile($file);
         }
 
