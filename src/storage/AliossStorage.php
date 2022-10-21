@@ -125,7 +125,7 @@ class AliossStorage extends Storage
     public function del(string $name, bool $safe = false): bool
     {
         [$file] = explode('?', $name);
-        $result = HttpExtend::request('DELETE', "http://{$this->bucket}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('DELETE', "https://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, '204 No Content'));
@@ -140,7 +140,7 @@ class AliossStorage extends Storage
     public function has(string $name, bool $safe = false): bool
     {
         $file = $this->delSuffix($name);
-        $result = HttpExtend::request('HEAD', "http://{$this->bucket}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('HEAD', "https://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $file),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
@@ -219,13 +219,13 @@ class AliossStorage extends Storage
      * 操作请求头信息签名
      * @param string $method 请求方式
      * @param string $soruce 资源名称
-     * @param array $header 请求头信息
      * @return array
      */
-    private function headerSign(string $method, string $soruce, array $header = []): array
+    private function headerSign(string $method, string $soruce): array
     {
-        if (empty($header['Date'])) $header['Date'] = gmdate('D, d M Y H:i:s \G\M\T');
-        if (empty($header['Content-Type'])) $header['Content-Type'] = 'application/xml';
+        $header = [];
+        $header['Date'] = gmdate('D, d M Y H:i:s \G\M\T');
+        $header['Content-Type'] = 'application/xml';
         uksort($header, 'strnatcasecmp');
         $content = "{$method}\n\n";
         foreach ($header as $key => $value) {
