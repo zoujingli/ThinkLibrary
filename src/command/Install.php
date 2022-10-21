@@ -113,11 +113,11 @@ class Install extends Command
                 $this->rules = array_merge($this->rules, $bind['rules']);
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
-            $this->copyFileAndTable('static') && $this->installFile();
+            $this->copyFileAndDatabase('static') && $this->installFile();
         } elseif (isset($this->bind[$this->name])) {
             $this->rules = $this->bind[$this->name]['rules'] ?? [];
             $this->ignore = $this->bind[$this->name]['ignore'] ?? [];
-            $this->copyFileAndTable($this->name) && $this->installFile();
+            $this->copyFileAndDatabase($this->name) && $this->installFile();
         } else {
             $this->output->writeln("The specified module {$this->name} is not configured with install rules");
         }
@@ -156,7 +156,7 @@ class Install extends Command
      * @param string $type
      * @return boolean
      */
-    private function copyFileAndTable(string $type): bool
+    private function copyFileAndDatabase(string $type): bool
     {
         if ($type === 'static') {
             $todir = with_path('public/static/extra/');
