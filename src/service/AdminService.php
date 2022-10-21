@@ -194,8 +194,8 @@ class AdminService extends Service
     public static function apply(bool $force = false)
     {
         if ($force) static::clearCache();
-        if (($uid = static::getUserId()) <= 0) return;
-        $user = SystemUser::mk()->where(['id' => $uid])->findOrEmpty()->toArray();
+        if (($uuid = static::getUserId()) <= 0) return;
+        $user = SystemUser::mk()->where(['id' => $uuid])->findOrEmpty()->toArray();
         if (!static::isSuper() && count($aids = str2arr($user['authorize'])) > 0) {
             $aids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $aids)->column('id');
             if (!empty($aids)) $nodes = SystemNode::mk()->distinct()->whereIn('auth', $aids)->column('node');
