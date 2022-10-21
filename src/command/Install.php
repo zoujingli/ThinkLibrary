@@ -56,7 +56,7 @@ class Install extends Command
      */
     protected $bind = [
         'admin'  => [
-            'rules'  => ['think', 'app/admin'],
+            'rules'  => ['app/admin'],
             'ignore' => [],
         ],
         'wechat' => [
@@ -65,6 +65,7 @@ class Install extends Command
         ],
         'config' => [
             'rules'  => [
+                'think',
                 'config/app.php',
                 'config/log.php',
                 'config/route.php',
