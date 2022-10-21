@@ -129,15 +129,14 @@ class Install extends Command
      */
     private function installFile(): bool
     {
-        $module = ModuleService::instance();
-        $data = $module->grenDifference($this->rules, $this->ignore);
+        $data = ModuleService::grenDifference($this->rules, $this->ignore);
         if (empty($data)) {
             $this->output->writeln('No need to update the file if the file comparison is consistent');
             return false;
         }
         [$total, $count] = [count($data), 0];
         foreach ($data as $file) {
-            [$state, $mode, $name] = $module->updateFileByDownload($file);
+            [$state, $mode, $name] = ModuleService::updateFileByDownload($file);
             if ($state) {
                 if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$name} add successfully");
                 if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$name} update successfully");
