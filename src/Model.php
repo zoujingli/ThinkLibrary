@@ -31,11 +31,13 @@ use think\Container;
  * @mixin \think\db\Query
  * @package think\admin
  *
+ * 模型日志记录
  * @method void onAdminSave(string $ids) 记录状态变更日志
  * @method void onAdminUpdate(string $ids) 记录更新数据日志
  * @method void onAdminInsert(string $ids) 记录新增数据日志
  * @method void onAdminDelete(string $ids) 记录删除数据日志
  *
+ * 静态助手调用
  * @method static bool mSave(array $data = [], string $field = '', mixed $where = []) static 快捷更新逻辑器
  * @method static bool|null mDelete(string $field = '', mixed $where = []) static 快捷删除逻辑器
  * @method static bool|array mForm(string $template = '', string $field = '', mixed $where = [], array $data = []) static 快捷表单逻辑器
