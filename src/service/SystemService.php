@@ -371,6 +371,18 @@ class SystemService extends Service
     }
 
     /**
+     * 魔术方法调用
+     * @param string $method 方法名称
+     * @param array $arguments 调用参数
+     * @return mixed
+     * @throws \think\admin\Exception
+     */
+    public function __call(string $method, array $arguments)
+    {
+        return static::__callStatic($method, $arguments);
+    }
+
+    /**
      * 静态方法调用
      * @param string $method 方法名称
      * @param array $arguments 调用参数
