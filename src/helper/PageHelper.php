@@ -169,14 +169,14 @@ class PageHelper extends Helper
     /**
      * 绑定排序并返回操作对象
      * @param Model|BaseQuery|string $dbQuery
-     * @return Query
+     * @return \think\db\Query
      * @throws \think\db\exception\DbException
      */
     public function autoSortQuery($dbQuery): Query
     {
         $query = static::buildQuery($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            if (!AdminService::isLogin()) $this->class->error(lang('think_library_not_login'));
+            AdminService::isLogin() or $this->class->error(lang('think_library_not_login'));
             if (method_exists($query, 'getTableFields') && in_array('sort', $query->getTableFields())) {
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
