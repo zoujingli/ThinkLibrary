@@ -59,8 +59,7 @@ class MenuService extends Service
      */
     public static function getTree(): array
     {
-        $query = SystemMenu::mk()->where(['status' => 1]);
-        $menus = $query->order('sort desc,id asc')->select()->toArray();
+        $menus = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray();
         if (function_exists('admin_menu_filter')) admin_menu_filter($menus);
         return static::build(DataExtend::arr2tree($menus));
     }
@@ -81,7 +80,7 @@ class MenuService extends Service
                 $menu['url'] = '#';
             } elseif ($menu['url'] === '#') {
                 unset($menus[$key]);
-            } elseif (preg_match('/^(https?:)?(\/\/|\\\\)/i', $menu['url'])) {
+            } elseif (preg_match('#^(https?:)?(//|\\\\).*?\..*?#i', $menu['url'])) {
                 if (!!$menu['node'] && !AdminService::check($menu['node'])) {
                     unset($menus[$key]);
                 } elseif ($menu['params']) {
