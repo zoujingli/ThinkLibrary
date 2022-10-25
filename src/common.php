@@ -183,25 +183,6 @@ if (!function_exists('isOnline')) {
     }
 }
 
-if (!function_exists('sysdata')) {
-    /**
-     * JSON 数据读取与存储
-     * @param string $name 数据名称
-     * @param mixed $value 数据内容
-     * @return mixed
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    function sysdata(string $name, $value = null)
-    {
-        if (is_null($value)) {
-            return SystemService::getData($name);
-        } else {
-            return SystemService::setData($name, $value);
-        }
-    }
-}
 if (!function_exists('sysconf')) {
     /**
      * 获取或配置系统参数
@@ -218,6 +199,25 @@ if (!function_exists('sysconf')) {
             return SystemService::get($name);
         } else {
             return SystemService::set($name, $value);
+        }
+    }
+}
+if (!function_exists('sysdata')) {
+    /**
+     * JSON 数据读取与存储
+     * @param string $name 数据名称
+     * @param mixed $value 数据内容
+     * @return mixed
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    function sysdata(string $name, $value = null)
+    {
+        if (is_null($value)) {
+            return SystemService::getData($name);
+        } else {
+            return SystemService::setData($name, $value);
         }
     }
 }
