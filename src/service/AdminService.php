@@ -206,10 +206,11 @@ class AdminService extends Service
 
     /**
      * 清理节点缓存
-     * @return void
+     * @return bool
      */
-    public static function clearCache()
+    public static function clearCache(): bool
     {
         Library::$sapp->cache->delete('SystemAuthNode');
+        return true;
     }
 }
