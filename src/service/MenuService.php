@@ -80,7 +80,7 @@ class MenuService extends Service
                 $menu['url'] = '#';
             } elseif ($menu['url'] === '#') {
                 unset($menus[$key]);
-            } elseif (preg_match('#^(https?:)?(//|\\\\).*?\..*?#i', $menu['url'])) {
+            } elseif (preg_match('#^(https?:)?(//|\\\\)#i', $menu['url'])) {
                 if (!!$menu['node'] && !AdminService::check($menu['node'])) {
                     unset($menus[$key]);
                 } elseif ($menu['params']) {
