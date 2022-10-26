@@ -18,8 +18,8 @@ declare (strict_types=1);
 namespace think\admin\command;
 
 use think\admin\Command;
+use think\admin\extend\ToolsExtend;
 use think\admin\service\ModuleService;
-use think\admin\service\SystemService;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
@@ -113,11 +113,11 @@ class Install extends Command
                 $this->rules = array_merge($this->rules, $bind['rules']);
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
-            $this->copyFileAndDatabase('static') && $this->installFile();
+            $this->install($this->name);
         } elseif (isset($this->bind[$this->name])) {
             $this->rules = $this->bind[$this->name]['rules'] ?? [];
             $this->ignore = $this->bind[$this->name]['ignore'] ?? [];
-            $this->copyFileAndDatabase($this->name) && $this->installFile();
+            $this->install($this->name);
         } else {
             $this->output->writeln("The specified module {$this->name} is not configured with install rules");
         }
@@ -125,10 +125,12 @@ class Install extends Command
 
     /**
      * 安装本地文件
+     * @param string $name
      * @return boolean
      */
-    private function installFile(): bool
+    protected function install(string $name): bool
     {
+        // 同步模块文件
         $data = ModuleService::grenDifference($this->rules, $this->ignore);
         if (empty($data)) {
             $this->output->writeln('No need to update the file if the file comparison is consistent');
@@ -136,82 +138,31 @@ class Install extends Command
         }
         [$total, $count] = [count($data), 0];
         foreach ($data as $file) {
-            [$state, $mode, $name] = ModuleService::updateFileByDownload($file);
+            [$state, $mode, $base] = ModuleService::updateFileByDownload($file);
             if ($state) {
-                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$name} add successfully");
-                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$name} update successfully");
-                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$name} delete successfully");
+                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} add successfully");
+                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} update successfully");
+                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} delete successfully");
             } else {
-                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$name} add failed");
-                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$name} update failed");
-                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$name} delete failed");
+                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} add failed");
+                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} update failed");
+                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} delete failed");
             }
         }
-        return true;
-    }
 
-    /**
-     * 初始化安装文件
-     * @param string $type
-     * @return boolean
-     */
-    private function copyFileAndDatabase(string $type): bool
-    {
-        if ($type === 'static') {
+        // 指定模块初始化
+        if ($name === 'static') {
             $todir = with_path('public/static/extra/');
-            $frdir = dirname(__DIR__) . "/service/bin/{$type}/";
-            foreach (['script.js', 'style.css'] as $file) {
-                if (!file_exists($todir . $file)) {
-                    file_exists($todir) || mkdir($todir, 0755, true);
-                    copy($frdir . $file, $todir . $file);
-                }
-            }
+            $frdir = dirname(__DIR__) . "/service/bin/{$name}/";
+            $this->queue->message($total, $count, "--- copy static/extra files");
+            ToolsExtend::copyfile($frdir, $todir, ['script.js', 'style.css'], false, false);
         }
-        // 创建系统文件数据表
-        if ($type === 'admin') {
-            $this->createSystemFileTable();
-        }
-        return true;
-    }
 
-    /**
-     * 创建系统文件表
-     * @return void
-     */
-    private function createSystemFileTable()
-    {
-        [$tables] = SystemService::getTables();
-        $config = $this->app->db->connect()->getConfig();
-        [$type, $prefix] = [$config['type'] ?? '', $config['prefix'] ?? ''];
-        if ($type === 'mysql' && !in_array($table = "{$prefix}system_file", $tables)) {
-            $this->app->db->connect()->query(<<<SQL
-CREATE TABLE {$table} (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `type` varchar(20) NULL DEFAULT '' COMMENT '上传类型',
-  `hash` varchar(32) NULL DEFAULT '' COMMENT '文件哈希',
-  `name` varchar(200) NULL DEFAULT '' COMMENT '文件名称',
-  `xext` varchar(100) NULL DEFAULT '' COMMENT '文件后缀',
-  `xurl` varchar(500) NULL DEFAULT '' COMMENT '访问链接',
-  `xkey` varchar(500) NULL DEFAULT '' COMMENT '文件路径',
-  `mime` varchar(100) NULL DEFAULT '' COMMENT '文件类型',
-  `size` bigint(20) NULL DEFAULT 0 COMMENT '文件大小',
-  `uuid` bigint(20) NULL DEFAULT 0 COMMENT '用户编号',
-  `isfast` tinyint(1) NULL DEFAULT 0 COMMENT '是否秒传',
-  `issafe` tinyint(1) NULL DEFAULT 0 COMMENT '安全模式',
-  `status` tinyint(1) NULL DEFAULT 1 COMMENT '上传状态(1悬空,2落地)',
-  `create_at` datetime NULL DEFAULT NULL COMMENT '创建时间',
-  `update_at` datetime NULL DEFAULT NULL COMMENT '更新时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_system_file_type`(`type`) USING BTREE,
-  INDEX `idx_system_file_hash`(`hash`) USING BTREE,
-  INDEX `idx_system_file_uuid`(`uuid`) USING BTREE,
-  INDEX `idx_system_file_xext`(`xext`) USING BTREE,
-  INDEX `idx_system_file_status`(`status`) USING BTREE,
-  INDEX `idx_system_file_issafe`(`issafe`) USING BTREE,
-  INDEX `idx_system_file_isfast`(`isfast`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1 COMMENT='系统-文件' ROW_FORMAT=COMPACT;
-SQL
-            );
-        }
+        // 执行模块数据库操作
+        $frdir = with_path("{$name}/database", $this->app->getBasePath());
+        $todir = with_path('database/migrations', $this->app->getRootPath());
+        $this->queue->message($total, $count, "--- copy database upgrade files");
+        ToolsExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
+        return true;
     }
 }

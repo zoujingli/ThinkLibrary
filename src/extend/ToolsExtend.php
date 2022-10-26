@@ -30,6 +30,40 @@ class ToolsExtend
 {
 
     /**
+     * 拷贝文件到指定目录
+     * @param string $frdir 源目录
+     * @param string $todir 目标目录
+     * @param null|array $files 文件目录
+     * @param boolean $force 强制替换
+     * @param boolean $remove 移除文件
+     * @return boolean
+     */
+    public static function copyfile(string $frdir, string $todir, ?array $files = [], bool $force = true, bool $remove = true): bool
+    {
+        $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
+        $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
+        file_exists($todir) || mkdir($todir, 0755, true);
+        // 扫描目录文件
+        if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
+            foreach (($files = scandir($frdir)) as $key => $file) {
+                if (strpos($file, '.') === 0 || is_dir($frdir . $file)) {
+                    unset($files[$key]);
+                }
+            }
+        }
+        // 移动指定文件
+        foreach ($files as $file) {
+            if ($force || !file_exists($todir . $file)) {
+                copy($frdir . $file, $todir . $file);
+            }
+            $remove && unlink($frdir . $file);
+        }
+        // 移除空的目录
+        $remove && count(glob("{$frdir}/*")) <= 0 && rmdir($frdir);
+        return true;
+    }
+
+    /**
      * 文本转为UTF8编码
      * @param string $content
      * @return string
