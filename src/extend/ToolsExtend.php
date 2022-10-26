@@ -51,7 +51,7 @@ class ToolsExtend
                 }
             }
         }
-        // 移动指定文件
+        // 复制指定文件
         foreach ($files as $file) {
             if ($force || !file_exists($todir . $file)) {
                 copy($frdir . $file, $todir . $file);
