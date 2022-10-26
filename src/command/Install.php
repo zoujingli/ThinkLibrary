@@ -161,7 +161,7 @@ class Install extends Command
         // 执行模块数据库操作
         $frdir = with_path("{$name}/database", $this->app->getBasePath());
         $todir = with_path('database/migrations', $this->app->getRootPath());
-        $this->queue->message($total, $count, "--- copy database upgrade files");
+        $this->queue->message($total, $count, "--- execute database upgrade files");
         ToolsExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
         return true;
     }
