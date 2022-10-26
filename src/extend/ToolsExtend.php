@@ -33,12 +33,12 @@ class ToolsExtend
      * 拷贝文件到指定目录
      * @param string $frdir 源目录
      * @param string $todir 目标目录
-     * @param null|array $files 文件目录
+     * @param array $files 文件目录
      * @param boolean $force 强制替换
      * @param boolean $remove 移除文件
      * @return boolean
      */
-    public static function copyfile(string $frdir, string $todir, ?array $files = [], bool $force = true, bool $remove = true): bool
+    public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
     {
         $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
         $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
