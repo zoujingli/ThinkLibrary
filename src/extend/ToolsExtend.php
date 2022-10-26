@@ -59,7 +59,9 @@ class ToolsExtend
             $remove && unlink($frdir . $file);
         }
         // 移除空的目录
-        $remove && count(glob("{$frdir}/*")) <= 0 && rmdir($frdir);
+        if ($remove && file_exists($frdir) && is_dir($frdir)) {
+            count(glob("{$frdir}/*")) <= 0 && rmdir($frdir);
+        }
         return true;
     }
 
