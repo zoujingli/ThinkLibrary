@@ -130,7 +130,7 @@ class Install extends Command
      */
     protected function install(string $name): bool
     {
-        // 同步模块文件
+        // 更新模块文件
         $data = ModuleService::grenDifference($this->rules, $this->ignore);
         if (empty($data)) {
             $this->output->writeln('No need to update the file if the file comparison is consistent');

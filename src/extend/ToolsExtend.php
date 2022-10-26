@@ -45,20 +45,19 @@ class ToolsExtend
         file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
-            foreach (($files = scandir($frdir)) as $key => $file) {
-                if (strpos($file, '.') === 0 || is_dir($frdir . $file)) {
-                    unset($files[$key]);
-                }
+            foreach (scandir($frdir) as $file) if ($file[0] !== '.') {
+                is_file($frdir . $file) && ($files[$file] = $file);
             }
         }
         // 复制指定文件
-        foreach ($files as $file) {
-            if ($force || !file_exists($todir . $file)) {
-                copy($frdir . $file, $todir . $file);
+        foreach ($files as $source => $target) {
+            if (is_numeric($source)) $source = $target;
+            if ($force || !file_exists($todir . $target)) {
+                copy($frdir . $source, $todir . $target);
             }
-            $remove && unlink($frdir . $file);
+            $remove && unlink($frdir . $source);
         }
-        // 移除空的目录
+        // 删除源目录
         if ($remove && file_exists($frdir) && is_dir($frdir)) {
             count(glob("{$frdir}/*")) <= 0 && rmdir($frdir);
         }
@@ -114,13 +113,13 @@ class ToolsExtend
      * @return void
      */
     private function _{$table}_change() {
-        
+
         // 当前数据表
         \$table = '{$table}';
-    
+
         // 存在则跳过
         if (\$this->hasTable(\$table)) return;
-        
+
         // 创建数据表
         \$this->table(\$table, [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
