@@ -110,9 +110,14 @@ class Install extends Command
     protected function execute(Input $input, Output $output)
     {
         $this->name = trim($input->getArgument('name'));
+        $call = $output->confirm($input, "您即将安装 admin wechat data 模块");
+        dump($call);
+        exit;
         if (empty($this->name)) {
             $this->output->writeln('Module name of online install cannot be empty');
         } elseif ($this->name === 'all') {
+
+
             foreach ($this->bind as $bind) {
                 $this->rules = array_merge($this->rules, $bind['rules']);
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
