@@ -108,10 +108,10 @@ class ToolsExtend
     /**
      * 写入系统菜单
      * @param array $menu 菜单数据
-     * @param integer $ppid 上级菜单
+     * @param mixed $ppid 上级菜单
      * @return integer|string
      */
-    private static function writeOneMenu(array $menu, int $ppid = 0)
+    private static function writeOneMenu(array $menu, $ppid = 0)
     {
         return SystemMenu::mk()->insertGetId([
             'pid'    => $ppid,
