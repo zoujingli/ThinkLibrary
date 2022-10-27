@@ -81,13 +81,15 @@ class ToolsExtend
      * 写入系统菜单数据
      * @param array $zdata 菜单数据
      * @param mixed $check 检测条件
-     * @return bool
-     * @throws \think\db\exception\DbException
+     * @return boolean
      */
     public static function write2menu(array $zdata, $check = []): bool
     {
-        // 检查是否需要写入菜单
-        if (!empty($check) && SystemMenu::mk()->where($check)->count() > 0) {
+        try { // 检查是否需要写入菜单
+            if (!empty($check) && SystemMenu::mk()->where($check)->count() > 0) {
+                return false;
+            }
+        } catch (\Exception $exception) {
             return false;
         }
         // 循环写入系统菜单数据
