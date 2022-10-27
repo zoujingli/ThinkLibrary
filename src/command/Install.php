@@ -118,6 +118,7 @@ class Install extends Command
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
             if ($output->confirm($input, "安全提示：安装 admin wechat data 模块，将会替换或删除本地文件！")) {
+                $output->comment("开始安装更新 admin wechat data 模块...");
                 $this->install($this->name);
             } else {
                 $output->error("未执行，未同意安装模块！");
@@ -126,6 +127,7 @@ class Install extends Command
             $this->rules = $this->bind[$this->name]['rules'] ?? [];
             $this->ignore = $this->bind[$this->name]['ignore'] ?? [];
             if ($output->confirm($input, "安全提示：安装 {$this->name} 模块，将会替换或删除本地文件！")) {
+                $output->comment("开始安装更新 {$this->name} 模块...");
                 $this->install($this->name);
             } else {
                 $output->error("未执行，未同意安装模块！");
