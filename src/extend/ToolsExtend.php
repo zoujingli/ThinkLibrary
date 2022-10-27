@@ -120,7 +120,7 @@ class ToolsExtend
             'node'   => $menu['node'] ?? ($menu['url'] ?? ''),
             'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
             'params' => $menu['params'] ?? '',
-            'target' => $menu['target'] ?? '',
+            'target' => $menu['target'] ?? '_self',
         ]);
     }
 
