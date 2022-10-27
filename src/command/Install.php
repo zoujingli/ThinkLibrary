@@ -111,27 +111,27 @@ class Install extends Command
     {
         $this->name = trim($input->getArgument('name'));
         if (empty($this->name)) {
-            $output->writeln('Module name of online install cannot be empty');
+            $output->writeln('待安装或更新的模块名称[ name ]不能为空！');
         } elseif ($this->name === 'all') {
             foreach ($this->bind as $bind) {
                 $this->rules = array_merge($this->rules, $bind['rules']);
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
-            if ($output->confirm($input, "安全提示：安装 admin wechat data 模块，将会删除本地文件并替换为新文件！")) {
+            if ($output->confirm($input, "安全提示：安装 admin wechat data 模块，将会替换或删除本地文件！")) {
                 $this->install($this->name);
             } else {
-                $output->error("未执行，您未同意安装模块！");
+                $output->error("未执行，未同意安装模块！");
             }
         } elseif (isset($this->bind[$this->name])) {
             $this->rules = $this->bind[$this->name]['rules'] ?? [];
             $this->ignore = $this->bind[$this->name]['ignore'] ?? [];
-            if ($output->confirm($input, "安全提示：安装 {$this->name} 模块，将会删除本地文件并替换为新文件！")) {
+            if ($output->confirm($input, "安全提示：安装 {$this->name} 模块，将会替换或删除本地文件！")) {
                 $this->install($this->name);
             } else {
-                $output->error("未执行，您未同意安装模块！");
+                $output->error("未执行，未同意安装模块！");
             }
         } else {
-            $output->writeln("The specified module {$this->name} is not configured with install rules");
+            $output->error("未执行，待安装或更新的模块[ {$this->name} ] 不存在！");
         }
     }
 
@@ -145,20 +145,20 @@ class Install extends Command
         // 更新模块文件
         $data = ModuleService::grenDifference($this->rules, $this->ignore);
         if (empty($data)) {
-            $this->output->writeln('No need to update the file if the file comparison is consistent');
+            $this->output->writeln('未发现有变更的文件，不需要进行更新！');
             return false;
         }
         [$total, $count] = [count($data), 0];
         foreach ($data as $file) {
             [$state, $mode, $base] = ModuleService::updateFileByDownload($file);
             if ($state) {
-                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} add successfully");
-                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} update successfully");
-                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} delete successfully");
+                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} 添加成功");
+                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} 更新成功");
+                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} 删除成功");
             } else {
-                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} add failed");
-                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} update failed");
-                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} delete failed");
+                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} 添加失败");
+                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} 更新失败");
+                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} 删除失败");
             }
         }
 
@@ -166,14 +166,14 @@ class Install extends Command
         if ($name === 'static') {
             $todir = with_path('public/static/extra/');
             $frdir = dirname(__DIR__) . "/service/bin/{$name}/";
-            $this->queue->message($total, $count, "--- copy static/extra files");
+            $this->queue->message($total, $count, "--- 处理静态自定义目录");
             ToolsExtend::copyfile($frdir, $todir, ['script.js', 'style.css'], false, false);
         }
 
         // 执行模块数据库操作
         $frdir = with_path("{$name}/database", $this->app->getBasePath());
         $todir = with_path('database/migrations', $this->app->getRootPath());
-        $this->queue->message($total, $count, "--- execute database upgrade files");
+        $this->queue->message($total, $count, "--- 处理数据库可执行脚本");
         ToolsExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
         return true;
     }
