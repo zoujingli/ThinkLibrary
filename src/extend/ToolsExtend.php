@@ -19,6 +19,7 @@ namespace think\admin\extend;
 
 use think\admin\Exception;
 use think\admin\Library;
+use think\admin\model\SystemMenu;
 use think\helper\Str;
 
 /**
@@ -74,6 +75,51 @@ class ToolsExtend
         return mb_convert_encoding($content, 'UTF-8', mb_detect_encoding($content, [
             'ASCII', 'UTF-8', 'GB2312', 'GBK', 'BIG5',
         ]));
+    }
+
+    /**
+     * 写入系统菜单数据
+     * @param array $zdata 菜单数据
+     * @param mixed $check 检测条件
+     * @return bool
+     * @throws \think\db\exception\DbException
+     */
+    public static function write2menu(array $zdata, $check = []): bool
+    {
+        // 检查是否需要写入菜单
+        if (!empty($check) && SystemMenu::mk()->where($check)->count() > 0) {
+            return false;
+        }
+        // 循环写入系统菜单数据
+        foreach ($zdata as $one) {
+            $pid1 = static::writeMenu($one);
+            if (!empty($one['subs'])) foreach ($one['subs'] as $two) {
+                $pid2 = static::writeMenu($two, $pid1);
+                if (!empty($two['subs'])) foreach ($two['subs'] as $thr) {
+                    static::writeMenu($thr, $pid2);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 写入系统菜单
+     * @param array $menu 菜单数据
+     * @param integer $ppid 上级菜单
+     * @return integer|string
+     */
+    private static function writeMenu(array $menu, int $ppid = 0)
+    {
+        return SystemMenu::mk()->insertGetId([
+            'pid'    => $ppid,
+            'url'    => $menu['url'] ?? ($menu['node'] ?? ''),
+            'icon'   => $menu['icon'] ?? '',
+            'node'   => $menu['node'] ?? ($menu['url'] ?? ''),
+            'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
+            'params' => $menu['params'] ?? '',
+            'target' => $menu['target'] ?? '',
+        ]);
     }
 
     /**
