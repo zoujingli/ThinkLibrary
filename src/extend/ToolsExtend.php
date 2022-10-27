@@ -116,6 +116,7 @@ class ToolsExtend
         return SystemMenu::mk()->insertGetId([
             'pid'    => $ppid,
             'url'    => $menu['url'] ?? ($menu['node'] ?? '#'),
+            'sort'   => $menu['sort'] ?? 0,
             'icon'   => $menu['icon'] ?? '',
             'node'   => $menu['node'] ?? ($menu['url'] ?? ''),
             'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
