@@ -94,11 +94,11 @@ class ToolsExtend
         }
         // 循环写入系统菜单数据
         foreach ($zdata as $one) {
-            $pid1 = static::writeMenu($one);
+            $pid1 = static::writeOneMenu($one);
             if (!empty($one['subs'])) foreach ($one['subs'] as $two) {
-                $pid2 = static::writeMenu($two, $pid1);
+                $pid2 = static::writeOneMenu($two, $pid1);
                 if (!empty($two['subs'])) foreach ($two['subs'] as $thr) {
-                    static::writeMenu($thr, $pid2);
+                    static::writeOneMenu($thr, $pid2);
                 }
             }
         }
@@ -111,11 +111,11 @@ class ToolsExtend
      * @param integer $ppid 上级菜单
      * @return integer|string
      */
-    private static function writeMenu(array $menu, int $ppid = 0)
+    private static function writeOneMenu(array $menu, int $ppid = 0)
     {
         return SystemMenu::mk()->insertGetId([
             'pid'    => $ppid,
-            'url'    => $menu['url'] ?? ($menu['node'] ?? ''),
+            'url'    => $menu['url'] ?? ($menu['node'] ?? '#'),
             'icon'   => $menu['icon'] ?? '',
             'node'   => $menu['node'] ?? ($menu['url'] ?? ''),
             'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
