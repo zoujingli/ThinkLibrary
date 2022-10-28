@@ -118,7 +118,7 @@ class Install extends Command
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
             if ($output->confirm($input, "安全提示：安装 admin wechat data 模块，将会替换或删除本地文件！")) {
-                $this->install($this->name);
+                foreach ($this->bind as $name => $bind) $this->install($name, true);
             } else {
                 $output->error("未执行，未同意安装模块！");
             }
@@ -137,16 +137,17 @@ class Install extends Command
 
     /**
      * 安装本地文件
-     * @param string $name
-     * @return boolean
+     * @param string $name 更新模块名称
+     * @param boolean $force 静默强制更新
+     * @return void
      */
-    protected function install(string $name): bool
+    private function install(string $name, bool $force = false)
     {
         // 更新模块文件
         $data = ModuleService::grenDifference($this->rules, $this->ignore);
         if (empty($data)) {
-            $this->output->writeln('未发现有变更的文件，不需要进行更新！');
-            return false;
+            $force or $this->output->writeln('未发现有变更的文件，不需要进行更新！');
+            return;
         }
         [$total, $count] = [count($data), 0];
         foreach ($data as $file) {
@@ -175,6 +176,5 @@ class Install extends Command
         $todir = with_path('database/migrations', $this->app->getRootPath());
         $this->queue->message($total, $count, "--- 处理数据库可执行脚本");
         ToolsExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
-        return true;
     }
 }
