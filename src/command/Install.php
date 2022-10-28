@@ -117,7 +117,7 @@ class Install extends Command
                 $this->rules = array_merge($this->rules, $bind['rules']);
                 $this->ignore = array_merge($this->ignore, $bind['ignore']);
             }
-            if ($output->confirm($input, "安全警告：安装 admin wechat data static 模块，将会替换或删除本地文件！")) {
+            if ($output->confirm($input, "安全警告：安装 admin wechat data static 模块，会替换或删除本地文件！")) {
                 foreach ($this->bind as $name => $bind) $this->install($name, true);
             } else {
                 $output->error("未执行，未同意安装模块！");
