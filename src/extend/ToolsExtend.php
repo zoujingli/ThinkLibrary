@@ -125,21 +125,6 @@ class ToolsExtend
         ]);
     }
 
-    /**
-     * 下载 Phinx 迁移脚本
-     * @param ?array $tables 指定数据表
-     * @param string $class 生成操作名
-     * @return void
-     * @throws \think\admin\Exception
-     */
-    public static function down2phinx(?array $tables = null, string $class = 'InstallDatabase')
-    {
-        $br = "\r\n";
-        $content = static::mysql2phinx($tables, true);
-        $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
-        download($content, date('YmdHis_') . Str::snake($class) . '.php', true)->send();
-    }
 
     /**
      * 生成 Phinx 迁移脚本
@@ -148,7 +133,7 @@ class ToolsExtend
      * @return string
      * @throws \think\admin\Exception
      */
-    public static function mysql2phinx(?array $tables = null, bool $source = false): string
+    public static function create2phinx(?array $tables = null, bool $source = false): string
     {
         $br = "\r\n";
         $connect = Library::$sapp->db->connect();
@@ -224,6 +209,22 @@ CODE;
             $content .= "{$br}\t\t->save();{$br}\t}{$br}{$br}";
         }
         return $source ? $content : highlight_string($content, true);
+    }
+
+    /**
+     * 下载 Phinx 迁移脚本
+     * @param ?array $tables 指定数据表
+     * @param string $class 生成操作名
+     * @return void
+     * @throws \think\admin\Exception
+     */
+    public static function download2phinx(?array $tables = null, string $class = 'InstallDatabase')
+    {
+        $br = "\r\n";
+        $content = static::create2phinx($tables, true);
+        $content = substr($content, strpos($content, "\n") + 1);
+        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
+        download($content, date('YmdHis_') . Str::snake($class) . '.php', true)->send();
     }
 
     /**
