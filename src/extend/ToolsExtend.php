@@ -19,7 +19,6 @@ namespace think\admin\extend;
 
 use think\admin\Exception;
 use think\admin\Library;
-use think\admin\model\SystemMenu;
 use think\helper\Str;
 
 /**
@@ -29,41 +28,6 @@ use think\helper\Str;
  */
 class ToolsExtend
 {
-
-    /**
-     * 拷贝文件到指定目录
-     * @param string $frdir 源目录
-     * @param string $todir 目标目录
-     * @param array $files 文件列表
-     * @param boolean $force 强制替换
-     * @param boolean $remove 删除文件
-     * @return boolean
-     */
-    public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
-    {
-        $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
-        $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
-        file_exists($todir) || mkdir($todir, 0755, true);
-        // 扫描目录文件
-        if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
-            foreach (scandir($frdir) as $file) if ($file[0] !== '.') {
-                is_file($frdir . $file) && ($files[$file] = $file);
-            }
-        }
-        // 复制指定文件
-        foreach ($files as $source => $target) {
-            if (is_numeric($source)) $source = $target;
-            if ($force || !file_exists($todir . $target)) {
-                copy($frdir . $source, $todir . $target);
-            }
-            $remove && unlink($frdir . $source);
-        }
-        // 删除源目录
-        if ($remove && file_exists($frdir) && is_dir($frdir)) {
-            count(glob("{$frdir}/*")) <= 0 && rmdir($frdir);
-        }
-        return true;
-    }
 
     /**
      * 文本转为UTF8编码
@@ -78,72 +42,44 @@ class ToolsExtend
     }
 
     /**
-     * 写入系统菜单数据
-     * @param array $zdata 菜单数据
-     * @param mixed $check 检测条件
-     * @return boolean
+     * 下载 Phinx 迁移脚本
+     * @param ?array $tables 指定数据表
+     * @param string $class 生成操作名
+     * @return void
+     * @throws \think\admin\Exception
      */
-    public static function write2menu(array $zdata, $check = []): bool
+    public static function down2phinx(?array $tables = null, string $class = 'InstallDatabase')
     {
-        try { // 检查是否需要写入菜单
-            if (!empty($check) && SystemMenu::mk()->where($check)->count() > 0) {
-                return false;
-            }
-        } catch (\Exception $exception) {
-            return false;
-        }
-        // 循环写入系统菜单数据
-        foreach ($zdata as $one) {
-            $pid1 = static::writeOneMenu($one);
-            if (!empty($one['subs'])) foreach ($one['subs'] as $two) {
-                $pid2 = static::writeOneMenu($two, $pid1);
-                if (!empty($two['subs'])) foreach ($two['subs'] as $thr) {
-                    static::writeOneMenu($thr, $pid2);
-                }
-            }
-        }
-        return true;
+        $br = "\r\n";
+        $content = static::mysql2phinx($tables, true);
+        $content = substr($content, strpos($content, "\n") + 1);
+        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
+        download($content, date('YmdHis_') . Str::snake($class) . '.php', true)->send();
     }
 
     /**
-     * 写入系统菜单
-     * @param array $menu 菜单数据
-     * @param mixed $ppid 上级菜单
-     * @return integer|string
-     */
-    private static function writeOneMenu(array $menu, $ppid = 0)
-    {
-        return SystemMenu::mk()->insertGetId([
-            'pid'    => $ppid,
-            'url'    => $menu['url'] ?? ($menu['node'] ?? '#'),
-            'sort'   => $menu['sort'] ?? 0,
-            'icon'   => $menu['icon'] ?? '',
-            'node'   => $menu['node'] ?? ($menu['url'] ?? ''),
-            'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
-            'params' => $menu['params'] ?? '',
-            'target' => $menu['target'] ?? '_self',
-        ]);
-    }
-
-    /**
-     * 生成 Phinx 的迁移脚本
-     * @param null|array $tables
+     * 生成 Phinx 迁移脚本
+     * @param ?array $tables 指定数据表
+     * @param boolean $source 是否原样返回
      * @return string
      * @throws \think\admin\Exception
      */
-    public static function mysql2phinx(?array $tables = null): string
+    public static function mysql2phinx(?array $tables = null, bool $source = false): string
     {
+        $br = "\r\n";
         $connect = Library::$sapp->db->connect();
         if ($connect->getConfig('type') !== 'mysql') {
             throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
         }
+        $ignore = ['migrations'];
         $tables = $tables ?: Library::$sapp->db->getTables();
 
-        $content = "<?php\n\n\t/**\n\t * 创建数据库\n\t */\n\t public function change() {";
-        foreach ($tables as $table) $content .= "\n\t\t\$this->_{$table}_change();";
-        $content .= "\n\n\t}\n\n";
+        $content = "<?php{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
+        foreach ($tables as $table) if (!in_array($table, $ignore)) $content .= "{$br}\t\t\$this->_create_{$table}();";
+        $content .= "{$br}{$br}\t}{$br}{$br}";
 
         foreach ($tables as $table) {
+            if (in_array($table, $ignore)) continue;
 
             // 读取数据表 - 备注参数
             $map = ['TABLE_SCHEMA' => $connect->getConfig('database'), 'TABLE_NAME' => $table];
@@ -154,21 +90,20 @@ class ToolsExtend
 
             $class = Str::studly($table);
             $content .= <<<CODE
-
     /**
      * 创建数据对象
      * @class {$class}
      * @table {$table}
      * @return void
      */
-    private function _{$table}_change() {
-
+    private function _create_{$table}() {
+        
         // 当前数据表
         \$table = '{$table}';
-
+    
         // 存在则跳过
         if (\$this->hasTable(\$table)) return;
-
+        
         // 创建数据表
         \$this->table(\$table, [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
@@ -192,7 +127,7 @@ CODE;
                     $data = array_merge(['precision' => intval($attr[1]), 'scale' => intval($attr[2])], $data);
                 }
                 $params = static::array2string($data);
-                $content .= "\n\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
+                $content .= "{$br}\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
             }
             // 自动生成索引
             foreach ($indexs as $index) {
@@ -200,11 +135,11 @@ CODE;
                 $params = static::array2string([
                     'name' => "idx_{$index['Table']}_{$index["Column_name"]}",
                 ]);
-                $content .= "\n\t\t->addIndex('{$index["Column_name"]}', {$params})";
+                $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
-            $content .= "\n\t\t->save();\n\n\t}\n\n";
+            $content .= "{$br}\t\t->save();{$br}\t}{$br}{$br}";
         }
-        return highlight_string($content, true);
+        return $source ? $content : highlight_string($content, true);
     }
 
     /**
