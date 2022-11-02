@@ -112,20 +112,12 @@ class Install extends Command
         $this->name = trim($input->getArgument('name'));
         if (empty($this->name)) {
             $output->writeln('待安装或更新的模块名称不能为空！');
-        } elseif ($this->name === 'all') {
-            foreach ($this->bind as $bind) {
-                $this->rules = array_merge($this->rules, $bind['rules']);
-                $this->ignore = array_merge($this->ignore, $bind['ignore']);
-            }
-            if ($output->confirm($input, "安全警告：安装 admin wechat data static 模块，会替换或删除本地文件！")) {
-                foreach ($this->bind as $name => $bind) $this->install($name, true);
-            } else {
-                $output->error("未执行，未同意安装模块！");
-            }
         } elseif (isset($this->bind[$this->name])) {
             $this->rules = $this->bind[$this->name]['rules'] ?? [];
             $this->ignore = $this->bind[$this->name]['ignore'] ?? [];
-            if ($output->confirm($input, "安全警告：安装 {$this->name} 模块，将会替换或删除本地文件！")) {
+            if (!file_exists($this->app->getBasePath() . $this->name)) {
+                $this->install($this->name);
+            } elseif ($output->confirm($input, "安全警告：安装 {$this->name} 模块，将会替换或删除本地文件！")) {
                 $this->install($this->name);
             } else {
                 $output->error("未执行，未同意安装模块！");
@@ -138,15 +130,14 @@ class Install extends Command
     /**
      * 安装本地文件
      * @param string $name 更新模块名称
-     * @param boolean $force 静默强制更新
      * @return void
      */
-    private function install(string $name, bool $force = false)
+    private function install(string $name)
     {
         // 更新模块文件
         $data = ModuleService::grenDifference($this->rules, $this->ignore);
         if (empty($data)) {
-            $force or $this->output->writeln('未发现有变更的文件，不需要进行更新！');
+            $this->output->writeln('未发现有变更的文件，不需要进行更新！');
             return;
         }
         [$total, $count] = [count($data), 0];

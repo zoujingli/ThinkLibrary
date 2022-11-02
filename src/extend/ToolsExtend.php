@@ -19,10 +19,11 @@ namespace think\admin\extend;
 
 use think\admin\Exception;
 use think\admin\Library;
+use think\admin\model\SystemMenu;
 use think\helper\Str;
 
 /**
- * 扩展工具包
+ * 系统扩展工具包
  * Class DataExtend
  * @package think\admin\extend
  */
@@ -39,6 +40,89 @@ class ToolsExtend
         return mb_convert_encoding($content, 'UTF-8', mb_detect_encoding($content, [
             'ASCII', 'UTF-8', 'GB2312', 'GBK', 'BIG5',
         ]));
+    }
+
+    /**
+     * 拷贝文件到指定目录
+     * @param string $frdir 源目录
+     * @param string $todir 目标目录
+     * @param array $files 文件列表
+     * @param boolean $force 强制替换
+     * @param boolean $remove 删除文件
+     * @return boolean
+     */
+    public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
+    {
+        $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
+        $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
+        file_exists($todir) || mkdir($todir, 0755, true);
+        // 扫描目录文件
+        if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
+            foreach (scandir($frdir) as $file) if ($file[0] !== '.') {
+                is_file($frdir . $file) && ($files[$file] = $file);
+            }
+        }
+        // 复制指定文件
+        foreach ($files as $source => $target) {
+            if (is_numeric($source)) $source = $target;
+            if ($force || !file_exists($todir . $target)) {
+                copy($frdir . $source, $todir . $target);
+            }
+            $remove && unlink($frdir . $source);
+        }
+        // 删除源目录
+        if ($remove && file_exists($frdir) && is_dir($frdir)) {
+            count(glob("{$frdir}/*")) <= 0 && rmdir($frdir);
+        }
+        return true;
+    }
+
+    /**
+     * 写入系统菜单数据
+     * @param array $zdata 菜单数据
+     * @param mixed $check 检测条件
+     * @return boolean
+     */
+    public static function write2menu(array $zdata, $check = []): bool
+    {
+        try { // 检查是否需要写入菜单
+            if (!empty($check) && SystemMenu::mk()->where($check)->count() > 0) {
+                return false;
+            }
+        } catch (\Exception $exception) {
+            return false;
+        }
+        // 循环写入系统菜单数据
+        foreach ($zdata as $one) {
+            $pid1 = static::write1menu($one);
+            if (!empty($one['subs'])) foreach ($one['subs'] as $two) {
+                $pid2 = static::write1menu($two, $pid1);
+                if (!empty($two['subs'])) foreach ($two['subs'] as $thr) {
+                    static::write1menu($thr, $pid2);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 写入系统菜单
+     * @param array $menu 菜单数据
+     * @param mixed $ppid 上级菜单
+     * @return integer|string
+     */
+    private static function write1menu(array $menu, $ppid = 0)
+    {
+        return SystemMenu::mk()->insertGetId([
+            'pid'    => $ppid,
+            'url'    => $menu['url'] ?? ($menu['node'] ?? '#'),
+            'sort'   => $menu['sort'] ?? 0,
+            'icon'   => $menu['icon'] ?? '',
+            'node'   => $menu['node'] ?? ($menu['url'] ?? ''),
+            'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
+            'params' => $menu['params'] ?? '',
+            'target' => $menu['target'] ?? '_self',
+        ]);
     }
 
     /**
