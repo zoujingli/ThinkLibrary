@@ -24,7 +24,6 @@
     "ext-json": "*",
     "ext-iconv": "*",
     "ext-openssl": "*",
-    "ext-fileinfo": "*",
     "ext-mbstring": "*",
     "topthink/framework": "^6.0",
     "topthink/think-migration": "^3.0"
