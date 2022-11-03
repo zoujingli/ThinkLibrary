@@ -19,7 +19,7 @@ use think\admin\model\SystemBase;
 // 动态读取英文数据字典
 if (count($langs = Library::$sapp->cache->get('lang-en-us', [])) < 1) {
     $langs = array_column(SystemBase::items('英文字典'), 'name', 'code');
-    Library::$sapp->cache->set('lang-en-us', $langs, 60);
+    Library::$sapp->cache->set('lang-en-us', $langs, 360);
 }
 
 return [
