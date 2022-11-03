@@ -133,7 +133,7 @@ class ToolsExtend
      * @return string
      * @throws \think\admin\Exception
      */
-    public static function create2phinx(?array $tables = null, bool $source = false): string
+    public static function build2phinx(?array $tables = null, bool $source = false): string
     {
         $br = "\r\n";
         $connect = Library::$sapp->db->connect();
@@ -221,7 +221,7 @@ CODE;
     public static function download2phinx(?array $tables = null, string $class = 'InstallDatabase')
     {
         $br = "\r\n";
-        $content = static::create2phinx($tables, true);
+        $content = static::build2phinx($tables, true);
         $content = substr($content, strpos($content, "\n") + 1);
         $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
         download($content, date('YmdHis_') . Str::snake($class) . '.php', true)->send();
