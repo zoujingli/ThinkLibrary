@@ -178,7 +178,7 @@ class ToolsExtend
         ])
 CODE;
             foreach (Library::$sapp->db->getFields($table) as $field) {
-                if (!empty($field['primary'])) continue;
+                if ($field['name'] === 'id') continue;
                 $type = $field['type'];
                 $data = ['default' => $field['default'], 'comment' => $field['comment'] ?? ''];
                 if (preg_match('/(longtext)/', $field['type'])) {
