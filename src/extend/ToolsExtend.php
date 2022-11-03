@@ -165,13 +165,13 @@ class ToolsExtend
      * @return void
      */
     private function _create_{$table}() {
-        
+
         // 当前数据表
         \$table = '{$table}';
-    
+
         // 存在则跳过
         if (\$this->hasTable(\$table)) return;
-        
+
         // 创建数据表
         \$this->table(\$table, [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
