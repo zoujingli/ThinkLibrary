@@ -194,7 +194,7 @@ class Controller extends stdClass
 
     /**
      * 快捷查询逻辑器
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param array|string|null $input
      * @return QueryHelper
      * @throws \think\db\exception\DbException
@@ -206,7 +206,7 @@ class Controller extends stdClass
 
     /**
      * 快捷分页逻辑器
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param boolean|integer $page 是否分页或指定分页
      * @param boolean $display 是否渲染模板
      * @param boolean|integer $total 集合分页记录数
@@ -224,7 +224,7 @@ class Controller extends stdClass
 
     /**
      * 快捷表单逻辑器
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param string $template 模板名称
      * @param string $field 指定数据对象主键
      * @param mixed $where 额外更新条件
@@ -253,7 +253,7 @@ class Controller extends stdClass
 
     /**
      * 快捷更新逻辑器
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param array $data 表单扩展数据
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件
@@ -267,7 +267,7 @@ class Controller extends stdClass
 
     /**
      * 快捷删除逻辑器
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件
      * @return boolean|null

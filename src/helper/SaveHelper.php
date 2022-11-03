@@ -31,7 +31,7 @@ class SaveHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param array $edata 表单扩展数据
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件

@@ -32,7 +32,7 @@ class FormHelper extends Helper
 
     /**
      * 逻辑器初始化
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param string $template 视图模板名称
      * @param string $field 指定数据主键
      * @param mixed $where 限定更新条件

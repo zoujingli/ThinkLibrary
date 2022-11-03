@@ -33,7 +33,7 @@ class PageHelper extends Helper
 {
     /**
      * 逻辑器初始化
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param boolean|integer $page 是否分页或指定分页
      * @param boolean $display 是否渲染模板
      * @param boolean|integer $total 集合分页记录数
@@ -90,7 +90,7 @@ class PageHelper extends Helper
 
     /**
      * 组件 Layui.Table 处理
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @param string $template
      * @return array
      * @throws \think\db\exception\DataNotFoundException
@@ -168,7 +168,7 @@ class PageHelper extends Helper
 
     /**
      * 绑定排序并返回操作对象
-     * @param Model|BaseQuery|string $dbQuery
+     * @param BaseQuery|Model|string $dbQuery
      * @return \think\db\Query
      * @throws \think\db\exception\DbException
      */
