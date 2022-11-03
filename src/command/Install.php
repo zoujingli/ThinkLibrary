@@ -32,18 +32,6 @@ use think\console\Output;
 class Install extends Command
 {
     /**
-     * 查询规则
-     * @var array
-     */
-    protected $rules = [];
-
-    /**
-     * 忽略规则
-     * @var array
-     */
-    protected $ignore = [];
-
-    /**
      * 规则配置
      * @var array
      */
@@ -106,12 +94,11 @@ class Install extends Command
         if (empty($name)) {
             $output->writeln('待安装或更新的模块名称不能为空！');
         } elseif (isset($this->bind[$name])) {
-            $this->rules = $this->bind[$name]['rules'] ?? [];
-            $this->ignore = $this->bind[$name]['ignore'] ?? [];
+            [$rules, $ignore] = [$this->bind[$name]['rules'] ?? [], $this->bind[$name]['ignore'] ?? []];
             if (in_array($name, ['admin', 'wechat', 'data']) && !file_exists($this->app->getBasePath() . $name)) {
-                $this->install($name);
+                $this->install($name, $rules, $ignore);
             } elseif ($output->confirm($input, "安全警告：安装 {$name} 模块，将会替换或删除本地文件！")) {
-                $this->install($name);
+                $this->install($name, $rules, $ignore);
             } else {
                 $output->info("未执行，未同意安装模块！");
             }
@@ -122,13 +109,15 @@ class Install extends Command
 
     /**
      * 安装本地文件
-     * @param string $name 更新模块名称
+     * @param string $name 更新模块
+     * @param array $rules 检查规则
+     * @param array $ignore 忽略规则
      * @return void
      */
-    private function install(string $name)
+    private function install(string $name, array $rules = [], array $ignore = [])
     {
         // 更新模块文件
-        $data = ModuleService::grenDifference($this->rules, $this->ignore);
+        $data = ModuleService::grenDifference($rules, $ignore);
         if (empty($data)) {
             $this->output->writeln('未发现有变更的文件，不需要进行更新！');
             return;
