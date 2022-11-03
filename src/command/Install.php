@@ -31,13 +31,6 @@ use think\console\Output;
  */
 class Install extends Command
 {
-
-    /**
-     * 指定模块名称
-     * @var string
-     */
-    protected $name;
-
     /**
      * 查询规则
      * @var array
@@ -109,21 +102,21 @@ class Install extends Command
      */
     protected function execute(Input $input, Output $output)
     {
-        $this->name = trim($input->getArgument('name'));
-        if (empty($this->name)) {
+        $name = trim($input->getArgument('name'));
+        if (empty($name)) {
             $output->writeln('待安装或更新的模块名称不能为空！');
-        } elseif (isset($this->bind[$this->name])) {
-            $this->rules = $this->bind[$this->name]['rules'] ?? [];
-            $this->ignore = $this->bind[$this->name]['ignore'] ?? [];
-            if (!file_exists($this->app->getBasePath() . $this->name)) {
-                $this->install($this->name);
-            } elseif ($output->confirm($input, "安全警告：安装 {$this->name} 模块，将会替换或删除本地文件！")) {
-                $this->install($this->name);
+        } elseif (isset($this->bind[$name])) {
+            $this->rules = $this->bind[$name]['rules'] ?? [];
+            $this->ignore = $this->bind[$name]['ignore'] ?? [];
+            if (in_array($name, ['admin', 'wechat', 'data']) && !file_exists($this->app->getBasePath() . $name)) {
+                $this->install($name);
+            } elseif ($output->confirm($input, "安全警告：安装 {$name} 模块，将会替换或删除本地文件！")) {
+                $this->install($name);
             } else {
-                $output->error("未执行，未同意安装模块！");
+                $output->info("未执行，未同意安装模块！");
             }
         } else {
-            $output->error("未执行，待安装或更新的模块[ {$this->name} ] 不存在！");
+            $output->error("未执行，待安装或更新的模块[ {$name} ] 不存在！");
         }
     }
 
