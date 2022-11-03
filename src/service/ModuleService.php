@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
+use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\admin\Service;
 
@@ -216,7 +217,7 @@ class ModuleService extends Service
         } elseif ($file['type'] == 'del') {
             $real = with_path($file['name']);
             if (is_file($real) && unlink($real)) {
-                static::removeEmptyDirectory(dirname($real));
+                ToolsExtend::removeEmptyDirectory(dirname($real));
                 return [true, $file['type'], $file['name']];
             } else {
                 return [false, $file['type'], $file['name']];
@@ -269,17 +270,6 @@ class ModuleService extends Service
         $filename = with_path(decode($encode));
         file_exists(dirname($filename)) || mkdir(dirname($filename), 0755, true);
         return file_put_contents($filename, base64_decode($result['data']['content']));
-    }
-
-    /**
-     * 清理空目录
-     * @param string $path
-     */
-    private static function removeEmptyDirectory(string $path)
-    {
-        if (is_dir($path) && count(scandir($path)) === 2 && rmdir($path)) {
-            static::removeEmptyDirectory(dirname($path));
-        }
     }
 
     /**

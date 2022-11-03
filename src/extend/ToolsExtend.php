@@ -55,7 +55,6 @@ class ToolsExtend
     {
         $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
         $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
-        file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
             foreach (scandir($frdir) as $file) if ($file[0] !== '.') {
@@ -66,14 +65,13 @@ class ToolsExtend
         foreach ($files as $source => $target) {
             if (is_numeric($source)) $source = $target;
             if ($force || !file_exists($todir . $target)) {
+                file_exists($todir) || mkdir($todir, 0755, true);
                 copy($frdir . $source, $todir . $target);
             }
             $remove && unlink($frdir . $source);
         }
         // 删除源目录
-        if ($remove && file_exists($frdir) && is_dir($frdir)) {
-            count(glob("{$frdir}/*")) <= 0 && rmdir($frdir);
-        }
+        $remove && static::removeEmptyDirectory($frdir);
         return true;
     }
 
@@ -247,5 +245,19 @@ CODE;
     public static function array2string(array $data): string
     {
         return preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ' ]', '[ ',], var_export($data, true));
+    }
+
+    /**
+     * 移除空目录
+     * @param string $path 目录位置
+     * @return void
+     */
+    public static function removeEmptyDirectory(string $path)
+    {
+        if (file_exists($path) && is_dir($path)) {
+            if (count(scandir($path)) === 2 && rmdir($path)) {
+                static::removeEmptyDirectory(dirname($path));
+            }
+        }
     }
 }
