@@ -125,7 +125,6 @@ class ToolsExtend
         ]);
     }
 
-
     /**
      * 生成 Phinx 迁移脚本
      * @param ?array $tables 指定数据表
@@ -212,6 +211,22 @@ CODE;
     }
 
     /**
+     * 创建 Phinx 迁移脚本
+     * @param null|array $tables
+     * @param string $class
+     * @return string[]
+     * @throws \think\admin\Exception
+     */
+    public static function create2phinx(?array $tables = null, string $class = 'InstallDatabase'): array
+    {
+        $br = "\r\n";
+        $content = static::build2phinx($tables, true);
+        $content = substr($content, strpos($content, "\n") + 1);
+        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
+        return ['file' => date('YmdHis_') . Str::snake($class) . '.php', 'text' => $content];
+    }
+
+    /**
      * 下载 Phinx 迁移脚本
      * @param ?array $tables 指定数据表
      * @param string $class 生成操作名
@@ -220,11 +235,8 @@ CODE;
      */
     public static function download2phinx(?array $tables = null, string $class = 'InstallDatabase')
     {
-        $br = "\r\n";
-        $content = static::build2phinx($tables, true);
-        $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
-        download($content, date('YmdHis_') . Str::snake($class) . '.php', true)->send();
+        $attr = static::create2phinx($tables, $class);
+        download($attr['name'], $attr['text'], true)->send();
     }
 
     /**
