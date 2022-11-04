@@ -202,7 +202,7 @@ CODE;
                     $data = array_merge(['precision' => intval($attr[2]), 'scale' => intval($attr[3])], $data);
                 }
                 $params = static::array2string($data);
-                $content .= "{$br}\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
+                $content .= "{$br}\t\t->addColumn('{$field["name"]}','{$type}',{$params})";
             }
             // 自动生成索引
             foreach ($indexs as $index) {
@@ -213,7 +213,7 @@ CODE;
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
             $content .= "{$br}\t\t->save();{$br}{$br}\t\t// 修改主键长度";
-            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','biginteger',['limit'=>20]);";
+            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','biginteger',['limit'=>20,'identity'=>true]);";
             $content .= "{$br}\t}{$br}{$br}";
         }
         return $source ? $content : highlight_string($content, true);
