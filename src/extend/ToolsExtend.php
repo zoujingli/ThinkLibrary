@@ -139,17 +139,25 @@ class ToolsExtend
         }
         $ignore = ['migrations'];
         $tables = $tables ?: Library::$sapp->db->getTables();
-
+        $database = $connect->getConfig('database');
         $content = "<?php{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
         foreach ($tables as $table) if (!in_array($table, $ignore)) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
+        // 字段类型转换
+        $types = [
+            'varchar'  => 'string', 'enum' => 'string', 'char' => 'string', // 字符
+            'longtext' => 'text', 'tinytext' => 'text', 'mediumtext' => 'text', // 文本
+            'tinyblob' => 'binary', 'blob' => 'binary', 'mediumblob' => 'binary', 'longblob' => 'binary', // 文件
+            'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'biginteger', // 整型
+        ];
         foreach ($tables as $table) {
             if (in_array($table, $ignore)) continue;
 
             // 读取数据表 - 备注参数
-            $map = ['TABLE_SCHEMA' => $connect->getConfig('database'), 'TABLE_NAME' => $table];
-            $comment = Library::$sapp->db->table('information_schema.TABLES')->where($map)->value('TABLE_COMMENT', '');
+            $comment = Library::$sapp->db->table('information_schema.TABLES')->where([
+                'TABLE_SCHEMA' => $database, 'TABLE_NAME' => $table,
+            ])->value('TABLE_COMMENT', '');
 
             // 读取数据表 - 索引数据
             $indexs = Library::$sapp->db->query("show index from {$table}");
@@ -177,20 +185,21 @@ class ToolsExtend
 CODE;
             foreach (Library::$sapp->db->getFields($table) as $field) {
                 if ($field['name'] === 'id') continue;
-                $type = $field['type'];
+                $type = $types[$field['type']] ?? $field['type'];
                 $data = ['default' => $field['default'], 'comment' => $field['comment'] ?? ''];
-                if (preg_match('/(longtext)/', $field['type'])) {
-                    $type = 'text';
-                } elseif (preg_match('/(varchar|char)\((\d+)\)/', $field['type'], $attr)) {
-                    $type = 'string';
+                if ($field['type'] === 'enum') {
+                    $type = $types[$field['type']] ?? 'string';
+                    $data = array_merge(['limit' => 10], $data);
+                } elseif (preg_match('/(tinyblob|blob|mediumblob|longblob|varchar|char)\((\d+)\)/', $field['type'], $attr)) {
+                    $type = $types[$attr[1]] ?? 'string';
                     $data = array_merge(['limit' => intval($attr[2])], $data);
-                } elseif (preg_match('/(bigint|tinyint|int)\((\d+)\)/', $field['type'], $attr)) {
-                    $type = 'integer';
+                } elseif (preg_match('/(tinyint|smallint|mediumint|int|bigint)\((\d+)\)/', $field['type'], $attr)) {
+                    $type = $types[$attr[1]] ?? 'integer';
                     $data = array_merge(['limit' => intval($attr[2])], $data);
                     $data['default'] = intval($data['default']);
-                } elseif (preg_match('/decimal\((\d+),(\d+)\)/', $field['type'], $attr)) {
-                    $type = 'decimal';
-                    $data = array_merge(['precision' => intval($attr[1]), 'scale' => intval($attr[2])], $data);
+                } elseif (preg_match('/(float|decimal)\((\d+),(\d+)\)/', $field['type'], $attr)) {
+                    $type = $types[$attr[1]] ?? 'decimal';
+                    $data = array_merge(['precision' => intval($attr[2]), 'scale' => intval($attr[3])], $data);
                 }
                 $params = static::array2string($data);
                 $content .= "{$br}\t\t->addColumn('{$field["name"]}', '{$type}', {$params})";
