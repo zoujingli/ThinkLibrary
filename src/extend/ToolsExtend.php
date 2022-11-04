@@ -212,7 +212,9 @@ CODE;
                 ]);
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
-            $content .= "{$br}\t\t->save();{$br}\t}{$br}{$br}";
+            $content .= "{$br}\t\t->save();{$br}{$br}\t\t// 修改主键长度";
+            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','biginteger',['limit'=>20]);";
+            $content .= "{$br}\t}{$br}{$br}";
         }
         return $source ? $content : highlight_string($content, true);
     }
