@@ -103,9 +103,11 @@ class Library extends Service
 
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
-            // 如果是 YAR 接口或指定情况下，不需要初始化会话和语言包，否则有可能会报错
-            $isYarRpc = stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-');
-            if ($isYarRpc === false && intval($this->app->request->get('not_init_session', 0)) < 1) {
+            // YAR 接口或指定情况下不需要初始化会话和语言包，否则有可能会报错
+            $isApiRpc = $this->app->request->header('api_token', '') !== '';
+            $isNotRpc = intval($this->app->request->get('not_init_session', 0)) > 0;
+            $isYarRpc = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
+            if (!($isApiRpc || $isNotRpc || $isYarRpc)) {
                 // 注册会话初始化中间键
                 $this->app->middleware->add(SessionInit::class);
                 // 注册语言包处理中间键
