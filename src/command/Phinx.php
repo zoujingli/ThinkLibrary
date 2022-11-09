@@ -29,11 +29,31 @@ class Phinx extends Command
      */
     public function handle()
     {
-        $result = ToolsExtend::create2phinx();
-        if (file_put_contents(with_path("database/migrations/{$result['file']}"), $result['text'])) {
+        if ($this->_createScheme() && $this->_createPackage()) {
             $this->output->writeln('数据迁移脚本生成成功！');
         } else {
             $this->output->error('数据迁移脚本生成失败！');
         }
+    }
+
+    /**
+     * 创建数据表
+     * @return boolean
+     * @throws \think\admin\Exception
+     */
+    private function _createScheme(): bool
+    {
+        $result = ToolsExtend::create2phinx();
+        $filename = with_path("database/migrations/{$result['file']}");
+        return file_put_contents($filename, $result['text']) !== false;
+    }
+
+    /**
+     * 创建数据包
+     * @return boolean
+     */
+    private function _createPackage(): bool
+    {
+        return true;
     }
 }
