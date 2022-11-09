@@ -19,7 +19,7 @@ class Phinx extends Command
     public function configure()
     {
         $this->setName('xadmin:sysphinx');
-        $this->setDescription('Generate system install data package for ThinkAdmin');
+        $this->setDescription('Generate system install package for ThinkAdmin');
     }
 
     /**
