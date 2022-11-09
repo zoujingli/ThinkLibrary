@@ -29,7 +29,7 @@ class Phinx extends Command
      */
     public function handle()
     {
-        if ($this->_createScheme() && $this->_createPackage()) {
+        if ($this->createScheme() && $this->createPackage()) {
             $this->output->writeln('数据迁移脚本生成成功！');
         } else {
             $this->output->error('数据迁移脚本生成失败！');
@@ -41,7 +41,7 @@ class Phinx extends Command
      * @return boolean
      * @throws \think\admin\Exception
      */
-    private function _createScheme(): bool
+    private function createScheme(): bool
     {
         $result = ToolsExtend::create2phinx();
         $filename = with_path("database/migrations/{$result['file']}");
@@ -52,7 +52,7 @@ class Phinx extends Command
      * 创建数据包
      * @return boolean
      */
-    private function _createPackage(): bool
+    private function createPackage(): bool
     {
         return true;
     }
