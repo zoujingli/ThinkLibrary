@@ -26,6 +26,9 @@ class Phinx extends Command
      * 生成系统安装数据包
      * @return void
      * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     public function handle()
     {
@@ -51,9 +54,14 @@ class Phinx extends Command
     /**
      * 创建数据包
      * @return boolean
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     private function createPackage(): bool
     {
-        return true;
+        $result = ToolsExtend::create2package();
+        $filename = with_path("database/migrations/{$result['file']}");
+        return file_put_contents($filename, $result['text']) !== false;
     }
 }
