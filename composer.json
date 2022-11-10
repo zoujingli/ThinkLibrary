@@ -26,7 +26,7 @@
     "ext-openssl": "*",
     "ext-mbstring": "*",
     "topthink/framework": "^6.0",
-    "topthink/think-migration": "3.0.3"
+    "topthink/think-migration": "^3.0"
   },
   "autoload": {
     "files": [
