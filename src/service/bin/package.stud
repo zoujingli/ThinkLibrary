@@ -6,7 +6,7 @@ use think\admin\model\SystemUser;
 use think\migration\Migrator;
 
 /**
- * 安装数据包
+ * 数据安装包
  * @class __PACKAGE__
  */
 class __PACKAGE__ extends Migrator
