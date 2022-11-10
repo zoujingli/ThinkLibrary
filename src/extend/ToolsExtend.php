@@ -229,10 +229,11 @@ CODE;
     public static function create2phinx(?array $tables = null, string $class = 'InstallDatabase'): array
     {
         $br = "\r\n";
-        $content = static::build2phinx($tables, true);
-        $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
-        return ['file' => date('YmdHis_') . Str::snake($class) . '.php', 'text' => $content];
+        $text = static::build2phinx($tables, true);
+        $text = substr($text, strpos($text, "\n") + 1);
+        $text = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$text}{$br}}{$br}";
+        $vers = str_pad(strval(count(glob(with_path('databae/migrations/*.php')))), 6, '0', STR_PAD_LEFT);
+        return ['file' => date("Ymd{$vers}_") . Str::snake($class) . '.php', 'text' => $text];
     }
 
     /**
@@ -261,10 +262,11 @@ CODE;
             $items[] = $one;
         }
         $json = json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-        $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
+        $text = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
         // 返回数据安装包脚本
-        $content = str_replace(['__MENU_JSON__', '__PACKAGE__'], [$json, $class], $content);
-        return ['file' => date('YmdHis_') . Str::snake($class) . '.php', 'text' => $content];
+        $text = str_replace(['__MENU_JSON__', '__PACKAGE__'], [$json, $class], $text);
+        $vers = str_pad(strval(count(glob(with_path('databae/migrations/*.php')))), 6, '0', STR_PAD_LEFT);
+        return ['file' => date("Ymd{$vers}_") . Str::snake($class) . '.php', 'text' => $text];
     }
 
     /**
