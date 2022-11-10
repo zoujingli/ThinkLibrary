@@ -149,7 +149,7 @@ class ToolsExtend
             'varchar'  => 'string', 'enum' => 'string', 'char' => 'string', // 字符
             'longtext' => 'text', 'tinytext' => 'text', 'mediumtext' => 'text', // 文本
             'tinyblob' => 'binary', 'blob' => 'binary', 'mediumblob' => 'binary', 'longblob' => 'binary', // 文件
-            'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'biginteger', // 整型
+            'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'integer', // 整型
         ];
         foreach ($tables as $table) {
             if (in_array($table, $ignore)) continue;
@@ -213,7 +213,7 @@ CODE;
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
             $content .= "{$br}\t\t->save();{$br}{$br}\t\t// 修改主键长度";
-            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','biginteger',['limit'=>20,'identity'=>true]);";
+            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','integer',['limit'=>20,'identity'=>true]);";
             $content .= "{$br}\t}{$br}{$br}";
         }
         return $source ? $content : highlight_string($content, true);
