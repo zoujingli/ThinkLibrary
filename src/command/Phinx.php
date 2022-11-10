@@ -38,9 +38,9 @@ class Phinx extends Command
         // 开始创建数据库迁移脚本
         $this->queue->message(2, 0, '开初始创建数据库迁移脚本！');
         if ($this->createScheme() && $this->createPackage()) {
-            $this->queue->success('数据迁移脚本生成成功！');
+            $this->setQueueSuccess('数据迁移脚本生成成功！');
         } else {
-            $this->queue->error('数据迁移脚本生成失败！');
+            $this->setQueueError('数据迁移脚本生成失败！');
         }
     }
 
