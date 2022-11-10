@@ -7,10 +7,10 @@ use think\admin\extend\ToolsExtend;
 
 /**
  * 生成安装数据包
- * Class Phinx
+ * Class Backup
  * @package think\admin\command
  */
-class Phinx extends Command
+class Backup extends Command
 {
     /**
      * 系统指定配置
@@ -18,7 +18,7 @@ class Phinx extends Command
      */
     public function configure()
     {
-        $this->setName('xadmin:sysphinx');
+        $this->setName('xadmin:sysbackup');
         $this->setDescription('Generate system install package for ThinkAdmin');
     }
 
