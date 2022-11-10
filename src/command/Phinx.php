@@ -48,6 +48,7 @@ class Phinx extends Command
     {
         $result = ToolsExtend::create2phinx();
         $filename = with_path("database/migrations/{$result['file']}");
+        file_exists(dirname($filename)) or mkdir(dirname($filename, true));
         return file_put_contents($filename, $result['text']) !== false;
     }
 
@@ -62,6 +63,7 @@ class Phinx extends Command
     {
         $result = ToolsExtend::create2package();
         $filename = with_path("database/migrations/{$result['file']}");
+        file_exists(dirname($filename)) or mkdir(dirname($filename, true));
         return file_put_contents($filename, $result['text']) !== false;
     }
 }
