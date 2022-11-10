@@ -232,7 +232,7 @@ CODE;
         $text = static::build2phinx($tables, true);
         $text = substr($text, strpos($text, "\n") + 1);
         $text = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$text}{$br}}{$br}";
-        $vers = str_pad(strval(count(glob(with_path('databae/migrations/*.php')))), 6, '0', STR_PAD_LEFT);
+        $vers = str_pad(strval(count(glob(with_path('database/migrations/*.php')))), 6, '0', STR_PAD_LEFT);
         return ['file' => date("Ymd{$vers}_") . Str::snake($class) . '.php', 'text' => $text];
     }
 
@@ -265,7 +265,7 @@ CODE;
         $text = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
         // 返回数据安装包脚本
         $text = str_replace(['__MENU_JSON__', '__PACKAGE__'], [$json, $class], $text);
-        $vers = str_pad(strval(count(glob(with_path('databae/migrations/*.php')))), 6, '0', STR_PAD_LEFT);
+        $vers = str_pad(strval(count(glob(with_path('database/migrations/*.php')))), 6, '0', STR_PAD_LEFT);
         return ['file' => date("Ymd{$vers}_") . Str::snake($class) . '.php', 'text' => $text];
     }
 
