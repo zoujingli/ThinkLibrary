@@ -19,7 +19,7 @@ class Package extends Command
     public function configure()
     {
         $this->setName('xadmin:package');
-        $this->setDescription('Generate Installation Package for ThinkAdmin');
+        $this->setDescription('Generate System Install Package for ThinkAdmin');
     }
 
     /**
