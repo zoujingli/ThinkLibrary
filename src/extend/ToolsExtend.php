@@ -226,7 +226,7 @@ CODE;
      * @return string[]
      * @throws \think\admin\Exception
      */
-    public static function create2phinx(?array $tables = null, string $class = 'InstallStruct'): array
+    public static function create2phinx(?array $tables = null, string $class = 'InstallTable'): array
     {
         $br = "\r\n";
         $text = static::build2phinx($tables, true);
