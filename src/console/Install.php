@@ -79,7 +79,7 @@ class Install extends Command
     {
         $this->setName('xadmin:install');
         $this->addArgument('name', Argument::OPTIONAL, 'ModuleName', '');
-        $this->setDescription("Source code Install and Update for ThinkAdmin");
+        $this->setDescription("Install and Update Source code for ThinkAdmin");
     }
 
     /**
