@@ -36,11 +36,11 @@ class Package extends Command
         $dirname = with_path('database/migrations');
         file_exists($dirname) or mkdir($dirname, 0755, true);
         // 开始创建数据库迁移脚本
-        $this->queue->message(2, 0, '开初始创建数据库迁移脚本！');
+        $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
         if ($this->createScheme() && $this->createPackage()) {
-            $this->setQueueSuccess('数据迁移脚本生成成功！');
+            $this->setQueueSuccess('--- 数据迁移脚本生成成功 ---');
         } else {
-            $this->setQueueError('数据迁移脚本生成失败！');
+            $this->setQueueError('--- 数据迁移脚本生成失败 ---');
         }
     }
 
@@ -51,11 +51,11 @@ class Package extends Command
      */
     private function createScheme(): bool
     {
-        $this->queue->message(2, 1, '开始创建数据表创建脚本！');
+        $this->setQueueMessage(2, 1, '开始创建数据表创建脚本！');
         $result = ToolsExtend::create2phinx();
         $filename = with_path("database/migrations/{$result['file']}");
         file_put_contents($filename, $result['text']) !== false;
-        $this->queue->message(2, 1, '成功创建数据表创建脚本！', 1);
+        $this->setQueueMessage(2, 1, '成功创建数据表创建脚本！', 1);
         return true;
     }
 
@@ -68,11 +68,11 @@ class Package extends Command
      */
     private function createPackage(): bool
     {
-        $this->queue->message(2, 2, '开始创建系统初始化脚本！');
+        $this->setQueueMessage(2, 2, '开始创建系统初始化脚本！');
         $result = ToolsExtend::create2package();
         $filename = with_path("database/migrations/{$result['file']}");
         file_put_contents($filename, $result['text']) !== false;
-        $this->queue->message(2, 2, '成功创建系统初始化脚本！', 1);
+        $this->setQueueMessage(2, 2, '成功创建系统初始化脚本！', 1);
         return true;
     }
 }
