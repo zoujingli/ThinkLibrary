@@ -261,8 +261,8 @@ CODE;
             if (empty($one['subs'])) unset($one['subs']);
             $items[] = $one;
         }
-        $json = json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $text = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
+        $json = json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         // 返回数据安装包脚本
         $text = str_replace(['__MENU_JSON__', '__PACKAGE__'], [$json, $class], $text);
         $vers = str_pad(strval(count(glob(with_path('database/migrations/*.php')))), 6, '0', STR_PAD_LEFT);
