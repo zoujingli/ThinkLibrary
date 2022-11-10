@@ -18,7 +18,7 @@ declare (strict_types=1);
 namespace think\admin;
 
 use Closure;
-use think\admin\console\Backup;
+use think\admin\console\Package;
 use think\admin\console\Database;
 use think\admin\console\Install;
 use think\admin\console\Menu;
@@ -65,7 +65,7 @@ class Library extends Service
         $this->commands(['build' => Build::class]);
 
         // 注册 ThinkAdmin 指令
-        $this->commands([Menu::class, Queue::class, Backup::class, Install::class, Database::class, Replace::class]);
+        $this->commands([Menu::class, Queue::class, Package::class, Install::class, Database::class, Replace::class]);
 
         // 动态应用运行参数
         RuntimeService::apply();

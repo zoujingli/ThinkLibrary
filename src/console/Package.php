@@ -6,11 +6,11 @@ use think\admin\Command;
 use think\admin\extend\ToolsExtend;
 
 /**
- * 生成安装数据包
- * Class Backup
+ * 生成数据安装包
+ * Class Package
  * @package think\admin\command
  */
-class Backup extends Command
+class Package extends Command
 {
     /**
      * 系统指定配置
@@ -18,8 +18,8 @@ class Backup extends Command
      */
     public function configure()
     {
-        $this->setName('xadmin:backup');
-        $this->setDescription('Generate Install Package for ThinkAdmin');
+        $this->setName('xadmin:package');
+        $this->setDescription('Generate Installation Package for ThinkAdmin');
     }
 
     /**
