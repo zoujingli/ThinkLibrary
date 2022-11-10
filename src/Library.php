@@ -21,7 +21,7 @@ use Closure;
 use think\admin\console\Package;
 use think\admin\console\Database;
 use think\admin\console\Install;
-use think\admin\console\Menu;
+use think\admin\console\Sysmenu;
 use think\admin\console\Queue;
 use think\admin\console\Replace;
 use think\admin\multiple\command\Build;
@@ -65,7 +65,7 @@ class Library extends Service
         $this->commands(['build' => Build::class]);
 
         // 注册 ThinkAdmin 指令
-        $this->commands([Menu::class, Queue::class, Package::class, Install::class, Database::class, Replace::class]);
+        $this->commands([Sysmenu::class, Queue::class, Package::class, Install::class, Database::class, Replace::class]);
 
         // 动态应用运行参数
         RuntimeService::apply();

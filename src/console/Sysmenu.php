@@ -23,10 +23,10 @@ use think\admin\model\SystemMenu;
 
 /**
  * 重置并清理系统菜单
- * Class Menu
+ * Class Sysmenu
  * @package think\admin\command
  */
-class Menu extends Command
+class Sysmenu extends Command
 {
     /**
      * 指令任务配置
