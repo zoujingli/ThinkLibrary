@@ -38,9 +38,9 @@ class Package extends Command
         // 开始创建数据库迁移脚本
         $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
         if ($this->createScheme() && $this->createPackage()) {
-            $this->setQueueSuccess('--- 数据迁移脚本生成成功 ---');
+            $this->setQueueSuccess('--- 数据迁移脚本创建成功 ---');
         } else {
-            $this->setQueueError('--- 数据迁移脚本生成失败 ---');
+            $this->setQueueError('--- 数据迁移脚本创建失败 ---');
         }
     }
 
