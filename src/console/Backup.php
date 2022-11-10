@@ -1,6 +1,6 @@
 <?php
 
-namespace think\admin\command;
+namespace think\admin\console;
 
 use think\admin\Command;
 use think\admin\extend\ToolsExtend;

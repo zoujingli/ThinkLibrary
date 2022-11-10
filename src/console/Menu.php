@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\command;
+namespace think\admin\console;
 
 use think\admin\Command;
 use think\admin\extend\DataExtend;

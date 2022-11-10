@@ -18,12 +18,12 @@ declare (strict_types=1);
 namespace think\admin;
 
 use Closure;
-use think\admin\command\Backup;
-use think\admin\command\Database;
-use think\admin\command\Install;
-use think\admin\command\Menu;
-use think\admin\command\Queue;
-use think\admin\command\Replace;
+use think\admin\console\Backup;
+use think\admin\console\Database;
+use think\admin\console\Install;
+use think\admin\console\Menu;
+use think\admin\console\Queue;
+use think\admin\console\Replace;
 use think\admin\multiple\command\Build;
 use think\admin\multiple\Multiple;
 use think\admin\service\AdminService;
