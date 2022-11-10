@@ -249,11 +249,11 @@ CODE;
         $items = [];
         $menus = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray();
         foreach (DataExtend::arr2tree($menus) as $sub1) {
-            $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'node' => $sub1['node'], 'subs' => []];
+            $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
             if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
-                $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'node' => $sub2['node'], 'subs' => []];
+                $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'node' => $sub2['node'], 'params' => $sub2['params'], 'subs' => []];
                 if (!empty($sub2['sub'])) foreach ($sub2['sub'] as $sub3) {
-                    $two['subs'][] = ['name' => $sub3['title'], 'node' => $sub3['node'], 'icon' => $sub3['icon']];
+                    $two['subs'][] = ['name' => $sub3['title'], 'node' => $sub3['node'], 'icon' => $sub3['icon'], 'params' => $sub3['params'],];
                 }
                 if (empty($two['subs'])) unset($two['subs']);
                 $one['subs'][] = $two;
