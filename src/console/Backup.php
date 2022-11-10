@@ -19,7 +19,7 @@ class Backup extends Command
     public function configure()
     {
         $this->setName('xadmin:backup');
-        $this->setDescription('Generate install package for ThinkAdmin');
+        $this->setDescription('Generate Install Package for ThinkAdmin');
     }
 
     /**
