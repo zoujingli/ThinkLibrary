@@ -138,9 +138,8 @@ class ToolsExtend
             throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
         }
         $ignore = ['migrations'];
-        $tables = $tables ?: Library::$sapp->db->getTables();
-        $database = $connect->getConfig('database');
-        $content = "<?php{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
+        [$tables, $database] = [$tables ?: Library::$sapp->db->getTables(), $connect->getConfig('database')];
+        $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
         foreach ($tables as $table) if (!in_array($table, $ignore)) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
@@ -159,9 +158,7 @@ class ToolsExtend
                 'TABLE_SCHEMA' => $database, 'TABLE_NAME' => $table,
             ])->value('TABLE_COMMENT', '');
 
-            // 读取数据表 - 索引数据
-            $indexs = Library::$sapp->db->query("show index from {$table}");
-
+            // 读取数据表 - 自动生成结构
             $class = Str::studly($table);
             $content .= <<<CODE
     /**
@@ -204,7 +201,8 @@ CODE;
                 $params = static::array2string($data);
                 $content .= "{$br}\t\t->addColumn('{$field["name"]}','{$type}',{$params})";
             }
-            // 自动生成索引
+            // 读取数据表 - 自动生成索引
+            $indexs = Library::$sapp->db->query("show index from {$table}");
             foreach ($indexs as $index) {
                 if ($index['Key_name'] === 'PRIMARY') continue;
                 $params = static::array2string([
