@@ -1,5 +1,6 @@
 <?php
 
+use think\admin\extend\CodeExtend;
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\admin\model\SystemConfig;
@@ -26,26 +27,6 @@ class __PACKAGE__ extends Migrator
     }
 
     /**
-     * 初始化用户数据
-     * @return void
-     * @throws \think\db\exception\DbException
-     */
-    private function insertUser()
-    {
-        // 检查是否存在
-        if (SystemUser::mk()->count()) return;
-
-        // 初始化默认数据
-        SystemUser::mk()->save([
-            'id'       => '10000',
-            'username' => 'admin',
-            'nickname' => '超级管理员',
-            'password' => '21232f297a57a5a743894a0e4a801fc3',
-            'headimg'  => 'https://thinkadmin.top/static/img/icon.png',
-        ]);
-    }
-
-    /**
      * 安装扩展数据
      * @return void
      * @throws \think\db\exception\DbException
@@ -59,7 +40,7 @@ JSON;
         // 解析并写入扩展数据
         if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
             foreach ($tables as $table => $items) if (Library::$sapp->db->table($table)->count() < 1) {
-                if (count($items = is_string($items) ? json_decode($items, true) : $items) > 0) {
+                if (count($items = is_string($items) ? json_decode(CodeExtend::deZipStr($items), true) : $items) > 0) {
                     Library::$sapp->db->table($table)->strict(false)->insertAll($items);
                 }
             }
@@ -103,6 +84,26 @@ JSON;
             ['type' => 'storage', 'name' => 'allow_exts', 'value' => 'doc,gif,ico,jpg,mp3,mp4,p12,pem,png,zip,rar,xls,xlsx'],
             ['type' => 'storage', 'name' => 'type', 'value' => 'local'],
             ['type' => 'wechat', 'name' => 'type', 'value' => 'api'],
+        ]);
+    }
+
+    /**
+     * 初始化用户数据
+     * @return void
+     * @throws \think\db\exception\DbException
+     */
+    private function insertUser()
+    {
+        // 检查是否存在
+        if (SystemUser::mk()->count()) return;
+
+        // 初始化默认数据
+        SystemUser::mk()->save([
+            'id'       => '10000',
+            'username' => 'admin',
+            'nickname' => '超级管理员',
+            'password' => '21232f297a57a5a743894a0e4a801fc3',
+            'headimg'  => 'https://thinkadmin.top/static/img/icon.png',
         ]);
     }
 }

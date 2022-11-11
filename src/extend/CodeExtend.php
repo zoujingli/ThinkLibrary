@@ -115,4 +115,24 @@ class CodeExtend
     {
         return base64_decode(str_pad(strtr($text, '-_', '+/'), strlen($text) % 4, '='));
     }
+
+    /**
+     * 压缩文本内容
+     * @param string $str
+     * @return string
+     */
+    public static function enZipStr(string $str): string
+    {
+        return static::enSafe64(gzcompress($str));
+    }
+
+    /**
+     * 解压文本内容
+     * @param string $str
+     * @return string
+     */
+    public static function deZipStr(string $str): string
+    {
+        return gzuncompress(static::deSafe64($str));
+    }
 }

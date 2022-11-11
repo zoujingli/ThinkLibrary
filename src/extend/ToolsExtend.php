@@ -247,7 +247,7 @@ CODE;
     public static function create2package(array $tables = [], string $class = 'InstallPackage'): array
     {
         // 处理菜单数据
-        [$items, $menus] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
+        [$menuData, $menus] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
         foreach (DataExtend::arr2tree($menus) as $sub1) {
             $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
             if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
@@ -259,14 +259,14 @@ CODE;
                 $one['subs'][] = $two;
             }
             if (empty($one['subs'])) unset($one['subs']);
-            $items[] = $one;
+            $menuData[] = $one;
         }
         // 扩展数据处理
         $extraData = [];
         if (count($tables) > 0) foreach ($tables as $table) {
-            $extraData[$table] = Library::$sapp->db->table($table)->select()->toJson();
+            $extraData[$table] = CodeExtend::enZipStr(Library::$sapp->db->table($table)->select()->toJson());
         }
-        $menuJson = json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $menuJson = json_encode($menuData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $extraJson = json_encode($extraData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         // 生成迁移脚本
         $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
