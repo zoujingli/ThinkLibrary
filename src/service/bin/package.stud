@@ -10,9 +10,9 @@ use think\migration\Migrator;
 
 /**
  * 数据安装包
- * @class __PACKAGE__
+ * @class __CLASS__
  */
-class __PACKAGE__ extends Migrator
+class __CLASS__ extends Migrator
 {
     /**
      * 数据库初始化

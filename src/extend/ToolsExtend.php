@@ -270,7 +270,7 @@ CODE;
         $dataJson = json_encode($extraData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         // 生成迁移脚本
         $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
-        $content = str_replace(['__PACKAGE__', '__MENU_ZIPS__', '__DATA_JSON__'], [$class, CodeExtend::enzip($menuData), $dataJson], $content);
+        $content = str_replace(['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'], [$class, CodeExtend::enzip($menuData), $dataJson], $content);
         $version = str_pad(strval(count(glob(with_path('database/migrations/*.php'))) + 1), 6, '0', STR_PAD_LEFT);
         return ['file' => date("Ymd{$version}_") . Str::snake($class) . '.php', 'text' => $content];
     }
