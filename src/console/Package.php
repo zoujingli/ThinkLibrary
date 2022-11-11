@@ -54,11 +54,15 @@ class Package extends Command
     private function createScheme(): bool
     {
         $this->setQueueMessage(2, 1, '开始创建数据表创建脚本！');
-        $result = ToolsExtend::create2phinx();
-        $filename = with_path("database/migrations/{$result['file']}");
-        file_put_contents($filename, $result['text']) !== false;
-        $this->setQueueMessage(2, 1, '成功创建数据表创建脚本！', 1);
-        return true;
+        $phinx = ToolsExtend::create2phinx();
+        $target = with_path("database/migrations/{$phinx['file']}");
+        if (file_put_contents($target, $phinx['text']) !== false) {
+            $this->setQueueMessage(2, 1, '成功创建数据表创建脚本！', 1);
+            return true;
+        } else {
+            $this->setQueueMessage(2, 1, '创建数据表创建脚本失败！', 1);
+            return false;
+        }
     }
 
     /**
@@ -70,11 +74,15 @@ class Package extends Command
      */
     private function createPackage(): bool
     {
-        $this->setQueueMessage(2, 2, '开始创建系统初始化脚本！');
-        $result = ToolsExtend::create2package(str2arr($this->input->getArgument('tables')));
-        $filename = with_path("database/migrations/{$result['file']}");
-        file_put_contents($filename, $result['text']) !== false;
-        $this->setQueueMessage(2, 2, '成功创建系统初始化脚本！', 1);
-        return true;
+        $this->setQueueMessage(2, 2, '开始创建数据包安装脚本！');
+        $phinx = ToolsExtend::create2package(str2arr($this->input->getArgument('tables')));
+        $target = with_path("database/migrations/{$phinx['file']}");
+        if (file_put_contents($target, $phinx['text']) !== false) {
+            $this->setQueueMessage(2, 2, '成功创建数据包安装脚本！', 1);
+            return true;
+        } else {
+            $this->setQueueMessage(2, 2, '创建数据包安装脚本失败！', 1);
+            return false;
+        }
     }
 }
