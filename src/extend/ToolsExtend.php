@@ -222,7 +222,7 @@ CODE;
      * @param array $tables
      * @param string $class
      * @return string[]
-     * @throws \think\admin\Exception
+     * @throws \Exception
      */
     public static function create2phinx(array $tables = [], string $class = 'InstallTable'): array
     {
@@ -230,8 +230,7 @@ CODE;
         $content = static::build2phinx($tables, true);
         $content = substr($content, strpos($content, "\n") + 1);
         $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
-        $version = str_pad(strval(count(glob(with_path('database/migrations/*.php'))) + 1), 6, '0', STR_PAD_LEFT);
-        return ['file' => date("Ymd{$version}_") . Str::snake($class) . '.php', 'text' => $content];
+        return ['file' => static::buildPhinxFileName($class), 'text' => $content];
     }
 
     /**
@@ -246,8 +245,8 @@ CODE;
     public static function create2package(array $tables = [], string $class = 'InstallPackage'): array
     {
         // 处理菜单数据
-        [$menuData, $menus] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
-        foreach (DataExtend::arr2tree($menus) as $sub1) {
+        [$menuData, $menuList] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
+        foreach (DataExtend::arr2tree($menuList) as $sub1) {
             $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
             if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
                 $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'node' => $sub2['node'], 'params' => $sub2['params'], 'subs' => []];
@@ -271,8 +270,21 @@ CODE;
         // 生成迁移脚本
         $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
         $content = str_replace(['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'], [$class, CodeExtend::enzip($menuData), $dataJson], $content);
-        $version = str_pad(strval(count(glob(with_path('database/migrations/*.php'))) + 1), 6, '0', STR_PAD_LEFT);
-        return ['file' => date("Ymd{$version}_") . Str::snake($class) . '.php', 'text' => $content];
+        return ['file' => static::buildPhinxFileName($class), 'text' => $content];
+    }
+
+    /**
+     * 生成脚本名称
+     * @param string $class
+     * @param string $version
+     * @return string
+     */
+    protected static function buildPhinxFileName(string $class, string $version = '000001'): string
+    {
+        if (count($list = glob(with_path('database/migrations/*.php'))) > 0) {
+            $version = str_pad(strval(intval(substr(end($list), 8, 6)) + 1), 6, '0', STR_PAD_LEFT);
+        }
+        return date("Ymd{$version}_") . Str::snake($class) . '.php';
     }
 
     /**

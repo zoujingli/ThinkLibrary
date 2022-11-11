@@ -80,7 +80,8 @@ class Package extends Command
     private function createPackage(): bool
     {
         $this->setQueueMessage(2, 2, '开始创建数据包安装脚本！');
-        $phinx = ToolsExtend::create2package(str2arr($this->input->getArgument('table')));
+        $tables = strtr($this->input->getArgument('table'), '|', ',');
+        $phinx = ToolsExtend::create2package(str2arr($tables));
         $target = with_path("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(2, 2, '成功创建数据包安装脚本！', 1);

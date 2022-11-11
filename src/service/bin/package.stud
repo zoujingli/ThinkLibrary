@@ -40,8 +40,8 @@ JSON;
         // 解析并写入扩展数据
         if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
             foreach ($tables as $table => $zipstr) if (M($table)->count() < 1) {
-                if (count($zipstr = is_string($zipstr) ? json_decode(CodeExtend::dezip($zipstr), true) : $zipstr) > 0) {
-                    M($table)->strict(false)->insertAll($zipstr);
+                if (count($items = json_decode(CodeExtend::dezip($zipstr), true)) > 0) {
+                    M($table)->strict(false)->insertAll($items);
                 }
             }
         }
@@ -58,8 +58,8 @@ JSON;
         if (SystemMenu::mk()->count()) return;
 
         // 解析并初始化菜单数据
-        $text = "__MENU_ZIPS__";
-        ToolsExtend::write2menu(CodeExtend::dezip($text));
+        $menu = "__MENU_ZIPS__";
+        ToolsExtend::write2menu(CodeExtend::dezip($menu));
     }
 
     /**
@@ -82,9 +82,9 @@ JSON;
             ['type' => 'base', 'name' => 'site_icon', 'value' => 'https://v6.thinkadmin.top/upload/4b/5a423974e447d5502023f553ed370f.png'],
             ['type' => 'base', 'name' => 'site_name', 'value' => 'ThinkAdmin'],
             ['type' => 'base', 'name' => 'site_theme', 'value' => 'default'],
-            ['type' => 'storage', 'name' => 'allow_exts', 'value' => 'doc,gif,ico,jpg,mp3,mp4,p12,pem,png,zip,rar,xls,xlsx'],
-            ['type' => 'storage', 'name' => 'type', 'value' => 'local'],
             ['type' => 'wechat', 'name' => 'type', 'value' => 'api'],
+            ['type' => 'storage', 'name' => 'type', 'value' => 'local'],
+            ['type' => 'storage', 'name' => 'allow_exts', 'value' => 'doc,gif,ico,jpg,mp3,mp4,p12,pem,png,zip,rar,xls,xlsx'],
         ]);
     }
 
