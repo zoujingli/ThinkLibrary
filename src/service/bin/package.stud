@@ -4,6 +4,7 @@ use think\admin\extend\CodeExtend;
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\admin\model\SystemConfig;
+use think\admin\model\SystemMenu;
 use think\admin\model\SystemUser;
 use think\migration\Migrator;
 
@@ -50,9 +51,13 @@ JSON;
     /**
      * 初始化系统菜单
      * @return void
+     * @throws \think\db\exception\DbException
      */
     private function insertMenu()
     {
+        // 检查数据
+        if (SystemMenu::mk()->count()) return;
+
         // 解析并初始化菜单数据
         $text = "__MENU_ZIPS__";
         ToolsExtend::write2menu(CodeExtend::dezip($text));
