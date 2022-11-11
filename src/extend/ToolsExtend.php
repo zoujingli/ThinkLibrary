@@ -275,14 +275,15 @@ CODE;
 
     /**
      * 生成脚本名称
-     * @param string $class
-     * @param string $version
+     * @param string $class 脚本类名
+     * @param string $version 六位版本号
      * @return string
      */
     protected static function buildPhinxFileName(string $class, string $version = '000001'): string
     {
-        if (count($list = glob(with_path('database/migrations/*.php'))) > 0) {
-            $version = str_pad(strval(intval(substr(end($list), 8, 6)) + 1), 6, '0', STR_PAD_LEFT);
+        if (count($files = glob(with_path('database/migrations/*.php'))) > 0) {
+            $verint = intval(substr(basename(end($files)), 8, 6));
+            $version = str_pad(strval($verint + 1), 6, '0', STR_PAD_LEFT);
         }
         return date("Ymd{$version}_") . Str::snake($class) . '.php';
     }
