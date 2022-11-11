@@ -19,6 +19,7 @@ namespace think\admin\extend;
 
 use think\admin\Library;
 use think\admin\model\SystemMenu;
+use think\admin\service\SystemService;
 use think\helper\Str;
 
 /**
@@ -138,7 +139,7 @@ class ToolsExtend
         }
         $ignore = ['migrations'];
         $database = $connect->getConfig('database');
-        if (empty($tables)) $tables = Library::$sapp->db->getTables();
+        if (empty($tables)) [$tables] = SystemService::getTables();
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
         foreach ($tables as $table) if (!in_array($table, $ignore)) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";

@@ -5,7 +5,9 @@ namespace think\admin\console;
 use think\admin\Command;
 use think\admin\Exception;
 use think\admin\extend\ToolsExtend;
+use think\admin\service\SystemService;
 use think\console\input\Argument;
+use think\console\input\Option;
 
 /**
  * 生成数据安装包
@@ -21,7 +23,8 @@ class Package extends Command
     public function configure()
     {
         $this->setName('xadmin:package');
-        $this->addArgument('table', Argument::OPTIONAL, 'Packaging Tables', '');
+        $this->addOption('all', 'a', Option::VALUE_NONE, 'Packaging All Tables');
+        $this->addArgument('table', Argument::OPTIONAL, 'Packaging Custom Tables', '');
         $this->setDescription('Generate System Install Package for ThinkAdmin');
     }
 
@@ -54,7 +57,7 @@ class Package extends Command
     /**
      * 创建数据表
      * @return boolean
-     * @throws \think\admin\Exception
+     * @throws \Exception
      */
     private function createScheme(): bool
     {
@@ -80,8 +83,13 @@ class Package extends Command
     private function createPackage(): bool
     {
         $this->setQueueMessage(2, 2, '开始创建数据包安装脚本！');
-        $tables = strtr($this->input->getArgument('table'), '|', ',');
-        $phinx = ToolsExtend::create2package(str2arr($tables));
+        // 接收指定打包数据表
+        $tables = str2arr(strtr($this->input->getArgument('table'), '|', ','));
+        if (empty($tables) && $this->input->getOption('all')) {
+            [$tables] = SystemService::getTables();
+        }
+        // 创建数据包安装脚本
+        $phinx = ToolsExtend::create2package($tables);
         $target = with_path("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(2, 2, '成功创建数据包安装脚本！', 1);
