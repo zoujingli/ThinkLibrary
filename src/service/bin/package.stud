@@ -1,6 +1,7 @@
 <?php
 
 use think\admin\extend\ToolsExtend;
+use think\admin\Library;
 use think\admin\model\SystemConfig;
 use think\admin\model\SystemUser;
 use think\migration\Migrator;
@@ -18,9 +19,10 @@ class __PACKAGE__ extends Migrator
      */
     public function change()
     {
+        $this->inserData();
+        $this->insertConf();
         $this->insertUser();
         $this->insertMenu();
-        $this->insertConf();
     }
 
     /**
@@ -31,10 +33,7 @@ class __PACKAGE__ extends Migrator
     private function insertUser()
     {
         // 检查是否存在
-        $map = ['username' => 'admin'];
-        if (SystemUser::mk()->where($map)->count() > 0) {
-            return;
-        }
+        if (SystemUser::mk()->count()) return;
 
         // 初始化默认数据
         SystemUser::mk()->save([
@@ -47,13 +46,38 @@ class __PACKAGE__ extends Migrator
     }
 
     /**
+     * 安装扩展数据
+     * @return void
+     * @throws \think\db\exception\DbException
+     */
+    private function inserData()
+    {
+        // 待解析处理数据
+        $json = <<<JSON
+__DATA_JSON__
+JSON;
+        // 解析并写入扩展数据
+        if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
+            foreach ($tables as $table => $items) if (Library::$sapp->db->table($table)->count() < 1) {
+                if (count($items = is_string($items) ? json_decode($items, true) : $items) > 0) {
+                    Library::$sapp->db->table($table)->strict(false)->insertAll($items);
+                }
+            }
+        }
+    }
+
+    /**
      * 初始化系统菜单
      * @return void
      */
     private function insertMenu()
     {
+        // 待解析处理数据
+        $json = <<<JSON
+__MENU_JSON__
+JSON;
         // 初始化菜单数据
-        ToolsExtend::write2menu(json_decode('__MENU_JSON__', true));
+        ToolsExtend::write2menu(json_decode($json, true));
     }
 
     /**

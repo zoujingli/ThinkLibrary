@@ -125,12 +125,12 @@ class ToolsExtend
 
     /**
      * 生成 Phinx 迁移脚本
-     * @param ?array $tables 指定数据表
+     * @param array $tables 指定数据表
      * @param boolean $source 是否原样返回
      * @return string
      * @throws \think\admin\Exception
      */
-    public static function build2phinx(?array $tables = null, bool $source = false): string
+    public static function build2phinx(array $tables = [], bool $source = false): string
     {
         $br = "\r\n";
         $connect = Library::$sapp->db->connect();
@@ -138,7 +138,8 @@ class ToolsExtend
             throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
         }
         $ignore = ['migrations'];
-        [$tables, $database] = [$tables ?: Library::$sapp->db->getTables(), $connect->getConfig('database')];
+        $database = $connect->getConfig('database');
+        if (empty($tables)) $tables = Library::$sapp->db->getTables();
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
         foreach ($tables as $table) if (!in_array($table, $ignore)) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
@@ -219,33 +220,34 @@ CODE;
 
     /**
      * 创建 Phinx 迁移脚本
-     * @param null|array $tables
+     * @param array $tables
      * @param string $class
      * @return string[]
      * @throws \think\admin\Exception
      */
-    public static function create2phinx(?array $tables = null, string $class = 'InstallTable'): array
+    public static function create2phinx(array $tables = [], string $class = 'InstallTable'): array
     {
         $br = "\r\n";
-        $text = static::build2phinx($tables, true);
-        $text = substr($text, strpos($text, "\n") + 1);
-        $text = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$text}{$br}}{$br}";
-        $vers = str_pad(strval(count(glob(with_path('database/migrations/*.php'))) + 1), 6, '0', STR_PAD_LEFT);
-        return ['file' => date("Ymd{$vers}_") . Str::snake($class) . '.php', 'text' => $text];
+        $content = static::build2phinx($tables, true);
+        $content = substr($content, strpos($content, "\n") + 1);
+        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
+        $version = str_pad(strval(count(glob(with_path('database/migrations/*.php'))) + 1), 6, '0', STR_PAD_LEFT);
+        return ['file' => date("Ymd{$version}_") . Str::snake($class) . '.php', 'text' => $content];
     }
 
     /**
      * 创建 Phinx 安装脚本
+     * @param array $tables
      * @param string $class
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function create2package(string $class = 'InstallPackage'): array
+    public static function create2package(array $tables = [], string $class = 'InstallPackage'): array
     {
-        $items = [];
-        $menus = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray();
+        // 处理菜单数据
+        [$items, $menus] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
         foreach (DataExtend::arr2tree($menus) as $sub1) {
             $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
             if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
@@ -259,12 +261,18 @@ CODE;
             if (empty($one['subs'])) unset($one['subs']);
             $items[] = $one;
         }
-        $text = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
-        $json = json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-        // 返回数据安装包脚本
-        $text = str_replace(['__MENU_JSON__', '__PACKAGE__'], [$json, $class], $text);
-        $vers = str_pad(strval(count(glob(with_path('database/migrations/*.php'))) + 1), 6, '0', STR_PAD_LEFT);
-        return ['file' => date("Ymd{$vers}_") . Str::snake($class) . '.php', 'text' => $text];
+        // 扩展数据处理
+        $extraData = [];
+        if (count($tables) > 0) foreach ($tables as $table) {
+            $extraData[$table] = Library::$sapp->db->table($table)->select()->toJson();
+        }
+        $menuJson = json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $extraJson = json_encode($extraData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        // 生成迁移脚本
+        $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
+        $content = str_replace(['__PACKAGE__', '__MENU_JSON__', '__DATA_JSON__'], [$class, $menuJson, $extraJson], $content);
+        $version = str_pad(strval(count(glob(with_path('database/migrations/*.php'))) + 1), 6, '0', STR_PAD_LEFT);
+        return ['file' => date("Ymd{$version}_") . Str::snake($class) . '.php', 'text' => $content];
     }
 
     /**
