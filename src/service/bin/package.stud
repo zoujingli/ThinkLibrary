@@ -53,12 +53,9 @@ JSON;
      */
     private function insertMenu()
     {
-        // 待解析处理数据
-        $json = <<<JSON
-__MENU_ZIPS__
-JSON;
-        // 初始化菜单数据
-        ToolsExtend::write2menu(CodeExtend::dezip($json));
+        // 解析并初始化菜单数据
+        $text = "__MENU_ZIPS__";
+        ToolsExtend::write2menu(CodeExtend::dezip($text));
     }
 
     /**

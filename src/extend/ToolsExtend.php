@@ -17,7 +17,6 @@ declare (strict_types=1);
 
 namespace think\admin\extend;
 
-use think\admin\Exception;
 use think\admin\Library;
 use think\admin\model\SystemMenu;
 use think\helper\Str;
@@ -128,14 +127,14 @@ class ToolsExtend
      * @param array $tables 指定数据表
      * @param boolean $source 是否原样返回
      * @return string
-     * @throws \think\admin\Exception
+     * @throws \Exception
      */
     public static function build2phinx(array $tables = [], bool $source = false): string
     {
         $br = "\r\n";
         $connect = Library::$sapp->db->connect();
         if ($connect->getConfig('type') !== 'mysql') {
-            throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
+            throw new \Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
         }
         $ignore = ['migrations'];
         $database = $connect->getConfig('database');

@@ -61,7 +61,7 @@ abstract class Command extends \think\console\Command
     /**
      * 设置失败消息并结束进程
      * @param string $message 消息内容
-     * @throws Exception
+     * @throws \think\admin\Exception
      */
     protected function setQueueError(string $message)
     {
@@ -75,7 +75,7 @@ abstract class Command extends \think\console\Command
     /**
      * 设置成功消息并结束进程
      * @param string $message 消息内容
-     * @throws Exception
+     * @throws \think\admin\Exception
      */
     protected function setQueueSuccess(string $message)
     {

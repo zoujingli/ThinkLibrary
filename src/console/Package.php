@@ -3,6 +3,7 @@
 namespace think\admin\console;
 
 use think\admin\Command;
+use think\admin\Exception;
 use think\admin\extend\ToolsExtend;
 use think\console\input\Argument;
 
@@ -28,21 +29,25 @@ class Package extends Command
      * 生成系统安装数据包
      * @return void
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function handle()
     {
-        // 创建数据库迁移脚本目录
-        $dirname = with_path('database/migrations');
-        file_exists($dirname) or mkdir($dirname, 0755, true);
-        // 开始创建数据库迁移脚本
-        $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
-        if ($this->createScheme() && $this->createPackage()) {
-            $this->setQueueSuccess('--- 数据库迁移脚本创建成功 ---');
-        } else {
-            $this->setQueueError('--- 数据库迁移脚本创建失败 ---');
+        try {
+            // 创建数据库迁移脚本目录
+            $dirname = with_path('database/migrations');
+            file_exists($dirname) or mkdir($dirname, 0755, true);
+            // 开始创建数据库迁移脚本
+            $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
+            if ($this->createScheme() && $this->createPackage()) {
+                $this->setQueueSuccess('--- 数据库迁移脚本创建成功 ---');
+            } else {
+                $this->setQueueError('--- 数据库迁移脚本创建失败 ---');
+            }
+        } catch (Exception $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            trace_file($exception);
+            $this->setQueueError($exception->getMessage());
         }
     }
 
