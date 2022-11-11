@@ -2,7 +2,6 @@
 
 use think\admin\extend\CodeExtend;
 use think\admin\extend\ToolsExtend;
-use think\admin\Library;
 use think\admin\model\SystemConfig;
 use think\admin\model\SystemMenu;
 use think\admin\model\SystemUser;
@@ -40,9 +39,9 @@ __DATA_JSON__
 JSON;
         // 解析并写入扩展数据
         if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
-            foreach ($tables as $table => $zipstr) if (Library::$sapp->db->table($table)->count() < 1) {
+            foreach ($tables as $table => $zipstr) if (M($table)->count() < 1) {
                 if (count($zipstr = is_string($zipstr) ? json_decode(CodeExtend::dezip($zipstr), true) : $zipstr) > 0) {
-                    Library::$sapp->db->table($table)->strict(false)->insertAll($zipstr);
+                    M($table)->strict(false)->insertAll($zipstr);
                 }
             }
         }
