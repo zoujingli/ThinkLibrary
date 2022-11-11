@@ -4,7 +4,7 @@ namespace think\admin\console;
 
 use think\admin\Command;
 use think\admin\Exception;
-use think\admin\extend\ToolsExtend;
+use think\admin\extend\PhinxExtend;
 use think\admin\service\SystemService;
 use think\console\input\Argument;
 use think\console\input\Option;
@@ -62,7 +62,7 @@ class Package extends Command
     private function createScheme(): bool
     {
         $this->setQueueMessage(2, 1, '开始创建数据表创建脚本！');
-        $phinx = ToolsExtend::create2phinx();
+        $phinx = PhinxExtend::create2phinx();
         $target = with_path("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(2, 1, '成功创建数据表创建脚本！', 1);
@@ -89,7 +89,7 @@ class Package extends Command
             [$tables] = SystemService::getTables();
         }
         // 创建数据包安装脚本
-        $phinx = ToolsExtend::create2package($tables);
+        $phinx = PhinxExtend::create2package($tables);
         $target = with_path("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(2, 2, '成功创建数据包安装脚本！', 1);

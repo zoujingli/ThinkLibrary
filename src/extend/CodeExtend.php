@@ -72,6 +72,18 @@ class CodeExtend
     }
 
     /**
+     * 文本转为UTF8编码
+     * @param string $content
+     * @return string
+     */
+    public static function text2utf8(string $content): string
+    {
+        return mb_convert_encoding($content, 'UTF-8', mb_detect_encoding($content, [
+            'ASCII', 'UTF-8', 'GB2312', 'GBK', 'BIG5',
+        ]));
+    }
+
+    /**
      * 数据解密处理
      * @param mixed $data 加密数据
      * @param string $skey 安全密钥

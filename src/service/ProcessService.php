@@ -17,7 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
-use think\admin\extend\ToolsExtend;
+use think\admin\extend\CodeExtend;
 use think\admin\Service;
 
 /**
@@ -138,7 +138,7 @@ class ProcessService extends Service
     public static function exec(string $command, $outarr = false)
     {
         exec($command, $output);
-        return $outarr ? $output : ToolsExtend::text2utf8(join("\n", $output));
+        return $outarr ? $output : CodeExtend::text2utf8(join("\n", $output));
     }
 
     /**

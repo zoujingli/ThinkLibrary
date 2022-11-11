@@ -23,24 +23,17 @@ use think\admin\service\SystemService;
 use think\helper\Str;
 
 /**
- * 系统扩展工具包
- * Class DataExtend
+ * 数据库迁移扩展
+ * Class PhinxExtend
  * @package think\admin\extend
  */
-class ToolsExtend
+class PhinxExtend
 {
-
     /**
-     * 文本转为UTF8编码
-     * @param string $content
-     * @return string
+     * 忽略数据表
+     * @var string[]
      */
-    public static function text2utf8(string $content): string
-    {
-        return mb_convert_encoding($content, 'UTF-8', mb_detect_encoding($content, [
-            'ASCII', 'UTF-8', 'GB2312', 'GBK', 'BIG5',
-        ]));
-    }
+    private static $ignores = ['migrations'];
 
     /**
      * 拷贝文件到指定目录
@@ -137,11 +130,10 @@ class ToolsExtend
         if ($connect->getConfig('type') !== 'mysql') {
             throw new \Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
         }
-        $ignore = ['migrations'];
         $database = $connect->getConfig('database');
         if (empty($tables)) [$tables] = SystemService::getTables();
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
-        foreach ($tables as $table) if (!in_array($table, $ignore)) $content .= "{$br}\t\t\$this->_create_{$table}();";
+        foreach ($tables as $table) if (!in_array($table, static::$ignores)) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
         // 字段类型转换
@@ -152,7 +144,7 @@ class ToolsExtend
             'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'integer', // 整型
         ];
         foreach ($tables as $table) {
-            if (in_array($table, $ignore)) continue;
+            if (in_array($table, static::$ignores)) continue;
 
             // 读取数据表 - 备注参数
             $comment = Library::$sapp->db->table('information_schema.TABLES')->where([
@@ -263,15 +255,16 @@ CODE;
         // 扩展数据处理
         $extraData = [];
         if (count($tables) > 0) foreach ($tables as $table) {
+            if (in_array($table, static::$ignores) || $table === 'system_oplog') continue;
             if (($db = Library::$sapp->db->table($table))->count() > 0) {
                 $extraData[$table] = CodeExtend::enzip($db->select()->toJson());
             }
         }
-        $dataJson = json_encode($extraData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         // 生成迁移脚本
+        $serach = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
         $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
-        $content = str_replace(['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'], [$class, CodeExtend::enzip($menuData), $dataJson], $content);
-        return ['file' => static::buildPhinxFileName($class), 'text' => $content];
+        $replace = [$class, CodeExtend::enzip($menuData), json_encode($extraData, JSON_PRETTY_PRINT)];
+        return ['file' => static::buildPhinxFileName($class), 'text' => str_replace($serach, $replace, $content)];
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
 
 use think\admin\extend\CodeExtend;
-use think\admin\extend\ToolsExtend;
+use think\admin\extend\PhinxExtend;
 use think\admin\model\SystemConfig;
 use think\admin\model\SystemMenu;
 use think\admin\model\SystemUser;
@@ -59,7 +59,7 @@ JSON;
 
         // 解析并初始化菜单数据
         $menu = "__MENU_ZIPS__";
-        ToolsExtend::write2menu(CodeExtend::dezip($menu));
+        PhinxExtend::write2menu(CodeExtend::dezip($menu));
     }
 
     /**

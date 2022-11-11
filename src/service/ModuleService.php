@@ -18,7 +18,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
-use think\admin\extend\ToolsExtend;
+use think\admin\extend\PhinxExtend;
 use think\admin\Library;
 use think\admin\Service;
 
@@ -217,7 +217,7 @@ class ModuleService extends Service
         } elseif ($file['type'] == 'del') {
             $real = with_path($file['name']);
             if (is_file($real) && unlink($real)) {
-                ToolsExtend::removeEmptyDirectory(dirname($real));
+                PhinxExtend::removeEmptyDirectory(dirname($real));
                 return [true, $file['type'], $file['name']];
             } else {
                 return [false, $file['type'], $file['name']];

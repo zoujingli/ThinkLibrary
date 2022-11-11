@@ -18,7 +18,7 @@ declare (strict_types=1);
 namespace think\admin\console;
 
 use think\admin\Command;
-use think\admin\extend\ToolsExtend;
+use think\admin\extend\PhinxExtend;
 use think\admin\service\ModuleService;
 use think\console\Input;
 use think\console\input\Argument;
@@ -141,13 +141,13 @@ class Install extends Command
             $todir = with_path('public/static/extra/');
             $frdir = dirname(__DIR__) . "/service/bin/{$name}/";
             $this->queue->message($total, $count, "--- 处理静态自定义目录");
-            ToolsExtend::copyfile($frdir, $todir, ['script.js', 'style.css'], false, false);
+            PhinxExtend::copyfile($frdir, $todir, ['script.js', 'style.css'], false, false);
         }
 
         // 执行模块数据库操作
         $frdir = with_path("{$name}/database", $this->app->getBasePath());
         $todir = with_path('database/migrations', $this->app->getRootPath());
         $this->queue->message($total, $count, "--- 处理数据库可执行脚本");
-        ToolsExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
+        PhinxExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
     }
 }
