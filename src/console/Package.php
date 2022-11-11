@@ -4,6 +4,7 @@ namespace think\admin\console;
 
 use think\admin\Command;
 use think\admin\extend\ToolsExtend;
+use think\console\input\Argument;
 
 /**
  * 生成数据安装包
@@ -19,6 +20,7 @@ class Package extends Command
     public function configure()
     {
         $this->setName('xadmin:package');
+        $this->addArgument('table', Argument::OPTIONAL, 'Packaging Tables', '');
         $this->setDescription('Generate System Install Package for ThinkAdmin');
     }
 
@@ -69,7 +71,7 @@ class Package extends Command
     private function createPackage(): bool
     {
         $this->setQueueMessage(2, 2, '开始创建系统初始化脚本！');
-        $result = ToolsExtend::create2package();
+        $result = ToolsExtend::create2package(str2arr($this->input->getArgument('tables')));
         $filename = with_path("database/migrations/{$result['file']}");
         file_put_contents($filename, $result['text']) !== false;
         $this->setQueueMessage(2, 2, '成功创建系统初始化脚本！', 1);
