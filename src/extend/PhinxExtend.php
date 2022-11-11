@@ -176,7 +176,7 @@ CODE;
             foreach (Library::$sapp->db->getFields($table) as $field) {
                 if ($field['name'] === 'id') continue;
                 $type = $types[$field['type']] ?? $field['type'];
-                $data = ['default' => $field['default'], 'null' => true, 'comment' => $field['comment'] ?? ''];
+                $data = ['default' => $field['default'], 'null' => empty($field['notnull']), 'comment' => $field['comment'] ?? ''];
                 if ($field['type'] === 'enum') {
                     $type = $types[$field['type']] ?? 'string';
                     $data = array_merge(['limit' => 10], $data);
