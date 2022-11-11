@@ -117,22 +117,22 @@ class CodeExtend
     }
 
     /**
-     * 压缩文本内容
-     * @param string $str
+     * 压缩数据对象
+     * @param mixed $data
      * @return string
      */
-    public static function enZipStr(string $str): string
+    public static function enzip($data): string
     {
-        return static::enSafe64(gzcompress($str));
+        return static::enSafe64(gzcompress(serialize($data)));
     }
 
     /**
-     * 解压文本内容
-     * @param string $str
-     * @return string
+     * 解压数据对象
+     * @param string $string
+     * @return mixed
      */
-    public static function deZipStr(string $str): string
+    public static function dezip(string $string)
     {
-        return gzuncompress(static::deSafe64($str));
+        return unserialize(gzuncompress(static::deSafe64($string)));
     }
 }

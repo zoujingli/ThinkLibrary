@@ -40,7 +40,7 @@ JSON;
         // 解析并写入扩展数据
         if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
             foreach ($tables as $table => $items) if (Library::$sapp->db->table($table)->count() < 1) {
-                if (count($items = is_string($items) ? json_decode(CodeExtend::deZipStr($items), true) : $items) > 0) {
+                if (count($items = is_string($items) ? json_decode(CodeExtend::dezip($items), true) : $items) > 0) {
                     Library::$sapp->db->table($table)->strict(false)->insertAll($items);
                 }
             }
@@ -55,10 +55,10 @@ JSON;
     {
         // 待解析处理数据
         $json = <<<JSON
-__MENU_JSON__
+__MENU_ZIPS__
 JSON;
         // 初始化菜单数据
-        ToolsExtend::write2menu(json_decode($json, true));
+        ToolsExtend::write2menu(CodeExtend::dezip($json));
     }
 
     /**
