@@ -264,7 +264,9 @@ CODE;
         // 扩展数据处理
         $extraData = [];
         if (count($tables) > 0) foreach ($tables as $table) {
-            $extraData[$table] = CodeExtend::enzip(Library::$sapp->db->table($table)->select()->toJson());
+            if (($db = Library::$sapp->db->table($table))->count() > 0) {
+                $extraData[$table] = CodeExtend::enzip($db->select()->toJson());
+            }
         }
         $dataJson = json_encode($extraData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         // 生成迁移脚本
