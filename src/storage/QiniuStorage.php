@@ -195,10 +195,10 @@ class QiniuStorage extends Storage
 
     /**
      * 获取文件上传令牌
-     * @param null|string $name 文件名称
+     * @param ?string $name 文件名称
      * @param integer $expires 有效时间
-     * @param null|string $attname 下载名称
-     * @param string $prefix
+     * @param ?string $attname 下载名称
+     * @param string $prefix 链接前端
      * @return string
      */
     public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null, string $prefix = ''): string
