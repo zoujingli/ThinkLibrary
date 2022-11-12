@@ -198,15 +198,15 @@ class QiniuStorage extends Storage
      * @param null|string $name 文件名称
      * @param integer $expires 有效时间
      * @param null|string $attname 下载名称
+     * @param string $prefix
      * @return string
      */
-    public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null): string
+    public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null, string $prefix = ''): string
     {
-        $key = is_null($name) ? '$(etag)' : $name;
+        $key = $prefix . (is_null($name) ? '$(etag)' : $name);
         $url = "{$this->domain}/$(key){$this->getSuffix($attname,$name)}";
-        $scope = is_null($name) ? $this->bucket : "{$this->bucket}:{$name}";
         $policy = $this->safeBase64(json_encode([
-            "deadline"   => time() + $expires, "scope" => $scope,
+            "deadline"   => time() + $expires, "scope" => is_null($name) ? $this->bucket : "{$this->bucket}:{$name}",
             'returnBody' => json_encode(['uploaded' => true, 'filename' => '$(key)', 'url' => $url, 'key' => $key, 'file' => $key], JSON_UNESCAPED_UNICODE),
         ]));
         return "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
