@@ -58,7 +58,7 @@ abstract class Storage
      * 链接前缀
      * @var string
      */
-    protected $prefix;
+    protected $domain;
 
     /**
      * Storage constructor.

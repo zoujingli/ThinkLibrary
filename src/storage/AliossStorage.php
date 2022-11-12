@@ -70,9 +70,9 @@ class AliossStorage extends Storage
         $host = strtolower(sysconf('storage.alioss_http_domain'));
         $type = strtolower(sysconf('storage.alioss_http_protocol'));
         if ($type === 'auto') {
-            $this->prefix = "//{$host}";
+            $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {
-            $this->prefix = "{$type}://{$host}";
+            $this->domain = "{$type}://{$host}";
         } else {
             throw new Exception(lang('未配置阿里云URL域名哦'));
         }
@@ -155,7 +155,7 @@ class AliossStorage extends Storage
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        return "{$this->prefix}/{$this->delSuffix($name)}{$this->getSuffix($attname,$name)}";
+        return "{$this->domain}/{$this->delSuffix($name)}{$this->getSuffix($attname,$name)}";
     }
 
     /**

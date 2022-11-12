@@ -38,13 +38,13 @@ class LocalStorage extends Storage
     {
         $type = sysconf('storage.local_http_protocol') ?: 'follow';
         if ($type === 'follow') $type = $this->app->request->scheme();
-        $this->prefix = trim(dirname($this->app->request->baseFile()), '\\/');
+        $this->domain = trim(dirname($this->app->request->baseFile()), '\\/');
         if ($type !== 'path') {
             $domain = sysconf('storage.local_http_domain') ?: $this->app->request->host();
             if ($type === 'auto') {
-                $this->prefix = "//{$domain}";
+                $this->domain = "//{$domain}";
             } elseif (in_array($type, ['http', 'https'])) {
-                $this->prefix = "{$type}://{$domain}";
+                $this->domain = "{$type}://{$domain}";
             }
         }
     }
@@ -117,7 +117,7 @@ class LocalStorage extends Storage
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        return $safe ? $name : "{$this->prefix}/upload/{$this->delSuffix($name)}{$this->getSuffix($attname,$name)}";
+        return $safe ? $name : "{$this->domain}/upload/{$this->delSuffix($name)}{$this->getSuffix($attname,$name)}";
     }
 
     /**

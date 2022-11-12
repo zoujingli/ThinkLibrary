@@ -50,9 +50,9 @@ class QiniuStorage extends Storage
         $host = strtolower(sysconf('storage.qiniu_http_domain'));
         $type = strtolower(sysconf('storage.qiniu_http_protocol'));
         if ($type === 'auto') {
-            $this->prefix = "//{$host}";
+            $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {
-            $this->prefix = "{$type}://{$host}";
+            $this->domain = "{$type}://{$host}";
         } else {
             throw new Exception(lang('未配置七牛云URL域名哦'));
         }
@@ -128,7 +128,7 @@ class QiniuStorage extends Storage
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        return "{$this->prefix}/{$this->delSuffix($name)}{$this->getSuffix($attname,$name)}";
+        return "{$this->domain}/{$this->delSuffix($name)}{$this->getSuffix($attname,$name)}";
     }
 
     /**
@@ -202,9 +202,12 @@ class QiniuStorage extends Storage
      */
     public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null): string
     {
+        $key = is_null($name) ? '$(etag)' : $name;
+        $url = "{$this->domain}/$(key){$this->getSuffix($attname,$name)}";
+        $scope = is_null($name) ? $this->bucket : "{$this->bucket}:{$name}";
         $policy = $this->safeBase64(json_encode([
-            "deadline"   => time() + $expires, "scope" => is_null($name) ? $this->bucket : "{$this->bucket}:{$name}",
-            'returnBody' => json_encode(['uploaded' => true, 'filename' => '$(key)', 'url' => "{$this->prefix}/$(key){$this->getSuffix($attname,$name)}", 'key' => $name, 'file' => $name], JSON_UNESCAPED_UNICODE),
+            "deadline"   => time() + $expires, "scope" => $scope,
+            'returnBody' => json_encode(['uploaded' => true, 'filename' => '$(key)', 'url' => $url, 'key' => $key, 'file' => $key], JSON_UNESCAPED_UNICODE),
         ]));
         return "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $policy, $this->secretKey, true))}:{$policy}";
     }
