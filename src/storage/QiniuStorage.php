@@ -198,12 +198,11 @@ class QiniuStorage extends Storage
      * @param ?string $name 文件名称
      * @param integer $expires 有效时间
      * @param ?string $attname 下载名称
-     * @param string $prefix 链接前端
      * @return string
      */
-    public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null, string $prefix = ''): string
+    public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null): string
     {
-        $key = $prefix . (is_null($name) ? '$(etag)' : $name);
+        $key = is_null($name) ? '$(key)' : $name;
         $url = "{$this->domain}/$(key){$this->getSuffix($attname,$name)}";
         $policy = $this->safeBase64(json_encode([
             "deadline"   => time() + $expires, "scope" => is_null($name) ? $this->bucket : "{$this->bucket}:{$name}",
