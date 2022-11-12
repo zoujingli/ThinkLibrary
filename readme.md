@@ -1,15 +1,12 @@
 [![Latest Stable Version](https://poser.pugx.org/zoujingli/think-library/v/stable)](https://packagist.org/packages/zoujingli/think-library) [![Total Downloads](https://poser.pugx.org/zoujingli/think-library/downloads)](https://packagist.org/packages/zoujingli/think-library) [![Latest Unstable Version](https://poser.pugx.org/zoujingli/think-library/v/unstable)](https://packagist.org/packages/zoujingli/think-library) [![License](https://poser.pugx.org/zoujingli/think-library/license)](https://packagist.org/packages/zoujingli/think-library)
 
-> 近期 Github 网络访问不稳定，项目主库已迁移到 Gitee 仓库
-> 
-> 注意：Github 仓库不会经常更新，获取最新源码请访问 Gitee 仓库
-> 
-> Gitee 仓库地址：https://gitee.com/zoujingli/ThinkLibrary
+> 常用 Gitee 仓库地址：
+> https://gitee.com/zoujingli/ThinkLibrary
 
-ThinkLibrary 6.0 for ThinkPHP 6.0
+ThinkLibrary 6 for ThinkPHP 6
 ---
 
-ThinkLibrary 6.0 是针对 ThinkPHP 6.0 版本封装的一套工具类库，方便快速构建 Web 应用。
+ThinkLibrary 6 是针对 ThinkPHP 6 版本封装的一套工具类库，方便快速构建 Web 应用。
 
 ## 包含组件
 
@@ -17,7 +14,7 @@ ThinkLibrary 6.0 是针对 ThinkPHP 6.0 版本封装的一套工具类库，方�
 * FORM表单处理器（表单展示及数据入库）
 * 数据状态快速处理（数据指定字段更新，支持多字段同时）
 * 数据安全删除处理（硬删除 + 软删除，is_deleted 或 deleted 字段存在则自动软删除）
-* 文件存储通用组件（本地服务存储 + 又拍云存储 + 七牛云存储 + 阿里云OSS存储 + 腾讯云COS存储）
+* 文件存储通用组件（本地服务存储 + 又拍云存储 + 七牛云存储 + 又拍云USS存储 + 阿里云OSS存储 + 腾讯云COS存储）
 * 通用数据保存更新（通过 key 值及 where 判定是否存在，存在则更新，不存在则新增）
 * 通用网络请求 （支持 get 及 post，可配置请求证书等）
 * 系统参数通用 g-k-v 配置（快速参数长久化配置）
@@ -215,30 +212,35 @@ $result = \think\admin\Storage::info($filename);
 $result = \think\admin\Storage::instance('local')->save($filename, $content);
 $result = \think\admin\Storage::instance('qiniu')->save($filename, $content);
 $result = \think\admin\Storage::instance('txcos')->save($filename, $content);
+$result = \think\admin\Storage::instance('upyun')->save($filename, $content);
 $result = \think\admin\Storage::instance('alioss')->save($filename, $content);
 
 // 读取文件内容
 $result = \think\admin\Storage::instance('local')->get($filename);
 $result = \think\admin\Storage::instance('qiniu')->get($filename);
 $result = \think\admin\Storage::instance('txcos')->get($filename);
+$result = \think\admin\Storage::instance('upyun')->get($filename);
 $result = \think\admin\Storage::instance('alioss')->get($filename);
 
 // 生成 URL 访问地址
 $result = \think\admin\Storage::instance('local')->url($filename);
 $result = \think\admin\Storage::instance('qiniu')->url($filename);
 $result = \think\admin\Storage::instance('txcos')->url($filename);
+$result = \think\admin\Storage::instance('upyun')->url($filename);
 $result = \think\admin\Storage::instance('alioss')->url($filename);
 
 // 检查文件是否存在
 boolean \think\admin\Storage::instance('local')->has($filename);
 boolean \think\admin\Storage::instance('qiniu')->has($filename);
 boolean \think\admin\Storage::instance('txcos')->has($filename);
+boolean \think\admin\Storage::instance('upyun')->has($filename);
 boolean \think\admin\Storage::instance('alioss')->has($filename);
 
 // 生成文件信息
 $resutl = \think\admin\Storage::instance('local')->info($filename);
 $resutl = \think\admin\Storage::instance('qiniu')->info($filename);
 $resutl = \think\admin\Storage::instance('txcos')->info($filename);
+$resutl = \think\admin\Storage::instance('upyun')->info($filename);
 $resutl = \think\admin\Storage::instance('alioss')->info($filename);
 ```
 
@@ -281,4 +283,4 @@ $content = decode($string);
 
 ## 赞助打赏
 
-![赞助](http://static.thinkadmin.top/pay.png)
+![赞助](https://static.thinkadmin.top/pay.png)
