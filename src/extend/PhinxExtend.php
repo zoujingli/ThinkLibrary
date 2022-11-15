@@ -240,11 +240,11 @@ CODE;
         // 处理菜单数据
         [$menuData, $menuList] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
         foreach (DataExtend::arr2tree($menuList) as $sub1) {
-            $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
+            $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'url' => $sub1['url'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
             if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
-                $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'node' => $sub2['node'], 'params' => $sub2['params'], 'subs' => []];
+                $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'url' => $sub2['url'], 'node' => $sub2['node'], 'params' => $sub2['params'], 'subs' => []];
                 if (!empty($sub2['sub'])) foreach ($sub2['sub'] as $sub3) {
-                    $two['subs'][] = ['name' => $sub3['title'], 'node' => $sub3['node'], 'icon' => $sub3['icon'], 'params' => $sub3['params'],];
+                    $two['subs'][] = ['name' => $sub3['title'], 'url' => $sub3['url'], 'node' => $sub3['node'], 'icon' => $sub3['icon'], 'params' => $sub3['params'],];
                 }
                 if (empty($two['subs'])) unset($two['subs']);
                 $one['subs'][] = $two;
