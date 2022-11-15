@@ -106,10 +106,10 @@ class PhinxExtend
     {
         return SystemMenu::mk()->insertGetId([
             'pid'    => $ppid,
-            'url'    => $menu['url'] ?? ($menu['node'] ?? '#'),
+            'url'    => empty($menu['url']) ? (empty($menu['node']) ? '#' : $menu['node']) : $menu['url'],
             'sort'   => $menu['sort'] ?? 0,
             'icon'   => $menu['icon'] ?? '',
-            'node'   => $menu['node'] ?? ($menu['url'] ?? ''),
+            'node'   => empty($menu['node']) ? (empty($menu['url']) ? '#' : $menu['url']) : $menu['node'],
             'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
             'params' => $menu['params'] ?? '',
             'target' => $menu['target'] ?? '_self',
