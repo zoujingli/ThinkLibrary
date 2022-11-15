@@ -109,7 +109,7 @@ class PhinxExtend
             'url'    => empty($menu['url']) ? (empty($menu['node']) ? '#' : $menu['node']) : $menu['url'],
             'sort'   => $menu['sort'] ?? 0,
             'icon'   => $menu['icon'] ?? '',
-            'node'   => empty($menu['node']) ? (empty($menu['url']) ? '#' : $menu['url']) : $menu['node'],
+            'node'   => empty($menu['node']) ? (empty($menu['url']) ? '' : $menu['url']) : $menu['node'],
             'title'  => $menu['name'] ?? ($menu['title'] ?? ''),
             'params' => $menu['params'] ?? '',
             'target' => $menu['target'] ?? '_self',
