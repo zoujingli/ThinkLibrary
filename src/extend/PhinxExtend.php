@@ -244,7 +244,7 @@ CODE;
             if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
                 $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'url' => $sub2['url'], 'node' => $sub2['node'], 'params' => $sub2['params'], 'subs' => []];
                 if (!empty($sub2['sub'])) foreach ($sub2['sub'] as $sub3) {
-                    $two['subs'][] = ['name' => $sub3['title'], 'url' => $sub3['url'], 'node' => $sub3['node'], 'icon' => $sub3['icon'], 'params' => $sub3['params'],];
+                    $two['subs'][] = ['name' => $sub3['title'], 'url' => $sub3['url'], 'node' => $sub3['node'], 'icon' => $sub3['icon'], 'params' => $sub3['params']];
                 }
                 if (empty($two['subs'])) unset($two['subs']);
                 $one['subs'][] = $two;
