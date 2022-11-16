@@ -242,9 +242,8 @@ CODE;
     private static function _config(array $tables = [], array $backup = []): array
     {
         if (empty($tables)) [$tables] = SystemService::getTables();
-        ($config = Library::$sapp->config)->load(with_path('database/config.php'), 'phinx');
-        $tables = array_diff(array_unique($tables), $config->get('phinx.ignore', []), ['migrations']);
-        $backup = array_unique(array_intersect($tables, array_merge($backup, $config->get('phinx.backup', []))));
+        $tables = array_diff(array_unique($tables), Library::$sapp->config->get('phinx.ignore', []), ['migrations']);
+        $backup = array_unique(array_intersect($tables, array_merge($backup, Library::$sapp->config->get('phinx.backup', []))));
         return ['tables' => $tables, 'backup' => $backup];
     }
 
