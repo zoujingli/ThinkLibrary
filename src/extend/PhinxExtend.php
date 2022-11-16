@@ -78,7 +78,7 @@ class PhinxExtend
     }
 
     /**
-     * 写入系统菜单数据
+     * 批量写入菜单
      * @param array $zdata 菜单数据
      * @param mixed $check 检测条件
      * @return boolean
@@ -106,7 +106,7 @@ class PhinxExtend
     }
 
     /**
-     * 写入系统菜单
+     * 单个写入菜单
      * @param array $menu 菜单数据
      * @param mixed $ppid 上级菜单
      * @return integer|string
@@ -182,6 +182,16 @@ class PhinxExtend
     }
 
     /**
+     * 数组转代码
+     * @param array $data
+     * @return string
+     */
+    private static function _arr2str(array $data): string
+    {
+        return preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ' ]', '[ ',], var_export($data, true));
+    }
+
+    /**
      * 生成 Phinx 迁移脚本
      * @param array $tables 指定数据表
      * @param boolean $source 是否原样返回
@@ -254,14 +264,14 @@ CODE;
                     $type = $types[$attr[1]] ?? 'decimal';
                     $data = array_merge(['precision' => intval($attr[2]), 'scale' => intval($attr[3])], $data);
                 }
-                $params = static::array2string($data);
+                $params = static::_arr2str($data);
                 $content .= "{$br}\t\t->addColumn('{$field["name"]}','{$type}',{$params})";
             }
             // 读取数据表 - 自动生成索引
             $indexs = Library::$sapp->db->query("show index from {$table}");
             foreach ($indexs as $index) {
                 if ($index['Key_name'] === 'PRIMARY') continue;
-                $params = static::array2string([
+                $params = static::_arr2str([
                     'name' => "idx_{$index['Table']}_{$index["Column_name"]}",
                 ]);
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
@@ -288,16 +298,6 @@ CODE;
         $tables = array_unique(array_diff($tables, Library::$sapp->config->get('phinx.ignore', []), ['migrations']));
         $backup = array_unique(array_intersect($tables, array_merge($backup, Library::$sapp->config->get('phinx.backup', []))));
         return ['tables' => $tables, 'backup' => $backup];
-    }
-
-    /**
-     * 数组转代码
-     * @param array $data
-     * @return string
-     */
-    public static function array2string(array $data): string
-    {
-        return preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ' ]', '[ ',], var_export($data, true));
     }
 
     /**
