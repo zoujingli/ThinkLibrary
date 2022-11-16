@@ -285,7 +285,7 @@ CODE;
             $tables = Library::$sapp->config->get('phinx.tables', []);
             if (empty($tables)) [$tables] = SystemService::getTables();
         }
-        $tables = array_diff(array_unique($tables), Library::$sapp->config->get('phinx.ignore', []), ['migrations']);
+        $tables = array_unique(array_diff($tables, Library::$sapp->config->get('phinx.ignore', []), ['migrations']));
         $backup = array_unique(array_intersect($tables, array_merge($backup, Library::$sapp->config->get('phinx.backup', []))));
         return ['tables' => $tables, 'backup' => $backup];
     }
