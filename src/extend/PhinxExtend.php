@@ -142,6 +142,46 @@ class PhinxExtend
     }
 
     /**
+     * 创建 Phinx 安装脚本
+     * @param array $tables
+     * @param string $class
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public static function create2package(array $tables = [], string $class = 'InstallPackage'): array
+    {
+        // 处理菜单数据
+        [$menuData, $menuList] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
+        foreach (DataExtend::arr2tree($menuList) as $sub1) {
+            $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'url' => $sub1['url'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
+            if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
+                $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'url' => $sub2['url'], 'node' => $sub2['node'], 'params' => $sub2['params'], 'subs' => []];
+                if (!empty($sub2['sub'])) foreach ($sub2['sub'] as $sub3) {
+                    $two['subs'][] = ['name' => $sub3['title'], 'url' => $sub3['url'], 'node' => $sub3['node'], 'icon' => $sub3['icon'], 'params' => $sub3['params']];
+                }
+                if (empty($two['subs'])) unset($two['subs']);
+                $one['subs'][] = $two;
+            }
+            if (empty($one['subs'])) unset($one['subs']);
+            $menuData[] = $one;
+        }
+        // 读取配置并备份数据
+        [$extra, $config] = [[], static::_config([], $tables)];
+        if (count($config['backup']) > 0) foreach ($config['backup'] as $table) {
+            if (($db = Library::$sapp->db->table($table))->count() > 0) {
+                $extra[$table] = CodeExtend::enzip($db->select()->toJson());
+            }
+        }
+        // 生成迁移脚本
+        $serach = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
+        $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
+        $replace = [$class, CodeExtend::enzip($menuData), json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)];
+        return ['file' => static::_filename($class), 'text' => str_replace($serach, $replace, $content)];
+    }
+
+    /**
      * 生成 Phinx 迁移脚本
      * @param array $tables 指定数据表
      * @param boolean $source 是否原样返回
@@ -271,45 +311,5 @@ CODE;
             $version = '000001';
         }
         return date("Ymd{$version}_") . Str::snake($class) . '.php';
-    }
-
-    /**
-     * 创建 Phinx 安装脚本
-     * @param array $tables
-     * @param string $class
-     * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    public static function create2package(array $tables = [], string $class = 'InstallPackage'): array
-    {
-        // 处理菜单数据
-        [$menuData, $menuList] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
-        foreach (DataExtend::arr2tree($menuList) as $sub1) {
-            $one = ['name' => $sub1['title'], 'icon' => $sub1['icon'], 'url' => $sub1['url'], 'node' => $sub1['node'], 'params' => $sub1['params'], 'subs' => []];
-            if (!empty($sub1['sub'])) foreach ($sub1['sub'] as $sub2) {
-                $two = ['name' => $sub2['title'], 'icon' => $sub2['icon'], 'url' => $sub2['url'], 'node' => $sub2['node'], 'params' => $sub2['params'], 'subs' => []];
-                if (!empty($sub2['sub'])) foreach ($sub2['sub'] as $sub3) {
-                    $two['subs'][] = ['name' => $sub3['title'], 'url' => $sub3['url'], 'node' => $sub3['node'], 'icon' => $sub3['icon'], 'params' => $sub3['params']];
-                }
-                if (empty($two['subs'])) unset($two['subs']);
-                $one['subs'][] = $two;
-            }
-            if (empty($one['subs'])) unset($one['subs']);
-            $menuData[] = $one;
-        }
-        // 读取配置并备份数据
-        [$extra, $config] = [[], static::_config([], $tables)];
-        if (count($config['backup']) > 0) foreach ($config['backup'] as $table) {
-            if (($db = Library::$sapp->db->table($table))->count() > 0) {
-                $extra[$table] = CodeExtend::enzip($db->select()->toJson());
-            }
-        }
-        // 生成迁移脚本
-        $serach = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
-        $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
-        $replace = [$class, CodeExtend::enzip($menuData), json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)];
-        return ['file' => static::_filename($class), 'text' => str_replace($serach, $replace, $content)];
     }
 }
