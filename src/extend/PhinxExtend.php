@@ -252,18 +252,20 @@ CODE;
             if (empty($one['subs'])) unset($one['subs']);
             $menuData[] = $one;
         }
-        // 扩展数据处理
-        $extraData = [];
+        // 读取配置并备份数据
+        [$extra, $config] = [[], Library::$sapp->config];
+        $config->load(with_path('database/config.php'), 'phinx');
+        $tables = array_unique(array_merge($tables, $config->get('phinx.backup', [])));
         if (count($tables) > 0) foreach ($tables as $table) {
             if (in_array($table, static::$ignores) || $table === 'system_oplog') continue;
             if (($db = Library::$sapp->db->table($table))->count() > 0) {
-                $extraData[$table] = CodeExtend::enzip($db->select()->toJson());
+                $extra[$table] = CodeExtend::enzip($db->select()->toJson());
             }
         }
         // 生成迁移脚本
         $serach = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
         $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
-        $replace = [$class, CodeExtend::enzip($menuData), json_encode($extraData, JSON_PRETTY_PRINT)];
+        $replace = [$class, CodeExtend::enzip($menuData), json_encode($extra, JSON_PRETTY_PRINT)];
         return ['file' => static::buildPhinxFileName($class), 'text' => str_replace($serach, $replace, $content)];
     }
 
