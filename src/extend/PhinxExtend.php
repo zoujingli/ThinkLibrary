@@ -205,7 +205,7 @@ class PhinxExtend
         if ($connect->getConfig('type') !== 'mysql') {
             throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
         }
-        [$config, $database] = [static::_config($tables), $connect->getConfig('database')];
+        [$config, $schema] = [static::_config($tables), $connect->getConfig('database')];
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
         foreach ($config['tables'] as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
@@ -221,7 +221,7 @@ class PhinxExtend
 
             // 读取数据表 - 备注参数
             $comment = Library::$sapp->db->table('information_schema.TABLES')->where([
-                'TABLE_SCHEMA' => $database, 'TABLE_NAME' => $table,
+                'TABLE_SCHEMA' => $schema, 'TABLE_NAME' => $table,
             ])->value('TABLE_COMMENT', '');
 
             // 读取数据表 - 自动生成结构
