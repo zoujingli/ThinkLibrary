@@ -137,7 +137,7 @@ class PhinxExtend
         $br = "\r\n";
         $content = static::_build2phinx($tables, true);
         $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}{$br}}{$br}";
+        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}}{$br}";
         return ['file' => static::_filename($class), 'text' => $content];
     }
 
@@ -271,9 +271,7 @@ CODE;
             $indexs = Library::$sapp->db->query("show index from {$table}");
             foreach ($indexs as $index) {
                 if ($index['Key_name'] === 'PRIMARY') continue;
-                $params = static::_arr2str([
-                    'name' => "idx_{$index['Table']}_{$index["Column_name"]}",
-                ]);
+                $params = static::_arr2str(['name' => "idx_{$index['Table']}_{$index["Column_name"]}"]);
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
             $content .= "{$br}\t\t->save();{$br}{$br}\t\t// 修改主键长度";
