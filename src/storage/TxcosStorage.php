@@ -121,7 +121,7 @@ class TxcosStorage extends Storage
     public function del(string $name, bool $safe = false): bool
     {
         [$file] = explode('?', $name);
-        $result = HttpExtend::request('DELETE', "http://{$this->bucket}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('DELETE', "https://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, '204 No Content'));
@@ -136,7 +136,7 @@ class TxcosStorage extends Storage
     public function has(string $name, bool $safe = false): bool
     {
         $file = $this->delSuffix($name);
-        $result = HttpExtend::request('HEAD', "http://{$this->bucket}.{$this->point}/{$file}", [
+        $result = HttpExtend::request('HEAD', "https://{$this->bucket}.{$this->point}/{$file}", [
             'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $name),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));

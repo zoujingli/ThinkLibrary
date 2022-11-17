@@ -102,7 +102,7 @@ class QiniuStorage extends Storage
     public function del(string $name, bool $safe = false): bool
     {
         [$EncodedEntryURI, $AccessToken] = $this->getAccessToken($name, 'delete');
-        $data = json_decode(HttpExtend::post("http://rs.qiniu.com/delete/{$EncodedEntryURI}", [], [
+        $data = json_decode(HttpExtend::post("https://rs.qiniu.com/delete/{$EncodedEntryURI}", [], [
             'headers' => ["Authorization:QBox {$AccessToken}"],
         ]), true);
         return empty($data['error']);
@@ -152,7 +152,7 @@ class QiniuStorage extends Storage
     public function info(string $name, bool $safe = false, ?string $attname = null): array
     {
         [$entry, $token] = $this->getAccessToken($name);
-        $data = json_decode(HttpExtend::get("http://rs.qiniu.com/stat/{$entry}", [], ['headers' => ["Authorization: QBox {$token}"]]), true);
+        $data = json_decode(HttpExtend::get("https://rs.qiniu.com/stat/{$entry}", [], ['headers' => ["Authorization: QBox {$token}"]]), true);
         return isset($data['md5']) ? ['file' => $name, 'url' => $this->url($name, $safe, $attname), 'key' => $name] : [];
     }
 
