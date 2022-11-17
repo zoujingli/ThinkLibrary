@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin;
 
 use stdClass;
+use think\admin\extend\JwtExtend;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\PageHelper;
@@ -60,6 +61,12 @@ class Controller extends stdClass
     public $node;
 
     /**
+     * 请求数据
+     * @var array
+     */
+    public $rawdata;
+
+    /**
      * 请求对象
      * @var Request
      */
@@ -89,8 +96,8 @@ class Controller extends stdClass
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
-        $this->get = $this->request->get();
-        $this->node = NodeService::getCurrent();
+        [$this->get, $this->node] = [$this->request->get(), NodeService::getCurrent()];
+        $this->rawdata = JwtExtend::$isJwtRequest ? JwtExtend::$jwtPayload : $this->request->post();
         $this->initialize();
     }
 
@@ -110,9 +117,8 @@ class Controller extends stdClass
     public function error($info, $data = '{-null-}', $code = 0): void
     {
         if ($data === '{-null-}') $data = new stdClass();
-        throw new HttpResponseException(json([
-            'code' => $code, 'info' => $info, 'data' => $data,
-        ]));
+        $data = JwtExtend::$isJwtRequest ? JwtExtend::getToken((array)$data) : $data;
+        throw new HttpResponseException(json(['code' => $code, 'info' => $info, 'data' => $data]));
     }
 
     /**
@@ -123,10 +129,7 @@ class Controller extends stdClass
      */
     public function success($info, $data = '{-null-}', $code = 1): void
     {
-        if ($data === '{-null-}') $data = new stdClass();
-        throw new HttpResponseException(json([
-            'code' => $code, 'info' => $info, 'data' => $data,
-        ]));
+        $this->error($info, $data, $code);
     }
 
     /**

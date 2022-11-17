@@ -1,4 +1,18 @@
 <?php
+
+// +----------------------------------------------------------------------
+// | Library for ThinkAdmin
+// +----------------------------------------------------------------------
+// | 版权所有 2014~2022 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
+// +----------------------------------------------------------------------
+// | 官方网站: https://gitee.com/zoujingli/ThinkLibrary
+// +----------------------------------------------------------------------
+// | 开源协议 ( https://mit-license.org )
+// +----------------------------------------------------------------------
+// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
+// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
+// +----------------------------------------------------------------------
+
 declare(strict_types=1);
 
 namespace think\admin\extend;
@@ -31,6 +45,18 @@ class JwtExtend
     ];
 
     /**
+     * 当前请求数据
+     * @var array
+     */
+    public static $jwtPayload = [];
+
+    /**
+     * 当前请求状态
+     * @var bool
+     */
+    public static $isJwtRequest = false;
+
+    /**
      * 获取 jwt token
      * @param array $payload jwt 载荷 格式如下非必须
      * [
@@ -43,7 +69,6 @@ class JwtExtend
      * ]
      * @param null|string $jwtkey
      * @return string
-     * @throws \think\admin\Exception
      */
     public static function getToken(array $payload, ?string $jwtkey = null): string
     {
@@ -94,7 +119,23 @@ class JwtExtend
             throw new Exception('不接收处理该TOKEN', $payload);
         }
 
-        return $payload;
+        static::$isJwtRequest = true;
+        return static::$jwtPayload = $payload;
+    }
+
+    /**
+     * 获取 JWT 密钥
+     * @param null|string $jwtkey
+     * @return string
+     */
+    public static function jwtkey(?string $jwtkey = null): string
+    {
+        try {
+            return is_null($jwtkey) ? (config('app.jwtkey') ?: (sysconf('data.jwtkey') ?: 'thinkadmin')) : $jwtkey;
+        } catch (\Exception $exception) {
+            trace_file($exception);
+            return 'thinkadmin';
+        }
     }
 
     /**
@@ -103,26 +144,9 @@ class JwtExtend
      * @param ?string $key 签名密钥
      * @param string $alg 算法方式
      * @return string
-     * @throws \think\admin\Exception
      */
     private static function _sign(string $input, ?string $key = null, string $alg = 'HS256'): string
     {
         return CodeExtend::enSafe64(hash_hmac(static::$signTypes[$alg], $input, static::jwtkey($key), true));
-    }
-
-    /**
-     * 获取 JWT 密钥
-     * @param null|string $jwtkey
-     * @return string
-     * @throws \think\admin\Exception
-     */
-    public static function jwtkey(?string $jwtkey = null): string
-    {
-        try {
-            return is_null($jwtkey) ? (config('app.jwtkey') ?: (sysconf('data.jwtkey') ?: 'thinkadmin')) : $jwtkey;
-        } catch (\Exception $exception) {
-            trace_file($exception);
-            throw new Exception($exception->getMessage());
-        }
     }
 }
