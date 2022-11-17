@@ -83,19 +83,19 @@ class JwtExtend
      * 验证 token 是否有效, 默认验证 exp,nbf,iat 时间
      * @param string $token 加密数据
      * @param ?string $jwtkey 签名密钥
-     * @return boolean|array
+     * @return array
      * @throws \think\admin\Exception
      */
-    public static function verifyToken(string $token, ?string $jwtkey = null)
+    public static function verifyToken(string $token, ?string $jwtkey = null): array
     {
         $tokens = explode('.', $token);
-        if (count($tokens) != 3) return false;
+        if (count($tokens) != 3) throw new Exception('数据解密失败！', []);
 
         [$base64header, $base64payload, $signature] = $tokens;
 
         // 获取 jwt 算法
         $header = json_decode(CodeExtend::deSafe64($base64header), true);
-        if (empty($header['alg'])) return false;
+        if (empty($header['alg'])) throw new Exception('数据解密失败！', []);
 
         // 签名验证
         if (self::_sign("{$base64header}.{$base64payload}", static::jwtkey($jwtkey), $header['alg']) !== $signature) {
