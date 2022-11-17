@@ -131,7 +131,21 @@ class JwtExtend
     public static function jwtkey(?string $jwtkey = null): string
     {
         try {
-            return is_null($jwtkey) ? (config('app.jwtkey') ?: (sysconf('data.jwtkey') ?: 'thinkadmin')) : $jwtkey;
+            if (!empty($jwtkey)) return $jwtkey;
+
+            // 优先读取配置文件
+            $jwtkey = config('app.jwtkey');
+            if (!empty($jwtkey)) return $jwtkey;
+
+            // 再次读取数据配置
+            $jwtkey = sysconf('data.jwtkey');
+            if (!empty($jwtkey)) return $jwtkey;
+
+            // 自动生成新的密钥
+            $jwtkey = md5(uniqid(strval(rand(1000, 9999)), true));
+            sysconf('data.jwtkey', $jwtkey);
+            return $jwtkey;
+
         } catch (\Exception $exception) {
             trace_file($exception);
             return 'thinkadmin';
