@@ -40,7 +40,7 @@ class JwtInit
     }
 
     /**
-     * Session 初始化
+     * Jwt Session 初始化
      * @access public
      * @param Request $request
      * @param \Closure $next
@@ -63,7 +63,7 @@ class JwtInit
 
         $cookieName = $this->session->getName();
 
-        if (!isset($sessionId)) {
+        if (empty($sessionId)) {
             $varSessionId = $this->app->config->get('session.var_session_id');
             if ($varSessionId && $request->request($varSessionId)) {
                 $sessionId = $request->request($varSessionId);
