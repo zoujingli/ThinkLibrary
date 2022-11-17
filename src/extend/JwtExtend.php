@@ -125,7 +125,7 @@ class JwtExtend
 
     /**
      * 获取 JWT 密钥
-     * @param null|string $jwtkey
+     * @param ?string $jwtkey
      * @return string
      */
     public static function jwtkey(?string $jwtkey = null): string
