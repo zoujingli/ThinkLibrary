@@ -93,7 +93,7 @@ class JwtExtend
 
         [$base64header, $base64payload, $signature] = $tokens;
 
-        // 获取 jwt 算法
+        // 加密算法
         $header = json_decode(CodeExtend::deSafe64($base64header), true);
         if (empty($header['alg'])) throw new Exception('数据解密失败！', []);
 
@@ -102,6 +102,7 @@ class JwtExtend
             throw new Exception('验证签名失败！', []);
         }
 
+        // 获取数据
         $payload = json_decode(CodeExtend::deSafe64($base64payload), true);
 
         // 签发时间大于当前服务器时间验证失败
