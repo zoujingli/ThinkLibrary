@@ -84,7 +84,7 @@ class JwtExtend
             throw new Exception('服务器时间验证失败！', $payload);
         }
 
-        // 过期时间小宇当前服务器时间验证失败
+        // 过期时间小于当前服务器时间验证失败
         if (isset($payload['exp']) && $payload['exp'] < time()) {
             throw new Exception('服务器时间验证失败！', $payload);
         }
