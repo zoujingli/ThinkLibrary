@@ -18,19 +18,19 @@ declare (strict_types=1);
 namespace think\admin;
 
 use Closure;
-use think\admin\console\Package;
 use think\admin\console\Database;
 use think\admin\console\Install;
-use think\admin\console\Sysmenu;
+use think\admin\console\Package;
 use think\admin\console\Queue;
 use think\admin\console\Replace;
+use think\admin\console\Sysmenu;
 use think\admin\multiple\command\Build;
+use think\admin\multiple\JwtInit;
 use think\admin\multiple\Multiple;
 use think\admin\service\AdminService;
 use think\admin\service\RuntimeService;
 use think\App;
 use think\middleware\LoadLangPack;
-use think\middleware\SessionInit;
 use think\Request;
 use think\Service;
 use function Composer\Autoload\includeFile;
@@ -110,7 +110,7 @@ class Library extends Service
             $isYarRpc = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
             if (!($isApiRpc || $isNotRpc || $isYarRpc)) {
                 // 注册会话初始化中间键
-                $this->app->middleware->add(SessionInit::class);
+                $this->app->middleware->add(JwtInit::class);
                 // 注册语言包处理中间键
                 $this->app->middleware->add(LoadLangPack::class);
             }
