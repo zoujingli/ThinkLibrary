@@ -50,7 +50,7 @@ class JwtInit
     {
         // 处理 JWT 请求
         $authorization = $request->header('jwt-token', '');
-        if (preg_match('#^\s+([\w\-_]+\.[\w\-_]+\.[\w\-_]+)$#', $authorization, $match)) {
+        if (preg_match('#^\s*([\w\-_]+\.[\w\-_]+\.[\w\-_]+)\s*$#', $authorization, $match)) {
             try {
                 $payload = JwtExtend::verifyToken($match[1]);
                 if (isset($payload['sub']) && !empty($payload['sub'])) {
