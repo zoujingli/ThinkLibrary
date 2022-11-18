@@ -97,8 +97,6 @@ class JwtInit
         } else {
             // 已经标识为 Jwt 的会话无法在非 Jwt 方式访问
             if ($this->session->get('__ISJWT_SESSION__')) {
-                $this->app->session->clear();
-                $this->app->session->destroy();
                 throw new HttpResponseException(json([
                     'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
                 ]));
