@@ -3,9 +3,11 @@ declare (strict_types=1);
 
 namespace think\admin\multiple;
 
+use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\extend\JwtExtend;
 use think\App;
+use think\exception\HttpResponseException;
 use think\Request;
 use think\Response;
 use think\Session;
@@ -49,16 +51,17 @@ class JwtInit
     public function handle(Request $request, \Closure $next): Response
     {
         // 处理 JWT 请求
-        $authorization = $request->header('jwt-token', '');
-        if (preg_match('#^\s*([\w\-_]+\.[\w\-_]+\.[\w\-_]+)\s*$#', $authorization, $match)) {
-            try {
+        if (($token = $request->header('jwt-token', ''))) try {
+            if (preg_match('#^\s*([\w\-_]+\.[\w\-_]+\.[\w\-_]+)\s*$#', $token, $match)) {
                 $payload = JwtExtend::verifyToken($match[1]);
                 if (isset($payload['sub']) && !empty($payload['sub'])) {
                     $sessionId = CodeExtend::decrypt($payload['sub'], JwtExtend::jwtkey());
                 }
-            } catch (\Exception $exception) {
-                json(['code' => 0, 'info' => lang($exception->getMessage())])->send();
+            } else {
+                throw new Exception('JwtToken 格式错误！');
             }
+        } catch (\Exception $exception) {
+            throw new HttpResponseException(json(['code' => 0, 'info' => lang($exception->getMessage())]));
         }
 
         $cookieName = $this->session->getName();
