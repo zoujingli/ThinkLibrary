@@ -45,16 +45,16 @@ class JwtExtend
     ];
 
     /**
+     * 当前请求状态
+     * @var boolean
+     */
+    public static $isJwt = false;
+
+    /**
      * 当前请求数据
      * @var array
      */
-    public static $jwtPayload = [];
-
-    /**
-     * 当前请求状态
-     * @var bool
-     */
-    public static $isJwtRequest = false;
+    public static $jwtdata = [];
 
     /**
      * 获取 jwt token
@@ -120,8 +120,8 @@ class JwtExtend
             throw new Exception('不接收处理该TOKEN', 0, $payload);
         }
 
-        static::$isJwtRequest = true;
-        return static::$jwtPayload = $payload;
+        static::$isJwt = true;
+        return static::$jwtdata = $payload;
     }
 
     /**

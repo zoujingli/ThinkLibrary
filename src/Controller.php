@@ -97,7 +97,7 @@ class Controller extends stdClass
             $this->error('Access without permission.');
         }
         [$this->get, $this->node] = [$this->request->get(), NodeService::getCurrent()];
-        $this->rawdata = JwtExtend::$isJwtRequest ? JwtExtend::$jwtPayload : $this->request->post();
+        $this->rawdata = JwtExtend::$isJwt ? JwtExtend::$jwtdata : $this->request->post();
         $this->initialize();
     }
 
@@ -117,7 +117,7 @@ class Controller extends stdClass
     public function error($info, $data = '{-null-}', $code = 0): void
     {
         if ($data === '{-null-}') $data = new stdClass();
-        $data = JwtExtend::$isJwtRequest ? JwtExtend::getToken((array)$data) : $data;
+        $data = JwtExtend::$isJwt ? JwtExtend::getToken((array)$data) : $data;
         throw new HttpResponseException(json(['code' => $code, 'info' => $info, 'data' => $data]));
     }
 
