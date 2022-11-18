@@ -58,7 +58,7 @@ class JwtInit
                     $sessionId = CodeExtend::decrypt($payload['sub'], JwtExtend::jwtkey());
                 }
             } else {
-                throw new Exception('JwtToken 格式错误！');
+                throw new Exception('访问 Jwt Token 格式错误！');
             }
         } catch (\Exception $exception) {
             throw new HttpResponseException(json([
@@ -83,25 +83,23 @@ class JwtInit
 
         // Session 初始化
         $this->session->init();
-
         $request->withSession($this->session);
 
         /** @var Response $response */
         $response = $next($request);
-
         $response->setSession($this->session);
 
         if (JwtExtend::$isJwt) {
-            // 再次标识 Jwt 接口会话
+            // 自动升级当前会话为 Jwt 会话
             $this->session->set('__ISJWT_SESSION__', true);
         } else {
-            // 已经标识为 Jwt 的会话无法在非 Jwt 方式访问
+            // Jwt 类型的会话禁止在非 Jwt 方式访问
             if ($this->session->get('__ISJWT_SESSION__')) {
                 throw new HttpResponseException(json([
                     'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
                 ]));
             }
-            // 非 Jwt 接口模式需要写入 Cookie
+            // 非 Jwt 方式需要写入 Cookie 记录 SessionID
             $this->app->cookie->set($cookieName, $this->session->getId());
         }
 
@@ -115,6 +113,7 @@ class JwtInit
     public function end()
     {
         if (JwtExtend::$isJwt) {
+            // 自动升级当前会话为 Jwt 会话
             $this->session->set('__ISJWT_SESSION__', true);
         }
         $this->session->save();
