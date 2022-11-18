@@ -91,7 +91,10 @@ class JwtInit
 
         $response->setSession($this->session);
 
-        if (!JwtExtend::$isJwt) {
+        if (JwtExtend::$isJwt) {
+            // 再次标识 Jwt 接口会话
+            $this->session->set('__ISJWT_SESSION__', true);
+        } else {
             // 已经标识为 Jwt 的会话无法在非 Jwt 方式访问
             if ($this->session->get('__ISJWT_SESSION__')) {
                 $this->app->session->clear();
@@ -102,9 +105,6 @@ class JwtInit
             }
             // 非 Jwt 接口模式需要写入 Cookie
             $this->app->cookie->set($cookieName, $this->session->getId());
-        } else {
-            // 再次 标识 Jwt 接口会话
-            $this->session->set('__ISJWT_SESSION__', true);
         }
 
         return $response;
