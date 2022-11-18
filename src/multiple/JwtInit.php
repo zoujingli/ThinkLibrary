@@ -58,10 +58,9 @@ class JwtInit
 
     /**
      * Jwt Session 初始化
-     * @access public
-     * @param Request $request
+     * @param \think\Request $request
      * @param \Closure $next
-     * @return Response
+     * @return \think\Response
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -127,10 +126,11 @@ class JwtInit
      */
     public function end()
     {
+        // 自动升级当前会话为 Jwt 会话
         if (JwtExtend::$isJwt) {
-            // 自动升级当前会话为 Jwt 会话
             $this->session->set('__ISJWT_SESSION__', true);
         }
+        // 保存当前的会话数据
         $this->session->save();
     }
 }
