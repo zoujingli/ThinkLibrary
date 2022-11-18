@@ -171,7 +171,7 @@ class PhinxExtend
         [$extra, $config] = [[], static::_config([], $tables)];
         if (count($config['backup']) > 0) foreach ($config['backup'] as $table) {
             if (($db = Library::$sapp->db->table($table))->count() > 0) {
-                $extra[$table] = CodeExtend::enzip($db->select()->toJson());
+                $extra[$table] = CodeExtend::enzip($db->select()->toJson(JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
             }
         }
         // 生成迁移脚本
