@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\multiple;
 
+use Closure;
 use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\extend\JwtExtend;
@@ -62,7 +63,7 @@ class JwtInit
      * @param \Closure $next
      * @return Response
      */
-    public function handle(Request $request, \Closure $next): Response
+    public function handle(Request $request, Closure $next): Response
     {
         // 处理 JWT 请求
         if (($token = $request->header('jwt-token', ''))) try {
