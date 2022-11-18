@@ -92,8 +92,10 @@ class JwtInit
         $response->setSession($this->session);
 
         if (!JwtExtend::$isJwt) {
-            // 已经标识为 Jwt 的 Session 无法在非 Jwt 时访问
+            // 已经标识为 Jwt 的会话无法在非 Jwt 方式访问
             if ($this->session->get('__ISJWT_SESSION__')) {
+                $this->app->session->clear();
+                $this->app->session->destroy();
                 throw new HttpResponseException(json([
                     'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
                 ]));
@@ -108,8 +110,15 @@ class JwtInit
         return $response;
     }
 
+    /**
+     * 保存会话数据
+     * @return void
+     */
     public function end()
     {
+        if (JwtExtend::$isJwt) {
+            $this->session->set('__ISJWT_SESSION__', true);
+        }
         $this->session->save();
     }
 }
