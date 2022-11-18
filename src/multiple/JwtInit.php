@@ -93,7 +93,7 @@ class JwtInit
 
         if (!JwtExtend::$isJwt) {
             // 已经标识为 Jwt 的 Session 无法在非 Jwt 时访问
-            if ($this->session->get('__IS_JWT_SESSION_')) {
+            if ($this->session->get('__ISJWT_SESSION__')) {
                 throw new HttpResponseException(json([
                     'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
                 ]));
@@ -102,7 +102,7 @@ class JwtInit
             $this->app->cookie->set($cookieName, $this->session->getId());
         } else {
             // 再次 标识 Jwt 接口会话
-            $this->session->set('__IS_JWT_SESSION_', true);
+            $this->session->set('__ISJWT_SESSION__', true);
         }
 
         return $response;
