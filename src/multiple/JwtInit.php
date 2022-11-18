@@ -67,7 +67,7 @@ class JwtInit
     {
         // 处理 JWT 请求
         if (($token = $request->header('jwt-token', ''))) try {
-            if (preg_match('#^\s*([\w\-_]+\.[\w\-_]+\.[\w\-_]+)\s*$#', $token, $match)) {
+            if (preg_match('#^\s*([\w\-]+\.[\w\-]+\.[\w\-]+)\s*$#', $token, $match)) {
                 $payload = JwtExtend::verifyToken($match[1]);
                 if (isset($payload['sub']) && !empty($payload['sub'])) {
                     $sessionId = CodeExtend::decrypt($payload['sub'], JwtExtend::jwtkey());
