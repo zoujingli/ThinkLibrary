@@ -61,7 +61,9 @@ class JwtInit
                 throw new Exception('JwtToken 格式错误！');
             }
         } catch (\Exception $exception) {
-            throw new HttpResponseException(json(['code' => 0, 'info' => lang($exception->getMessage())]));
+            throw new HttpResponseException(json([
+                'code' => 0, 'info' => lang($exception->getMessage()),
+            ]));
         }
 
         $cookieName = $this->session->getName();
@@ -89,9 +91,16 @@ class JwtInit
 
         $response->setSession($this->session);
 
-        // Jwt 接口模式不写入 Cookie
         if (!JwtExtend::$isJwt) {
+            // 已经标识为 Jwt 的 Session 无法在非 Jwt 时访问
+            if ($this->session->get('__IS_JWT_SESSION_')) throw new HttpResponseException(json([
+                'code' => 0, 'info' => lang('请使得 JWT 方式访问！'),
+            ]));
+            // Jwt 接口模式不写入 Cookie
             $this->app->cookie->set($cookieName, $this->session->getId());
+        } else {
+            // 再次 标识 Jwt 接口会话
+            $this->session->set('__IS_JWT_SESSION_', true);
         }
 
         return $response;
