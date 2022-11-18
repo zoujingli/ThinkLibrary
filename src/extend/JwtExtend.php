@@ -89,17 +89,17 @@ class JwtExtend
     public static function verifyToken(string $token, ?string $jwtkey = null): array
     {
         $tokens = explode('.', $token);
-        if (count($tokens) != 3) throw new Exception('数据解密失败！', []);
+        if (count($tokens) != 3) throw new Exception('数据解密失败！', 0, []);
 
         [$base64header, $base64payload, $signature] = $tokens;
 
         // 加密算法
         $header = json_decode(CodeExtend::deSafe64($base64header), true);
-        if (empty($header['alg'])) throw new Exception('数据解密失败！', []);
+        if (empty($header['alg'])) throw new Exception('数据解密失败！', 0, []);
 
         // 签名验证
         if (self::_sign("{$base64header}.{$base64payload}", static::jwtkey($jwtkey), $header['alg']) !== $signature) {
-            throw new Exception('验证签名失败！', []);
+            throw new Exception('验证签名失败！', 0, []);
         }
 
         // 获取数据
@@ -107,17 +107,17 @@ class JwtExtend
 
         // 签发时间大于当前服务器时间验证失败
         if (isset($payload['iat']) && $payload['iat'] > time()) {
-            throw new Exception('服务器时间验证失败！', $payload);
+            throw new Exception('服务器时间验证失败！', 0, $payload);
         }
 
         // 过期时间小宇当前服务器时间验证失败
         if (isset($payload['exp']) && $payload['exp'] < time()) {
-            throw new Exception('服务器时间验证失败！', $payload);
+            throw new Exception('服务器时间验证失败！', 0, $payload);
         }
 
         // 该 nbf 时间之前不接收处理该 TOKEN
         if (isset($payload['nbf']) && $payload['nbf'] > time()) {
-            throw new Exception('不接收处理该TOKEN', $payload);
+            throw new Exception('不接收处理该TOKEN', 0, $payload);
         }
 
         static::$isJwtRequest = true;
