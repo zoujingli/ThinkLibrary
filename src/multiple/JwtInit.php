@@ -93,13 +93,13 @@ class JwtInit
             // 自动升级当前会话为 Jwt 会话
             $this->session->set('__ISJWT_SESSION__', true);
         } else {
-            // Jwt 类型的会话禁止在非 Jwt 方式访问
+            // Jwt 会话禁止非 Jwt 方式访问
             if ($this->session->get('__ISJWT_SESSION__')) {
                 throw new HttpResponseException(json([
                     'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
                 ]));
             }
-            // 非 Jwt 方式需要写入 Cookie 记录 SessionID
+            // 其他方式访问需要写入 Cookie 记录 SessionID
             $this->app->cookie->set($cookieName, $this->session->getId());
         }
 
