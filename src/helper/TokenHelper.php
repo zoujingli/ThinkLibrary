@@ -58,4 +58,13 @@ class TokenHelper extends Helper
             }, $html);
         }));
     }
+
+    /**
+     * 返回表单令牌数据
+     * 为了兼容JWT模式使用表单令牌
+     */
+    public static function getToken()
+    {
+        return Library::$sapp->request->buildToken('_token_');
+    }
 }
