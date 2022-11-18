@@ -89,7 +89,9 @@ class JwtInit
 
         $response->setSession($this->session);
 
-        $this->app->cookie->set($cookieName, $this->session->getId());
+        if (!JwtExtend::$isJwt) {
+            $this->app->cookie->set($cookieName, $this->session->getId());
+        }
 
         return $response;
     }
