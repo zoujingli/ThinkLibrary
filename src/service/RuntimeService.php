@@ -81,14 +81,14 @@ class RuntimeService
         if (empty(static::$env)) {
 
             // 读取默认配置
-            $env = Library::$sapp->env;
-            $file = with_path('runtime/.env');
-            file_exists($file) && $env->load($file);
+            if (file_exists($file = with_path('runtime/.env'))) {
+                is_file($file) && Library::$sapp->env->load($file);
+            }
 
             // 动态判断赋值
-            static::$env['mode'] = $env->get('RUNTIME_MODE') ?: 'debug';
-            static::$env['appmap'] = $env->get('RUNTIME_APPMAP') ?: [];
-            static::$env['domain'] = $env->get('RUNTIME_DOMAIN') ?: [];
+            static::$env['mode'] = Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug';
+            static::$env['appmap'] = Library::$sapp->env->get('RUNTIME_APPMAP') ?: [];
+            static::$env['domain'] = Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [];
         }
         return is_null($name) ? static::$env : (static::$env[$name] ?? $default);
     }
@@ -124,20 +124,15 @@ class RuntimeService
      */
     public static function apply(array $data = []): bool
     {
-        // 应用配置参数
-        $data = static::get() + $data;
-        $conf = Library::$sapp->config;
-
         // 设置模块绑定
-        $conf->set([
-            'app_map'     => static::uniqueMergeArray($conf->get('app.app_map', []), $data['appmap']),
-            'domain_bind' => static::uniqueMergeArray($conf->get('app.domain_bind', []), $data['domain']),
-        ], 'app');
+        $data = static::get() + $data;
+        $appmap = static::uniqueMergeArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']);
+        $domain = static::uniqueMergeArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']);
+        Library::$sapp->config->set(['app_map' => $appmap, 'domain_bind' => $domain], 'app');
 
         // 设置模板变量
-        $conf->set([
-            'tpl_replace_string' => array_merge(SystemService::uris(), $conf->get('view.tpl_replace_string', [])),
-        ], 'view');
+        $vars = Library::$sapp->config->get('view.tpl_replace_string', []);
+        Library::$sapp->config->set(['tpl_replace_string' => array_merge(SystemService::uris(), $vars)], 'view');
 
         // 初始化调试配置
         return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
@@ -203,8 +198,7 @@ class RuntimeService
      */
     public static function isOnline(): bool
     {
-        empty(static::$env) && static::get();
-        return static::$env['mode'] === 'product';
+        return !static::isDebug();
     }
 
     /**
