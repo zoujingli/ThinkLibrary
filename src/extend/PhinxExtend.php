@@ -175,10 +175,10 @@ class PhinxExtend
             }
         }
         // 生成迁移脚本
-        $serach = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
+        $search = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
         $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
         $replace = [$class, CodeExtend::enzip($menuData), json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)];
-        return ['file' => static::_filename($class), 'text' => str_replace($serach, $replace, $content)];
+        return ['file' => static::_filename($class), 'text' => str_replace($search, $replace, $content)];
     }
 
     /**
