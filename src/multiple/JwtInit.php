@@ -89,6 +89,7 @@ class JwtInit
 
         $response->setSession($this->session);
 
+        // Jwt 接口模式不写入 Cookie
         if (!JwtExtend::$isJwt) {
             $this->app->cookie->set($cookieName, $this->session->getId());
         }
