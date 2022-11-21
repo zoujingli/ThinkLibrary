@@ -146,11 +146,11 @@ class Build extends Command
     protected function buildCommon(string $app): Build
     {
         $appPath = $this->basePath . ($app ? $app . DIRECTORY_SEPARATOR : '');
-        if (!is_file($appPath . 'common.php')) {
-            file_put_contents($appPath . 'common.php', "<?php" . PHP_EOL . "// 这是系统自动生成的公共文件" . PHP_EOL);
+        if (!is_file($file = $appPath . 'common.php')) {
+            file_put_contents($file, "<?php" . PHP_EOL . "// 这是系统自动生成的公共文件" . PHP_EOL);
         }
-        foreach (['event', 'middleware', 'common'] as $name) if (!is_file($appPath . $name . '.php')) {
-            file_put_contents($appPath . $name . '.php', "<?php" . PHP_EOL . "// 这是系统自动生成的{$name}定义文件" . PHP_EOL . "return [" . PHP_EOL . PHP_EOL . "];" . PHP_EOL);
+        foreach (['event', 'middleware', 'common'] as $name) if (!is_file($file = $appPath . $name . '.php')) {
+            file_put_contents($file, "<?php" . PHP_EOL . "// 这是系统自动生成的{$name}定义文件" . PHP_EOL . "return [" . PHP_EOL . PHP_EOL . "];" . PHP_EOL);
         }
         return $this;
     }
@@ -163,8 +163,6 @@ class Build extends Command
      */
     protected function checkDirBuild(string $dirname): void
     {
-        if (!is_dir($dirname)) {
-            mkdir($dirname, 0755, true);
-        }
+        is_dir($dirname) or mkdir($dirname, 0755, true);
     }
 }
