@@ -18,7 +18,6 @@ declare (strict_types=1);
 namespace think\admin;
 
 use stdClass;
-use think\admin\extend\JwtExtend;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\PageHelper;
@@ -61,12 +60,6 @@ class Controller extends stdClass
     public $node;
 
     /**
-     * 请求数据
-     * @var array
-     */
-    public $rawdata;
-
-    /**
      * 请求对象
      * @var Request
      */
@@ -96,8 +89,8 @@ class Controller extends stdClass
         if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
             $this->error('Access without permission.');
         }
-        [$this->get, $this->node] = [$this->request->get(), NodeService::getCurrent()];
-        $this->rawdata = JwtExtend::$isJwt ? JwtExtend::$jwtdata : $this->request->post();
+        $this->get = $this->request->get();
+        $this->node = NodeService::getCurrent();
         $this->initialize();
     }
 
