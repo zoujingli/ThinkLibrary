@@ -14,7 +14,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\multiple;
+namespace think\admin\support;
 
 use InvalidArgumentException;
 use think\admin\service\NodeService;
@@ -23,7 +23,7 @@ use think\route\Url;
 /**
  * 多应用 URL 生成与解析
  * Class BuildUrl
- * @package think\admin\multiple
+ * @package think\admin\support
  */
 class BuildUrl extends Url
 {

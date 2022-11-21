@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\multiple;
+namespace think\admin\support;
 
 use Closure;
 use think\App;
@@ -26,7 +26,7 @@ use think\Response;
 /**
  * 多应用支持组件
  * Class Multiple
- * @package think\admin\multiple
+ * @package think\admin\support
  */
 class Multiple
 {

@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\multiple;
+namespace think\admin\support;
 
 use Closure;
 use think\admin\Exception;

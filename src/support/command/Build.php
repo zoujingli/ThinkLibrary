@@ -13,7 +13,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\multiple\command;
+namespace think\admin\support\command;
 
 use think\console\Command;
 use think\console\Input;

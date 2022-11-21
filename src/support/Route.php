@@ -15,14 +15,14 @@
 
 declare (strict_types=1);
 
-namespace think\admin\multiple;
+namespace think\admin\support;
 
 use think\Route as ThinkRoute;
 
 /**
  * 自定义路由对象
  * Class Route
- * @package think\admin\multiple
+ * @package think\admin\support
  */
 class Route extends ThinkRoute
 {

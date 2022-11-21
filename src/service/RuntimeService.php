@@ -18,8 +18,8 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Library;
-use think\admin\multiple\BuildUrl;
-use think\admin\multiple\Route;
+use think\admin\support\BuildUrl;
+use think\admin\support\Route;
 use think\App;
 use think\Container;
 use think\Response;
