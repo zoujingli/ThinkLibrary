@@ -189,12 +189,12 @@ class AdminService extends Service
     /**
      * 初始化用户权限
      * @param boolean $force 强刷权限
-     * @return void
+     * @return array
      */
-    public static function apply(bool $force = false)
+    public static function apply(bool $force = false): array
     {
-        if ($force) static::clearCache();
-        if (($uuid = static::getUserId()) <= 0) return;
+        if ($force) static::clear();
+        if (($uuid = static::getUserId()) <= 0) return [];
         $user = SystemUser::mk()->where(['id' => $uuid])->findOrEmpty()->toArray();
         if (!static::isSuper() && count($aids = str2arr($user['authorize'])) > 0) {
             $aids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $aids)->column('id');
@@ -202,15 +202,29 @@ class AdminService extends Service
         }
         $user['nodes'] = $nodes ?? [];
         Library::$sapp->session->set('user', $user);
+        return $user;
     }
 
     /**
      * 清理节点缓存
      * @return bool
      */
-    public static function clearCache(): bool
+    public static function clear(): bool
     {
         Library::$sapp->cache->delete('SystemAuthNode');
         return true;
+    }
+
+    /**
+     * 静态方法兼容(停时)
+     * @param string $name
+     * @param array $arguments
+     * @return bool|void
+     */
+    public static function __callStatic(string $name, array $arguments)
+    {
+        if ($name === 'clearCache') {
+            return static::clear();
+        }
     }
 }
