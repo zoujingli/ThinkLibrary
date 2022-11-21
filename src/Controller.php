@@ -117,8 +117,9 @@ class Controller extends stdClass
     public function error($info, $data = '{-null-}', $code = 0): void
     {
         if ($data === '{-null-}') $data = new stdClass();
-        $data = JwtExtend::$isJwt ? JwtExtend::getToken((array)$data) : $data;
-        throw new HttpResponseException(json(['code' => $code, 'info' => $info, 'data' => $data]));
+        throw new HttpResponseException(json([
+            'code' => $code, 'info' => $info, 'data' => $data,
+        ]));
     }
 
     /**
