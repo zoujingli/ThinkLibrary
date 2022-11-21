@@ -177,6 +177,7 @@ class RuntimeService
     public static function clear(): bool
     {
         $data = static::get();
+        AdminService::clearCache();
         Library::$sapp->cache->clear();
         Library::$sapp->console->call('clear', ['--dir']);
         return static::set($data['mode'], $data['appmap'], $data['domain']);
