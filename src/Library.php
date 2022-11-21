@@ -27,8 +27,8 @@ use think\admin\console\Sysmenu;
 use think\admin\service\AdminService;
 use think\admin\service\RuntimeService;
 use think\admin\support\command\Build;
-use think\admin\support\JwtInit;
-use think\admin\support\Multiple;
+use think\admin\support\middleware\JwtInit;
+use think\admin\support\middleware\Multiple;
 use think\App;
 use think\middleware\LoadLangPack;
 use think\Request;
@@ -65,7 +65,7 @@ class Library extends Service
         $this->commands(['build' => Build::class]);
 
         // 注册 ThinkAdmin 指令
-        $this->commands([Sysmenu::class, Queue::class, Package::class, Install::class, Database::class, Replace::class]);
+        $this->commands([Queue::class, Package::class, Sysmenu::class, Install::class, Database::class, Replace::class]);
 
         // 动态应用运行参数
         RuntimeService::apply();
@@ -76,8 +76,6 @@ class Library extends Service
             $request->filter([function ($value) {
                 return is_string($value) ? xss_safe($value) : $value;
             }]);
-            // 注册多应用中间键
-            $this->app->middleware->add(Multiple::class);
             // 判断访问模式兼容处理
             if ($request->isCli()) {
                 // 兼容 CLI 访问控制器
@@ -88,6 +86,8 @@ class Library extends Service
                 // 兼容 HTTP 调用 Console 后 URL 问题
                 $request->setHost($request->host());
             }
+            // 注册多应用中间键
+            $this->app->middleware->add(Multiple::class);
         });
     }
 

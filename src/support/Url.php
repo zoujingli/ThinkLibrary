@@ -18,14 +18,14 @@ namespace think\admin\support;
 
 use InvalidArgumentException;
 use think\admin\service\NodeService;
-use think\route\Url;
+use think\route\Url as ThinkUrl;
 
 /**
  * 多应用 URL 生成与解析
- * Class BuildUrl
+ * Class Url
  * @package think\admin\support
  */
-class BuildUrl extends Url
+class Url extends ThinkUrl
 {
     /**
      * 直接解析 URL 地址

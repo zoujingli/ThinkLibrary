@@ -129,7 +129,10 @@ class Controller extends stdClass
      */
     public function success($info, $data = '{-null-}', $code = 1): void
     {
-        $this->error($info, $data, $code);
+        if ($data === '{-null-}') $data = new stdClass();
+        throw new HttpResponseException(json([
+            'code' => $code, 'info' => $info, 'data' => $data,
+        ]));
     }
 
     /**

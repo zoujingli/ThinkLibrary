@@ -27,7 +27,7 @@ use think\Route as ThinkRoute;
 class Route extends ThinkRoute
 {
     /**
-     * 重置应用配置
+     * 重载路由配置
      * @return $this
      */
     public function reload(): Route

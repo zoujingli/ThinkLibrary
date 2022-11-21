@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\support;
+namespace think\admin\support\middleware;
 
 use Closure;
 use think\App;
@@ -26,7 +26,7 @@ use think\Response;
 /**
  * 多应用支持组件
  * Class Multiple
- * @package think\admin\support
+ * @package think\admin\support\middleware
  */
 class Multiple
 {
@@ -115,6 +115,17 @@ class Multiple
     }
 
     /**
+     * 获取当前运行入口名称
+     * @codeCoverageIgnore
+     * @return string
+     */
+    private function scriptName(): string
+    {
+        $file = $_SERVER['SCRIPT_FILENAME'] ?? ($_SERVER['argv'][0] ?? '');
+        return empty($file) ? '' : pathinfo($file, PATHINFO_FILENAME);
+    }
+
+    /**
      * 设置应用参数
      * @param string $appName 应用名称
      * @param boolean $appBind 应用绑定
@@ -159,16 +170,5 @@ class Multiple
             $this->app->bind(include $file);
         }
         $this->app->lang->switchLangSet($this->app->lang->getLangSet());
-    }
-
-    /**
-     * 获取当前运行入口名称
-     * @codeCoverageIgnore
-     * @return string
-     */
-    private function scriptName(): string
-    {
-        $file = $_SERVER['SCRIPT_FILENAME'] ?? ($_SERVER['argv'][0] ?? '');
-        return empty($file) ? '' : pathinfo($file, PATHINFO_FILENAME);
     }
 }

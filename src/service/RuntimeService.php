@@ -18,7 +18,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Library;
-use think\admin\support\BuildUrl;
+use think\admin\support\Url;
 use think\admin\support\Route;
 use think\App;
 use think\Container;
@@ -66,7 +66,7 @@ class RuntimeService
         // 替换 ThinkPHP 地址，并初始化运行环境
         Library::$sapp = $app ?: Container::getInstance()->make(App::class);
         Library::$sapp->bind('think\Route', Route::class);
-        Library::$sapp->bind('think\route\Url', BuildUrl::class);
+        Library::$sapp->bind('think\route\Url', Url::class);
         return Library::$sapp->debug(static::isDebug());
     }
 

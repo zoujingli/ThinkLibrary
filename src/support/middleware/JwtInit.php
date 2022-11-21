@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\support;
+namespace think\admin\support\middleware;
 
 use Closure;
 use think\admin\Exception;
@@ -30,6 +30,7 @@ use think\Session;
 /**
  * 兼容会话中间键
  * @class JwtInit
+ * @package think\admin\support\middleware
  */
 class JwtInit
 {
