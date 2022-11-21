@@ -18,8 +18,8 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Library;
-use think\admin\support\Url;
 use think\admin\support\Route;
+use think\admin\support\Url;
 use think\App;
 use think\Container;
 use think\Response;
@@ -159,7 +159,7 @@ class RuntimeService
      * @param string $type 运行模式（dev|demo|local）
      * @return boolean
      */
-    public static function mode(string $type = 'dev'): bool
+    public static function check(string $type = 'dev'): bool
     {
         $domain = Library::$sapp->request->host(true);
         $isDemo = is_numeric(stripos($domain, 'thinkadmin.top'));
