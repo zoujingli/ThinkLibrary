@@ -105,7 +105,7 @@ class Library extends Service
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
             // YAR 接口或指定情况下不需要初始化会话和语言包，否则有可能会报错
-            $isApiRpc = $this->app->request->header('api_token', '') !== '';
+            $isApiRpc = $this->app->request->header('api-token', '') !== '';
             $isNotRpc = intval($this->app->request->get('not_init_session', 0)) > 0;
             $isYarRpc = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
             if (!($isApiRpc || $isNotRpc || $isYarRpc)) {

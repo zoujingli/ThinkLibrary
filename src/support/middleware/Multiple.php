@@ -24,7 +24,7 @@ use think\Request;
 use think\Response;
 
 /**
- * 多应用支持组件
+ * 多应用支持中间键
  * Class Multiple
  * @package think\admin\support\middleware
  */
