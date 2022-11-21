@@ -18,6 +18,7 @@ declare (strict_types=1);
 use think\admin\extend\CodeExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\Helper;
+use think\admin\helper\TokenHelper;
 use think\admin\Library;
 use think\admin\service\AdminService;
 use think\admin\service\QueueService;
@@ -240,7 +241,7 @@ if (!function_exists('systoken')) {
      */
     function systoken(): string
     {
-        return Library::$sapp->request->buildToken('_token_');
+        return TokenHelper::getToken();
     }
 }
 if (!function_exists('sysqueue')) {
