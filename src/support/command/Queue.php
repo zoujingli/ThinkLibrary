@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\console;
+namespace think\admin\support\command;
 
 use Error;
 use Exception;
@@ -32,7 +32,7 @@ use Throwable;
 /**
  * 异步任务管理指令
  * Class Queue
- * @package think\admin\command
+ * @package think\admin\support\command
  */
 class Queue extends Command
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace think\admin\console;
+namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\Exception;
@@ -12,7 +12,7 @@ use think\console\input\Option;
 /**
  * 生成数据安装包
  * Class Package
- * @package think\admin\command
+ * @package think\admin\support\command
  */
 class Package extends Command
 {

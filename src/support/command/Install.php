@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\console;
+namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\extend\PhinxExtend;
@@ -27,7 +27,7 @@ use think\console\Output;
 /**
  * 插件更新安装指令
  * Class Install
- * @package think\admin\command
+ * @package think\admin\support\command
  */
 class Install extends Command
 {

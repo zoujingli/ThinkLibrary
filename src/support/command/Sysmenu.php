@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\console;
+namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\extend\DataExtend;
@@ -24,7 +24,7 @@ use think\admin\model\SystemMenu;
 /**
  * 重置并清理系统菜单
  * Class Sysmenu
- * @package think\admin\command
+ * @package think\admin\support\command
  */
 class Sysmenu extends Command
 {

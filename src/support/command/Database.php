@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\console;
+namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\service\SystemService;
@@ -26,7 +26,7 @@ use think\console\Output;
 /**
  * 数据库修复优化指令
  * Class Database
- * @package think\admin\command
+ * @package think\admin\support\command
  */
 class Database extends Command
 {

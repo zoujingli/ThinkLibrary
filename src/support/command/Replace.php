@@ -15,7 +15,7 @@
 
 declare (strict_types=1);
 
-namespace think\admin\console;
+namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\service\SystemService;
@@ -27,7 +27,7 @@ use think\helper\Str;
 /**
  * 数据库字符替换
  * Class Replace
- * @package think\admin\command
+ * @package think\admin\support\command
  */
 class Replace extends Command
 {
