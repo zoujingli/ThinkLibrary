@@ -39,7 +39,7 @@ __DATA_JSON__
 JSON;
         // 解析并写入扩展数据
         if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
-            foreach ($tables as $table => $zipstr) if (($model = M($table))->count() < 1) {
+            foreach ($tables as $table => $zipstr) if (($model = m($table))->count() < 1) {
                 $model->strict(false)->insertAll(json_decode(CodeExtend::dezip($zipstr), true));
             }
         }

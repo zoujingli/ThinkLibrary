@@ -41,7 +41,7 @@ if (!function_exists('p')) {
         return SystemService::putDebug($data, $new, $file);
     }
 }
-if (!function_exists('M')) {
+if (!function_exists('m')) {
     /**
      * 动态创建模型对象
      * @param string $name 模型名称
@@ -49,7 +49,7 @@ if (!function_exists('M')) {
      * @param string $conn 指定连接
      * @return Model
      */
-    function M(string $name, array $data = [], string $conn = ''): Model
+    function m(string $name, array $data = [], string $conn = ''): Model
     {
         return Helper::buildModel($name, $data, $conn);
     }
