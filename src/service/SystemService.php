@@ -401,7 +401,7 @@ class SystemService extends Service
             'doConsoleInit' => 'doConsoleInit',
             'pushRuntime'   => 'push',
             'clearRuntime'  => 'clear',
-            'checkRunMode'  => 'mode',
+            'checkRunMode'  => 'check',
         ];
         if (isset($map[$method])) {
             return RuntimeService::{$map[$method]}(...$arguments);
