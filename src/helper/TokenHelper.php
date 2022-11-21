@@ -53,8 +53,7 @@ class TokenHelper extends Helper
     {
         throw new HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
             return preg_replace_callback('/<\/form>/i', function () use ($node) {
-                $token = Library::$sapp->request->buildToken('_token_');
-                return "<input type='hidden' name='_token_' value='{$token}'></form>";
+                return sprintf("<input type='hidden' name='_token_' value='%s'></form>", static::getToken());
             }, $html);
         }));
     }
@@ -62,8 +61,9 @@ class TokenHelper extends Helper
     /**
      * 返回表单令牌数据
      * 为了兼容JWT模式使用表单令牌
+     * @return string
      */
-    public static function getToken()
+    public static function getToken(): string
     {
         return Library::$sapp->request->buildToken('_token_');
     }
