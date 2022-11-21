@@ -241,7 +241,7 @@ if (!function_exists('systoken')) {
      */
     function systoken(): string
     {
-        return TokenHelper::getToken();
+        return TokenHelper::token();
     }
 }
 if (!function_exists('sysqueue')) {

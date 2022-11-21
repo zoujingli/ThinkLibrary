@@ -147,7 +147,7 @@ class Controller extends stdClass
     {
         foreach ($this as $name => $value) $vars[$name] = $value;
         if ($this->csrf_state) {
-            TokenHelper::fetchTemplate($tpl, $vars, $node);
+            TokenHelper::fetch($tpl, $vars, $node);
         } else {
             throw new HttpResponseException(view($tpl, $vars));
         }

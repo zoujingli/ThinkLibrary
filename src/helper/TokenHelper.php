@@ -49,11 +49,11 @@ class TokenHelper extends Helper
      * @param array $vars 模板变量
      * @param string|null $node 授权节点
      */
-    public static function fetchTemplate(string $tpl = '', array $vars = [], ?string $node = null)
+    public static function fetch(string $tpl = '', array $vars = [], ?string $node = null)
     {
         throw new HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
             return preg_replace_callback('/<\/form>/i', function () use ($node) {
-                return sprintf("<input type='hidden' name='_token_' value='%s'></form>", static::getToken());
+                return sprintf("<input type='hidden' name='_token_' value='%s'></form>", static::token());
             }, $html);
         }));
     }
@@ -63,7 +63,7 @@ class TokenHelper extends Helper
      * 为了兼容JWT模式使用表单令牌
      * @return string
      */
-    public static function getToken(): string
+    public static function token(): string
     {
         return Library::$sapp->request->buildToken('_token_');
     }
