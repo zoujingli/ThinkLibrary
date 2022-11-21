@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin;
 
 use stdClass;
+use think\admin\extend\JwtExtend;
 use think\admin\helper\DeleteHelper;
 use think\admin\helper\FormHelper;
 use think\admin\helper\PageHelper;
@@ -109,10 +110,7 @@ class Controller extends stdClass
      */
     public function error($info, $data = '{-null-}', $code = 0): void
     {
-        if ($data === '{-null-}') $data = new stdClass();
-        throw new HttpResponseException(json([
-            'code' => $code, 'info' => $info, 'data' => $data,
-        ]));
+        $this->success($info, $data, $code);
     }
 
     /**
@@ -124,9 +122,9 @@ class Controller extends stdClass
     public function success($info, $data = '{-null-}', $code = 1): void
     {
         if ($data === '{-null-}') $data = new stdClass();
-        throw new HttpResponseException(json([
-            'code' => $code, 'info' => $info, 'data' => $data,
-        ]));
+        $result = ['code' => $code, 'info' => $info, 'data' => $data];
+        if (JwtExtend::$isJwt) $result['token'] = JwtExtend::getToken([]);
+        throw new HttpResponseException(json($result));
     }
 
     /**
