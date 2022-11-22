@@ -207,7 +207,7 @@ class PhinxExtend
         }
         [$config, $schema] = [static::_config($tables), $connect->getConfig('database')];
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
-        $content .= "{$br}\t\tset_time_limit(0);{$br}\t\t@ini_set('memory_limit', -1);";
+        $content .= "{$br}\t\tset_time_limit(0);{$br}\t\t@ini_set('memory_limit', -1);{$br}";
         foreach ($config['tables'] as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
