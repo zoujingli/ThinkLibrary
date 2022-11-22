@@ -25,7 +25,7 @@ namespace think\admin\extend;
 class DataExtend
 {
     /**
-     * 一维数组生成数据树
+     * 一维数组转多维数据树
      * @param array $its 待处理数据
      * @param string $cid 自己的主键
      * @param string $pid 上级的主键
@@ -40,7 +40,7 @@ class DataExtend
     }
 
     /**
-     * 一维数组生成数据树
+     * 一维数组转数据树表
      * @param array $its 待处理数据
      * @param string $cid 自己的主键
      * @param string $pid 上级的主键
