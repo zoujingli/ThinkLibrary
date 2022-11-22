@@ -161,7 +161,7 @@ class JwtExtend
     }
 
     /**
-     * 获取当前请求灵气
+     * 获取当前请求的数据
      * @return array
      */
     public static function getInData(): array
