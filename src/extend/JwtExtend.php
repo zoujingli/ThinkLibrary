@@ -54,13 +54,13 @@ class JwtExtend
      * 当前请求数据
      * @var array
      */
-    public static $jwtInput = [];
+    public static $rawdata = [];
 
     /**
      * 当前输出数据
      * @var array
      */
-    public static $jwtOutput = [];
+    public static $output = [];
 
     /**
      * 获取 jwt token
@@ -128,7 +128,7 @@ class JwtExtend
         }
 
         static::$isJwt = true;
-        return static::$jwtInput = $payload;
+        return static::$rawdata = $payload;
     }
 
     /**
