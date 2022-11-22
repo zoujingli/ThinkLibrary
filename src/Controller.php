@@ -126,7 +126,7 @@ class Controller extends stdClass
     {
         if ($data === '{-null-}') $data = new stdClass();
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        // Jwt 请求处理并根据状态是否输出令牌
+        // Jwt 返回处理并根据状态是否输出令牌
         if (JwtExtend::$isJwt && JwtExtend::getOutToken()) {
             $result['token'] = JwtExtend::getToken(JwtExtend::getOutData());
         }
