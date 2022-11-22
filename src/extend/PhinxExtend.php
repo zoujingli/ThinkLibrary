@@ -176,7 +176,7 @@ class PhinxExtend
         }
         // 生成迁移脚本
         $search = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
-        $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stud');
+        $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stub');
         $replace = [$class, CodeExtend::enzip($menuData), json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)];
         return ['file' => static::_filename($class), 'text' => str_replace($search, $replace, $content)];
     }
@@ -207,6 +207,7 @@ class PhinxExtend
         }
         [$config, $schema] = [static::_config($tables), $connect->getConfig('database')];
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
+        $content .= "\t\tset_time_limit(0) && @ini_set('memory_limit', -1);";
         foreach ($config['tables'] as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
