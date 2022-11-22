@@ -211,6 +211,7 @@ class JwtExtend
      */
     public static function setOutData(array $data): array
     {
+        static::$outToken = true;
         return static::$outData = $data;
     }
 
