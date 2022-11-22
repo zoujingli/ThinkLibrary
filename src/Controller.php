@@ -148,11 +148,15 @@ class Controller extends stdClass
      */
     public function fetch(string $tpl = '', array $vars = [], ?string $node = null): void
     {
-        foreach ($this as $name => $value) $vars[$name] = $value;
-        if ($this->csrf_state) {
-            TokenHelper::fetch($tpl, $vars, $node);
+        if (JwtExtend::$isJwt) {
+            $this->success('获取模板变量成功！', $vars);
         } else {
-            throw new HttpResponseException(view($tpl, $vars));
+            foreach ($this as $name => $value) $vars[$name] = $value;
+            if ($this->csrf_state) {
+                TokenHelper::fetch($tpl, $vars, $node);
+            } else {
+                throw new HttpResponseException(view($tpl, $vars));
+            }
         }
     }
 
