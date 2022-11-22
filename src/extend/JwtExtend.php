@@ -81,7 +81,7 @@ class JwtExtend
      *     'jti' => md5(uniqid('JWT').time())  // 该 Token 唯一标识
      * ]
      * @param null|string $jwtkey 签名密钥
-     * @param null|bool $outToken 输出令牌
+     * @param null|boolean $outToken 输出令牌
      * @return string
      */
     public static function getToken(array $payload, ?string $jwtkey = null, ?bool $outToken = null): string
@@ -217,7 +217,7 @@ class JwtExtend
 
     /**
      * 获取是否输出令牌
-     * @return bool
+     * @return boolean
      */
     public static function getOutToken(): bool
     {
@@ -226,8 +226,8 @@ class JwtExtend
 
     /**
      * 设置是否输出令牌
-     * @param bool $output
-     * @return bool
+     * @param boolean $output
+     * @return boolean
      */
     public static function setOutToken(bool $output): bool
     {
