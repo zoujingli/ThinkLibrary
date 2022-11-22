@@ -151,7 +151,9 @@ class Controller extends stdClass
         if (JwtExtend::$isJwt) {
             JwtExtend::fetch($this, $vars);
         } else {
-            foreach ($this as $name => $value) $vars[$name] = $value;
+            foreach ($this as $name => $value) {
+                $vars[$name] = $value;
+            }
             if ($this->csrf_state) {
                 TokenHelper::fetch($tpl, $vars, $node);
             } else {
