@@ -64,6 +64,12 @@ class JwtExtend
     private static $outData = [];
 
     /**
+     * 是否输出令牌
+     * @var boolean
+     */
+    private static $outToken = false;
+
+    /**
      * 获取 jwt token
      * @param array $payload jwt 载荷 格式如下非必须
      * [
@@ -74,12 +80,14 @@ class JwtExtend
      *     'sub' => '',                        // 面向的用户
      *     'jti' => md5(uniqid('JWT').time())  // 该 Token 唯一标识
      * ]
-     * @param null|string $jwtkey
+     * @param null|string $jwtkey 签名密钥
+     * @param null|bool $outToken 输出令牌
      * @return string
      */
-    public static function getToken(array $payload, ?string $jwtkey = null): string
+    public static function getToken(array $payload, ?string $jwtkey = null, ?bool $outToken = null): string
     {
         static::$isJwt = true;
+        is_bool($outToken) && static::$outToken = $outToken;
         $payload['sub'] = CodeExtend::encrypt(Library::$sapp->session->getId(), static::jwtkey());
         $base64header = CodeExtend::enSafe64(json_encode(static::$header, JSON_UNESCAPED_UNICODE));
         $base64payload = CodeExtend::enSafe64(json_encode($payload, JSON_UNESCAPED_UNICODE));
@@ -204,6 +212,25 @@ class JwtExtend
     public static function setOutData(array $data): array
     {
         return static::$outData = $data;
+    }
+
+    /**
+     * 获取是否输出令牌
+     * @return bool
+     */
+    public static function getOutToken(): bool
+    {
+        return static::$outToken;
+    }
+
+    /**
+     * 设置是否输出令牌
+     * @param bool $output
+     * @return bool
+     */
+    public static function setOutToken(bool $output): bool
+    {
+        return static::$outToken = $output;
     }
 
     /**
