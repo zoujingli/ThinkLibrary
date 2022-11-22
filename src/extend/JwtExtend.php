@@ -169,9 +169,8 @@ class JwtExtend
      */
     public static function fetch(Controller $class, array $vars = [])
     {
-        $ignore = get_class_vars(Controller::class);
-        foreach ($class as $name => $value) {
-            if (in_array($name, $ignore)) continue;
+        $ignore = array_keys(get_class_vars(Controller::class));
+        foreach ($class as $name => $value) if (!in_array($name, $ignore)) {
             if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
                 $vars[$name] = $value;
             }
