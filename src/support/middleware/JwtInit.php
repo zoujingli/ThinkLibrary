@@ -73,7 +73,7 @@ class JwtInit
                     $sessionId = CodeExtend::decrypt($payload['sub'], JwtExtend::jwtkey());
                 }
             } else {
-                throw new Exception('访问 Jwt Token 格式错误！');
+                throw new Exception(lang('访问 Jwt Token 格式错误！'));
             }
         } catch (\Exception $exception) {
             throw new HttpResponseException(json([
