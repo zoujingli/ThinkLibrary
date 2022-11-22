@@ -126,7 +126,7 @@ class Controller extends stdClass
     {
         if ($data === '{-null-}') $data = new stdClass();
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if (JwtExtend::$isJwt) $result['token'] = JwtExtend::getToken(JwtExtend::$output);
+        if (JwtExtend::$isJwt) $result['token'] = JwtExtend::getToken(JwtExtend::getOutData());
         throw new HttpResponseException(json($result));
     }
 

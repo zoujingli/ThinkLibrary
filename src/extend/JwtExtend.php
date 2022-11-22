@@ -54,13 +54,13 @@ class JwtExtend
      * 当前请求数据
      * @var array
      */
-    public static $rawdata = [];
+    private static $inData = [];
 
     /**
      * 当前输出数据
      * @var array
      */
-    public static $output = [];
+    private static $outData = [];
 
     /**
      * 获取 jwt token
@@ -128,7 +128,7 @@ class JwtExtend
         }
 
         static::$isJwt = true;
-        return static::$rawdata = $payload;
+        return static::$inData = $payload;
     }
 
     /**
@@ -158,6 +158,34 @@ class JwtExtend
             trace_file($exception);
             return 'thinkadmin';
         }
+    }
+
+    /**
+     * 获取当前请求灵气
+     * @return array
+     */
+    public static function getInData(): array
+    {
+        return static::$inData;
+    }
+
+    /**
+     * 获取需要输出的数据
+     * @return array
+     */
+    public static function getOutData(): array
+    {
+        return static::$outData;
+    }
+
+    /**
+     * 设置需要输出的数据
+     * @param array $data
+     * @return array
+     */
+    public static function setOutData(array $data): array
+    {
+        return static::$outData = $data;
     }
 
     /**
