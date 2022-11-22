@@ -149,7 +149,7 @@ class Controller extends stdClass
     public function fetch(string $tpl = '', array $vars = [], ?string $node = null): void
     {
         if (JwtExtend::$isJwt) {
-            $this->success('获取模板变量成功！', $vars);
+            JwtExtend::fetch($this, $vars);
         } else {
             foreach ($this as $name => $value) $vars[$name] = $value;
             if ($this->csrf_state) {

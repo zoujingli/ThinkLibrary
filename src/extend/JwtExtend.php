@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 namespace think\admin\extend;
 
+use think\admin\Controller;
 use think\admin\Exception;
 use think\admin\Library;
 
@@ -158,6 +159,24 @@ class JwtExtend
             trace_file($exception);
             return 'thinkadmin';
         }
+    }
+
+    /**
+     * 输出模板变量
+     * @param \think\admin\Controller $class
+     * @param array $vars
+     * @return void
+     */
+    public static function fetch(Controller $class, array $vars = [])
+    {
+        $ignore = get_class_vars(Controller::class);
+        foreach ($class as $name => $value) {
+            if (in_array($name, $ignore)) continue;
+            if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
+                $vars[$name] = $value;
+            }
+        }
+        $class->success('获取变量成功！', $vars);
     }
 
     /**
