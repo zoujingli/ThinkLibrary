@@ -94,17 +94,24 @@ class Multiple
             if (strpos($name, '.')) $name = strstr($name, '.', true);
             // 应用绑定处理
             $map = $this->app->config->get('app.app_map', []);
+            $addons = $this->app->config->get('app.addons', []);
             if (isset($map[$name])) {
                 $appName = $map[$name] instanceof Closure ? (call_user_func_array($map[$name], [$this->app]) ?: $name) : $map[$name];
             } elseif ($name && (in_array($name, $map) || in_array($name, $this->app->config->get('app.deny_app_list', [])))) {
-                throw new HttpException(404, 'app not exists:' . $name);
+                throw new HttpException(404, "app not exists: {$name}");
             } elseif ($name && isset($map['*'])) {
                 $appName = $map['*'];
             } else {
                 $appName = $name ?: $defaultApp;
-                if (!is_dir($this->path ?: $this->app->getBasePath() . $appName)) {
+                if (!isset($addons[$appName]) && !is_dir($this->path ?: $this->app->getBasePath() . $appName)) {
                     return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp, false);
                 }
+            }
+            // 插件绑定处理
+            $this->app->config->set(['view_path' => ''], 'view');
+            if (isset($addons[$name])) {
+                $this->path = $addons[$name];
+                $this->app->config->set(['view_path' => $this->path . 'view' . DIRECTORY_SEPARATOR], 'view');
             }
             if ($name) {
                 $this->app->request->setRoot('/' . $name);
@@ -135,6 +142,7 @@ class Multiple
     {
         if (is_dir($appPath = $this->path ?: $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR)) {
             $this->app->setNamespace(($this->app->config->get('app.app_namespace') ?: 'app') . "\\{$appName}")->setAppPath($appPath);
+
             $this->app->http->setBind($appBind)->name($appName)->path($appPath)->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
             $this->loadMultiApp($appPath);
             return true;

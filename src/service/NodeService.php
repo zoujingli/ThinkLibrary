@@ -120,21 +120,45 @@ class NodeService extends Service
         foreach (static::scanDirectory(Library::$sapp->getBasePath()) as $file) {
             $name = substr($file, strlen(strtr(Library::$sapp->getRootPath(), '\\', '/')) - 1);
             if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
-                [, $namespace, $appname, $classname] = $matches;
-                $classfull = strtr("{$namespace}/{$appname}/controller/{$classname}", '/', '\\');
-                if (class_exists($classfull) && ($class = new ReflectionClass($classfull))) {
-                    $prefix = strtolower(strtr("{$appname}/" . static::nameTolower($classname), '\\', '/'));
-                    $data[$prefix] = static::_parseComment($class->getDocComment() ?: '', $classname);
-                    foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                        if (in_array($metname = $method->getName(), $ignores)) continue;
-                        $data[strtolower("{$prefix}/{$metname}")] = static::_parseComment($method->getDocComment() ?: '', $metname);
-                    }
+                [, $space, $appname, $classname] = $matches;
+                static::_parseClass($space, $appname, $classname, $ignores, $data);
+            }
+        }
+        // 扫描所有插件代码
+        $space = Library::$sapp->config->get('app.namespace', 'app');
+        foreach (Library::$sapp->config->get('app.addons', []) as $appname => $path) {
+            foreach (static::scanDirectory($path) as $file) {
+                $filename = substr($file, strlen(strtr($path, '\\', '/')) - 1);
+                if (preg_match("|^.*?/controller/(.+)\.php$|i", $filename, $matches)) {
+                    static::_parseClass($space, $appname, $matches[1], $ignores, $data);
                 }
             }
         }
         if (function_exists('admin_node_filter')) admin_node_filter($data);
         Library::$sapp->cache->set('SystemAuthNode', $data);
         return $data;
+    }
+
+    /**
+     * 解析节点数据
+     * @param string $space 应用空间
+     * @param string $appname 应用名称
+     * @param string $classname 应用类型
+     * @param array $ignores
+     * @param array $data
+     * @return void
+     */
+    private static function _parseClass(string $space, string $appname, string $classname, array $ignores, array &$data)
+    {
+        $classfull = strtr("{$space}/{$appname}/controller/{$classname}", '/', '\\');
+        if (class_exists($classfull) && ($class = new ReflectionClass($classfull))) {
+            $prefix = strtolower(strtr("{$appname}/" . static::nameTolower($classname), '\\', '/'));
+            $data[$prefix] = static::_parseComment($class->getDocComment() ?: '', $classname);
+            foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                if (in_array($metname = $method->getName(), $ignores)) continue;
+                $data[strtolower("{$prefix}/{$metname}")] = static::_parseComment($method->getDocComment() ?: '', $metname);
+            }
+        }
     }
 
     /**
