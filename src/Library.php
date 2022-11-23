@@ -24,6 +24,7 @@ use think\admin\support\command\Build;
 use think\admin\support\command\Database;
 use think\admin\support\command\Install;
 use think\admin\support\command\Package;
+use think\admin\support\command\Publish;
 use think\admin\support\command\Queue;
 use think\admin\support\command\Replace;
 use think\admin\support\command\Sysmenu;
@@ -62,7 +63,7 @@ class Library extends Service
         static::$sapp = $this->app;
 
         // 替换 ThinkPHP 指令
-        $this->commands(['build' => Build::class]);
+        $this->commands(['build' => Build::class, 'vendor:publish' => Publish::class]);
 
         // 注册 ThinkAdmin 指令
         $this->commands([Queue::class, Package::class, Sysmenu::class, Install::class, Database::class, Replace::class]);
