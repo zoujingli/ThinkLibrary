@@ -41,8 +41,10 @@ class PhinxExtend
      */
     public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
     {
+        // 目录初始化
         $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
         $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
+        file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
             foreach (scandir($frdir) as $file) if ($file[0] !== '.') {
@@ -53,7 +55,6 @@ class PhinxExtend
         foreach ($files as $source => $target) {
             if (is_numeric($source)) $source = $target;
             if ($force || !file_exists($todir . $target)) {
-                file_exists($todir) || mkdir($todir, 0755, true);
                 copy($frdir . $source, $todir . $target);
             }
             $remove && unlink($frdir . $source);
