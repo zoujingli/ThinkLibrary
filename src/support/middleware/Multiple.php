@@ -109,8 +109,8 @@ class Multiple
             }
             // 插件绑定处理
             $this->app->config->set(['view_path' => ''], 'view');
-            if (isset($addons[$name])) {
-                $this->path = $addons[$name];
+            if (isset($addons[$appName])) {
+                $this->path = $addons[$appName];
                 $this->app->config->set(['view_path' => $this->path . 'view' . DIRECTORY_SEPARATOR], 'view');
             }
             if ($name) {
