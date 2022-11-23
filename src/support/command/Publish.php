@@ -61,7 +61,7 @@ class Publish extends Command
         foreach ($this->app->config->get('app.addons', []) as $path) {
             $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'database';
             $todir = with_path('database/migrations', $this->app->getRootPath());
-            PhinxExtend::copyfile($frdir, $todir, [], true, false) && $this->app->console->call('migrate:run');
+            PhinxExtend::copyfile($frdir, $todir, [], false, false) && $this->app->console->call('migrate:run');
         }
         return $this;
     }
