@@ -46,8 +46,8 @@ class Publish extends Command
     {
         foreach ($this->app->config->get('app.addons', []) as $path) {
             // 执行模块数据库操作
-            $frdir = with_path("{$path}/database", $this->app->getBasePath());
             $todir = with_path('database/migrations', $this->app->getRootPath());
+            $frdir = with_path(rtrim($path, '\\/') . '/database', $this->app->getBasePath());
             PhinxExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
         }
         return $this;
