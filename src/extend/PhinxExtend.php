@@ -41,9 +41,9 @@ class PhinxExtend
      */
     public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
     {
-        // 目录初始化
         $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
         $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
+        // 目录检查创建
         file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
