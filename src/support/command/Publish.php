@@ -57,12 +57,17 @@ class Publish extends Command
      */
     private function plugin(): Publish
     {
-        // 执行模块数据库操作
+        // 执行模块安装处理
         foreach ($this->app->config->get('app.addons', []) as $path) {
+            // 复制数据库脚本
             $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'database';
-            $todir = with_path('database/migrations', $this->app->getRootPath());
-            PhinxExtend::copyfile($frdir, $todir, [], false, false) && $this->app->console->call('migrate:run');
+            PhinxExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
+            // 复制静态资料文件
+            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'public';
+            PhinxExtend::copyfile($frdir, with_path('public'), [], false, false);
         }
+        // 执行数据库脚本
+        $this->app->console->call('migrate:run');
         return $this;
     }
 
