@@ -172,8 +172,7 @@ class Multiple
         [$ext, $fmaps] = [$this->app->getConfigExt(), []];
         if (is_file($file = $appPath . 'common' . $ext)) include_once $file;
         foreach (glob($appPath . 'config' . DIRECTORY_SEPARATOR . '*' . $ext) as $file) {
-            $name = pathinfo($file, PATHINFO_FILENAME);
-            $this->app->config->load($file, $fmaps[] = $name);
+            $this->app->config->load($file, $fmaps[] = pathinfo($file, PATHINFO_FILENAME));
         }
         if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();
