@@ -36,10 +36,6 @@ class Install extends Command
      * @var array
      */
     protected $bind = [
-        'data'   => [
-            'rules'  => ['app/data'],
-            'ignore' => [],
-        ],
         'admin'  => [
             'rules'  => ['app/admin'],
             'ignore' => [],
