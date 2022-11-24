@@ -40,19 +40,19 @@ class Multiple
      * 应用名称
      * @var string
      */
-    private $name;
+    private $appName;
 
     /**
      * 应用路径
      * @var string
      */
-    private $path;
+    private $appPath;
 
     /**
      * 应用空间
      * @var string
      */
-    private $space;
+    private $rootSpace;
 
     /**
      * App constructor.
@@ -61,8 +61,8 @@ class Multiple
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->name = $this->app->http->getName();
-        $this->path = $this->app->http->getPath();
+        $this->appName = $this->app->http->getName();
+        $this->appPath = $this->app->http->getPath();
     }
 
     /**
@@ -87,9 +87,9 @@ class Multiple
     {
         $defaultApp = $this->app->config->get('route.default_app') ?: 'index';
         [$script, $pathinfo] = [$this->scriptName(), $this->app->request->pathinfo()];
-        if ($this->name || ($script && !in_array($script, ['index', 'router', 'think']))) {
+        if ($this->appName || ($script && !in_array($script, ['index', 'router', 'think']))) {
             $this->app->request->setPathinfo(preg_replace("#^{$script}\.php(/|\.|$)#i", '', $pathinfo) ?: '/');
-            return $this->setMultiApp($this->name ?: $script, true);
+            return $this->setMultiApp($this->appName ?: $script, true);
         } else {
             // 域名绑定处理
             $domains = $this->app->config->get('app.domain_bind', []);
@@ -109,15 +109,15 @@ class Multiple
                 $appName = $map['*'];
             } else {
                 $appName = $name ?: $defaultApp;
-                if (!isset($addons[$appName]) && !is_dir($this->path ?: $this->app->getBasePath() . $appName)) {
+                if (!isset($addons[$appName]) && !is_dir($this->appPath ?: $this->app->getBasePath() . $appName)) {
                     return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp, false);
                 }
             }
             // 插件绑定处理
             $this->app->config->set(['view_path' => ''], 'view');
             if (isset($addons[$appName])) {
-                [$this->path, $this->space] = explode('@', "{$addons[$appName]}@");
-                $this->app->config->set(['view_path' => $this->path . 'view' . DIRECTORY_SEPARATOR], 'view');
+                [$this->appPath, $this->rootSpace] = explode('@', "{$addons[$appName]}@");
+                $this->app->config->set(['view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR], 'view');
             }
             if ($name) {
                 $this->app->request->setRoot('/' . $name);
@@ -146,16 +146,12 @@ class Multiple
      */
     private function setMultiApp(string $appName, bool $appBind): bool
     {
-        if (empty($this->path)) {
-            $this->path = $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR;
-        }
-        if (empty($this->space)) {
-            $this->space = ($this->app->config->get('app.app_namespace') ?: 'app') . "\\{$appName}";
-        }
-        if (is_dir($this->path)) {
-            $this->app->setNamespace($this->space)->setAppPath($this->path);
-            $this->app->http->setBind($appBind)->name($appName)->path($this->path)->setRoutePath($this->path . 'route' . DIRECTORY_SEPARATOR);
-            return $this->loadMultiApp($this->path);
+        if (empty($this->appPath)) $this->appPath = $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR;
+        if (empty($this->rootSpace)) $this->rootSpace = $this->app->config->get('app.app_namespace') ?: 'app';
+        if (is_dir($this->appPath)) {
+            $this->app->setNamespace("{$this->rootSpace}\\{$appName}")->setAppPath($this->appPath);
+            $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
+            return $this->loadMultiApp($this->appPath);
         } else {
             return false;
         }
