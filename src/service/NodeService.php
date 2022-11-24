@@ -120,18 +120,18 @@ class NodeService extends Service
         foreach (static::scanDirectory(Library::$sapp->getBasePath()) as $file) {
             $name = substr($file, strlen(strtr(Library::$sapp->getRootPath(), '\\', '/')) - 1);
             if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
-                [, $space, $appname, $classname] = $matches;
-                static::_parseClass($space, $appname, $classname, $ignores, $data);
+                [, $appSpace, $appName, $className] = $matches;
+                static::_parseClass($appSpace, $appName, $className, $ignores, $data);
             }
         }
         // 扫描所有插件代码
-        $defaultSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
-        foreach (Library::$sapp->config->get('app.addons', []) as $appname => $path) {
-            [$path, $space] = explode('@', "{$path}@");
-            foreach (static::scanDirectory($path) as $file) {
-                $filename = substr($file, strlen(strtr($path, '\\', '/')) - 1);
+        $defSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
+        foreach (Library::$sapp->config->get('app.addons', []) as $appName => $appPath) {
+            [$appPath, $appSpace] = explode('@', "{$appPath}@");
+            foreach (static::scanDirectory($appPath) as $file) {
+                $filename = substr($file, strlen(strtr($appPath, '\\', '/')) - 1);
                 if (preg_match("|^.*?/controller/(.+)\.php$|i", $filename, $matches)) {
-                    static::_parseClass($space ?: $defaultSpace, $appname, $matches[1], $ignores, $data);
+                    static::_parseClass($appSpace ?: $defSpace, $appName, $matches[1], $ignores, $data);
                 }
             }
         }
@@ -145,8 +145,8 @@ class NodeService extends Service
      * @param string $space 应用空间
      * @param string $appname 应用名称
      * @param string $classname 应用类型
-     * @param array $ignores
-     * @param array $data
+     * @param array $ignores 忽略节点
+     * @param array $data 绑定节点
      * @return void
      */
     private static function _parseClass(string $space, string $appname, string $classname, array $ignores, array &$data)
