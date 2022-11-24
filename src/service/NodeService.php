@@ -125,12 +125,13 @@ class NodeService extends Service
             }
         }
         // 扫描所有插件代码
-        $space = Library::$sapp->config->get('app.namespace', 'app');
+        $defaultSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         foreach (Library::$sapp->config->get('app.addons', []) as $appname => $path) {
+            [$path, $space] = explode('@', "{$path}@");
             foreach (static::scanDirectory($path) as $file) {
                 $filename = substr($file, strlen(strtr($path, '\\', '/')) - 1);
                 if (preg_match("|^.*?/controller/(.+)\.php$|i", $filename, $matches)) {
-                    static::_parseClass($space, $appname, $matches[1], $ignores, $data);
+                    static::_parseClass($space ?: $defaultSpace, $appname, $matches[1], $ignores, $data);
                 }
             }
         }

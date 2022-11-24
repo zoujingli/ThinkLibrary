@@ -59,6 +59,7 @@ class Publish extends Command
     {
         // 执行模块安装处理
         foreach ($this->app->config->get('app.addons', []) as $path) {
+            [$path] = explode('@', $path);
             // 复制数据库脚本
             $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'database';
             PhinxExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);

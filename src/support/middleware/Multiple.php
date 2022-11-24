@@ -34,19 +34,25 @@ class Multiple
      * 应用实例
      * @var App
      */
-    protected $app;
+    private $app;
 
     /**
      * 应用名称
      * @var string
      */
-    protected $name;
+    private $name;
 
     /**
      * 应用路径
      * @var string
      */
-    protected $path;
+    private $path;
+
+    /**
+     * 应用空间
+     * @var string
+     */
+    private $space;
 
     /**
      * App constructor.
@@ -92,7 +98,7 @@ class Multiple
             }
             $name = current(explode('/', $pathinfo));
             if (strpos($name, '.')) $name = strstr($name, '.', true);
-            // 应用绑定处理
+            // 应用绑定与插件处理
             $map = $this->app->config->get('app.app_map', []);
             $addons = $this->app->config->get('app.addons', []);
             if (isset($map[$name])) {
@@ -110,7 +116,7 @@ class Multiple
             // 插件绑定处理
             $this->app->config->set(['view_path' => ''], 'view');
             if (isset($addons[$appName])) {
-                $this->path = $addons[$appName];
+                [$this->path, $this->space] = explode('@', "{$addons[$appName]}@");
                 $this->app->config->set(['view_path' => $this->path . 'view' . DIRECTORY_SEPARATOR], 'view');
             }
             if ($name) {
@@ -140,12 +146,16 @@ class Multiple
      */
     private function setMultiApp(string $appName, bool $appBind): bool
     {
-        if (is_dir($appPath = $this->path ?: $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR)) {
-            $this->app->setNamespace(($this->app->config->get('app.app_namespace') ?: 'app') . "\\{$appName}")->setAppPath($appPath);
-
-            $this->app->http->setBind($appBind)->name($appName)->path($appPath)->setRoutePath($appPath . 'route' . DIRECTORY_SEPARATOR);
-            $this->loadMultiApp($appPath);
-            return true;
+        if (empty($this->path)) {
+            $this->path = $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR;
+        }
+        if (empty($this->space)) {
+            $this->space = ($this->app->config->get('app.app_namespace') ?: 'app') . "\\{$appName}";
+        }
+        if (is_dir($this->path)) {
+            $this->app->setNamespace($this->space)->setAppPath($this->path);
+            $this->app->http->setBind($appBind)->name($appName)->path($this->path)->setRoutePath($this->path . 'route' . DIRECTORY_SEPARATOR);
+            return $this->loadMultiApp($this->path);
         } else {
             return false;
         }
@@ -155,9 +165,9 @@ class Multiple
      * 加载应用文件
      * @param string $appPath 应用路径
      * @codeCoverageIgnore
-     * @return void
+     * @return boolean
      */
-    private function loadMultiApp(string $appPath): void
+    private function loadMultiApp(string $appPath): bool
     {
         [$ext, $fmaps] = [$this->app->getConfigExt(), []];
         if (is_file($file = $appPath . 'common' . $ext)) include_once $file;
@@ -178,5 +188,6 @@ class Multiple
             $this->app->bind(include $file);
         }
         $this->app->lang->switchLangSet($this->app->lang->getLangSet());
+        return true;
     }
 }
