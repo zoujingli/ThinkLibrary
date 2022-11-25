@@ -72,9 +72,9 @@ class ToolsExtend
      */
     public static function scanDirectory(string $path, ?string $ext = 'php'): array
     {
-        return static::findSimpleFiles($path, function (\SplFileInfo $info) {
+        return static::findSimpleFiles($path, function (SplFileInfo $info) {
             return substr($info->getBasename(), 0, 1) !== '.';
-        }, function (\SplFileInfo $info) use ($ext) {
+        }, function (SplFileInfo $info) use ($ext) {
             return empty($ext) || $info->getExtension() === $ext;
         });
     }
