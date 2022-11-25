@@ -108,7 +108,7 @@ class ToolsExtend
         foreach ($items as $item) {
             if ($item->isDir() && !$item->isLink()) {
                 if (is_null($filterPath) || $filterPath($item)) {
-                    yield from static::findFilesYield($item->getPathname(), $filterPath, $filterFile);
+                    yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath);
                 }
             } else {
                 if (is_null($filterFile) || $filterFile($item)) yield $item;
