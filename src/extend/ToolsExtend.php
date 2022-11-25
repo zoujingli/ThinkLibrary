@@ -46,7 +46,7 @@ class ToolsExtend
         file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
-            $files = static::findArrayFiles($frdir, function (SplFileInfo $info) {
+            $files = static::findFilesArray($frdir, function (SplFileInfo $info) {
                 return substr($info->getBasename(), 0, 1) !== '.';
             }, function (SplFileInfo $info) {
                 return substr($info->getBasename(), 0, 1) !== '.';
@@ -72,7 +72,7 @@ class ToolsExtend
      */
     public static function scanDirectory(string $path, ?string $ext = 'php'): array
     {
-        return static::findArrayFiles($path, function (SplFileInfo $info) {
+        return static::findFilesArray($path, function (SplFileInfo $info) {
             return substr($info->getBasename(), 0, 1) !== '.';
         }, function (SplFileInfo $info) use ($ext) {
             return empty($ext) || $info->getExtension() === $ext;
@@ -86,9 +86,9 @@ class ToolsExtend
      * @param null|\Closure $filterDir
      * @return array
      */
-    public static function findArrayFiles(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): array
+    public static function findFilesArray(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): array
     {
-        $files = static::findYieldFiles($root, $filterDir, $filterFile);
+        $files = static::findFilesYield($root, $filterDir, $filterFile);
         [$pos, $items] = [strlen(realpath($root)) + 1, []];
         foreach ($files as $file) $items[] = substr($file->getRealPath(), $pos);
         unset($root, $files, $filterDir, $filterFile);
@@ -102,13 +102,13 @@ class ToolsExtend
      * @param \Closure|null $filterFile
      * @return \Generator|\SplFileInfo[]
      */
-    public static function findYieldFiles(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): Generator
+    public static function findFilesYield(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): Generator
     {
         $items = new FilesystemIterator($root);
         foreach ($items as $item) {
             if ($item->isDir() && !$item->isLink()) {
                 if (is_null($filterDir) || $filterDir($item)) {
-                    yield from static::findYieldFiles($item->getPathname(), $filterDir, $filterFile);
+                    yield from static::findFilesYield($item->getPathname(), $filterDir, $filterFile);
                 }
             } else {
                 if (is_null($filterFile) || $filterFile($item)) yield $item;
