@@ -30,8 +30,6 @@ use think\helper\Str;
  */
 class PhinxExtend
 {
-
-
     /**
      * 批量写入菜单
      * @param array $zdata 菜单数据
