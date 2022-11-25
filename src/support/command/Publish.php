@@ -68,7 +68,6 @@ class Publish extends Command
             ToolsExtend::copyfile($frdir, with_path('public'), [], false, false);
         }
         // 执行数据库脚本
-        $this->output->writeln('> @php think migrate:run');
         $message = $this->app->console->call('migrate:run')->fetch();
         $this->output->writeln($message);
         return $this;
