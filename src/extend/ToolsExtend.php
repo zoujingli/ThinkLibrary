@@ -83,32 +83,32 @@ class ToolsExtend
      * 扫描指定目录
      * @param string $root
      * @param null|\Closure $filterFile
-     * @param null|\Closure $filterDir
+     * @param null|\Closure $filterPath
      * @return array
      */
-    public static function findFilesArray(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): array
+    public static function findFilesArray(string $root, ?Closure $filterFile = null, ?Closure $filterPath = null): array
     {
-        $files = static::findFilesYield($root, $filterDir, $filterFile);
+        $files = static::findFilesYield($root, $filterFile, $filterPath);
         [$pos, $items] = [strlen(realpath($root)) + 1, []];
         foreach ($files as $file) $items[] = substr($file->getRealPath(), $pos);
-        unset($root, $files, $filterDir, $filterFile);
+        unset($root, $files, $filterPath, $filterFile);
         return $items;
     }
 
     /**
      * 扫描指定目录
      * @param string $root
-     * @param \Closure|null $filterDir
      * @param \Closure|null $filterFile
+     * @param \Closure|null $filterPath
      * @return \Generator|\SplFileInfo[]
      */
-    public static function findFilesYield(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): Generator
+    public static function findFilesYield(string $root, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
     {
         $items = new FilesystemIterator($root);
         foreach ($items as $item) {
             if ($item->isDir() && !$item->isLink()) {
-                if (is_null($filterDir) || $filterDir($item)) {
-                    yield from static::findFilesYield($item->getPathname(), $filterDir, $filterFile);
+                if (is_null($filterPath) || $filterPath($item)) {
+                    yield from static::findFilesYield($item->getPathname(), $filterPath, $filterFile);
                 }
             } else {
                 if (is_null($filterFile) || $filterFile($item)) yield $item;
