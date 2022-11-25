@@ -20,6 +20,7 @@ namespace think\admin\extend;
 use Closure;
 use FilesystemIterator;
 use Generator;
+use SplFileInfo;
 
 /**
  * 通用工具扩展
@@ -29,7 +30,7 @@ use Generator;
 class ToolsExtend
 {
     /**
-     * 深度拷贝目录到指定目录
+     * 深度拷贝到指定目录
      * @param string $frdir 来源目录
      * @param string $todir 目标目录
      * @param array $files 指定文件
@@ -41,17 +42,17 @@ class ToolsExtend
     {
         $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
         $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
-        // 目录检查创建
+        // 检查创建目录
         file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
-            $files = static::findSimpleFiles($frdir, function (\SplFileInfo $item) {
+            $files = static::findSimpleFiles($frdir, function (SplFileInfo $item) {
                 return !in_array(substr($item->getBasename(), 0, 1), ['.', '_']);
-            }, function (\SplFileInfo $item) {
+            }, function (SplFileInfo $item) {
                 return !in_array(substr($item->getBasename(), 0, 1), ['.', '_']);
             });
         }
-        // 复制指定文件
+        // 复制文件列表
         foreach ($files as $target) {
             if ($force || !file_exists($todir . $target)) {
                 copy($frdir . $target, $todir . $target);
