@@ -67,8 +67,8 @@ class Publish extends Command
             $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'public';
             PhinxExtend::copyfile($frdir, with_path('public'), [], false, false);
         }
-
         // 执行数据库脚本
+        $this->output->writeln('> @php think migrate:run');
         $message = $this->app->console->call('migrate:run')->fetch();
         $this->output->writeln($message);
         return $this;
