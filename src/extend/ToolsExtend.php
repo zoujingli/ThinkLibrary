@@ -46,10 +46,10 @@ class ToolsExtend
         file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
-            $files = static::findSimpleFiles($frdir, function (SplFileInfo $item) {
-                return !in_array(substr($item->getBasename(), 0, 1), ['.', '_']);
-            }, function (SplFileInfo $item) {
-                return !in_array(substr($item->getBasename(), 0, 1), ['.', '_']);
+            $files = static::findSimpleFiles($frdir, function (SplFileInfo $info) {
+                return substr($info->getBasename(), 0, 1) !== '.';
+            }, function (SplFileInfo $info) {
+                return substr($info->getBasename(), 0, 1) !== '.';
             });
         }
         // 复制文件列表
@@ -73,7 +73,7 @@ class ToolsExtend
     public static function scanDirectory(string $path, ?string $ext = 'php'): array
     {
         return static::findSimpleFiles($path, function (\SplFileInfo $info) {
-            return !in_array(substr($info->getBasename(), 0, 1), ['.', '_']);
+            return substr($info->getBasename(), 0, 1) !== '.';
         }, function (\SplFileInfo $info) use ($ext) {
             return empty($ext) || $info->getExtension() === $ext;
         });
