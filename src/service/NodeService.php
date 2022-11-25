@@ -20,6 +20,7 @@ namespace think\admin\service;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use think\admin\Exception;
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\admin\Service;
@@ -118,7 +119,7 @@ class NodeService extends Service
         /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\think\admin\Controller');
         /*! 扫描所有代码控制器节点，更新节点缓存 */
-        foreach (static::scanDirectory(Library::$sapp->getBasePath()) as $file) {
+        foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath()) as $file) {
             $name = substr($file, strlen(strtr(Library::$sapp->getRootPath(), '\\', '/')) - 1);
             if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
                 [, $appSpace, $appName, $className] = $matches;
@@ -129,7 +130,7 @@ class NodeService extends Service
         $defSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         foreach (Library::$sapp->config->get('app.addons', []) as $appName => $appPath) {
             [$appPath, $appSpace] = explode('@', "{$appPath}@");
-            foreach (static::scanDirectory($appPath) as $file) {
+            foreach (ToolsExtend::scanDirectory($appPath) as $file) {
                 $filename = substr($file, strlen(strtr($appPath, '\\', '/')) - 1);
                 if (preg_match("|^.*?/controller/(.+)\.php$|i", $filename, $matches)) {
                     static::_parseClass($appSpace ?: $defSpace, $appName, $matches[1], $ignores, $data);
@@ -183,15 +184,18 @@ class NodeService extends Service
     }
 
     /**
-     * 获取所有PHP文件列表
-     * @param string $path 扫描目录
-     * @param ?string $ext 文件后缀
+     * 重构兼容处理
+     * @param string $name
+     * @param array $arguments
      * @return array
+     * @throws \think\admin\Exception
      */
-    public static function scanDirectory(string $path, ?string $ext = 'php'): array
+    public static function __callStatic(string $name, array $arguments)
     {
-        return ToolsExtend::findSimpleFiles($path, null, function (\SplFileInfo $info) use ($ext) {
-            return empty($ext) || $info->getExtension() === $ext;
-        });
+        if ($name === 'scanDirectory') {
+            return ToolsExtend::scanDirectory(...$arguments);
+        } else {
+            throw new Exception("method not exists: NodeService::{$name}()");
+        }
     }
 }

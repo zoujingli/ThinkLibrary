@@ -65,6 +65,21 @@ class ToolsExtend
     }
 
     /**
+     * 扫描目录列表
+     * @param string $path 扫描目录
+     * @param ?string $ext 文件后缀
+     * @return array
+     */
+    public static function scanDirectory(string $path, ?string $ext = 'php'): array
+    {
+        return static::findSimpleFiles($path, function (\SplFileInfo $info) {
+            return !in_array(substr($info->getBasename(), 0, 1), ['.', '_']);
+        }, function (\SplFileInfo $info) use ($ext) {
+            return empty($ext) || $info->getExtension() === $ext;
+        });
+    }
+
+    /**
      * 扫描指定目录
      * @param string $root
      * @param null|\Closure $filterFile
