@@ -106,10 +106,10 @@ class JwtInit
 
         if (JwtExtend::$isJwt) {
             // 自动升级当前会话为 Jwt 会话
-            $this->session->set('__ISJWT_SESSION__', true);
+            JwtExtend::setJwtSession();
         } else {
             // Jwt 会话禁止非 Jwt 方式访问
-            if ($this->session->get('__ISJWT_SESSION__')) {
+            if (JwtExtend::isJwtSession()) {
                 throw new HttpResponseException(json([
                     'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
                 ]));
@@ -129,7 +129,7 @@ class JwtInit
     {
         // 自动升级当前会话为 Jwt 会话
         if (JwtExtend::$isJwt) {
-            $this->session->set('__ISJWT_SESSION__', true);
+            JwtExtend::setJwtSession();
         }
         // 保存当前的会话数据
         $this->session->save();

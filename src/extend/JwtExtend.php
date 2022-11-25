@@ -29,6 +29,12 @@ use think\admin\Library;
 class JwtExtend
 {
     /**
+     * 标识字段
+     * @var string
+     */
+    private static $sesskey = '__ISJWT_SESSION__';
+
+    /**
      * 头部参数
      * @var string[]
      */
@@ -88,7 +94,7 @@ class JwtExtend
     {
         static::$isJwt = true;
         is_bool($outToken) && static::$outToken = $outToken;
-        $payload['sub'] = CodeExtend::encrypt(Library::$sapp->session->getId(), static::jwtkey());
+        $payload['sub'] = CodeExtend::encrypt(static::setJwtSession(), static::jwtkey());
         $base64header = CodeExtend::enSafe64(json_encode(static::$header, JSON_UNESCAPED_UNICODE));
         $base64payload = CodeExtend::enSafe64(json_encode($payload, JSON_UNESCAPED_UNICODE));
         $signature = static::_sign($base64header . '.' . $base64payload, $jwtkey, static::$header['alg']);
@@ -232,6 +238,29 @@ class JwtExtend
     public static function setOutToken(bool $output): bool
     {
         return static::$outToken = $output;
+    }
+
+    /**
+     * 升级 Jwt 会话模式
+     * @return string
+     */
+    public static function setJwtSession(): string
+    {
+        if (!Library::$sapp->session->get(static::$sesskey)) {
+            Library::$sapp->session->save(); // 保存原会话数据
+            Library::$sapp->session->setId(); // 切换新会话编号
+            Library::$sapp->session->set(static::$sesskey, true);
+        }
+        return Library::$sapp->session->getId();
+    }
+
+    /**
+     * 判断 Jwt 会话模式
+     * @return bool
+     */
+    public static function isJwtSession(): bool
+    {
+        return boolval(Library::$sapp->session->get(static::$sesskey));
     }
 
     /**
