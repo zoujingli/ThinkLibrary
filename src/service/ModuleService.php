@@ -18,7 +18,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\HttpExtend;
-use think\admin\extend\PhinxExtend;
+use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\admin\Service;
 
@@ -126,7 +126,7 @@ class ModuleService extends Service
             $vars = static::getModuleVersion($name);
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
                 $data[$name] = array_merge($vars, ['change' => []]);
-                foreach (NodeService::scanDirectory(static::getModuleInfoPath($name) . 'change', [], 'md') as $file) {
+                foreach (NodeService::scanDirectory(static::getModuleInfoPath($name) . 'change', 'md') as $file) {
                     $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = file_get_contents($file);
                 }
             }
@@ -217,7 +217,7 @@ class ModuleService extends Service
         } elseif ($file['type'] == 'del') {
             $real = with_path($file['name']);
             if (is_file($real) && unlink($real)) {
-                PhinxExtend::removeEmptyDirectory(dirname($real));
+                ToolsExtend::removeEmptyDirectory(dirname($real));
                 return [true, $file['type'], $file['name']];
             } else {
                 return [false, $file['type'], $file['name']];
@@ -313,7 +313,7 @@ class ModuleService extends Service
     private static function scanLocalFileHashList(string $path): array
     {
         $data = [];
-        foreach (NodeService::scanDirectory($path, [], null) as $file) {
+        foreach (NodeService::scanDirectory($path, null) as $file) {
             if (static::checkAllowDownload($name = substr($file, strlen(with_path())))) {
                 $data[] = ['name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file)))];
             }

@@ -20,6 +20,7 @@ namespace think\admin\service;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\admin\Service;
 
@@ -184,22 +185,13 @@ class NodeService extends Service
     /**
      * 获取所有PHP文件列表
      * @param string $path 扫描目录
-     * @param array $data 额外数据
      * @param ?string $ext 文件后缀
      * @return array
      */
-    public static function scanDirectory(string $path, array $data = [], ?string $ext = 'php'): array
+    public static function scanDirectory(string $path, ?string $ext = 'php'): array
     {
-        if (file_exists($path)) if (is_file($path)) {
-            $data[] = strtr($path, '\\', '/');
-        } elseif (is_dir($path)) foreach (scandir($path) as $item) if ($item[0] !== '.') {
-            $real = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . $item;
-            if (is_readable($real)) if (is_dir($real)) {
-                $data = static::scanDirectory($real, $data, $ext);
-            } elseif (is_file($real) && (is_null($ext) || pathinfo($real, 4) === $ext)) {
-                $data[] = strtr($real, '\\', '/');
-            }
-        }
-        return $data;
+        return ToolsExtend::findSimpleFiles($path, null, function (\SplFileInfo $info) use ($ext) {
+            return empty($ext) || $info->getExtension() === $ext;
+        });
     }
 }

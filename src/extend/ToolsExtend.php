@@ -92,11 +92,11 @@ class ToolsExtend
         $items = new FilesystemIterator($root);
         foreach ($items as $item) {
             if ($item->isDir() && !$item->isLink()) {
-                if (!$filterDir || $filterDir($item)) {
+                if (is_null($filterDir) || $filterDir($item)) {
                     yield from static::findYieldFiles($item->getPathname(), $filterDir, $filterFile);
                 }
             } else {
-                if (!$filterFile || $filterFile($item)) yield $item;
+                if (is_null($filterFile) || $filterFile($item)) yield $item;
             }
         }
     }
