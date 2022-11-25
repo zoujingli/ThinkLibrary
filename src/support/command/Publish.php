@@ -16,7 +16,7 @@
 namespace think\admin\support\command;
 
 use think\admin\Command;
-use think\admin\extend\PhinxExtend;
+use think\admin\extend\ToolsExtend;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -62,10 +62,10 @@ class Publish extends Command
             [$path] = explode('@', $path);
             // 复制数据库脚本
             $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'database';
-            PhinxExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
+            ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
             // 复制静态资料文件
             $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'public';
-            PhinxExtend::copyfile($frdir, with_path('public'), [], false, false);
+            ToolsExtend::copyfile($frdir, with_path('public'), [], false, false);
         }
         // 执行数据库脚本
         $this->output->writeln('> @php think migrate:run');

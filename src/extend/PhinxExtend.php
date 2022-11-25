@@ -30,53 +30,7 @@ use think\helper\Str;
  */
 class PhinxExtend
 {
-    /**
-     * 拷贝文件到指定目录
-     * @param string $frdir 源目录
-     * @param string $todir 目标目录
-     * @param array $files 文件列表
-     * @param boolean $force 强制替换
-     * @param boolean $remove 删除文件
-     * @return boolean
-     */
-    public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
-    {
-        $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
-        $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
-        // 目录检查创建
-        file_exists($todir) || mkdir($todir, 0755, true);
-        // 扫描目录文件
-        if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
-            foreach (scandir($frdir) as $file) if ($file[0] !== '.') {
-                is_file($frdir . $file) && ($files[$file] = $file);
-            }
-        }
-        // 复制指定文件
-        foreach ($files as $source => $target) {
-            if (is_numeric($source)) $source = $target;
-            if ($force || !file_exists($todir . $target)) {
-                copy($frdir . $source, $todir . $target);
-            }
-            $remove && unlink($frdir . $source);
-        }
-        // 删除源目录
-        $remove && static::removeEmptyDirectory($frdir);
-        return true;
-    }
 
-    /**
-     * 移除空目录
-     * @param string $path 目录位置
-     * @return void
-     */
-    public static function removeEmptyDirectory(string $path)
-    {
-        if (file_exists($path) && is_dir($path)) {
-            if (count(scandir($path)) === 2 && rmdir($path)) {
-                static::removeEmptyDirectory(dirname($path));
-            }
-        }
-    }
 
     /**
      * 批量写入菜单

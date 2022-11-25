@@ -22,12 +22,47 @@ use FilesystemIterator;
 use Generator;
 
 /**
- * 扩展工具
+ * 通用工具扩展
  * Class ToolsExtend
  * @package think\admin\extend
  */
 class ToolsExtend
 {
+    /**
+     * 深度拷贝目录到指定目录
+     * @param string $frdir 来源目录
+     * @param string $todir 目标目录
+     * @param array $files 指定文件
+     * @param boolean $force 强制替换
+     * @param boolean $remove 删除文件
+     * @return boolean
+     */
+    public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
+    {
+        $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
+        $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
+        // 目录检查创建
+        file_exists($todir) || mkdir($todir, 0755, true);
+        // 扫描目录文件
+        if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
+            $files = static::findSimpleFiles($frdir, function (\SplFileInfo $item) {
+                return !in_array(substr($item->getBasename(), 0, 1), ['.', '_']);
+            }, function (\SplFileInfo $item) {
+                return !in_array(substr($item->getBasename(), 0, 1), ['.', '_']);
+            });
+        }
+        // 复制指定文件
+        foreach ($files as $target) {
+            if ($force || !file_exists($todir . $target)) {
+                copy($frdir . $target, $todir . $target);
+            }
+            $remove && unlink($frdir . $target);
+        }
+        // 删除源目录
+        $remove && static::removeEmptyDirectory($frdir);
+        return true;
+    }
+
     /**
      * 扫描指定目录
      * @param string $root
@@ -37,9 +72,8 @@ class ToolsExtend
      */
     public static function findSimpleFiles(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): array
     {
-        /** @var \SplFileInfo[] $files */
         $files = static::findYieldFiles($root, $filterDir, $filterFile);
-        [$pos, $items] = [strlen(realpath($root)), []];
+        [$pos, $items] = [strlen(realpath($root)) + 1, []];
         foreach ($files as $file) $items[] = substr($file->getRealPath(), $pos);
         unset($root, $files, $filterDir, $filterFile);
         return $items;
@@ -50,7 +84,7 @@ class ToolsExtend
      * @param string $root
      * @param \Closure|null $filterDir
      * @param \Closure|null $filterFile
-     * @return Generator
+     * @return \Generator|\SplFileInfo[]
      */
     public static function findYieldFiles(string $root, ?Closure $filterFile = null, ?Closure $filterDir = null): Generator
     {
