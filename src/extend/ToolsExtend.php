@@ -81,30 +81,30 @@ class ToolsExtend
 
     /**
      * 扫描指定目录
-     * @param string $root
+     * @param string $path
      * @param null|\Closure $filterFile
      * @param null|\Closure $filterPath
      * @return array
      */
-    public static function findFilesArray(string $root, ?Closure $filterFile = null, ?Closure $filterPath = null): array
+    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null): array
     {
-        $files = static::findFilesYield($root, $filterFile, $filterPath);
-        [$pos, $items] = [strlen(realpath($root)) + 1, []];
+        $files = static::findFilesYield($path, $filterFile, $filterPath);
+        [$pos, $items] = [strlen(realpath($path)) + 1, []];
         foreach ($files as $file) $items[] = substr($file->getRealPath(), $pos);
-        unset($root, $files, $filterPath, $filterFile);
+        unset($path, $files, $filterPath, $filterFile);
         return $items;
     }
 
     /**
      * 扫描指定目录
-     * @param string $root
+     * @param string $path
      * @param \Closure|null $filterFile
      * @param \Closure|null $filterPath
      * @return \Generator|\SplFileInfo[]
      */
-    public static function findFilesYield(string $root, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
+    public static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
     {
-        $items = new FilesystemIterator($root);
+        $items = new FilesystemIterator($path);
         foreach ($items as $item) {
             if ($item->isDir() && !$item->isLink()) {
                 if (is_null($filterPath) || $filterPath($item)) {
