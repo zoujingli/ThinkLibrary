@@ -57,64 +57,65 @@ class ToolsExtend
             if ($force || !file_exists($todir . $target)) {
                 copy($frdir . $target, $todir . $target);
             }
+            // 删除来源文件
             $remove && unlink($frdir . $target);
         }
-        // 删除源目录
+        // 删除来源目录
         $remove && static::removeEmptyDirectory($frdir);
         return true;
     }
 
     /**
      * 扫描目录列表
-     * @param string $dir 扫描目录
-     * @param string $ext 筛选后缀
-     * @param boolean $sub 相对路径
+     * @param string $path 扫描目录
+     * @param string $filterExt 筛选后缀
+     * @param boolean $shortPath 相对路径
      * @return array
      */
-    public static function scanDirectory(string $dir, string $ext = '', bool $sub = true): array
+    public static function scanDirectory(string $path, string $filterExt = '', bool $shortPath = true): array
     {
-        return static::findFilesArray($dir, function (SplFileInfo $info) use ($ext) {
-            return empty($ext) || $info->getExtension() === $ext;
+        return static::findFilesArray($path, function (SplFileInfo $info) use ($filterExt) {
+            return empty($filterExt) || $info->getExtension() === $filterExt;
         }, function (SplFileInfo $info) {
             return substr($info->getBasename(), 0, 1) !== '.';
-        }, $sub);
+        }, $shortPath);
     }
 
     /**
      * 扫描指定目录
-     * @param string $dir
+     * @param string $path
      * @param ?Closure $filterFile
      * @param ?Closure $filterPath
-     * @param boolean $subPath
+     * @param boolean $shortPath
      * @return array
      */
-    public static function findFilesArray(string $dir, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $subPath = true): array
+    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $shortPath = true): array
     {
         $items = [];
-        if ($dir = realpath($dir)) {
-            $files = static::findFilesYield($dir, $filterFile, $filterPath);
-            foreach ($files as $file) $items[] = $file->getRealPath();
-            if ($subPath) {
-                $posi = strlen($dir) + 1;
-                foreach ($items as &$item) {
-                    $item = substr($item, $posi);
-                }
-            }
+        if (!($path = realpath($path))) return [];
+        // 绝对目录扫描
+        $files = static::findFilesYield($path, $filterFile, $filterPath);
+        foreach ($files as $file) $items[] = $file->getRealPath();
+        if (empty($shortPath)) return $items;
+        // 相对目录截取
+        $offset = strlen($path) + 1;
+        foreach ($items as &$item) {
+            $item = substr($item, $offset);
         }
         return $items;
     }
 
     /**
      * 扫描指定目录
-     * @param string $dir
+     * @param string $path
      * @param \Closure|null $filterFile
      * @param \Closure|null $filterPath
      * @return \Generator|\SplFileInfo[]
      */
-    public static function findFilesYield(string $dir, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
+    public static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
     {
-        if (file_exists($dir)) {
-            $items = is_file($dir) ? [new SplFileInfo($dir)] : new FilesystemIterator($dir);
+        if (file_exists($path)) {
+            $items = is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path);
             foreach ($items as $item) if ($item->isDir() && !$item->isLink()) {
                 if (is_null($filterPath) || $filterPath($item)) {
                     yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath);
@@ -127,7 +128,7 @@ class ToolsExtend
 
     /**
      * 移除空目录
-     * @param string $path 目录位置
+     * @param string $path
      * @return void
      */
     public static function removeEmptyDirectory(string $path)
