@@ -74,6 +74,21 @@ class RuntimeService
     }
 
     /**
+     * 获取插件信息
+     * @return array
+     */
+    public static function plugs(): array
+    {
+        $ons = [];
+        $defa = Library::$sapp->config->get('app.app_namespace') ?: 'app';
+        foreach (Library::$sapp->config->get('app.addons', []) as $name => $rule) {
+            [, $path, $root] = explode('@', $rule . '@');
+            $ons[$name] = [rtrim($path, '\\/') . DIRECTORY_SEPARATOR, $root ?: $defa];
+        }
+        return $ons;
+    }
+
+    /**
      * 获取动态配置
      * @param null|string $name 配置名称
      * @param array $default 配置内容

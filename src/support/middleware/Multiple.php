@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\support\middleware;
 
 use Closure;
+use think\admin\service\RuntimeService;
 use think\App;
 use think\exception\HttpException;
 use think\Request;
@@ -99,8 +100,8 @@ class Multiple
             $name = current(explode('/', $pathinfo));
             if (strpos($name, '.')) $name = strstr($name, '.', true);
             // 应用绑定与插件处理
+            $ons = RuntimeService::plugs();
             $map = $this->app->config->get('app.app_map', []);
-            $addons = $this->app->config->get('app.addons', []);
             if (isset($map[$name])) {
                 $appName = $map[$name] instanceof Closure ? (call_user_func_array($map[$name], [$this->app]) ?: $name) : $map[$name];
             } elseif ($name && (in_array($name, $map) || in_array($name, $this->app->config->get('app.deny_app_list', [])))) {
@@ -109,14 +110,14 @@ class Multiple
                 $appName = $map['*'];
             } else {
                 $appName = $name ?: $defaultApp;
-                if (!isset($addons[$appName]) && !is_dir($this->appPath ?: $this->app->getBasePath() . $appName)) {
+                if (!isset($ons[$appName]) && !is_dir($this->appPath ?: $this->app->getBasePath() . $appName)) {
                     return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp, false);
                 }
             }
             // 插件绑定处理
             $this->app->config->set(['view_path' => ''], 'view');
-            if (isset($addons[$appName])) {
-                [$this->appPath, $this->rootSpace] = explode('@', "{$addons[$appName]}@");
+            if (isset($ons[$appName])) {
+                [$this->appPath, $this->rootSpace] = $ons[$appName];
                 $this->app->config->set(['view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR], 'view');
             }
             if ($name) {

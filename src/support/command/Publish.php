@@ -17,9 +17,11 @@ namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\extend\ToolsExtend;
+use think\admin\service\RuntimeService;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
+use think\migration\command\seed\Run;
 
 /**
  * 组件安装指令
@@ -58,8 +60,9 @@ class Publish extends Command
     private function plugin(): Publish
     {
         // 执行模块安装处理
-        foreach ($this->app->config->get('app.addons', []) as $path) {
-            [$path] = explode('@', $path);
+
+        foreach (RuntimeService::plugs() as $plug) {
+            [$path] = $plug;
             // 复制系统配置文件
             $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . 'config';
             ToolsExtend::copyfile($frdir, with_path('config'), [], false, false);
