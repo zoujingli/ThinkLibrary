@@ -40,8 +40,8 @@ class ToolsExtend
      */
     public static function copyfile(string $frdir, string $todir, array $files = [], bool $force = true, bool $remove = true): bool
     {
-        $frdir = trim($frdir, '\\/') . DIRECTORY_SEPARATOR;
-        $todir = trim($todir, '\\/') . DIRECTORY_SEPARATOR;
+        $frdir = rtrim($frdir, '\\/') . DIRECTORY_SEPARATOR;
+        $todir = rtrim($todir, '\\/') . DIRECTORY_SEPARATOR;
         // 检查创建目录
         file_exists($todir) || mkdir($todir, 0755, true);
         // 扫描目录文件
