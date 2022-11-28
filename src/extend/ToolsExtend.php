@@ -67,7 +67,7 @@ class ToolsExtend
     /**
      * 扫描目录列表
      * @param string $dir 扫描目录
-     * @param string $ext 文件后缀
+     * @param string $ext 筛选后缀
      * @param boolean $sub 相对路径
      * @return array
      */
@@ -82,36 +82,31 @@ class ToolsExtend
 
     /**
      * 扫描指定目录
-     * @param string $path
-     * @param null|\Closure $filterFile
-     * @param null|\Closure $filterPath
-     * @param boolean $subpath
+     * @param string $dir
+     * @param ?Closure $filterFile
+     * @param ?Closure $filterPath
+     * @param boolean $subPath
      * @return array
      */
-    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $subpath = true): array
+    public static function findFilesArray(string $dir, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $subPath = true): array
     {
-        $items = [];
-        foreach (static::findFilesYield($path, $filterFile, $filterPath) as $file) {
-            $items[] = $file->getRealPath();
-        }
-        if ($subpath) {
-            $pos = strlen(realpath($path)) + 1;
-            foreach ($items as &$item) $item = substr($item, $pos);
-        }
+        [$posi, $items] = [strlen(realpath($dir)) + 1, []];
+        $files = static::findFilesYield($dir, $filterFile, $filterPath);
+        foreach ($files as $file) $items[] = $file->getRealPath();
+        if ($subPath) foreach ($items as &$item) $item = substr($item, $posi);
         return $items;
     }
 
     /**
      * 扫描指定目录
-     * @param string $path
+     * @param string $dir
      * @param \Closure|null $filterFile
      * @param \Closure|null $filterPath
      * @return \Generator|\SplFileInfo[]
      */
-    public static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
+    public static function findFilesYield(string $dir, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
     {
-        $items = new FilesystemIterator($path);
-        foreach ($items as $item) {
+        foreach (new FilesystemIterator($dir) as $item) {
             if ($item->isDir() && !$item->isLink()) {
                 if (is_null($filterPath) || $filterPath($item)) {
                     yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath);
