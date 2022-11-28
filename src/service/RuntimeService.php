@@ -75,7 +75,7 @@ class RuntimeService
 
     /**
      * 获取插件信息
-     * @return array
+     * @return array [[所在路径,主空间名]]
      */
     public static function plugs(): array
     {
