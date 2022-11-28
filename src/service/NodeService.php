@@ -119,7 +119,7 @@ class NodeService extends Service
         /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\think\admin\Controller');
         /*! 扫描所有代码控制器节点，更新节点缓存 */
-        foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath()) as $file) {
+        foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $file) {
             $name = substr($file, strlen(strtr(Library::$sapp->getRootPath(), '\\', '/')) - 1);
             if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
                 [, $appSpace, $appName, $className] = $matches;
@@ -130,7 +130,7 @@ class NodeService extends Service
         $defSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         foreach (Library::$sapp->config->get('app.addons', []) as $appName => $appPath) {
             [$appPath, $appSpace] = explode('@', "{$appPath}@");
-            foreach (ToolsExtend::scanDirectory($appPath) as $file) {
+            foreach (ToolsExtend::scanDirectory($appPath, 'php') as $file) {
                 $filename = substr($file, strlen(strtr($appPath, '\\', '/')) - 1);
                 if (preg_match("|^.*?/controller/(.+)\.php$|i", $filename, $matches)) {
                     static::_parseClass($appSpace ?: $defSpace, $appName, $matches[1], $ignores, $data);
