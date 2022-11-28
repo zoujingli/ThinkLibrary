@@ -60,12 +60,15 @@ class Publish extends Command
         // 执行模块安装处理
         foreach ($this->app->config->get('app.addons', []) as $path) {
             [$path] = explode('@', $path);
-            // 复制数据库脚本
-            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'database';
-            ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
+            // 复制系统配置文件
+            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'source' . DIRECTORY_SEPARATOR . 'config';
+            ToolsExtend::copyfile($frdir, with_path('config'), [], false, false);
             // 复制静态资料文件
-            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'public';
+            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'source' . DIRECTORY_SEPARATOR . 'public';
             ToolsExtend::copyfile($frdir, with_path('public'), [], false, false);
+            // 复制数据库脚本
+            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'source' . DIRECTORY_SEPARATOR . 'database';
+            ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
         }
         // 执行数据库脚本
         $message = $this->app->console->call('migrate:run')->fetch();
