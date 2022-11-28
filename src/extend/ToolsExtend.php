@@ -90,10 +90,17 @@ class ToolsExtend
      */
     public static function findFilesArray(string $dir, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $subPath = true): array
     {
-        [$posi, $items] = [strlen(realpath($dir)) + 1, []];
-        $files = static::findFilesYield($dir, $filterFile, $filterPath);
-        foreach ($files as $file) $items[] = $file->getRealPath();
-        if ($subPath) foreach ($items as &$item) $item = substr($item, $posi);
+        $items = [];
+        if ($dir = realpath($dir)) {
+            $files = static::findFilesYield($dir, $filterFile, $filterPath);
+            foreach ($files as $file) $items[] = $file->getRealPath();
+            if ($subPath) {
+                $posi = strlen($dir) + 1;
+                foreach ($items as &$item) {
+                    $item = substr($item, $posi);
+                }
+            }
+        }
         return $items;
     }
 
@@ -106,8 +113,9 @@ class ToolsExtend
      */
     public static function findFilesYield(string $dir, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
     {
-        foreach (new FilesystemIterator($dir) as $item) {
-            if ($item->isDir() && !$item->isLink()) {
+        if (file_exists($dir)) {
+            $items = is_file($dir) ? [new SplFileInfo($dir)] : new FilesystemIterator($dir);
+            foreach ($items as $item) if ($item->isDir() && !$item->isLink()) {
                 if (is_null($filterPath) || $filterPath($item)) {
                     yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath);
                 }
