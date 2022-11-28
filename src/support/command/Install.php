@@ -135,7 +135,7 @@ class Install extends Command
         // 指定模块初始化
         if ($name === 'static') {
             $todir = with_path('public/static/extra/');
-            $frdir = dirname(__DIR__) . "/service/bin/{$name}/";
+            $frdir = dirname(__DIR__, 2) . "/service/bin/{$name}/";
             $this->queue->message($total, $count, "--- 处理静态自定义目录");
             ToolsExtend::copyfile($frdir, $todir, ['script.js', 'style.css'], false, false);
         }
