@@ -119,8 +119,8 @@ class ToolsExtend
                 if (is_null($filterPath) || $filterPath($item)) {
                     yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath);
                 }
-            } else {
-                if (is_null($filterFile) || $filterFile($item)) yield $item;
+            } elseif (is_null($filterFile) || $filterFile($item)) {
+                yield $item;
             }
         }
     }
