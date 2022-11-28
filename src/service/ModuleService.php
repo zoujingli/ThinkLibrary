@@ -126,7 +126,7 @@ class ModuleService extends Service
             $vars = static::getModuleVersion($name);
             if (is_array($vars) && isset($vars['version']) && preg_match('|^\d{4}\.\d{2}\.\d{2}\.\d{2}$|', $vars['version'])) {
                 $data[$name] = array_merge($vars, ['change' => []]);
-                foreach (ToolsExtend::scanDirectory(static::getModuleInfoPath($name) . 'change', 'md') as $file) {
+                foreach (ToolsExtend::scanDirectory(static::getModuleInfoPath($name) . 'change', 'md', false) as $file) {
                     $data[$name]['change'][pathinfo($file, PATHINFO_FILENAME)] = file_get_contents($file);
                 }
             }
@@ -313,7 +313,7 @@ class ModuleService extends Service
     private static function scanLocalFileHashList(string $path): array
     {
         $data = [];
-        foreach (ToolsExtend::scanDirectory($path, null) as $file) {
+        foreach (ToolsExtend::scanDirectory($path, '', false) as $file) {
             if (static::checkAllowDownload($name = substr($file, strlen(with_path())))) {
                 $data[] = ['name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file)))];
             }

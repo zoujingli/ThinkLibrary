@@ -66,17 +66,18 @@ class ToolsExtend
 
     /**
      * 扫描目录列表
-     * @param string $path 扫描目录
-     * @param ?string $ext 文件后缀
+     * @param string $dir 扫描目录
+     * @param string $ext 文件后缀
+     * @param boolean $sub 相对路径
      * @return array
      */
-    public static function scanDirectory(string $path, ?string $ext = 'php'): array
+    public static function scanDirectory(string $dir, string $ext = '', bool $sub = true): array
     {
-        return static::findFilesArray($path, function (SplFileInfo $info) {
+        return static::findFilesArray($dir, function (SplFileInfo $info) {
             return substr($info->getBasename(), 0, 1) !== '.';
         }, function (SplFileInfo $info) use ($ext) {
             return empty($ext) || $info->getExtension() === $ext;
-        });
+        }, $sub);
     }
 
     /**
@@ -84,14 +85,19 @@ class ToolsExtend
      * @param string $path
      * @param null|\Closure $filterFile
      * @param null|\Closure $filterPath
+     * @param boolean $subpath
      * @return array
      */
-    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null): array
+    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $subpath = true): array
     {
-        $files = static::findFilesYield($path, $filterFile, $filterPath);
-        [$pos, $items] = [strlen(realpath($path)) + 1, []];
-        foreach ($files as $file) $items[] = substr($file->getRealPath(), $pos);
-        unset($path, $files, $filterPath, $filterFile);
+        $items = [];
+        foreach (static::findFilesYield($path, $filterFile, $filterPath) as $file) {
+            $items[] = $file->getRealPath();
+        }
+        if ($subpath) {
+            $pos = strlen(realpath($path)) + 1;
+            foreach ($items as &$item) $item = substr($item, $pos);
+        }
         return $items;
     }
 
