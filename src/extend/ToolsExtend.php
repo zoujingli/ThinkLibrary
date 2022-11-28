@@ -92,15 +92,12 @@ class ToolsExtend
     public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $shortPath = true): array
     {
         $items = [];
-        if (!($path = realpath($path))) return [];
-        // 绝对目录扫描
-        $files = static::findFilesYield($path, $filterFile, $filterPath);
-        foreach ($files as $file) $items[] = $file->getRealPath();
-        if (empty($shortPath)) return $items;
-        // 相对目录截取
-        $offset = strlen($path) + 1;
-        foreach ($items as &$item) {
-            $item = substr($item, $offset);
+        if (file_exists($path)) {
+            $files = static::findFilesYield($path, $filterFile, $filterPath);
+            foreach ($files as $file) $items[] = $file->getRealPath();
+            if ($shortPath && ($offset = strlen(realpath($path)) + 1)) {
+                foreach ($items as &$item) $item = substr($item, $offset);
+            }
         }
         return $items;
     }
