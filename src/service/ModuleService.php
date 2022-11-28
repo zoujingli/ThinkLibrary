@@ -312,7 +312,7 @@ class ModuleService extends Service
      */
     private static function scanLocalFileHashList(string $path): array
     {
-        [$posi, $data] = [strlen(with_path()), []];
+        [$posi, $data] = [strlen(with_path()) + 1, []];
         foreach (ToolsExtend::scanDirectory($path, '', false) as $file) {
             if (static::checkAllowDownload($name = substr($file, $posi))) {
                 $data[] = ['name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file)))];
