@@ -119,14 +119,14 @@ class NodeService extends Service
         /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\think\admin\Controller');
         /*! 扫描所有代码控制器节点，更新节点缓存 */
+        $defSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $name) {
-            if (preg_match("|^([\w/]+)/(\w+)/controller/(.+)\.php$|i", $name, $matches)) {
-                [, $appSpace, $appName, $className] = $matches;
-                static::_parseClass($appSpace, $appName, $className, $ignores, $data);
+            if (preg_match("|^(\w+)/controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
+                [, $appName, $className] = $matches;
+                static::_parseClass($defSpace, $appName, $className, $ignores, $data);
             }
         }
         // 扫描所有插件代码
-        $defSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         foreach (Library::$sapp->config->get('app.addons', []) as $appName => $appPath) {
             [$appPath, $appSpace] = explode('@', "{$appPath}@");
             foreach (ToolsExtend::scanDirectory($appPath, 'php') as $filename) {
