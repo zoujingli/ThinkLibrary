@@ -63,6 +63,9 @@ class PluginService extends Service
      */
     public function boot(): void
     {
+        // 初始化服务
+        $this->initialize();
+
         $ref = new \ReflectionClass(static::class);
         $attr = explode('\\', $ref->getNamespaceName());
 
@@ -108,5 +111,12 @@ class PluginService extends Service
     public static function all(): array
     {
         return static::$addons;
+    }
+
+    /**
+     * 服务初始化
+     */
+    protected function initialize()
+    {
     }
 }
