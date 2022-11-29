@@ -46,19 +46,19 @@ class PluginService extends Service
     protected $appPath = '';
 
     /**
-     * 插件空间名称
-     * @var string
-     */
-    protected $rootSpace = '';
-
-    /**
      * 文件拷贝目录
      * @var string
      */
     protected $copyPath = '';
 
     /**
-     * 启动时注册应用
+     * 插件空间名称
+     * @var string
+     */
+    protected $rootName = '';
+
+    /**
+     * 自动注册应用
      * @return void
      */
     public function boot(): void
@@ -74,25 +74,27 @@ class PluginService extends Service
         // 插件应用名称计算
         $appName = array_pop($attr);
         if (empty($this->appName)) $this->appName = $appName;
-        if (empty($this->rootSpace)) $this->rootSpace = join('\\', $attr);
-        static::add($this->appPath, $this->appName, $this->rootSpace, $this->copyPath);
+        if (empty($this->rootName)) $this->rootName = join('\\', $attr);
+
+        // 注册应用插件信息
+        static::add($this->appName, $this->appPath, $this->rootName, $this->copyPath);
     }
 
     /**
      * 注册插件
-     * @param string $path 应用目录
-     * @param string $name 应用名称
-     * @param string $root 命名空间
-     * @param string $copy 应用资源
+     * @param string $appName 应用名称
+     * @param string $appPath 应用目录
+     * @param string $rootName 命名空间
+     * @param string $copyPath 应用资源
      * @return boolean
      */
-    public static function add(string $path, string $name, string $root = '', string $copy = ''): bool
+    public static function add(string $appName, string $appPath, string $rootName = '', string $copyPath = ''): bool
     {
-        if (file_exists($path) && is_dir($path)) {
-            $path = rtrim($path, '\\/') . DIRECTORY_SEPARATOR;
-            $copy = rtrim($copy ?: $path, '\\/') . DIRECTORY_SEPARATOR;
-            $root = $root ?: Library::$sapp->config->get('app.app_namespace') ?: 'app';
-            static::$addons[$name] = [$path, $root, $copy];
+        if (file_exists($appPath) && is_dir($appPath)) {
+            $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
+            $copyPath = rtrim($copyPath ?: $appPath, '\\/') . DIRECTORY_SEPARATOR;
+            $rootName = $rootName ?: Library::$sapp->config->get('app.app_namespace') ?: 'app';
+            static::$addons[$appName] = [$appPath, $rootName, $copyPath];
             return true;
         } else {
             return false;
