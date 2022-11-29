@@ -95,8 +95,8 @@ class PluginService extends Service
     {
         if (file_exists($appPath) && is_dir($appPath)) {
             $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
-            $copyPath = rtrim($copyPath ?: $appPath, '\\/') . DIRECTORY_SEPARATOR;
             $rootName = $rootName ?: Library::$sapp->config->get('app.app_namespace') ?: 'app';
+            $copyPath = rtrim($copyPath ?: dirname($appPath) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
             static::$addons[$appName] = [$appPath, $rootName, $copyPath];
             return true;
         } else {
