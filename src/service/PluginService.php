@@ -18,17 +18,65 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Library;
+use think\Service;
 
 /**
- * 应用插件数据服务
+ * 应用插件注册服务
+ * Class PluginService
+ * @package think\admin\service
  */
-class PluginService
+class PluginService extends Service
 {
     /**
      * 当前插件配置
      * @var array
      */
     private static $addons = [];
+
+    /**
+     * 插件应用名称
+     * @var string
+     */
+    protected $appName = '';
+
+    /**
+     * 插件应用目录
+     * @var string
+     */
+    protected $appPath = '';
+
+    /**
+     * 插件空间名称
+     * @var string
+     */
+    protected $rootSpace = '';
+
+    /**
+     * 文件拷贝目录
+     * @var string
+     */
+    protected $copyPath = '';
+
+    /**
+     * 启动时注册应用
+     * @return void
+     */
+    public function boot(): void
+    {
+        $ref = new \ReflectionClass(static::class);
+        $attr = explode('\\', $ref->getNamespaceName());
+
+        // 插件应用路径计算
+        if (empty($this->appPath) || !file_exists($this->appPath)) {
+            $this->appPath = dirname($ref->getFileName());
+        }
+
+        // 插件应用名称计算
+        $appName = array_pop($attr);
+        if (empty($this->appName)) $this->appName = $appName;
+        if (empty($this->rootSpace)) $this->rootSpace = join('\\', $attr);
+        static::add($this->appPath, $this->appName, $this->rootSpace, $this->copyPath);
+    }
 
     /**
      * 注册插件
@@ -38,7 +86,7 @@ class PluginService
      * @param string $copy 应用资源
      * @return boolean
      */
-    public static function set(string $path, string $name, string $root = '', string $copy = ''): bool
+    public static function add(string $path, string $name, string $root = '', string $copy = ''): bool
     {
         if (file_exists($path) && is_dir($path)) {
             $path = rtrim($path, '\\/') . DIRECTORY_SEPARATOR;
