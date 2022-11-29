@@ -127,7 +127,7 @@ class NodeService extends Service
             }
         }
         // 扫描所有插件代码
-        foreach (RuntimeService::plugs() as $appName => $plugInfo) {
+        foreach (PluginService::all() as $appName => $plugInfo) {
             [$appPath, $appSpace] = $plugInfo;
             foreach (ToolsExtend::scanDirectory($appPath) as $filename) {
                 if (preg_match("|^.*?/controller/(.+)\.php$|i", $filename, $matches)) {

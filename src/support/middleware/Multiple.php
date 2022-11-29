@@ -18,7 +18,7 @@ declare (strict_types=1);
 namespace think\admin\support\middleware;
 
 use Closure;
-use think\admin\service\RuntimeService;
+use think\admin\service\PluginService;
 use think\App;
 use think\exception\HttpException;
 use think\Request;
@@ -100,24 +100,24 @@ class Multiple
             $name = current(explode('/', $pathinfo));
             if (strpos($name, '.')) $name = strstr($name, '.', true);
             // 应用绑定与插件处理
-            $ons = RuntimeService::plugs();
-            $map = $this->app->config->get('app.app_map', []);
-            if (isset($map[$name])) {
-                $appName = $map[$name] instanceof Closure ? (call_user_func_array($map[$name], [$this->app]) ?: $name) : $map[$name];
-            } elseif ($name && (in_array($name, $map) || in_array($name, $this->app->config->get('app.deny_app_list', [])))) {
+            $addons = PluginService::all();
+            $appmap = $this->app->config->get('app.app_map', []);
+            if (isset($appmap[$name])) {
+                $appName = $appmap[$name] instanceof Closure ? (call_user_func_array($appmap[$name], [$this->app]) ?: $name) : $appmap[$name];
+            } elseif ($name && (in_array($name, $appmap) || in_array($name, $this->app->config->get('app.deny_app_list', [])))) {
                 throw new HttpException(404, "app not exists: {$name}");
-            } elseif ($name && isset($map['*'])) {
-                $appName = $map['*'];
+            } elseif ($name && isset($appmap['*'])) {
+                $appName = $appmap['*'];
             } else {
                 $appName = $name ?: $defaultApp;
-                if (!isset($ons[$appName]) && !is_dir($this->appPath ?: $this->app->getBasePath() . $appName)) {
+                if (!isset($addons[$appName]) && !is_dir($this->appPath ?: $this->app->getBasePath() . $appName)) {
                     return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp, false);
                 }
             }
             // 插件绑定处理
             $this->app->config->set(['view_path' => ''], 'view');
-            if (isset($ons[$appName])) {
-                [$this->appPath, $this->rootSpace] = $ons[$appName];
+            if (isset($addons[$appName])) {
+                [$this->appPath, $this->rootSpace] = $addons[$appName];
                 $this->app->config->set(['view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR], 'view');
             }
             if ($name) {

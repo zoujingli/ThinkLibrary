@@ -17,11 +17,10 @@ namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\extend\ToolsExtend;
-use think\admin\service\RuntimeService;
+use think\admin\service\PluginService;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
-use think\migration\command\seed\Run;
 
 /**
  * 组件安装指令
@@ -61,16 +60,16 @@ class Publish extends Command
     {
         // 执行模块安装处理
 
-        foreach (RuntimeService::plugs() as $plug) {
-            [$path] = $plug;
+        foreach (PluginService::all() as $plug) {
+            [, , $copy] = $plug;
             // 复制系统配置文件
-            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . 'config';
+            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
             ToolsExtend::copyfile($frdir, with_path('config'), [], false, false);
             // 复制静态资料文件
-            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . 'public';
+            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
             ToolsExtend::copyfile($frdir, with_path('public'), [], false, false);
             // 复制数据库脚本
-            $frdir = rtrim($path, '\\/') . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . 'database';
+            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
             ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
         }
         // 执行数据库脚本
