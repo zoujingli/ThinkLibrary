@@ -34,7 +34,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public function postAutoloadDump(Event $event)
     {
         $root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
-        file_exists($file = "{$root}/think") or copy(__DIR__ . '/command/stubs/think', $file);
+        file_exists($file = "{$root}/think") or copy(__DIR__ . '/command/stubs/think.stub', $file);
         $event->getComposer()->getEventDispatcher()->dispatchScript('@php think vendor:publish');
     }
 }
