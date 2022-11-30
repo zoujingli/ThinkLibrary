@@ -2,6 +2,7 @@
 
 namespace think\admin\support;
 
+use Composer\Command\RunScriptCommand;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
@@ -17,6 +18,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 {
     public function activate(Composer $composer, IOInterface $io)
     {
+
     }
 
     public function deactivate(Composer $composer, IOInterface $io)
@@ -38,9 +40,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     public function postAutoloadDump(Event $event)
     {
-        echo $event->getComposer()->getPackage()->getPrettyName() . PHP_EOL;
-        // print_r($event->getComposer()->getInstallationManager()->);
-        // (new App(dirname(__DIR__, 4)))->console->call('vendor:publish')->fetch();
-        // Container::getInstance()->invokeMethod([Publish::class, 'execute']);
+        $root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
+        file_exists($file = "{$root}/think") or copy(__DIR__ . '/command/stubs/think', $file);
+        $event->getComposer()->getEventDispatcher()->dispatchScript('@php think vendor:publish');
     }
 }
