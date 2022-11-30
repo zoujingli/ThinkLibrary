@@ -130,7 +130,7 @@ class NodeService extends Service
         foreach (PluginService::all() as $appName => $plugInfo) {
             [$appPath, $appSpace] = $plugInfo;
             foreach (ToolsExtend::scanDirectory($appPath) as $filename) {
-                if (preg_match("|^.*?/controller/(.+)\.php$|i", $filename, $matches)) {
+                if (preg_match("|^.*?controller/(.+)\.php$|i", $filename, $matches)) {
                     static::_parseClass($appSpace ?: $defSpace, $appName, $matches[1], $ignores, $data);
                 }
             }
