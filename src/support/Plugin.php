@@ -29,13 +29,13 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         echo __METHOD__ . PHP_EOL;
         return [
-            PluginEvents::POST_FILE_DOWNLOAD => [
-                ['onFileDownload', 0],
+            'postAutoloadDump' => [
+                ['autoloadDump', 0],
             ],
         ];
     }
 
-    public static function onFileDownload()
+    public function autoloadDump()
     {
         echo __METHOD__ . PHP_EOL;
     }
