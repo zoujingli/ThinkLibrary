@@ -5,8 +5,8 @@ namespace think\admin\support;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
-use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
+use Composer\Script\Event;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
@@ -31,11 +31,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         ];
     }
 
-    public function postAutoloadDump()
+    public function postAutoloadDump(Event $event)
     {
         echo __METHOD__ . PHP_EOL;
-        foreach (func_get_args() as $obj) {
-            var_dump(get_class($obj));
-        }
     }
 }
