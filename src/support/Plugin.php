@@ -10,16 +10,16 @@ class Plugin implements PluginInterface
 {
     public function activate(Composer $composer, IOInterface $io)
     {
-        echo __METHOD__;
+        echo __METHOD__ . PHP_EOL;
     }
 
     public function deactivate(Composer $composer, IOInterface $io)
     {
-        echo __METHOD__;
+        echo __METHOD__ . PHP_EOL;
     }
 
     public function uninstall(Composer $composer, IOInterface $io)
     {
-        echo __METHOD__;
+        echo __METHOD__ . PHP_EOL;
     }
 }
