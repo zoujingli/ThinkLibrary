@@ -29,7 +29,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         echo __METHOD__ . PHP_EOL;
         return [
-            'postAutoloadDump' => [
+            'post-autoload-dump' => [
                 ['autoloadDump', 0],
             ],
         ];
