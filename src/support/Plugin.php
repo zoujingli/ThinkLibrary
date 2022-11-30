@@ -38,7 +38,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     public function postAutoloadDump(Event $event)
     {
-        print_r($event->getComposer()->getInstallationManager()->getInstallPath());
+        echo $event->getComposer()->getPackage()->getPrettyName() . PHP_EOL;
+        // print_r($event->getComposer()->getInstallationManager()->);
         // (new App(dirname(__DIR__, 4)))->console->call('vendor:publish')->fetch();
         // Container::getInstance()->invokeMethod([Publish::class, 'execute']);
     }
