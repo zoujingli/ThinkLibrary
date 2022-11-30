@@ -8,15 +8,12 @@ use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use think\admin\support\command\Publish;
-use think\App;
-use think\Console;
 use think\Container;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
     public function activate(Composer $composer, IOInterface $io)
     {
-
     }
 
     public function deactivate(Composer $composer, IOInterface $io)
@@ -38,7 +35,6 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     public function postAutoloadDump(Event $event)
     {
-        echo __METHOD__ . PHP_EOL;
         Container::getInstance()->invokeMethod([Publish::class, 'execute']);
     }
 }
