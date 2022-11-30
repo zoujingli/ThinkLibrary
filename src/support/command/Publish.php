@@ -61,7 +61,7 @@ class Publish extends Command
         foreach (PluginService::all() as $plug) {
             [, , $copy] = $plug;
             // 复制根目录文件
-            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'root';
+            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'appsys';
             ToolsExtend::copyfile($frdir, with_path(), [], false, false);
             // 复制系统配置文件
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
