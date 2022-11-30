@@ -37,7 +37,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     public function autoloadDump()
     {
-        dump(func_get_args());
+        var_dump(func_get_args());
         echo __METHOD__ . PHP_EOL;
     }
 }
