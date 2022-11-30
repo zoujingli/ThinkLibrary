@@ -38,8 +38,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     public function postAutoloadDump(Event $event)
     {
-        RuntimeService::doConsoleInit();
-        print_r(Library::$sapp->console->call('vendor:publish')->fetch());
+        \think\facade\App::getInstance()->console->call('vendor:publish')->fetch();
         // Container::getInstance()->invokeMethod([Publish::class, 'execute']);
     }
 }
