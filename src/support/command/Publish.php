@@ -60,9 +60,6 @@ class Publish extends Command
     {
         foreach (PluginService::all() as $plug) {
             [, , $copy] = $plug;
-            // 复制根目录文件
-            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'appsys';
-            ToolsExtend::copyfile($frdir, with_path(), [], false, false);
             // 复制系统配置文件
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
             ToolsExtend::copyfile($frdir, with_path('config'), [], false, false);
@@ -72,6 +69,9 @@ class Publish extends Command
             // 复制数据库脚本
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
             ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
+            // 复制根目录文件
+            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'sysroot';
+            ToolsExtend::copyfile($frdir, with_path(), [], false, false);
         }
         // 执行数据库脚本
         $message = $this->app->console->call('migrate:run')->fetch();
