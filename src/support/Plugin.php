@@ -12,32 +12,30 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 {
     public function activate(Composer $composer, IOInterface $io)
     {
-        echo __METHOD__ . PHP_EOL;
     }
 
     public function deactivate(Composer $composer, IOInterface $io)
     {
-        echo __METHOD__ . PHP_EOL;
     }
 
     public function uninstall(Composer $composer, IOInterface $io)
     {
-        echo __METHOD__ . PHP_EOL;
     }
 
     public static function getSubscribedEvents(): array
     {
-        echo __METHOD__ . PHP_EOL;
         return [
             'post-autoload-dump' => [
-                ['autoloadDump', 0],
+                ['postAutoloadDump', 0],
             ],
         ];
     }
 
-    public function autoloadDump()
+    public function postAutoloadDump()
     {
-        var_dump(func_get_args());
         echo __METHOD__ . PHP_EOL;
+        foreach (func_get_args() as $obj) {
+            var_dump(get_class($obj));
+        }
     }
 }
