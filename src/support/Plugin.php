@@ -7,7 +7,10 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
+use think\admin\Library;
+use think\admin\service\RuntimeService;
 use think\admin\support\command\Publish;
+use think\App;
 use think\Container;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
@@ -35,6 +38,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     public function postAutoloadDump(Event $event)
     {
-        Container::getInstance()->invokeMethod([Publish::class, 'execute']);
+        RuntimeService::doConsoleInit();
+        Library::$sapp->console->call('vendor:publish');
+        // Container::getInstance()->invokeMethod([Publish::class, 'execute']);
     }
 }
