@@ -38,7 +38,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
     public function postAutoloadDump(Event $event)
     {
-        \think\facade\App::getInstance()->console->call('vendor:publish')->fetch();
+        (new App(dirname(__DIR__, 4)))->console->call('vendor:publish')->fetch();
         // Container::getInstance()->invokeMethod([Publish::class, 'execute']);
     }
 }
