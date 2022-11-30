@@ -2,23 +2,16 @@
 
 namespace think\admin\support;
 
-use Composer\Command\RunScriptCommand;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
-use think\admin\Library;
-use think\admin\service\RuntimeService;
-use think\admin\support\command\Publish;
-use think\App;
-use think\Container;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
     public function activate(Composer $composer, IOInterface $io)
     {
-
     }
 
     public function deactivate(Composer $composer, IOInterface $io)
