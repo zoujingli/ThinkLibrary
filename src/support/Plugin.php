@@ -30,12 +30,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         echo __METHOD__ . PHP_EOL;
         return [
             PluginEvents::POST_FILE_DOWNLOAD => [
-                ['onFileDonwload', 0],
+                ['onFileDownload', 0],
             ],
         ];
     }
 
-    public static function onFileDonwload()
+    public static function onFileDownload()
     {
         echo __METHOD__ . PHP_EOL;
     }
