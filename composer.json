@@ -26,8 +26,8 @@
     "ext-iconv": "*",
     "ext-openssl": "*",
     "ext-mbstring": "*",
-    "composer-plugin-api": "^2.3",
     "topthink/framework": "^6.0",
+    "composer-plugin-api": "^1.0|^2.3",
     "topthink/think-migration": "^3.0"
   },
   "require-dev": {
