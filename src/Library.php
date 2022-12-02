@@ -61,11 +61,16 @@ class Library extends Service
         // 静态应用赋值
         static::$sapp = $this->app;
 
-        // 替换 ThinkPHP 指令
-        //$this->commands(['build' => Build::class]);
-
         // 注册 ThinkAdmin 指令
-        $this->commands([Queue::class, Package::class, Sysmenu::class, Publish::class, Install::class, Database::class, Replace::class]);
+        $this->commands([
+            Queue::class,
+            Package::class,
+            Sysmenu::class,
+            Publish::class,
+            Install::class,
+            Replace::class,
+            Database::class,
+        ]);
 
         // 动态应用运行参数
         RuntimeService::apply();
