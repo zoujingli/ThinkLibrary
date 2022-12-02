@@ -18,11 +18,9 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Library;
-use think\admin\support\command\Publish;
 use think\admin\support\Route;
 use think\admin\support\Url;
 use think\App;
-use think\console\command\VendorPublish;
 use think\Container;
 use think\Response;
 
@@ -69,7 +67,6 @@ class RuntimeService
         Library::$sapp = $app ?: Container::getInstance()->make(App::class);
         Library::$sapp->bind('think\Route', Route::class);
         Library::$sapp->bind('think\route\Url', Url::class);
-        Library::$sapp->bind(VendorPublish::class, Publish::class);
         return Library::$sapp->debug(static::isDebug());
     }
 

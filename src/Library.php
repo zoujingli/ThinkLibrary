@@ -20,7 +20,6 @@ namespace think\admin;
 use Closure;
 use think\admin\service\AdminService;
 use think\admin\service\RuntimeService;
-use think\admin\support\command\Build;
 use think\admin\support\command\Database;
 use think\admin\support\command\Install;
 use think\admin\support\command\Package;
@@ -63,10 +62,10 @@ class Library extends Service
         static::$sapp = $this->app;
 
         // 替换 ThinkPHP 指令
-        $this->commands(['build' => Build::class, 'vendor:publish' => Publish::class]);
+        //$this->commands(['build' => Build::class]);
 
         // 注册 ThinkAdmin 指令
-        $this->commands([Queue::class, Package::class, Sysmenu::class, Install::class, Database::class, Replace::class]);
+        $this->commands([Queue::class, Package::class, Sysmenu::class, Publish::class, Install::class, Database::class, Replace::class]);
 
         // 动态应用运行参数
         RuntimeService::apply();

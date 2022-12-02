@@ -36,7 +36,7 @@ class Publish extends Command
      */
     public function configure()
     {
-        $this->setName('vendor:publish');
+        $this->setName('xadmin:plugin');
         $this->addOption('force', 'f', Option::VALUE_NONE, 'Overwrite any existing files');
         $this->setDescription('Publish any publishable assets from vendor packages');
     }
@@ -66,12 +66,12 @@ class Publish extends Command
             // 复制静态资料文件
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
             ToolsExtend::copyfile($frdir, with_path('public'), [], false, false);
-            // 复制数据库脚本
-            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
-            ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
             // 复制根目录文件
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'sysroot';
             ToolsExtend::copyfile($frdir, with_path(), [], false, false);
+            // 复制数据库脚本
+            $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
+            ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
         }
         // 执行数据库脚本
         $message = $this->app->console->call('migrate:run')->fetch();
