@@ -26,7 +26,6 @@
     "ext-openssl": "*",
     "ext-mbstring": "*",
     "topthink/framework": "^6.0",
-    "topthink/think-view": "v1.0",
     "topthink/think-migration": "^3.0"
   },
   "autoload": {
