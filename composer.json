@@ -1,5 +1,4 @@
 {
-  "type": "composer-plugin",
   "name": "zoujingli/think-library",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
@@ -27,11 +26,7 @@
     "ext-openssl": "*",
     "ext-mbstring": "*",
     "topthink/framework": "^6.0",
-    "composer-plugin-api": "^1.0|^2.3",
     "topthink/think-migration": "^3.0"
-  },
-  "require-dev": {
-    "composer/composer": "^1.0|^2.0"
   },
   "autoload": {
     "files": [
@@ -42,9 +37,6 @@
     }
   },
   "extra": {
-    "class": [
-      "think\\admin\\support\\Plugin"
-    ],
     "think": {
       "services": [
         "think\\admin\\Library"
