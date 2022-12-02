@@ -36,9 +36,9 @@ class Publish extends Command
      */
     public function configure()
     {
-        $this->setName('xadmin:plugin');
+        $this->setName('xadmin:publish');
         $this->addOption('force', 'f', Option::VALUE_NONE, 'Overwrite any existing files');
-        $this->setDescription('Publish any publishable assets from vendor packages');
+        $this->setDescription('Publish Plugs and Config Assets for ThinkAdmin');
     }
 
     /**
