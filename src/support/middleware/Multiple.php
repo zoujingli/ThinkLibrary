@@ -178,7 +178,7 @@ class Multiple
             $this->app->loadEvent(include $file);
         }
         if (is_file($file = $appPath . 'middleware' . $ext)) {
-            $this->app->middleware->import(include $file);
+            $this->app->middleware->import(include $file, 'app');
         }
         if (is_file($file = $appPath . 'provider' . $ext)) {
             $this->app->bind(include $file);
