@@ -69,6 +69,7 @@ abstract class Command extends \think\console\Command
             $this->queue->error($message);
         } else {
             $this->process->message($message);
+            exit(0);
         }
     }
 
@@ -83,6 +84,7 @@ abstract class Command extends \think\console\Command
             $this->queue->success($message);
         } else {
             $this->process->message($message);
+            exit(0);
         }
     }
 

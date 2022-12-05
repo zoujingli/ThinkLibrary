@@ -48,6 +48,10 @@ class Database extends Command
      */
     protected function execute(Input $input, Output $output): void
     {
+        if ($this->app->db->connect()->getConfig('type') === 'sqlite') {
+            $this->setQueueError("Sqlite 数据库不支持 REPAIR 和 OPTIMIZE 操作！");
+        }
+
         $action = $input->getArgument('action');
         if (method_exists($this, $method = "_{$action}")) $this->$method();
         else $this->output->error("Wrong operation, currently allow repair|optimize");
