@@ -78,7 +78,7 @@ class MenuService extends Service
             }
             if (!empty($menu['sub'])) {
                 $menu['url'] = '#';
-            } elseif ($menu['url'] === '#') {
+            } elseif (empty($menu['url']) || $menu['url'] === '#') {
                 unset($menus[$key]);
             } elseif (preg_match('#^(https?:)?(//|\\\\)#i', $menu['url'])) {
                 if (!!$menu['node'] && !AdminService::check($menu['node'])) {
