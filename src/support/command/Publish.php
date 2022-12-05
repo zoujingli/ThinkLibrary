@@ -58,20 +58,21 @@ class Publish extends Command
      */
     private function plugin(): Publish
     {
+        $force = boolval($this->input->getOption('force'));
         foreach (PluginService::all() as $plug) {
             [, , $copy] = $plug;
             // 复制系统配置文件
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
-            ToolsExtend::copyfile($frdir, with_path('config'), [], false, false);
+            ToolsExtend::copyfile($frdir, with_path('config'), [], $force, false);
             // 复制静态资料文件
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
-            ToolsExtend::copyfile($frdir, with_path('public'), [], false, false);
+            ToolsExtend::copyfile($frdir, with_path('public'), [], $force, false);
             // 复制根目录文件
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'sysroot';
-            ToolsExtend::copyfile($frdir, with_path(), [], false, false);
+            ToolsExtend::copyfile($frdir, with_path(), [], $force, false);
             // 复制数据库脚本
             $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
-            ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], false, false);
+            ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], $force, false);
         }
         // 执行数据库脚本
         $message = $this->app->console->call('migrate:run')->fetch();
