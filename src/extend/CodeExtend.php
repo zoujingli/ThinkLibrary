@@ -64,7 +64,7 @@ class CodeExtend
      */
     public static function uniqidNumber(int $size = 12, string $prefix = ''): string
     {
-        $time = time() . '';
+        $time = strval(time());
         if ($size < 10) $size = 10;
         $code = $prefix . (intval($time[0]) + intval($time[1])) . substr($time, 2) . rand(0, 9);
         while (strlen($code) < $size) $code .= rand(0, 9);
