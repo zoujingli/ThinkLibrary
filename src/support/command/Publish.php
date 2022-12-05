@@ -86,7 +86,6 @@ class Publish extends Command
      */
     private function parse(): Publish
     {
-        $force = $this->input->getOption('force');
         if (is_file($path = $this->app->getRootPath() . 'vendor/composer/installed.json')) {
             $packages = json_decode(@file_get_contents($path), true);
             // Compatibility with Composer 2.0
@@ -103,7 +102,7 @@ class Publish extends Command
                     foreach ((array)$package['extra']['think']['config'] as $name => $file) {
                         $source = $installPath . $file;
                         $target = $configPath . $name . '.php';
-                        if (is_file($target) && !$force) {
+                        if (is_file($target)) {
                             $this->output->info("File {$target} exist!");
                             continue;
                         }
