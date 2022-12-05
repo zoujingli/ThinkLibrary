@@ -45,6 +45,7 @@ class Database extends Command
      * @param \think\console\Input $input
      * @param \think\console\Output $output
      * @return void
+     * @throws \think\admin\Exception
      */
     protected function execute(Input $input, Output $output): void
     {
