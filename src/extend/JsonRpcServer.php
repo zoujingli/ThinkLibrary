@@ -109,6 +109,7 @@ class JsonRpcServer
                 $params = [];
                 foreach ($method->getParameters() as $parameter) {
                     $type = $parameter->getType();
+                    if ($type instanceof \ReflectionType) $type = $type->getName();
                     $params[] = ($type ? "{$type} $" : '$') . $parameter->getName();
                 }
                 $params = count($params) > 0 ? join(', ', $params) : '';
