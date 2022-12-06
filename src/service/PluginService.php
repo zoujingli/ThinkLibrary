@@ -31,7 +31,7 @@ class PluginService extends Service
      * 当前插件配置
      * @var array
      */
-    private static $addons = [];
+    private static $ons = [];
 
     /**
      * 应用插件名称
@@ -106,7 +106,7 @@ class PluginService extends Service
             $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
             $rootName = ($rootName ?: $config->get('app.app_namespace')) ?: 'app';
             $copyPath = rtrim($copyPath ?: dirname($appPath) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
-            static::$addons[$appName] = [$appPath, $rootName, $copyPath, $appAlias];
+            static::$ons[$appName] = [$appPath, $rootName, $copyPath, $appAlias];
             if (!empty($appAlias) && $appAlias !== $appName) {
                 $config->set(['app_map' => array_merge($config->get('app.app_map', []), [$appAlias => $appName])], 'app');
             }
@@ -122,7 +122,7 @@ class PluginService extends Service
      */
     public static function all(): array
     {
-        return static::$addons;
+        return static::$ons;
     }
 
     /**
