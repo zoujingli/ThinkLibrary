@@ -214,7 +214,7 @@ class JwtExtend
      * @param array $data
      * @return array
      */
-    public static function setOutData(array $data): array
+    public static function setOutData(array $data = []): array
     {
         static::$outToken = true;
         return static::$outData = $data;
@@ -234,7 +234,7 @@ class JwtExtend
      * @param boolean $output
      * @return boolean
      */
-    public static function setOutToken(bool $output): bool
+    public static function setOutToken(bool $output = true): bool
     {
         return static::$outToken = $output;
     }
