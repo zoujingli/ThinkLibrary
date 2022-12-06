@@ -32,7 +32,7 @@ class JwtExtend
      * 标识字段
      * @var string
      */
-    private static $sesskey = '__ISJWT_SESSION__';
+    private static $skey = '__ISJWT_SESS__';
 
     /**
      * 头部参数
@@ -245,10 +245,10 @@ class JwtExtend
      */
     public static function setJwtSession(): string
     {
-        if (!Library::$sapp->session->get(static::$sesskey)) {
+        if (!Library::$sapp->session->get(static::$skey)) {
             Library::$sapp->session->save(); // 保存原会话数据
             Library::$sapp->session->setId(); // 切换新会话编号
-            Library::$sapp->session->set(static::$sesskey, true);
+            Library::$sapp->session->set(static::$skey, true);
         }
         return Library::$sapp->session->getId();
     }
@@ -259,7 +259,7 @@ class JwtExtend
      */
     public static function isJwtSession(): bool
     {
-        return boolval(Library::$sapp->session->get(static::$sesskey));
+        return boolval(Library::$sapp->session->get(static::$skey));
     }
 
     /**

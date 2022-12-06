@@ -80,14 +80,12 @@ class JwtInit
             ]));
         }
 
-        $cookieName = $this->session->getName();
-
         if (empty($sessionId)) {
             $varSessionId = $this->app->config->get('session.var_session_id');
             if ($varSessionId && $request->request($varSessionId)) {
                 $sessionId = $request->request($varSessionId);
             } else {
-                $sessionId = $request->cookie($cookieName);
+                $sessionId = $request->cookie($this->session->getName());
             }
         }
 
@@ -106,7 +104,7 @@ class JwtInit
                 'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
             ]));
             // 非 Jwt 请求需要写入 Cookie 记录 SessionID
-            $this->app->cookie->set($cookieName, $this->session->getId());
+            $this->app->cookie->set($this->session->getName(), $this->session->getId());
         }
 
         // 执行下一步控制器操作
