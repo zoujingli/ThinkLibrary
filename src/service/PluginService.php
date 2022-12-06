@@ -34,16 +34,23 @@ class PluginService extends Service
     private static $addons = [];
 
     /**
-     * 插件应用名称
+     * 应用插件名称
      * @var string
      */
     protected $appName = '';
 
+
     /**
-     * 插件应用目录
+     * 应用插件目录
      * @var string
      */
     protected $appPath = '';
+
+    /**
+     * 应用插件别名
+     * @var string
+     */
+    protected $appAlias = '';
 
     /**
      * 文件拷贝目录
@@ -69,35 +76,40 @@ class PluginService extends Service
         $ref = new \ReflectionClass(static::class);
         $attr = explode('\\', $ref->getNamespaceName());
 
-        // 插件应用路径计算
+        // 应用插件路径计算
         if (empty($this->appPath) || !file_exists($this->appPath)) {
             $this->appPath = dirname($ref->getFileName());
         }
 
-        // 插件应用名称计算
+        // 应用插件名称计算
         $appName = array_pop($attr);
         if (empty($this->appName)) $this->appName = $appName;
         if (empty($this->rootName)) $this->rootName = join('\\', $attr);
 
         // 注册应用插件信息
-        static::add($this->appName, $this->appPath, $this->rootName, $this->copyPath);
+        static::add($this->appName, $this->appPath, $this->appAlias, $this->rootName, $this->copyPath);
     }
 
     /**
      * 注册插件
      * @param string $appName 应用名称
      * @param string $appPath 应用目录
+     * @param string $appAlias 应用别名
      * @param string $rootName 命名空间
      * @param string $copyPath 应用资源
      * @return boolean
      */
-    public static function add(string $appName, string $appPath, string $rootName = '', string $copyPath = ''): bool
+    public static function add(string $appName, string $appPath, string $appAlias = '', string $rootName = '', string $copyPath = ''): bool
     {
         if (file_exists($appPath) && is_dir($appPath)) {
+            $config = Library::$sapp->config;
             $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
-            $rootName = $rootName ?: Library::$sapp->config->get('app.app_namespace') ?: 'app';
+            $rootName = $rootName ?: $config->get('app.app_namespace') ?: 'app';
             $copyPath = rtrim($copyPath ?: dirname($appPath) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
-            static::$addons[$appName] = [$appPath, $rootName, $copyPath];
+            static::$addons[$appName] = [$appPath, $rootName, $copyPath, $appAlias];
+            if (!empty($appAlias) && $appAlias !== $appName) {
+                $config->set(['app_map' => array_merge($config->get('app.app_map', []), [$appAlias => $appName])], 'app');
+            }
             return true;
         } else {
             return false;
