@@ -39,13 +39,21 @@ class JsonRpcClient
     private $proxy;
 
     /**
+     * 请求头部参数
+     * @var string
+     */
+    private $header;
+
+    /**
      * JsonRpcClient constructor.
      * @param string $proxy
+     * @param array $header
      */
-    public function __construct(string $proxy)
+    public function __construct(string $proxy, array $header = [])
     {
         $this->id = time();
         $this->proxy = $proxy;
+        $this->header = $header;
     }
 
     /**
@@ -64,10 +72,8 @@ class JsonRpcClient
             ],
             'http' => [
                 'method'  => 'POST',
-                'header'  => 'Content-type: application/json',
-                'content' => json_encode([
-                    'jsonrpc' => '2.0', 'method' => $method, 'params' => $params, 'id' => $this->id,
-                ], JSON_UNESCAPED_UNICODE),
+                'header'  => join("\r\n", array_merge(['Content-type:application/json'], $this->header)),
+                'content' => json_encode(['jsonrpc' => '2.0', 'method' => $method, 'params' => $params, 'id' => $this->id], JSON_UNESCAPED_UNICODE),
             ],
         ];
         // Performs the HTTP POST
@@ -82,10 +88,7 @@ class JsonRpcClient
         if ($response['id'] != $this->id) {
             throw new Exception(lang("错误标记 (请求标记: %v, 响应标记: %v）", [$this->id, $response['id']]));
         }
-        if (is_null($response['error'])) {
-            return $response['result'];
-        } else {
-            throw new Exception($response['error']['message'], $response['error']['code'], $response['result']);
-        }
+        if (is_null($response['error'])) return $response['result'];
+        throw new Exception($response['error']['message'], $response['error']['code'], $response['result']);
     }
 }
