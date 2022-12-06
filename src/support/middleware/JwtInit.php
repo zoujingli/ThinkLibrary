@@ -95,13 +95,13 @@ class JwtInit
             $this->session->setId($sessionId);
         }
 
-        // Session 初始化
+        // 基础 Session 初始化
         $this->session->init();
         $request->withSession($this->session);
 
         // 检查 Jwt 状态并自动升级 Jwt 会话
         if (!(JwtExtend::$isJwt && JwtExtend::setJwtSession())) {
-            // 非 Jwt 请求禁止使用Jwt会话
+            // 非 Jwt 请求禁止使用 Jwt 会话
             if (JwtExtend::isJwtSession()) throw new HttpResponseException(json([
                 'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
             ]));
@@ -109,7 +109,7 @@ class JwtInit
             $this->app->cookie->set($cookieName, $this->session->getId());
         }
 
-        // 执行下一步操作
+        // 执行下一步控制器操作
         return $next($request)->setSession($this->session);
     }
 
@@ -119,7 +119,7 @@ class JwtInit
      */
     public function end()
     {
-        // 自动检查并升级Jwt会话
+        // 检查并升级Jwt会话
         if (JwtExtend::$isJwt) {
             JwtExtend::setJwtSession();
         }
