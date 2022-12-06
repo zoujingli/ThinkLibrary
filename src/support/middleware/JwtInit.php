@@ -65,15 +65,14 @@ class JwtInit
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 处理 JWT 请求
+        // 处理 Jwt 请求，请求头存在 jwt-token 字段
         if (($token = $request->header('jwt-token', ''))) try {
             if (preg_match('#^\s*([\w\-]+\.[\w\-]+\.[\w\-]+)\s*$#', $token, $match)) {
-                $payload = JwtExtend::verifyToken($match[1]);
-                if (isset($payload['sub']) && !empty($payload['sub'])) {
-                    $sessionId = CodeExtend::decrypt($payload['sub'], JwtExtend::jwtkey());
+                if (($data = JwtExtend::verifyToken($match[1])) && !empty($data['sub'])) {
+                    $sessionId = CodeExtend::decrypt($data['sub'], JwtExtend::jwtkey());
                 }
             } else {
-                throw new Exception(lang('访问 Jwt Token 格式错误！'));
+                throw new Exception('访问 Jwt Token 格式错误！');
             }
         } catch (\Exception $exception) {
             throw new HttpResponseException(json([
@@ -104,17 +103,13 @@ class JwtInit
         $response = $next($request);
         $response->setSession($this->session);
 
-        if (JwtExtend::$isJwt) {
-            // 自动升级当前会话为 Jwt 会话
-            JwtExtend::setJwtSession();
-        } else {
-            // Jwt 会话禁止非 Jwt 方式访问
-            if (JwtExtend::isJwtSession()) {
-                throw new HttpResponseException(json([
-                    'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
-                ]));
-            }
-            // 其他方式访问需要写入 Cookie 记录 SessionID
+        // 自动升级为Jwt会话
+        if (!(JwtExtend::$isJwt && JwtExtend::setJwtSession())) {
+            // 非 Jwt 请求禁止使用Jwt会话
+            if (JwtExtend::isJwtSession()) throw new HttpResponseException(json([
+                'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
+            ]));
+            // 非 Jwt 请求需要写入 Cookie 记录 SessionID
             $this->app->cookie->set($cookieName, $this->session->getId());
         }
 
@@ -127,10 +122,8 @@ class JwtInit
      */
     public function end()
     {
-        // 自动升级当前会话为 Jwt 会话
-        if (JwtExtend::$isJwt) {
-            JwtExtend::setJwtSession();
-        }
+        // 自动检查并升级Jwt会话
+        JwtExtend::$isJwt && JwtExtend::setJwtSession();
         // 保存当前的会话数据
         $this->session->save();
     }

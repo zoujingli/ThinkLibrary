@@ -92,7 +92,6 @@ class JwtExtend
      */
     public static function getToken(array $payload, ?string $jwtkey = null, ?bool $outToken = null): string
     {
-        static::$isJwt = true;
         is_bool($outToken) && static::$outToken = $outToken;
         $payload['sub'] = CodeExtend::encrypt(static::setJwtSession(), static::jwtkey());
         $base64header = CodeExtend::enSafe64(json_encode(static::$header, JSON_UNESCAPED_UNICODE));
