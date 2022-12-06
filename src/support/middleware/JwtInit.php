@@ -99,20 +99,21 @@ class JwtInit
         $this->session->init();
         $request->withSession($this->session);
 
-        /** @var Response $response */
-        $response = $next($request);
-        $response->setSession($this->session);
-
-        // 自动升级为Jwt会话
+        // JwtSession 检查处理
         if (!(JwtExtend::$isJwt && JwtExtend::setJwtSession())) {
             // 非 Jwt 请求禁止使用Jwt会话
-            if (JwtExtend::isJwtSession()) throw new HttpResponseException(json([
-                'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
-            ]));
+            if (JwtExtend::isJwtSession()) {
+                throw new HttpResponseException(json([
+                    'code' => 0, 'info' => lang('请使用 JWT 方式访问！'),
+                ]));
+            }
             // 非 Jwt 请求需要写入 Cookie 记录 SessionID
             $this->app->cookie->set($cookieName, $this->session->getId());
         }
 
+        /** @var Response $response */
+        $response = $next($request);
+        $response->setSession($this->session);
         return $response;
     }
 
