@@ -28,12 +28,6 @@ use think\Service;
 class PluginService extends Service
 {
     /**
-     * 当前插件配置
-     * @var array
-     */
-    private static $ons = [];
-
-    /**
      * 应用插件名称
      * @var string
      */
@@ -63,6 +57,12 @@ class PluginService extends Service
      * @var string
      */
     protected $rootName = '';
+
+    /**
+     * 当前插件配置
+     * @var array
+     */
+    private static $addons = [];
 
     /**
      * 自动注册应用
@@ -106,7 +106,7 @@ class PluginService extends Service
             $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
             $rootName = ($rootName ?: $config->get('app.app_namespace')) ?: 'app';
             $copyPath = rtrim($copyPath ?: dirname($appPath) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
-            static::$ons[$appName] = [$appPath, $rootName, $copyPath, $appAlias];
+            self::$addons[$appName] = [$appPath, $rootName, $copyPath, $appAlias];
             if (!empty($appAlias) && $appAlias !== $appName) {
                 $config->set(['app_map' => array_merge($config->get('app.app_map', []), [$appAlias => $appName])], 'app');
             }
@@ -122,7 +122,7 @@ class PluginService extends Service
      */
     public static function all(): array
     {
-        return static::$ons;
+        return self::$addons;
     }
 
     /**
