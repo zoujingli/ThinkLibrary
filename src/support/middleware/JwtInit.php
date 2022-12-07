@@ -105,7 +105,7 @@ class JwtInit
             if (!$isJwtSession) {
                 $this->session->destroy();
                 throw new HttpResponseException(json([
-                    'code' => 0, 'info' => lang('会话无效或已失效！')
+                    'code' => 401, 'info' => lang('会话无效或已失效！')
                 ]));
             }
         } else {
