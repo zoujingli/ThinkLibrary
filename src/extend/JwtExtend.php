@@ -247,7 +247,7 @@ class JwtExtend
     {
         if (!Library::$sapp->session->get(static::$skey)) {
             Library::$sapp->session->save(); // 保存原会话数据
-            Library::$sapp->session->setId(); // 切换新会话编号
+            Library::$sapp->session->regenerate(); // 切换新会话编号
             Library::$sapp->session->set(static::$skey, true);
         }
         return Library::$sapp->session->getId();
