@@ -80,7 +80,7 @@ class JsonRpcServer
                     $result = call_user_func_array([$object, $request['method']], $request['params']);
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => $result, 'error' => null];
                 } else {
-                    $error = ['code' => '-32601', 'message' => lang('method not exists: %s', [$request['method']]), 'meaning' => lang('The method does not exist or is invalid.')];
+                    $error = ['code' => '-32601', 'message' => lang('method not exists: %s::%s', [class_basename($object), $request['method']]), 'meaning' => lang('The method does not exist or is invalid.')];
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => null, 'error' => $error];
                 }
             } catch (\think\admin\Exception $exception) {
