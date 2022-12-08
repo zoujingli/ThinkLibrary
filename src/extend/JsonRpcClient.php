@@ -86,13 +86,14 @@ class JsonRpcClient
         }
         // Compatible with normal
         if (isset($response['code']) && isset($response['info'])) {
-            throw new Exception($response['info'], $response['code'], $response['data'] ?? []);
+
+            throw new Exception($response['info'], intval($response['code']), $response['data'] ?? []);
         }
         // Final checks and return
         if (empty($response['id']) || $response['id'] != $this->id) {
             throw new Exception(lang("错误标记 ( 请求标记: %s, 响应标记: %s )", [$this->id, $response['id'] ?? '- ']), 0, $response);
         }
         if (is_null($response['error'])) return $response['result'];
-        throw new Exception($response['error']['message'], $response['error']['code'], $response['result']);
+        throw new Exception($response['error']['message'], intval($response['error']['code']), $response['result'] ?? []);
     }
 }
