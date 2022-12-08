@@ -82,16 +82,15 @@ class JsonRpcClient
             while ($line = fgets($fp)) $response .= trim($line) . "\n";
             [, $response] = [fclose($fp), json_decode($response, true)];
         } else {
-            throw new Exception(lang("无法连接到 %s", [$this->proxy]));
+            throw new Exception(lang("Unable connect: %s", [$this->proxy]));
         }
         // Compatible with normal
         if (isset($response['code']) && isset($response['info'])) {
-
             throw new Exception($response['info'], intval($response['code']), $response['data'] ?? []);
         }
         // Final checks and return
         if (empty($response['id']) || $response['id'] != $this->id) {
-            throw new Exception(lang("错误标记 ( 请求标记: %s, 响应标记: %s )", [$this->id, $response['id'] ?? '- ']), 0, $response);
+            throw new Exception(lang("Error flag ( Request tag: %s, Response tag: %s )", [$this->id, $response['id'] ?? '- ']), 0, $response);
         }
         if (is_null($response['error'])) return $response['result'];
         throw new Exception($response['error']['message'], intval($response['error']['code']), $response['result'] ?? []);
