@@ -137,8 +137,8 @@ class Library extends Service
                         $header['Access-Control-Allow-Origin'] = $origin;
                         $header['Access-Control-Allow-Methods'] = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE');
                         $header['Access-Control-Allow-Headers'] = "Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,{$headers}";
-                        $header['Access-Control-Expose-Headers'] = $headers;
                         $header['Access-Control-Allow-Credentials'] = 'true';
+                        $header['Access-Control-Expose-Headers'] = $headers;
                     }
                 }
 

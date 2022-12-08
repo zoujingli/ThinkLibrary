@@ -303,7 +303,7 @@ if (!function_exists('xss_safe')) {
 }
 if (!function_exists('http_get')) {
     /**
-     * 以get模拟网络请求
+     * 以 get 模拟网络请求
      * @param string $url HTTP请求URL地址
      * @param array|string $query GET请求参数
      * @param array $options CURL参数
@@ -316,7 +316,7 @@ if (!function_exists('http_get')) {
 }
 if (!function_exists('http_post')) {
     /**
-     * 以post模拟网络请求
+     * 以 post 模拟网络请求
      * @param string $url HTTP请求URL地址
      * @param array|string $data POST请求数据
      * @param array $options CURL参数
