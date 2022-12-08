@@ -80,7 +80,7 @@ class JsonRpcServer
                     $result = call_user_func_array([$object, $request['method']], $request['params']);
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => $result, 'error' => null];
                 } else {
-                    $error = ['code' => '-32601', 'message' => lang('找不到方法'), 'meaning' => lang('该方法不存在或无效')];
+                    $error = ['code' => '-32601', 'message' => lang('方法 [%s] 未找到', [$request['method']]), 'meaning' => lang('该方法不存在或无效')];
                     $response = ['jsonrpc' => '2.0', 'id' => $request['id'], 'result' => null, 'error' => $error];
                 }
             } catch (\think\admin\Exception $exception) {
