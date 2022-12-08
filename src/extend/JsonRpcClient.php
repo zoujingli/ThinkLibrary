@@ -90,7 +90,7 @@ class JsonRpcClient
         }
         // Final checks and return
         if (empty($response['id']) || $response['id'] != $this->id) {
-            throw new Exception(lang("Error flag ( Request tag: %s, Response tag: %s )", [$this->id, $response['id'] ?? '- ']), 0, $response);
+            throw new Exception(lang("Error flag ( Request tag: %s, Response tag: %s )", [$this->id, $response['id'] ?? '-']), 0, $response);
         }
         if (is_null($response['error'])) return $response['result'];
         throw new Exception($response['error']['message'], intval($response['error']['code']), $response['result'] ?? []);
