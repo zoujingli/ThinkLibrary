@@ -124,10 +124,13 @@ class Builder
         $attr = '';
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<label class="layui-form-item block relative">';
-        $html .= sprintf("\n\t\t\t" . '<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $subtitle);
-        $html .= sprintf("\n\t\t\t" . '<input name="%s" %s placeholder="请输入%s" value="{%s.%s|default=\'\'}" class="layui-input">', $name, $attr, $title, $this->variable, $name);
-        if ($remark) $html .= sprintf("\n\t\t\t" . '<span class="help-block">%s</span>', $remark);
-        $this->fields[] = $html . "\n\t\t" . '</label>';
+        $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $subtitle);
+        $html .= "\n\t\t\t" . sprintf('<input name="%s" %s placeholder="请输入%s" value="{%s.%s|default=\'\'}" class="layui-input">', $name, $attr, $title, $this->variable, $name);
+        if ($remark) {
+            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $remark);
+        }
+        $html .= "\n\t\t" . '</label>';
+        $this->fields[] = $html;
         return $this;
     }
 
@@ -145,10 +148,13 @@ class Builder
         if ($required) $attrs['required'] = 'required';
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<label class="layui-form-item block relative">';
-        $html .= sprintf("\n\t\t\t" . '<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $substr);
-        $html .= sprintf("\n\t\t\t" . '<textarea name="%s" %s placeholder="请输入%s" class="layui-textarea">{%s.%s|default=\'\'}</textarea>', $name, $attr, $title, $this->variable, $name);
-        if ($remark) $html .= sprintf("\n\t\t\t" . '<span class="help-block">%s</span>', $remark);
-        $this->fields[] = $html . "\n\t\t" . '</lable>';
+        $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $substr);
+        $html .= "\n\t\t\t" . sprintf('<textarea name="%s" %s placeholder="请输入%s" class="layui-textarea">{%s.%s|default=\'\'}</textarea>', $name, $attr, $title, $this->variable, $name);
+        if ($remark) {
+            $html .= "\n\t\t\t" . sprintf('<span class="help-block">%s</span>', $remark);
+        }
+        $html .= "\n\t\t" . '</lable>';
+        $this->fields[] = $html;
         return $this;
     }
 
@@ -229,6 +235,59 @@ class Builder
     }
 
     /**
+     * 添加上传单图字段
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param bool $required 必填字段
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addUploadOneImage(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): Builder
+    {
+        $attrs['readonly'] = null;
+        $attrs['placeholder'] = "请上传{$title} ( 单图 )";
+        if ($required) $attrs['required'] = 'required';
+        [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev'];
+        foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
+        $html = "\n\t\t" . '<div class="layui-form-item">';
+        $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
+        $html .= "\n\t\t\t" . '<div class="relative block label-required-null">';
+        $html .= "\n\t\t\t\t" . sprintf('<input class="layui-input layui-bg-gray" name="%s" %s value="{%s.%s|default=\'\'}">', $name, $attr, $this->variable, $name);
+        $html .= "\n\t\t\t\t" . sprintf('<a class="layui-icon layui-icon-upload input-right-icon" data-file="image" data-field="%s" data-type="gif,png,jpg,jpeg"></a>', $name);
+        $html .= "\n\t\t\t" . '</div>' . "\n\t\t" . '</div>';
+        $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadOneImage()</script>', $name);
+        $this->fields[] = $html;
+        return $this;
+    }
+
+    /**
+     * 创建上传多图字段
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param bool $required 必填字段
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addUploadMulImage(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): Builder
+    {
+        $attrs['type'] = 'hidden';
+        $attrs['placeholder'] = "请上传{$title} ( 多图 )";
+        if ($required) $attrs['required'] = 'required';
+        [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev'];
+        foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
+        $html = "\n\t\t" . '<div class="layui-form-item">';
+        $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
+        $html .= "\n\t\t\t" . '<div class="layui-textarea help-images layui-bg-gray">';
+        $html .= "\n\t\t\t\t" . sprintf('<input name="%s" %s value="{%s.%s|default=\'\'}">', $name, $attr, $this->variable, $name);
+        $html .= "\n\t\t\t" . '</div>' . "\n\t\t" . '</div>';
+        $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadMultipleImage()</script>', $name);
+        $this->fields[] = $html;
+        return $this;
+    }
+
+    /**
      * 显示模板内容
      * @return mixed
      */
@@ -253,16 +312,16 @@ class Builder
      */
     private function _buildFormModal(): string
     {
-        // 生成表单按钮
-        if (count($this->buttons)) $buttons = sprintf('
-    <div class="hr-line-dashed"></div>
-    {notempty name="vo.id"}<input type="hidden" value="{\$vo.id}" name="id">{/notempty}
-<div class="layui-form-item text-center">%s</div>', "\n\t\t" . join("\n\t\t", $this->buttons) . "\n\t");
-
-        // 返回完整的模板
-        return sprintf('<form action="%s" method="post" data-auto="true" class="layui-form layui-card">
-    <div class="layui-card-body padding-left-40">%s</div>%s
-</form>', $this->action ?? url()->build(), join("\n", $this->fields) . "\n\t", $buttons ?? '');
+        $html = sprintf('<form action="%s" method="post" data-auto="true" class="layui-form layui-card">', $this->action ?? url()->build());
+        $html .= "\n\t" . '<div class="layui-card-body padding-left-40">' . join("\n", $this->fields);
+        if (count($this->buttons)) {
+            $html .= "\n\n\t\t" . '<div class="hr-line-dashed"></div>';
+            $html .= "\n\t\t" . '{notempty name="vo.id"}<input type="hidden" value="{\$vo.id}" name="id">{/notempty}';
+            $html .= "\n" . sprintf('<div class="layui-form-item text-center">%s</div>', "\n\t\t\t" . join("\n\t\t\t", $this->buttons) . "\n\t\t");
+            $html .= "\n\t" . '</div>';
+        }
+        $html .= "\n" . '</form>';
+        return $html;
     }
 
     /**
