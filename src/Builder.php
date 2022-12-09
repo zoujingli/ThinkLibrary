@@ -379,14 +379,12 @@ class Builder
     {
         $html = '';
         $type = "{$this->type}.{$this->mode}";
-        if ($type === 'form.modal') {
-            $html = $this->_buildFormModal();
-        } elseif ($type === 'form.page') {
+        if ($type === 'form.page') {
             $html = $this->_buildFormPage();
+        } elseif ($type === 'form.modal') {
+            $html = $this->_buildFormModal();
         }
-        foreach ($this->class as $name => $value) {
-            $vars[$name] = $value;
-        }
+        foreach ($this->class as $k => $v) $vars[$k] = $v;
         throw new HttpResponseException(display($html, $vars));
     }
 
