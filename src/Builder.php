@@ -275,7 +275,7 @@ class Builder
         $attrs['type'] = 'hidden';
         $attrs['placeholder'] = "请上传{$title} ( 多图 )";
         if ($required) $attrs['required'] = 'required';
-        [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev'];
+        [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev '];
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<div class="layui-form-item">';
         $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
