@@ -189,11 +189,11 @@ class Builder
 
     /**
      * 添加表单按钮
-     * @param string $name
-     * @param string $confirm
-     * @param string $type
-     * @param string $class
-     * @param array $attrs
+     * @param string $name 按钮名称
+     * @param string $confirm 确认提示
+     * @param string $type 按钮类型
+     * @param string $class 按钮样式
+     * @param array $attrs 附加属性
      * @return $this
      */
     public function addButton(string $name, string $confirm, string $type, string $class = '', array $attrs = []): Builder
@@ -208,8 +208,8 @@ class Builder
 
     /**
      * 添加取消按钮
-     * @param string $name
-     * @param string $confirm
+     * @param string $name 按钮名称
+     * @param string $confirm 确认提示
      * @return $this
      */
     public function addCancelButton(string $name = '取消编辑', string $confirm = '确定要取消编辑吗？'): Builder
@@ -219,8 +219,8 @@ class Builder
 
     /**
      * 添加提交按钮
-     * @param string $name
-     * @param string $confirm
+     * @param string $name 按钮名称
+     * @param string $confirm 确认提示
      * @return $this
      */
     public function addSubmitButton(string $name = '保存数据', string $confirm = ''): Builder
