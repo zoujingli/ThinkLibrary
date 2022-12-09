@@ -316,8 +316,8 @@ class Builder
         $html .= "\n\t" . '<div class="layui-card-body padding-left-40">' . join("\n", $this->fields);
         if (count($this->buttons)) {
             $html .= "\n\n\t\t" . '<div class="hr-line-dashed"></div>';
-            $html .= "\n\t\t" . '{notempty name="vo.id"}<input type="hidden" value="{\$vo.id}" name="id">{/notempty}';
-            $html .= "\n" . sprintf('<div class="layui-form-item text-center">%s</div>', "\n\t\t\t" . join("\n\t\t\t", $this->buttons) . "\n\t\t");
+            $html .= "\n\t\t" . sprintf('{notempty name="vo.id"}<input type="hidden" value="{%s.id}" name="id">{/notempty}', $this->variable);
+            $html .= "\n\t\t" . sprintf('<div class="layui-form-item text-center">%s</div>', "\n\t\t\t" . join("\n\t\t\t", $this->buttons) . "\n\t\t");
             $html .= "\n\t" . '</div>';
         }
         $html .= "\n" . '</form>';
