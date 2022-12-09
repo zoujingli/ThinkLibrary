@@ -306,7 +306,7 @@ class Builder
         $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
         $html .= "\n\t\t\t" . '<div class="layui-textarea help-checks">';
         $html .= "\n\t\t\t\t" . sprintf('<!--{foreach $%s as $k=>$v}item-->', $vname);
-        $html .= "\n\t\t\t\t" . sprintf('<label class="think-%s">', $type);
+        $html .= "\n\t\t\t\t" . sprintf('<label class="think-%s label-required-null">', $type);
         $html .= "\n\t\t\t\t\t" . sprintf('<!--if{if isset(%s.types) and is_array(%s.types) and in_array($k,%s.types)}-->', $this->variable, $this->variable, $this->variable);
         $html .= "\n\t\t\t\t\t" . sprintf('<input value="{$k|default=\'\'}" %s checked> {$v|default=\'\'}', $attr);
         $html .= "\n\t\t\t\t\t" . '<!--{else}else-->';
