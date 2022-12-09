@@ -341,7 +341,7 @@ class Builder
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<div class="layui-form-item">';
         $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
-        $html .= "\n\t\t\t" . '<div class="layui-textarea help-checks">';
+        $html .= "\n\t\t\t" . '<div class="layui-textarea help-checks layui-bg-gray">';
         $html .= "\n\t\t\t\t" . sprintf('<!--{foreach $%s as $k=>$v}item-->', $vname);
         $html .= "\n\t\t\t\t" . sprintf('<label class="think-%s label-required-null">', $type);
         $html .= "\n\t\t\t\t\t" . sprintf('<!--if{if isset(%s.types) and is_array(%s.types) and in_array($k,%s.types)}-->', $this->variable, $this->variable, $this->variable);
