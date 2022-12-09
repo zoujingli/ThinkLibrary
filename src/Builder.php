@@ -20,7 +20,8 @@ namespace think\admin;
 use think\exception\HttpResponseException;
 
 /**
- * 表单构建器
+ * 表单模板构建器
+ * 后面会在兼容的基础上慢慢完善
  * Class Builder
  * @package think\admin
  */
@@ -48,15 +49,26 @@ class Builder
      * 表单项目
      * @var array
      */
-    private $data = [];
+    private $fields = [];
     private $buttons = [];
 
+    /**
+     * Constructer
+     * @param string $type 页面类型
+     * @param string $mode 页面模式
+     */
     public function __construct(string $type, string $mode)
     {
         $this->type = $type;
         $this->mode = $mode;
     }
 
+    /**
+     * 创建表单生成器
+     * @param string $type 页面类型
+     * @param string $mode 页面模式
+     * @return \think\admin\Builder
+     */
     public static function mk(string $type = 'form', string $mode = 'modal'): Builder
     {
         return new static($type, $mode);
@@ -90,7 +102,7 @@ class Builder
         $html .= sprintf("\n\t\t\t" . '<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $subtitle);
         $html .= sprintf("\n\t\t\t" . '<input name="%s" %s placeholder="请输入%s" value="{$vo.%s|default=\'\'}" class="layui-input">', $name, $attr, $title, $name);
         if ($remark) $html .= sprintf("\n\t\t\t" . '<span class="help-block">%s</span>', $remark);
-        $this->data[] = $html . "\n\t\t" . '</lable>';
+        $this->fields[] = $html . "\n\t\t" . '</lable>';
         return $this;
     }
 
@@ -111,7 +123,7 @@ class Builder
         $html .= sprintf("\n\t\t\t" . '<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $substr);
         $html .= sprintf("\n\t\t\t" . '<textarea name="%s" %s placeholder="请输入%s" class="layui-textarea">{$vo.%s|default=\'\'}</textarea>', $name, $attr, $title, $name);
         if ($remark) $html .= sprintf("\n\t\t\t" . '<span class="help-block">%s</span>', $remark);
-        $this->data[] = $html . "\n\t\t" . '</lable>';
+        $this->fields[] = $html . "\n\t\t" . '</lable>';
         return $this;
     }
 
@@ -121,8 +133,8 @@ class Builder
      * @param string $title 字段标题
      * @param string $substr 字段子标题
      * @param string $remark 字段备注
-     * @param bool $required 是否必填
-     * @param string|null $pattern 验证规则
+     * @param boolean $required 是否必填
+     * @param ?string $pattern 验证规则
      * @param array $attrs 附加属性
      * @return $this
      */
@@ -139,8 +151,8 @@ class Builder
      * @param string $title 字段标题
      * @param string $substr 字段子标题
      * @param string $remark 字段备注
-     * @param bool $required 是否必填
-     * @param string|null $pattern 验证规则
+     * @param boolean $required 是否必填
+     * @param ?string $pattern 验证规则
      * @param array $attrs 附加属性
      * @return $this
      */
@@ -222,7 +234,7 @@ class Builder
         // 返回完整的模板
         return sprintf('<form action="%s" method="post" data-auto="true" class="layui-form layui-card">
     <div class="layui-card-body padding-left-40">%s</div>%s
-</form>', $this->action ?? url()->build(), join("\n", $this->data) . "\n\t", $buttons ?? '');
+</form>', $this->action ?? url()->build(), join("\n", $this->fields) . "\n\t", $buttons ?? '');
     }
 
     /**
