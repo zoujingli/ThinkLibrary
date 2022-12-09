@@ -40,10 +40,22 @@ class Builder
     private $mode;
 
     /**
+     * 当前控制器
+     * @var \think\admin\Controller
+     */
+    private $class;
+
+    /**
      * 提交地址
      * @var string
      */
     private $action;
+
+    /**
+     * 表单变量
+     * @var string
+     */
+    private $variable = '$vo';
 
     /**
      * 表单项目
@@ -56,11 +68,13 @@ class Builder
      * Constructer
      * @param string $type 页面类型
      * @param string $mode 页面模式
+     * @param \think\admin\Controller $class
      */
-    public function __construct(string $type, string $mode)
+    public function __construct(string $type, string $mode, Controller $class)
     {
         $this->type = $type;
         $this->mode = $mode;
+        $this->class = $class;
     }
 
     /**
@@ -71,17 +85,28 @@ class Builder
      */
     public static function mk(string $type = 'form', string $mode = 'modal'): Builder
     {
-        return new static($type, $mode);
+        return Library::$sapp->invokeClass(static::class, ['type' => $type, 'mode' => $mode]);
     }
 
     /**
-     * 设置表单提交地址
+     * 设置表单地址
      * @param string $url
      * @return $this
      */
     public function setAction(string $url): Builder
     {
         $this->action = $url;
+        return $this;
+    }
+
+    /**
+     * 设置变量名称
+     * @param string $name
+     * @return $this
+     */
+    public function setVariable(string $name): Builder
+    {
+        $this->variable = $name;
         return $this;
     }
 
@@ -100,7 +125,7 @@ class Builder
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<label class="layui-form-item block relative">';
         $html .= sprintf("\n\t\t\t" . '<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $subtitle);
-        $html .= sprintf("\n\t\t\t" . '<input name="%s" %s placeholder="请输入%s" value="{$vo.%s|default=\'\'}" class="layui-input">', $name, $attr, $title, $name);
+        $html .= sprintf("\n\t\t\t" . '<input name="%s" %s placeholder="请输入%s" value="{%s.%s|default=\'\'}" class="layui-input">', $name, $attr, $title, $this->variable, $name);
         if ($remark) $html .= sprintf("\n\t\t\t" . '<span class="help-block">%s</span>', $remark);
         $this->fields[] = $html . "\n\t\t" . '</lable>';
         return $this;
@@ -121,7 +146,7 @@ class Builder
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<label class="layui-form-item block relative">';
         $html .= sprintf("\n\t\t\t" . '<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $substr);
-        $html .= sprintf("\n\t\t\t" . '<textarea name="%s" %s placeholder="请输入%s" class="layui-textarea">{$vo.%s|default=\'\'}</textarea>', $name, $attr, $title, $name);
+        $html .= sprintf("\n\t\t\t" . '<textarea name="%s" %s placeholder="请输入%s" class="layui-textarea">{%s.%s|default=\'\'}</textarea>', $name, $attr, $title, $this->variable, $name);
         if ($remark) $html .= sprintf("\n\t\t\t" . '<span class="help-block">%s</span>', $remark);
         $this->fields[] = $html . "\n\t\t" . '</lable>';
         return $this;
@@ -207,7 +232,7 @@ class Builder
      * 显示模板内容
      * @return mixed
      */
-    public function fetch()
+    public function fetch(array $vars = [])
     {
         $html = '';
         $type = "{$this->type}.{$this->mode}";
@@ -216,7 +241,10 @@ class Builder
         } elseif ($type === 'form.page') {
             $html = $this->_buildFormPage();
         }
-        throw new HttpResponseException(display($html));
+        foreach ($this->class as $name => $value) {
+            $vars[$name] = $value;
+        }
+        throw new HttpResponseException(display($html, $vars));
     }
 
     /**
