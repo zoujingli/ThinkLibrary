@@ -127,7 +127,7 @@ class Builder
         $html .= sprintf("\n\t\t\t" . '<span class="help-label %s"><b>%s</b>%s</span>', empty($attrs['required']) ? '' : 'label-required-prev', $title, $subtitle);
         $html .= sprintf("\n\t\t\t" . '<input name="%s" %s placeholder="请输入%s" value="{%s.%s|default=\'\'}" class="layui-input">', $name, $attr, $title, $this->variable, $name);
         if ($remark) $html .= sprintf("\n\t\t\t" . '<span class="help-block">%s</span>', $remark);
-        $this->fields[] = $html . "\n\t\t" . '</lable>';
+        $this->fields[] = $html . "\n\t\t" . '</label>';
         return $this;
     }
 
