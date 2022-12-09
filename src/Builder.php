@@ -245,9 +245,8 @@ class Builder
      */
     public function addUploadOneImage(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): Builder
     {
-        $attrs['readonly'] = null;
-        $attrs['placeholder'] = "请上传{$title} ( 单图 )";
         if ($required) $attrs['required'] = 'required';
+        $attrs = array_merge($attrs, ['type' => 'hidden', 'placeholder' => "请上传{$title} ( 单图 )"]);
         [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev'];
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<div class="layui-form-item">';
@@ -272,9 +271,8 @@ class Builder
      */
     public function addUploadMulImage(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): Builder
     {
-        $attrs['type'] = 'hidden';
-        $attrs['placeholder'] = "请上传{$title} ( 多图 )";
         if ($required) $attrs['required'] = 'required';
+        $attrs = array_merge($attrs, ['type' => 'hidden', 'placeholder' => "请上传{$title} ( 多图 )"]);
         [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev '];
         foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
         $html = "\n\t\t" . '<div class="layui-form-item">';
@@ -285,6 +283,55 @@ class Builder
         $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadMultipleImage()</script>', $name);
         $this->fields[] = $html;
         return $this;
+    }
+
+    /**
+     * 创建复选框字段
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param string $vname 变量名称
+     * @param bool $required 是否必选
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addCheckInput(string $name, string $title, string $substr, string $vname, bool $required = false, array $attrs = [], string $type = 'checkbox'): Builder
+    {
+        if ($required) $attrs['required'] = 'required';
+        $attrs['name'] = $name . ($type === 'checkbox' ? '[]' : '');
+        $attrs = array_merge($attrs, ['type' => $type, 'lay-ignore' => null]);
+        [$attr, $label] = ['', empty($attrs['required']) ? '' : ' label-required-prev'];
+        foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
+        $html = "\n\t\t" . '<div class="layui-form-item">';
+        $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
+        $html .= "\n\t\t\t" . '<div class="layui-textarea help-checks">';
+        $html .= "\n\t\t\t\t" . sprintf('<!--{foreach $%s as $k=>$v}item-->', $vname);
+        $html .= "\n\t\t\t\t" . sprintf('<label class="think-%s">', $type);
+        $html .= "\n\t\t\t\t\t" . sprintf('<!--if{if isset(%s.types) and is_array(%s.types) and in_array($k,%s.types)}-->', $this->variable, $this->variable, $this->variable);
+        $html .= "\n\t\t\t\t\t" . sprintf('<input value="{$k|default=\'\'}" %s checked> {$v|default=\'\'}', $attr);
+        $html .= "\n\t\t\t\t\t" . '<!--{else}else-->';
+        $html .= "\n\t\t\t\t\t" . sprintf('<input value="{$k|default=\'\'}" %s> {$v|default=\'\'}', $attr) . "\n";
+        $html .= "\n\t\t\t\t\t" . '<!--{/if}if-->';
+        $html .= "\n\t\t\t\t" . '</label>';
+        $html .= "\n\t\t\t\t" . '<!--{/foreach}end-->';
+        $html .= "\n\t\t\t" . '</div>' . "\n\t\t" . '</div>';
+        $this->fields[] = $html;
+        return $this;
+    }
+
+    /**
+     * 添加单选框架字段
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param string $vname 变量名称
+     * @param bool $required 是否必选
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addRadioInput(string $name, string $title, string $substr, string $vname, bool $required = false, array $attrs = []): Builder
+    {
+        return $this->addCheckInput($name, $title, $substr, $vname, $required, $attrs, 'radio');
     }
 
     /**
