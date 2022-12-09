@@ -235,6 +235,39 @@ class Builder
     }
 
     /**
+     * 添加上传单个文件
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param array $attrs 附加属性
+     * @param string $type 上传类型
+     * @return $this
+     */
+    private function _addUploadOneView(string $name, string $title, string $substr = '', array $attrs = [], string $type = 'image'): Builder
+    {
+        $attrs = array_merge($attrs, ['type' => 'text', 'placeholder' => "请上传{$title}" . $type]);
+        [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev'];
+        foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
+        $html = "\n\t\t" . '<div class="layui-form-item">';
+        $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
+        $html .= "\n\t\t\t" . '<div class="relative block label-required-null">';
+        $html .= "\n\t\t\t\t" . sprintf('<input class="layui-input layui-bg-gray" name="%s" %s value="{%s.%s|default=\'\'}">', $name, $attr, $this->variable, $name);
+        if ($type === 'image') {
+            $html .= "\n\t\t\t\t" . sprintf('<a class="layui-icon layui-icon-upload input-right-icon" data-file="image" data-field="%s" data-type="gif,png,jpg,jpeg"></a>', $name);
+        } else {
+            $html .= "\n\t\t\t\t" . sprintf('<a class="layui-icon layui-icon-upload input-right-icon" data-file data-field="%s" data-type="mp4"></a>', $name);
+        }
+        $html .= "\n\t\t\t" . '</div>' . "\n\t\t" . '</div>';
+        if ($type === 'image') {
+            $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadOneImage()</script>', $name);
+        } else {
+            $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadOneVideo()</script>', $name);
+        }
+        $this->fields[] = $html;
+        return $this;
+    }
+
+    /**
      * 添加上传单图字段
      * @param string $name 字段名称
      * @param string $title 字段标题
@@ -246,18 +279,22 @@ class Builder
     public function addUploadOneImage(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): Builder
     {
         if ($required) $attrs['required'] = 'required';
-        $attrs = array_merge($attrs, ['type' => 'hidden', 'placeholder' => "请上传{$title} ( 单图 )"]);
-        [$attr, $label] = ['', empty($attrs['required']) ? '' : 'label-required-prev'];
-        foreach ($attrs as $k => $v) $attr .= is_null($v) ? sprintf(' %s', $k) : sprintf(' %s="%s"', $k, $v);
-        $html = "\n\t\t" . '<div class="layui-form-item">';
-        $html .= "\n\t\t\t" . sprintf('<span class="help-label %s"><b>%s</b>%s</span>', $label, $title, $substr);
-        $html .= "\n\t\t\t" . '<div class="relative block label-required-null">';
-        $html .= "\n\t\t\t\t" . sprintf('<input class="layui-input layui-bg-gray" name="%s" %s value="{%s.%s|default=\'\'}">', $name, $attr, $this->variable, $name);
-        $html .= "\n\t\t\t\t" . sprintf('<a class="layui-icon layui-icon-upload input-right-icon" data-file="image" data-field="%s" data-type="gif,png,jpg,jpeg"></a>', $name);
-        $html .= "\n\t\t\t" . '</div>' . "\n\t\t" . '</div>';
-        $html .= "\n\t\t" . sprintf('<script>$("input[name=%s]").uploadOneImage()</script>', $name);
-        $this->fields[] = $html;
-        return $this;
+        return $this->_addUploadOneView($name, $title, $substr, $attrs);
+    }
+
+    /**
+     * 添加上传视频字段
+     * @param string $name 字段名称
+     * @param string $title 字段标题
+     * @param string $substr 字段子标题
+     * @param bool $required 必填字段
+     * @param array $attrs 附加属性
+     * @return $this
+     */
+    public function addUploadOneVideo(string $name, string $title, string $substr = '', bool $required = false, array $attrs = []): Builder
+    {
+        if ($required) $attrs['required'] = 'required';
+        return $this->_addUploadOneView($name, $title, $substr, $attrs, 'video');
     }
 
     /**
