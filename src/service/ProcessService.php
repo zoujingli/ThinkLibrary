@@ -142,6 +142,16 @@ class ProcessService extends Service
     }
 
     /**
+     * 执行外部程序
+     * @param string $command 执行指令
+     * @return false|string
+     */
+    public static function system(string $command, &$output = null)
+    {
+        return system($command, $output);
+    }
+
+    /**
      * 判断系统类型
      * @return boolean
      */
