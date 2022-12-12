@@ -116,6 +116,28 @@ class ModuleService extends Service
     }
 
     /**
+     * 复制安装目录
+     * @param string $copy 应用资源目录
+     * @param boolean $force 是否强制替换
+     * @return void
+     */
+    public static function copy(string $copy, bool $force = false)
+    {
+        // 复制系统配置文件
+        $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
+        ToolsExtend::copyfile($frdir, with_path('config'), [], $force, false);
+        // 复制静态资料文件
+        $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
+        ToolsExtend::copyfile($frdir, with_path('public'), [], $force, false);
+        // 复制根目录文件
+        $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'sysroot';
+        ToolsExtend::copyfile($frdir, with_path(), [], $force, false);
+        // 复制数据库脚本
+        $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
+        ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], $force, false);
+    }
+
+    /**
      * 获取系统模块信息
      * @param array $data
      * @return array
