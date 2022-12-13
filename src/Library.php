@@ -66,7 +66,7 @@ class Library extends Service
             Package::class,
             Sysmenu::class,
             Publish::class,
-            //  Install::class,
+            // Install::class,
             Replace::class,
             Database::class,
         ]);
@@ -76,6 +76,7 @@ class Library extends Service
 
         // 服务初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
+
             // 配置默认输入过滤
             $request->filter([function ($value) {
                 return is_string($value) ? xss_safe($value) : $value;
@@ -93,6 +94,7 @@ class Library extends Service
             // 注册多应用中间键
             $this->app->middleware->add(Multiple::class);
         });
+
     }
 
     /**

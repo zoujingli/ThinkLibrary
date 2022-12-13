@@ -33,7 +33,6 @@ class PluginService extends Service
      */
     protected $appName = '';
 
-
     /**
      * 应用插件目录
      * @var string
@@ -47,16 +46,16 @@ class PluginService extends Service
     protected $appAlias = '';
 
     /**
+     * 应用命名空间
+     * @var string
+     */
+    protected $appSpace = '';
+
+    /**
      * 文件拷贝目录
      * @var string
      */
     protected $copyPath = '';
-
-    /**
-     * 插件空间名称
-     * @var string
-     */
-    protected $rootName = '';
 
     /**
      * 当前插件配置
@@ -76,18 +75,23 @@ class PluginService extends Service
         $ref = new \ReflectionClass(static::class);
         $attr = explode('\\', $ref->getNamespaceName());
 
+        // 应用命名空间名
+        if (empty($this->appSpace)) {
+            $this->appSpace = $ref->getNamespaceName();
+        }
+
         // 应用插件路径计算
         if (empty($this->appPath) || !file_exists($this->appPath)) {
             $this->appPath = dirname($ref->getFileName());
         }
 
-        // 应用插件名称计算
-        $appName = array_pop($attr);
-        if (empty($this->appName)) $this->appName = $appName;
-        if (empty($this->rootName)) $this->rootName = join('\\', $attr);
+        // 应用插件计算名称及别名
+        if (NodeService::namespace() === $attr[0]) array_shift($attr);
+        if (empty($this->appName)) $this->appName = join('-', $attr);
+        if (empty($this->appAlias)) $this->appAlias = join('-', $attr);
 
         // 注册应用插件信息
-        static::add($this->appName, $this->appPath, $this->appAlias, $this->rootName, $this->copyPath);
+        static::add($this->appName, $this->appPath, $this->appAlias, $this->appSpace, $this->copyPath);
     }
 
     /**
@@ -95,21 +99,20 @@ class PluginService extends Service
      * @param string $appName 应用名称
      * @param string $appPath 应用目录
      * @param string $appAlias 应用别名
-     * @param string $rootName 命名空间
+     * @param string $appSpace 应用空间
      * @param string $copyPath 应用资源
      * @return boolean
      */
-    public static function add(string $appName, string $appPath, string $appAlias = '', string $rootName = '', string $copyPath = ''): bool
+    public static function add(string $appName, string $appPath, string $appAlias = '', string $appSpace = '', string $copyPath = ''): bool
     {
         if (file_exists($appPath) && is_dir($appPath)) {
-            $config = Library::$sapp->config;
             $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
-            $rootName = ($rootName ?: $config->get('app.app_namespace')) ?: 'app';
+            $appSpace = $appSpace ?: (Library::$sapp->config->get('app.app_namespace') ?: 'app') . "\\{$appName}";
             $copyPath = rtrim($copyPath ?: dirname($appPath) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
-            self::$addons[$appName] = [$appPath, $rootName, $copyPath, $appAlias];
-            if (!empty($appAlias) && $appAlias !== $appName) {
-                $config->set(['app_map' => array_merge($config->get('app.app_map', []), [$appAlias => $appName])], 'app');
-            }
+            if (strlen($appAlias) > 0 && $appAlias !== $appName) Library::$sapp->config->set([
+                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$appAlias => $appName])
+            ], 'app');
+            self::$addons[$appName] = [$appPath, $appSpace, $copyPath, $appAlias];
             return true;
         } else {
             return false;
@@ -118,7 +121,7 @@ class PluginService extends Service
 
     /**
      * 获取所有插件
-     * @return array [[所在路径,主空间名,资源目录]]
+     * @return array [string][所在路径,应用空间,资源目录,应用别名]
      */
     public static function all(): array
     {

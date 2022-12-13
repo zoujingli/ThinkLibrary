@@ -59,8 +59,8 @@ class Publish extends Command
     private function plugin(): Publish
     {
         $force = boolval($this->input->getOption('force'));
-        foreach (PluginService::all() as $plug) {
-            [, , $copy] = $plug;
+        foreach (PluginService::all() as $plugin) {
+            [, , $copy] = $plugin;
             ModuleService::copy($copy, $force);
         }
         // 执行数据库脚本
@@ -75,7 +75,7 @@ class Publish extends Command
      */
     private function parse(): Publish
     {
-        if (is_file($path = $this->app->getRootPath() . 'vendor/composer/installed.json')) {
+        if (is_file($path = with_path('vendor/composer/installed.json'))) {
             $packages = json_decode(@file_get_contents($path), true);
             // Compatibility with Composer 2.0
             if (isset($packages['packages'])) $packages = $packages['packages'];
@@ -87,7 +87,7 @@ class Publish extends Command
                 // 配置目录
                 if (!empty($package['extra']['think']['config'])) {
                     $configPath = $this->app->getConfigPath();
-                    $installPath = $this->app->getRootPath() . 'vendor/' . $package['name'] . DIRECTORY_SEPARATOR;
+                    $installPath = with_path("vendor/{$package['name']}/");
                     foreach ((array)$package['extra']['think']['config'] as $name => $file) {
                         $source = $installPath . $file;
                         $target = $configPath . $name . '.php';

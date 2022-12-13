@@ -65,6 +65,15 @@ class NodeService extends Service
     }
 
     /**
+     * 获取默认应用空间名
+     * @return string
+     */
+    public static function namespace(): string
+    {
+        return Library::$sapp->config->get('app.app_namespace') ?: 'app';
+    }
+
+    /**
      * 检查并完整节点内容
      * @param null|string $node
      * @return string
@@ -119,19 +128,19 @@ class NodeService extends Service
         /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\think\admin\Controller');
         /*! 扫描所有代码控制器节点，更新节点缓存 */
-        $defSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
+        $rootSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $name) {
             if (preg_match("|^(\w+)/controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                 [, $appName, $className] = $matches;
-                static::_parseClass($defSpace, $appName, $className, $ignores, $data);
+                static::_parseClass($appName, "{$rootSpace}\\{$appName}", $className, $ignores, $data);
             }
         }
         // 扫描所有插件代码
-        foreach (PluginService::all() as $appName => $plugInfo) {
-            [$appPath, $appSpace] = $plugInfo;
+        foreach (PluginService::all() as $appName => $plugin) {
+            [$appPath, $appSpace] = $plugin;
             foreach (ToolsExtend::scanDirectory($appPath, 'php') as $name) {
                 if (preg_match("|^.*?controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
-                    static::_parseClass($appSpace ?: $defSpace, $appName, $matches[1], $ignores, $data);
+                    static::_parseClass($appName, $appSpace, $matches[1], $ignores, $data);
                 }
             }
         }
@@ -142,21 +151,21 @@ class NodeService extends Service
 
     /**
      * 解析节点数据
-     * @param string $space 应用空间
-     * @param string $appname 应用名称
-     * @param string $classname 应用类型
-     * @param array $ignores 忽略节点
-     * @param array $data 绑定节点
+     * @param string $appName 应用名称
+     * @param string $appSpace 应用空间
+     * @param string $className 应用类型
+     * @param array $ignoreNode 忽略节点
+     * @param array $data 绑定节点的数据
      * @return void
      */
-    private static function _parseClass(string $space, string $appname, string $classname, array $ignores, array &$data)
+    private static function _parseClass(string $appName, string $appSpace, string $className, array $ignoreNode, array &$data)
     {
-        $classfull = strtr("{$space}/{$appname}/controller/{$classname}", '/', '\\');
+        $classfull = strtr("{$appSpace}/controller/{$className}", '/', '\\');
         if (class_exists($classfull) && ($class = new ReflectionClass($classfull))) {
-            $prefix = strtolower(strtr("{$appname}/" . static::nameTolower($classname), '\\', '/'));
-            $data[$prefix] = static::_parseComment($class->getDocComment() ?: '', $classname);
+            $prefix = strtolower(strtr("{$appName}/" . static::nameTolower($className), '\\', '/'));
+            $data[$prefix] = static::_parseComment($class->getDocComment() ?: '', $className);
             foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if (in_array($metname = $method->getName(), $ignores)) continue;
+                if (in_array($metname = $method->getName(), $ignoreNode)) continue;
                 $data[strtolower("{$prefix}/{$metname}")] = static::_parseComment($method->getDocComment() ?: '', $metname);
             }
         }

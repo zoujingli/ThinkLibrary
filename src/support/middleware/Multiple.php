@@ -53,7 +53,7 @@ class Multiple
      * 应用空间
      * @var string
      */
-    private $rootSpace;
+    private $appSpace;
 
     /**
      * App constructor.
@@ -93,6 +93,7 @@ class Multiple
             return $this->setMultiApp($this->appName ?: $script, true);
         } else {
             // 域名绑定处理
+
             $domains = $this->app->config->get('app.domain_bind', []);
             if (!empty($domains)) foreach ([$this->app->request->host(true), $this->app->request->subDomain(), '*'] as $key) {
                 if (isset($domains[$key])) return $this->setMultiApp($domains[$key], true);
@@ -116,8 +117,9 @@ class Multiple
             }
             // 插件绑定处理
             $this->app->config->set(['view_path' => ''], 'view');
+
             if (isset($addons[$appName])) {
-                [$this->appPath, $this->rootSpace] = $addons[$appName];
+                [$this->appPath, $this->appSpace] = $addons[$appName];
                 $this->app->config->set(['view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR], 'view');
             }
             if ($name) {
@@ -147,10 +149,14 @@ class Multiple
      */
     private function setMultiApp(string $appName, bool $appBind): bool
     {
-        if (empty($this->appPath)) $this->appPath = $this->app->getBasePath() . $appName . DIRECTORY_SEPARATOR;
-        if (empty($this->rootSpace)) $this->rootSpace = $this->app->config->get('app.app_namespace') ?: 'app';
+        if (empty($this->appPath)) {
+            $this->appPath = with_path("app/{$appName}/");
+        }
+        if (empty($this->appSpace)) {
+            $this->appSpace = ($this->app->config->get('app.app_namespace') ?: 'app') . '\\' . $appName;
+        }
         if (is_dir($this->appPath)) {
-            $this->app->setNamespace("{$this->rootSpace}\\{$appName}")->setAppPath($this->appPath);
+            $this->app->setNamespace($this->appSpace)->setAppPath($this->appPath);
             $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
             return $this->loadMultiApp($this->appPath);
         } else {
