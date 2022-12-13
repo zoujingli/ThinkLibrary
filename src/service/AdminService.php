@@ -23,6 +23,7 @@ use think\admin\model\SystemAuth;
 use think\admin\model\SystemNode;
 use think\admin\model\SystemUser;
 use think\admin\Service;
+use think\helper\Str;
 
 /**
  * 系统权限管理服务
@@ -181,7 +182,7 @@ class AdminService extends Service
         foreach (array_keys($nodes) as $key) foreach ($methods as $node => $method) if (stripos($key, $node . '/') !== false) {
             $pnode = substr($node, 0, strripos($node, '/'));
             $nodes[$node] = ['node' => $node, 'title' => $method['title'], 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
-            $nodes[$pnode] = ['node' => $pnode, 'title' => ucfirst($pnode), 'pnode' => '', 'checked' => in_array($pnode, $checkeds)];
+            $nodes[$pnode] = ['node' => $pnode, 'title' => Str::studly(strtr($pnode, '-', '_')), 'pnode' => '', 'checked' => in_array($pnode, $checkeds)];
         }
         return DataExtend::arr2tree(array_reverse($nodes), 'node', 'pnode', '_sub_');
     }
