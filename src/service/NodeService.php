@@ -65,15 +65,6 @@ class NodeService extends Service
     }
 
     /**
-     * 获取默认应用空间名
-     * @return string
-     */
-    public static function namespace(): string
-    {
-        return Library::$sapp->config->get('app.app_namespace') ?: 'app';
-    }
-
-    /**
      * 检查并完整节点内容
      * @param null|string $node
      * @return string
@@ -93,6 +84,17 @@ class NodeService extends Service
                 $attrs[1] = static::nameTolower($attrs[1]);
                 return strtolower(join('/', $attrs));
         }
+    }
+
+    /**
+     * 获取默认应用空间名
+     * @param string $suffix 后缀路径
+     * @return string
+     */
+    public static function rootSpace(string $suffix = ''): string
+    {
+        $default = Library::$sapp->config->get('app.app_namespace') ?: 'app';
+        return empty($suffix) ? $default : trim($default . '\\' . trim($suffix, '\\/'), '\\');
     }
 
     /**
@@ -128,11 +130,10 @@ class NodeService extends Service
         /*! 排除内置方法，禁止访问内置方法 */
         $ignores = get_class_methods('\think\admin\Controller');
         /*! 扫描所有代码控制器节点，更新节点缓存 */
-        $rootSpace = Library::$sapp->config->get('app.app_namespace') ?: 'app';
         foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $name) {
             if (preg_match("|^(\w+)/controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                 [, $appName, $className] = $matches;
-                static::_parseClass($appName, "{$rootSpace}\\{$appName}", $className, $ignores, $data);
+                static::_parseClass($appName, self::rootSpace($appName), $className, $ignores, $data);
             }
         }
         // 扫描所有插件代码

@@ -18,6 +18,7 @@ declare (strict_types=1);
 namespace think\admin\support\middleware;
 
 use Closure;
+use think\admin\service\NodeService;
 use think\admin\service\PluginService;
 use think\App;
 use think\exception\HttpException;
@@ -149,12 +150,8 @@ class Multiple
      */
     private function setMultiApp(string $appName, bool $appBind): bool
     {
-        if (empty($this->appPath)) {
-            $this->appPath = with_path("app/{$appName}/");
-        }
-        if (empty($this->appSpace)) {
-            $this->appSpace = ($this->app->config->get('app.app_namespace') ?: 'app') . '\\' . $appName;
-        }
+        if (empty($this->appPath)) $this->appPath = with_path("app/{$appName}/");
+        if (empty($this->appSpace)) $this->appSpace = NodeService::rootSpace($appName);
         if (is_dir($this->appPath)) {
             $this->app->setNamespace($this->appSpace)->setAppPath($this->appPath);
             $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);

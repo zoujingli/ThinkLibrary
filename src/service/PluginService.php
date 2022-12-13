@@ -86,7 +86,9 @@ class PluginService extends Service
         }
 
         // 应用插件计算名称及别名
-        if (NodeService::namespace() === $attr[0]) array_shift($attr);
+        if (in_array($attr[0], [NodeService::rootSpace(), 'think'])) {
+            array_shift($attr);
+        }
         if (empty($this->appName)) $this->appName = join('-', $attr);
         if (empty($this->appAlias)) $this->appAlias = join('-', $attr);
 
@@ -107,7 +109,7 @@ class PluginService extends Service
     {
         if (file_exists($appPath) && is_dir($appPath)) {
             $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
-            $appSpace = $appSpace ?: (Library::$sapp->config->get('app.app_namespace') ?: 'app') . "\\{$appName}";
+            $appSpace = $appSpace ?: NodeService::rootSpace($appName);
             $copyPath = rtrim($copyPath ?: dirname($appPath) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
             if (strlen($appAlias) > 0 && $appAlias !== $appName) Library::$sapp->config->set([
                 'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$appAlias => $appName])
