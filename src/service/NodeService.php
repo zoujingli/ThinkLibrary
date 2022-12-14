@@ -23,6 +23,7 @@ use ReflectionMethod;
 use think\admin\Exception;
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
+use think\admin\Plugin;
 use think\admin\Service;
 
 /**
@@ -137,7 +138,7 @@ class NodeService extends Service
             }
         }
         // 扫描所有插件代码
-        foreach (PluginService::all() as $appName => $plugin) {
+        foreach (Plugin::all() as $appName => $plugin) {
             [$appPath, $appSpace] = $plugin;
             foreach (ToolsExtend::scanDirectory($appPath, 'php') as $name) {
                 if (preg_match("|^.*?controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {

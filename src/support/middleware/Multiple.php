@@ -18,8 +18,8 @@ declare (strict_types=1);
 namespace think\admin\support\middleware;
 
 use Closure;
+use think\admin\Plugin;
 use think\admin\service\NodeService;
-use think\admin\service\PluginService;
 use think\App;
 use think\exception\HttpException;
 use think\Request;
@@ -102,7 +102,7 @@ class Multiple
             $name = current(explode('/', $pathinfo));
             if (strpos($name, '.')) $name = strstr($name, '.', true);
             // 应用绑定与插件处理
-            $addons = PluginService::all();
+            $addons = Plugin::all();
             $appmap = $this->app->config->get('app.app_map', []);
             if (isset($appmap[$name])) {
                 $appName = $appmap[$name] instanceof Closure ? (call_user_func_array($appmap[$name], [$this->app]) ?: $name) : $appmap[$name];

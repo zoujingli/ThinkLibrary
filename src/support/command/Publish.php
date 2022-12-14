@@ -16,8 +16,8 @@
 namespace think\admin\support\command;
 
 use think\admin\Command;
+use think\admin\Plugin;
 use think\admin\service\ModuleService;
-use think\admin\service\PluginService;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -59,7 +59,7 @@ class Publish extends Command
     private function plugin(): Publish
     {
         $force = boolval($this->input->getOption('force'));
-        foreach (PluginService::all() as $plugin) {
+        foreach (Plugin::all() as $plugin) {
             [, , $copy] = $plugin;
             ModuleService::copy($copy, $force);
         }

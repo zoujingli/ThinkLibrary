@@ -15,17 +15,17 @@
 
 declare (strict_types=1);
 
-namespace think\admin\service;
+namespace think\admin;
 
-use think\admin\Library;
+use think\admin\service\NodeService;
 use think\Service;
 
 /**
  * 应用插件注册服务
- * Class PluginService
+ * Class Plugin
  * @package think\admin\service
  */
-class PluginService extends Service
+abstract class Plugin extends Service
 {
     /**
      * 应用插件名称
