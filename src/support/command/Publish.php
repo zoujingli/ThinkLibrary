@@ -99,8 +99,9 @@ class Publish extends Command
             }
         }
         // 写入服务配置
-        $header = "// Automatically Generated At: " . date('Y-m-d H:i:s') . PHP_EOL . 'declare (strict_types = 1);' . PHP_EOL;
-        file_put_contents(with_path('vendor/services.php'), '<?php' . PHP_EOL . $header . 'return ' . var_export(array_unique($services), true) . ';');
+        $header = "// Automatically Generated At: " . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
+        $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export(array_unique($services), true) . ';';
+        file_put_contents(with_path('vendor/services.php'), $content);
         return $this;
     }
 }
