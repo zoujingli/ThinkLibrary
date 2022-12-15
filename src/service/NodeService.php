@@ -139,7 +139,7 @@ class NodeService extends Service
         }
         // 扫描所有插件代码
         foreach (Plugin::all() as $appName => $plugin) {
-            [$appPath, $appSpace] = $plugin;
+            [$appPath, $appSpace] = [$plugin['path'], $plugin['space']];
             foreach (ToolsExtend::scanDirectory($appPath, 'php') as $name) {
                 if (preg_match("|^.*?controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                     static::_parseClass($appName, $appSpace, $matches[1], $ignores, $data);

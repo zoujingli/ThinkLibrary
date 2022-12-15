@@ -98,23 +98,23 @@ abstract class Plugin extends Service
 
     /**
      * 注册插件
-     * @param string $appName 应用名称
-     * @param string $appPath 应用目录
-     * @param string $appAlias 应用别名
-     * @param string $appSpace 应用空间
-     * @param string $copyPath 应用资源
+     * @param string $name 应用名称
+     * @param string $path 应用目录
+     * @param string $alias 应用别名
+     * @param string $space 应用空间
+     * @param string $copy 应用资源
      * @return boolean
      */
-    public static function add(string $appName, string $appPath, string $appAlias = '', string $appSpace = '', string $copyPath = ''): bool
+    public static function add(string $name, string $path, string $alias = '', string $space = '', string $copy = ''): bool
     {
-        if (file_exists($appPath) && is_dir($appPath)) {
-            $appPath = rtrim($appPath, '\\/') . DIRECTORY_SEPARATOR;
-            $appSpace = $appSpace ?: NodeService::rootSpace($appName);
-            $copyPath = rtrim($copyPath ?: dirname($appPath) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
-            if (strlen($appAlias) > 0 && $appAlias !== $appName) Library::$sapp->config->set([
-                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$appAlias => $appName])
+        if (file_exists($path) && is_dir($path)) {
+            $path = rtrim($path, '\\/') . DIRECTORY_SEPARATOR;
+            $space = $space ?: NodeService::rootSpace($name);
+            $copy = rtrim($copy ?: dirname($path) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
+            if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
+                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name])
             ], 'app');
-            self::$addons[$appName] = [$appPath, $appSpace, $copyPath, $appAlias];
+            self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $space];
             return true;
         } else {
             return false;
