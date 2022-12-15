@@ -63,8 +63,7 @@ class Publish extends Command
             ModuleService::copy($plugin['copy'], $force);
         }
         // 执行数据库脚本
-        $message = $this->app->console->call('migrate:run')->fetch();
-        $this->output->writeln($message);
+        $this->app->console->call('migrate:run', [], 'console');
         return $this;
     }
 
