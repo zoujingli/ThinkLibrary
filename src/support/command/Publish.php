@@ -73,10 +73,11 @@ class Publish extends Command
      */
     private function parse(): Publish
     {
-        $services = [];
+        [$services, $versions] = [[], []];
         if (file_exists($file = with_path('vendor/composer/installed.json'))) {
             $packages = json_decode(@file_get_contents($file), true);
             foreach ($packages['packages'] ?? $packages as $package) {
+                $versions[$package['name']] = $package['version'];
                 if (!empty($package['extra']['think']['services'])) {
                     $services = array_merge($services, (array)$package['extra']['think']['services']);
                 }
@@ -97,10 +98,16 @@ class Publish extends Command
                 }
             }
         }
+
         // 写入服务配置
         $header = "// Automatically Generated At: " . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export(array_unique($services), true) . ';';
         file_put_contents(with_path('vendor/services.php'), $content);
+
+        // 写入版本配置
+        $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export(array_unique($versions), true) . ';';
+        file_put_contents(with_path('vendor/versions.php'), $content);
+
         return $this;
     }
 }

@@ -28,6 +28,12 @@ use think\Service;
 abstract class Plugin extends Service
 {
     /**
+     * 应用插件包名
+     * @var string
+     */
+    protected $package = '';
+
+    /**
      * 应用插件名称
      * @var string
      */
@@ -85,6 +91,16 @@ abstract class Plugin extends Service
             $this->appPath = dirname($ref->getFileName());
         }
 
+        // 应用插件包名
+        if (empty($this->package) && ($path = $ref->getFileName())) {
+            for ($num = 1; $num <= 3; $num++) {
+                if (file_exists($file = dirname($path, $num) . '/composer.json')) {
+                    $this->package = json_decode(file_get_contents($file), true)['name'];
+                    break;
+                }
+            }
+        }
+
         // 应用插件计算名称及别名
         if (in_array($attr[0], [NodeService::rootSpace(), 'think'])) {
             array_shift($attr);
@@ -93,7 +109,7 @@ abstract class Plugin extends Service
         if (empty($this->appAlias)) $this->appAlias = join('-', $attr);
 
         // 注册应用插件信息
-        static::add($this->appName, $this->appPath, $this->appAlias, $this->appSpace, $this->copyPath);
+        static::add($this->appName, $this->appPath, $this->appAlias, $this->appSpace, $this->copyPath, $this->package);
     }
 
     /**
@@ -105,7 +121,7 @@ abstract class Plugin extends Service
      * @param string $copy 应用资源
      * @return boolean
      */
-    public static function add(string $name, string $path, string $alias = '', string $space = '', string $copy = ''): bool
+    public static function add(string $name, string $path, string $alias = '', string $space = '', string $copy = '', string $package = ''): bool
     {
         if (file_exists($path) && is_dir($path)) {
             $path = rtrim($path, '\\/') . DIRECTORY_SEPARATOR;
@@ -114,7 +130,7 @@ abstract class Plugin extends Service
             if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
                 'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name])
             ], 'app');
-            self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $space];
+            self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $space, 'package' => $package];
             return true;
         } else {
             return false;
