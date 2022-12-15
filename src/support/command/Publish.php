@@ -77,8 +77,7 @@ class Publish extends Command
         $services = [];
         if (file_exists($file = with_path('vendor/composer/installed.json'))) {
             $packages = json_decode(@file_get_contents($file), true);
-            if (isset($packages['packages'])) $packages = $packages['packages'];
-            foreach ($packages as $package) {
+            foreach ($packages['packages'] ?? $packages as $package) {
                 if (!empty($package['extra']['think']['services'])) {
                     $services = array_merge($services, (array)$package['extra']['think']['services']);
                 }
@@ -99,8 +98,8 @@ class Publish extends Command
                 }
             }
         }
-        $date = date('Y-m-d H:i:s');
-        $header = "// Automatically Generated At: {$date}" . PHP_EOL . 'declare (strict_types = 1);' . PHP_EOL;
+        // 写入服务配置
+        $header = "// Automatically Generated At: " . date('Y-m-d H:i:s') . PHP_EOL . 'declare (strict_types = 1);' . PHP_EOL;
         file_put_contents(with_path('vendor/services.php'), '<?php' . PHP_EOL . $header . 'return ' . var_export(array_unique($services), true) . ';');
         return $this;
     }
