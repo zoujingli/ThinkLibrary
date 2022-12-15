@@ -91,41 +91,41 @@ abstract class Plugin extends Service
             $this->appPath = dirname($ref->getFileName());
         }
 
-        // 应用插件包名
+        // 应用插件包名计算
         if (empty($this->package) && ($path = $ref->getFileName())) {
-            for ($num = 1; $num <= 3; $num++) {
-                if (file_exists($file = dirname($path, $num) . '/composer.json')) {
-                    $this->package = json_decode(file_get_contents($file), true)['name'];
+            for ($level = 1; $level <= 3; $level++) {
+                if (file_exists($file = dirname($path, $level) . '/composer.json')) {
+                    $this->package = json_decode(file_get_contents($file), true)['name'] ?? '';
                     break;
                 }
             }
         }
 
         // 应用插件计算名称及别名
-        if (in_array($attr[0], [NodeService::rootSpace(), 'think'])) {
-            array_shift($attr);
-        }
-        if (empty($this->appName)) $this->appName = join('-', $attr);
-        if (empty($this->appAlias)) $this->appAlias = join('-', $attr);
+        if ($attr[0] === NodeService::space()) array_shift($attr);
+        $this->appName = $this->appName ?: join('-', $attr);
+        $this->appAlias = $this->appAlias ?: join('-', $attr);
+        if ($this->appName === $this->appAlias) $this->appAlias = '';
 
         // 注册应用插件信息
-        static::add($this->appName, $this->appPath, $this->appAlias, $this->appSpace, $this->copyPath, $this->package);
+        static::add($this->appName, $this->appPath, $this->copyPath, $this->appAlias, $this->appSpace, $this->package);
     }
 
     /**
-     * 注册插件
+     * 注册应用插件
      * @param string $name 应用名称
      * @param string $path 应用目录
+     * @param string $copy 应用资源
      * @param string $alias 应用别名
      * @param string $space 应用空间
-     * @param string $copy 应用资源
+     * @param string $package 应用包名
      * @return boolean
      */
-    public static function add(string $name, string $path, string $alias = '', string $space = '', string $copy = '', string $package = ''): bool
+    public static function add(string $name, string $path, string $copy = '', string $alias = '', string $space = '', string $package = ''): bool
     {
         if (file_exists($path) && is_dir($path)) {
             $path = rtrim($path, '\\/') . DIRECTORY_SEPARATOR;
-            $space = $space ?: NodeService::rootSpace($name);
+            $space = $space ?: NodeService::space($name);
             $copy = rtrim($copy ?: dirname($path) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
             if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
                 'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name])

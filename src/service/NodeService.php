@@ -33,6 +33,18 @@ use think\admin\Service;
  */
 class NodeService extends Service
 {
+
+    /**
+     * 获取默认应用空间名
+     * @param string $suffix 后缀路径
+     * @return string
+     */
+    public static function space(string $suffix = ''): string
+    {
+        $default = Library::$sapp->config->get('app.app_namespace') ?: 'app';
+        return empty($suffix) ? $default : trim($default . '\\' . trim($suffix, '\\/'), '\\');
+    }
+
     /**
      * 驼峰转下划线规则
      * @param string $name
@@ -88,17 +100,6 @@ class NodeService extends Service
     }
 
     /**
-     * 获取默认应用空间名
-     * @param string $suffix 后缀路径
-     * @return string
-     */
-    public static function rootSpace(string $suffix = ''): string
-    {
-        $default = Library::$sapp->config->get('app.app_namespace') ?: 'app';
-        return empty($suffix) ? $default : trim($default . '\\' . trim($suffix, '\\/'), '\\');
-    }
-
-    /**
      * 获取应用列表
      * @param array $data
      * @return array
@@ -134,7 +135,7 @@ class NodeService extends Service
         foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $name) {
             if (preg_match("|^(\w+)/controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                 [, $appName, $className] = $matches;
-                static::_parseClass($appName, self::rootSpace($appName), $className, $ignores, $data);
+                static::_parseClass($appName, self::space($appName), $className, $ignores, $data);
             }
         }
         // 扫描所有插件代码
