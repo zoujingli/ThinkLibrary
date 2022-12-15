@@ -101,11 +101,11 @@ class Publish extends Command
 
         // 写入服务配置
         $header = "// Automatically Generated At: " . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
-        $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export(array_unique($services), true) . ';';
+        $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($services, true) . ';';
         file_put_contents(with_path('vendor/services.php'), $content);
 
         // 写入版本配置
-        $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export(array_unique($versions), true) . ';';
+        $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($versions, true) . ';';
         file_put_contents(with_path('vendor/versions.php'), $content);
 
         return $this;
