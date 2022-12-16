@@ -156,11 +156,12 @@ abstract class Plugin extends Service
 
     /**
      * 获取所有插件
-     * @return array
+     * @param string $code 指定编号
+     * @return ?array
      */
-    public static function all(): array
+    public static function all(string $code = ''): ?array
     {
-        return self::$addons;
+        return empty($code) ? self::$addons : (self::$addons[$code] ?? null);
     }
 
     /**
