@@ -88,8 +88,9 @@ abstract class Plugin extends Service
      */
     public function __construct(App $app)
     {
-        static::$static = $this;
         parent::__construct($app);
+        static::$static = $this;
+
         // 获取基础服务类
         $ref = new \ReflectionClass(static::class);
 
@@ -98,6 +99,7 @@ abstract class Plugin extends Service
             $this->appSpace = $ref->getNamespaceName();
         }
 
+        // 应用服务注册类
         if (empty($this->service)) {
             $this->service = static::class;
         }
