@@ -77,13 +77,19 @@ abstract class Plugin extends Service
     private static $addons = [];
 
     /**
+     * 当前静态对应
+     * @var static
+     */
+    protected static $static;
+
+    /**
      * 自动注册插件
      * @param \think\App $app
      */
     public function __construct(App $app)
     {
+        static::$static = $this;
         parent::__construct($app);
-
         // 获取基础服务类
         $ref = new \ReflectionClass(static::class);
 
@@ -120,7 +126,7 @@ abstract class Plugin extends Service
         if ($this->appName === $this->appAlias) $this->appAlias = '';
 
         // 注册应用插件信息
-        $this->addPlugin($this->appName, $this->appPath, $this->appCopy, $this->appAlias, $this->appSpace, $this->package, $this->service);
+        self::add($this->appName, $this->appPath, $this->appCopy, $this->appAlias, $this->appSpace, $this->package, $this->service);
     }
 
     /**
@@ -142,7 +148,7 @@ abstract class Plugin extends Service
      * @param string $service 服务名称
      * @return void
      */
-    private function addPlugin(string $name, string $path, string $copy = '', string $alias = '', string $space = '', string $package = '', string $service = ''): void
+    private static function add(string $name, string $path, string $copy = '', string $alias = '', string $space = '', string $package = '', string $service = ''): void
     {
         if (file_exists($path) && is_dir($path)) {
             [$path, $space] = [rtrim($path, '\\/') . DIRECTORY_SEPARATOR, $space ?: NodeService::space($name)];
