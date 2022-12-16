@@ -114,6 +114,14 @@ abstract class Plugin extends Service
     }
 
     /**
+     * 注册应用启动
+     * @return void
+     */
+    public function boot(): void
+    {
+    }
+
+    /**
      * 注册应用插件
      * @param string $name 插件名称
      * @param string $path 插件目录
