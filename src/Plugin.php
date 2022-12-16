@@ -18,68 +18,67 @@ declare (strict_types=1);
 namespace think\admin;
 
 use think\admin\service\NodeService;
+use think\App;
 use think\Service;
 
 /**
- * 应用插件注册服务
+ * 插件注册服务
  * Class Plugin
  * @package think\admin\service
  */
 abstract class Plugin extends Service
 {
     /**
-     * 应用插件包名
+     * 插件包名
      * @var string
      */
     protected $package = '';
 
     /**
-     * 应用插件名称
+     * 插件名称
      * @var string
      */
     protected $appName = '';
 
     /**
-     * 应用插件目录
+     * 插件目录
      * @var string
      */
     protected $appPath = '';
 
     /**
-     * 应用插件别名
+     * 拷贝目录
+     * @var string
+     */
+    protected $appCopy = '';
+
+    /**
+     * 插件别名
      * @var string
      */
     protected $appAlias = '';
 
     /**
-     * 应用命名空间
+     * 命名空间
      * @var string
      */
     protected $appSpace = '';
 
     /**
-     * 文件拷贝目录
-     * @var string
-     */
-    protected $copyPath = '';
-
-    /**
-     * 当前插件配置
+     * 插件配置
      * @var array
      */
     private static $addons = [];
 
     /**
-     * 自动注册应用
-     * @return void
+     * @param \think\App $app
      */
-    public function boot(): void
+    public function __construct(App $app)
     {
-        // 初始化服务
-        $this->initialize();
+        parent::__construct($app);
 
+        // 获取基础服务类
         $ref = new \ReflectionClass(static::class);
-        $attr = explode('\\', $ref->getNamespaceName());
 
         // 应用命名空间名
         if (empty($this->appSpace)) {
@@ -102,34 +101,36 @@ abstract class Plugin extends Service
         }
 
         // 应用插件计算名称及别名
+        $attr = explode('\\', $ref->getNamespaceName());
         if ($attr[0] === NodeService::space()) array_shift($attr);
+
         $this->appName = $this->appName ?: join('-', $attr);
         $this->appAlias = $this->appAlias ?: join('-', $attr);
         if ($this->appName === $this->appAlias) $this->appAlias = '';
 
         // 注册应用插件信息
-        static::add($this->appName, $this->appPath, $this->copyPath, $this->appAlias, $this->appSpace, $this->package);
+        self::add($this->appName, $this->appPath, $this->appCopy, $this->appAlias, $this->appSpace, $this->package);
     }
 
     /**
      * 注册应用插件
-     * @param string $name 应用名称
-     * @param string $path 应用目录
-     * @param string $copy 应用资源
-     * @param string $alias 应用别名
-     * @param string $space 应用空间
-     * @param string $package 应用包名
+     * @param string $name 插件名称
+     * @param string $path 插件目录
+     * @param string $copy 插件资源
+     * @param string $alias 插件别名
+     * @param string $space 插件空间
+     * @param string $package 插件包名
      * @return boolean
      */
     public static function add(string $name, string $path, string $copy = '', string $alias = '', string $space = '', string $package = ''): bool
     {
         if (file_exists($path) && is_dir($path)) {
-            $path = rtrim($path, '\\/') . DIRECTORY_SEPARATOR;
-            $space = $space ?: NodeService::space($name);
+            [$path, $space] = [rtrim($path, '\\/') . DIRECTORY_SEPARATOR, $space ?: NodeService::space($name)];
             $copy = rtrim($copy ?: dirname($path) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
-            if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
-                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name])
-            ], 'app');
+            if (strlen($alias) > 0 && $alias !== $name) {
+                $maps = array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name]);
+                Library::$sapp->config->set(['app_map' => $maps], 'app');
+            }
             self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $space, 'package' => $package];
             return true;
         } else {
@@ -151,11 +152,4 @@ abstract class Plugin extends Service
      * @return array 一级或二级菜单
      */
     abstract public static function menu(): array;
-
-    /**
-     * 服务初始化
-     */
-    protected function initialize()
-    {
-    }
 }
