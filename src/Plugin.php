@@ -71,6 +71,7 @@ abstract class Plugin extends Service
     private static $addons = [];
 
     /**
+     * 自动注册插件
      * @param \think\App $app
      */
     public function __construct(App $app)
