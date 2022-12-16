@@ -139,12 +139,18 @@ abstract class Plugin extends Service
 
     /**
      * 获取所有插件
-     * @return array [string][所在路径,应用空间,资源目录,应用别名]
+     * @return array
      */
     public static function all(): array
     {
         return self::$addons;
     }
+
+    /**
+     * 定义插件菜单
+     * @return array 一级或二级菜单
+     */
+    abstract public static function menu(): array;
 
     /**
      * 服务初始化
