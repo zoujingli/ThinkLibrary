@@ -35,6 +35,12 @@ abstract class Plugin extends Service
     protected $package = '';
 
     /**
+     * 插件服务
+     * @var string
+     */
+    protected $service = '';
+
+    /**
      * 插件名称
      * @var string
      */
@@ -86,6 +92,10 @@ abstract class Plugin extends Service
             $this->appSpace = $ref->getNamespaceName();
         }
 
+        if (empty($this->service)) {
+            $this->service = static::class;
+        }
+
         // 应用插件路径计算
         if (empty($this->appPath) || !file_exists($this->appPath)) {
             $this->appPath = dirname($ref->getFileName());
@@ -110,7 +120,7 @@ abstract class Plugin extends Service
         if ($this->appName === $this->appAlias) $this->appAlias = '';
 
         // 注册应用插件信息
-        self::add($this->appName, $this->appPath, $this->appCopy, $this->appAlias, $this->appSpace, $this->package);
+        $this->addPlugin($this->appName, $this->appPath, $this->appCopy, $this->appAlias, $this->appSpace, $this->package, $this->service);
     }
 
     /**
@@ -129,21 +139,18 @@ abstract class Plugin extends Service
      * @param string $alias 插件别名
      * @param string $space 插件空间
      * @param string $package 插件包名
-     * @return boolean
+     * @param string $service 服务名称
+     * @return void
      */
-    public static function add(string $name, string $path, string $copy = '', string $alias = '', string $space = '', string $package = ''): bool
+    private function addPlugin(string $name, string $path, string $copy = '', string $alias = '', string $space = '', string $package = '', string $service = ''): void
     {
         if (file_exists($path) && is_dir($path)) {
             [$path, $space] = [rtrim($path, '\\/') . DIRECTORY_SEPARATOR, $space ?: NodeService::space($name)];
             $copy = rtrim($copy ?: dirname($path) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
-            if (strlen($alias) > 0 && $alias !== $name) {
-                $maps = array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name]);
-                Library::$sapp->config->set(['app_map' => $maps], 'app');
-            }
-            self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $space, 'package' => $package];
-            return true;
-        } else {
-            return false;
+            if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
+                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name])
+            ], 'app');
+            self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $space, 'package' => $package, 'service' => $service];
         }
     }
 
