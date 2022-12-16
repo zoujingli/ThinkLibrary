@@ -37,12 +37,8 @@ class MenuService extends Service
      */
     public static function getList(bool $force = false): array
     {
-        if (empty($force)) {
-            static $nodes = [];
-            if (count($nodes) > 0) return $nodes;
-        } else {
-            $nodes = [];
-        }
+        static $nodes = [];
+        if (empty($force) && count($nodes) > 0) return $nodes; else $nodes = [];
         foreach (NodeService::getMethods($force) as $node => $method) {
             if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => $method['title']];
         }
