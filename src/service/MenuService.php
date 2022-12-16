@@ -61,7 +61,7 @@ class MenuService extends Service
     {
         $menus = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray();
         if (function_exists('admin_menu_filter')) admin_menu_filter($menus);
-        return static::build(DataExtend::arr2tree($menus));
+        return static::filter(DataExtend::arr2tree($menus));
     }
 
     /**
@@ -70,27 +70,21 @@ class MenuService extends Service
      * @return array
      * @throws \ReflectionException
      */
-    private static function build(array $menus): array
+    private static function filter(array $menus): array
     {
         foreach ($menus as $key => &$menu) {
             if (!empty($menu['sub'])) {
-                $menu['sub'] = static::build($menu['sub']);
+                $menu['sub'] = static::filter($menu['sub']);
             }
             if (!empty($menu['sub'])) {
                 $menu['url'] = '#';
-            } elseif (empty($menu['url']) || $menu['url'] === '#') {
+            } elseif (empty($menu['url']) || $menu['url'] === '#' || !(empty($menu['node']) || AdminService::check($menu['node']))) {
                 unset($menus[$key]);
-            } elseif (preg_match('#^(https?:)?(//|\\\\)#i', $menu['url'])) {
-                if (!!$menu['node'] && !AdminService::check($menu['node'])) {
-                    unset($menus[$key]);
-                } elseif ($menu['params']) {
-                    $menu['url'] .= (strpos($menu['url'], '?') === false ? '?' : '&') . $menu['params'];
-                }
-            } elseif (!!$menu['node'] && !AdminService::check($menu['node'])) {
-                unset($menus[$key]);
+            } elseif (preg_match('#^(https?:)?//\w+#i', $menu['url'])) {
+                if ($menu['params']) $menu['url'] .= (strpos($menu['url'], '?') === false ? '?' : '&') . $menu['params'];
             } else {
-                $node = join('/', array_slice(explode('/', $menu['url']), 0, 3));
-                $menu['url'] = url($menu['url'])->build() . ($menu['params'] ? '?' . $menu['params'] : '');
+                $node = join('/', array_slice(str2arr($menu['url'], '/'), 0, 3));
+                $menu['url'] = admuri($menu['url']) . ($menu['params'] ? '?' . $menu['params'] : '');
                 if (!AdminService::check($node)) unset($menus[$key]);
             }
         }
