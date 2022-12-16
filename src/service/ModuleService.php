@@ -128,7 +128,7 @@ class ModuleService extends Service
         ToolsExtend::copyfile($frdir, with_path('config'), [], $force, false);
         // 复制静态资料文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
-        ToolsExtend::copyfile($frdir, with_path('public'), [], $force, false);
+        ToolsExtend::copyfile($frdir, with_path('public'), [], true, false);
         // 复制根目录文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'sysroot';
         ToolsExtend::copyfile($frdir, with_path(), [], $force, false);
