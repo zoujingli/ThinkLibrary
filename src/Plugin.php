@@ -156,7 +156,7 @@ abstract class Plugin extends Service
             [$path, $space] = [rtrim($path, '\\/') . DIRECTORY_SEPARATOR, $space ?: NodeService::space($name)];
             $copy = rtrim($copy ?: dirname($path) . DIRECTORY_SEPARATOR . 'stc', '\\/') . DIRECTORY_SEPARATOR;
             if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
-                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name])
+                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name]),
             ], 'app');
             self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $space, 'package' => $package, 'service' => $service];
         }
@@ -170,6 +170,16 @@ abstract class Plugin extends Service
     public static function all(string $code = ''): ?array
     {
         return empty($code) ? self::$addons : (self::$addons[$code] ?? null);
+    }
+
+    /**
+     * 获取内部参数
+     * @param string $name
+     * @return null
+     */
+    public function __get(string $name)
+    {
+        return $this->$name ?? '';
     }
 
     /**
