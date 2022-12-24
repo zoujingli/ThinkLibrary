@@ -17,6 +17,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
+use think\admin\Exception;
 use think\admin\extend\DataExtend;
 use think\admin\Library;
 use think\admin\model\SystemAuth;
@@ -218,14 +219,29 @@ class AdminService extends Service
 
     /**
      * 静态方法兼容(停时)
-     * @param string $name
+     * @param string $method
      * @param array $arguments
-     * @return bool|void
+     * @return bool
+     * @throws \think\admin\Exception
      */
-    public static function __callStatic(string $name, array $arguments)
+    public static function __callStatic(string $method, array $arguments)
     {
-        if ($name === 'clearCache') {
+        if ($method === 'clearCache') {
             return static::clear();
+        } else {
+            throw new Exception("method not exists: RuntimeService::{$method}()");
         }
+    }
+
+    /**
+     * 对象方法兼容（停时）
+     * @param string $method
+     * @param array $arguments
+     * @return bool
+     * @throws \think\admin\Exception
+     */
+    public function __call(string $method, array $arguments)
+    {
+        return static::__callStatic($method, $arguments);
     }
 }
