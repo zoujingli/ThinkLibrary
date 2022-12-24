@@ -234,7 +234,7 @@ class AdminService extends Service
     }
 
     /**
-     * 对象方法兼容（停时）
+     * 对象方法兼容(停时)
      * @param string $method
      * @param array $arguments
      * @return bool
