@@ -229,7 +229,7 @@ class AdminService extends Service
         if ($method === 'clearCache') {
             return static::clear();
         } else {
-            throw new Exception("method not exists: RuntimeService::{$method}()");
+            throw new Exception("method not exists: AdminService::{$method}()");
         }
     }
 
