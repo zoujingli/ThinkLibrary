@@ -33,7 +33,6 @@ use think\App;
 use think\middleware\LoadLangPack;
 use think\Request;
 use think\Service;
-use function Composer\Autoload\includeFile;
 
 /**
  * 模块注册服务
@@ -106,7 +105,7 @@ class Library extends Service
         // 动态加载应用初始化系统函数
         $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
         foreach (glob("{$this->app->getBasePath()}*/sys.php") as $file) {
-            includeFile($file);
+            include $file;
         }
 
         // 终端 HTTP 访问时特殊处理

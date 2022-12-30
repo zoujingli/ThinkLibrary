@@ -18,7 +18,6 @@ declare (strict_types=1);
 namespace think\admin\extend;
 
 use think\Model;
-use function Composer\Autoload\includeFile;
 
 /**
  * 虚拟模型构建协议
@@ -177,7 +176,7 @@ class VirtualModel
             if (!in_array('model', stream_get_wrappers())) {
                 stream_wrapper_register('model', static::class);
             }
-            includeFile("model://{$name}#{$conn}");
+            include "model://{$name}#{$conn}";
         }
         return new $class($data);
     }
