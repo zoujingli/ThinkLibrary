@@ -134,15 +134,15 @@ class Install extends Command
 
         // 指定模块初始化
         if ($name === 'static') {
-            $todir = with_path('public/static/extra/');
+            $todir = syspath('public/static/extra/');
             $frdir = dirname(__DIR__, 2) . "/service/bin/{$name}/";
             $this->queue->message($total, $count, "--- 处理静态自定义目录");
             ToolsExtend::copyfile($frdir, $todir, ['script.js', 'style.css'], false, false);
         }
 
         // 执行模块数据库操作
-        $frdir = with_path("{$name}/database", $this->app->getBasePath());
-        $todir = with_path('database/migrations', $this->app->getRootPath());
+        $frdir = syspath("{$name}/database", $this->app->getBasePath());
+        $todir = syspath('database/migrations', $this->app->getRootPath());
         $this->queue->message($total, $count, "--- 处理数据库可执行脚本");
         ToolsExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
     }

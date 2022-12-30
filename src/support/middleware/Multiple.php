@@ -149,7 +149,7 @@ class Multiple
      */
     private function setMultiApp(string $appName, bool $appBind): bool
     {
-        if (is_dir($this->appPath = $this->appPath ?: with_path("app/{$appName}/"))) {
+        if (is_dir($this->appPath = $this->appPath ?: syspath("app/{$appName}/"))) {
             $this->app->setNamespace($this->appSpace = $this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
             $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
             return $this->loadMultiApp($this->appPath);

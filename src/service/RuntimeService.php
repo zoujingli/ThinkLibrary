@@ -81,7 +81,7 @@ class RuntimeService
         if (empty(static::$env)) {
 
             // 读取默认配置
-            if (file_exists($file = with_path('runtime/.env'))) {
+            if (file_exists($file = syspath('runtime/.env'))) {
                 is_file($file) && Library::$sapp->env->load($file);
             }
 
@@ -111,7 +111,7 @@ class RuntimeService
         $rows[] = "mode = " . static::$env['mode'];
         foreach (static::$env['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
         foreach (static::$env['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
-        file_put_contents(with_path('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
+        file_put_contents(syspath('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
 
         //  应用当前的配置文件
         return static::apply(static::$env);
@@ -147,7 +147,7 @@ class RuntimeService
         $connection = Library::$sapp->db->getConfig('default');
         Library::$sapp->console->call('optimize:schema', ["--connection={$connection}"]);
         foreach (NodeService::getModules() as $module) {
-            $path = with_path("runtime/{$module}");
+            $path = syspath("runtime/{$module}");
             file_exists($path) && is_dir($path) || mkdir($path, 0755, true);
             Library::$sapp->console->call('optimize:route', [$module]);
         }

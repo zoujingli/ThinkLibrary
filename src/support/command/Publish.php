@@ -74,7 +74,7 @@ class Publish extends Command
     private function parse(): Publish
     {
         [$services, $versions] = [[], []];
-        if (file_exists($file = with_path('vendor/composer/installed.json'))) {
+        if (file_exists($file = syspath('vendor/composer/installed.json'))) {
             $packages = json_decode(@file_get_contents($file), true);
             foreach ($packages['packages'] ?? $packages as $package) {
                 $versions[$package['name']] = $package['version'];
@@ -83,7 +83,7 @@ class Publish extends Command
                 }
                 if (!empty($package['extra']['think']['config'])) {
                     $configPath = $this->app->getConfigPath();
-                    $installPath = with_path("vendor/{$package['name']}/");
+                    $installPath = syspath("vendor/{$package['name']}/");
                     foreach ((array)$package['extra']['think']['config'] as $name => $file) {
                         if (is_file($target = $configPath . $name . '.php')) {
                             $this->output->info("File {$target} exist!");
@@ -102,11 +102,11 @@ class Publish extends Command
         // 写入服务配置
         $header = "// Automatically Generated At: " . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($services, true) . ';';
-        file_put_contents(with_path('vendor/services.php'), $content);
+        file_put_contents(syspath('vendor/services.php'), $content);
 
         // 写入版本配置
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($versions, true) . ';';
-        file_put_contents(with_path('vendor/versions.php'), $content);
+        file_put_contents(syspath('vendor/versions.php'), $content);
 
         return $this;
     }

@@ -342,7 +342,7 @@ class SystemService extends Service
      */
     public static function putDebug($data, bool $new = false, ?string $file = null)
     {
-        if (is_null($file)) $file = with_path('runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log');
+        if (is_null($file)) $file = syspath('runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log');
         $str = (is_string($data) ? $data : ((is_array($data) || is_object($data)) ? print_r($data, true) : var_export($data, true))) . PHP_EOL;
         return $new ? file_put_contents($file, $str) : file_put_contents($file, $str, FILE_APPEND);
     }
@@ -368,7 +368,7 @@ class SystemService extends Service
             }
             if (empty($info) || empty($info['file'])) return false;
             $favicon = new FaviconExtend($info['file'], [48, 48]);
-            return $favicon->saveIco(with_path('public/favicon.ico'));
+            return $favicon->saveIco(syspath('public/favicon.ico'));
         } catch (Exception $exception) {
             throw $exception;
         } catch (\Exception $exception) {

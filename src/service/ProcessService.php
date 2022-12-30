@@ -36,7 +36,7 @@ class ProcessService extends Service
      */
     public static function think(string $arguments = '', bool $simple = false): string
     {
-        $command = with_path("think {$arguments}");
+        $command = syspath("think {$arguments}");
         try {
             if ($simple) return $command;
             if (!($binary = sysconf('base.binary')) || empty($binary)) {

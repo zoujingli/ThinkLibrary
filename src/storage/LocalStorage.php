@@ -129,7 +129,7 @@ class LocalStorage extends Storage
     public function path(string $name, bool $safe = false): string
     {
         $path = $safe ? 'safefile' : 'public/upload';
-        return strtr(with_path("{$path}/{$this->delSuffix($name)}"), '\\', '/');
+        return strtr(syspath("{$path}/{$this->delSuffix($name)}"), '\\', '/');
     }
 
     /**

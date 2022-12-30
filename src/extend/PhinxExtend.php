@@ -259,7 +259,7 @@ CODE;
      */
     private static function _filename(string $class): string
     {
-        if (count($files = glob(with_path('database/migrations/*.php'))) > 0) {
+        if (count($files = glob(syspath('database/migrations/*.php'))) > 0) {
             $name = basename(end($files));
             $verint = date('Ymd') === substr($name, 0, 8) ? substr($name, 8, 6) : 0;
             $version = str_pad(strval(intval($verint) + 1), 6, '0', STR_PAD_LEFT);

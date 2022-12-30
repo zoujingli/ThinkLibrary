@@ -125,13 +125,13 @@ class ModuleService extends Service
     {
         // 复制系统配置文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
-        ToolsExtend::copyfile($frdir, with_path('config'), [], $force, false);
+        ToolsExtend::copyfile($frdir, syspath('config'), [], $force, false);
         // 复制静态资料文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
-        ToolsExtend::copyfile($frdir, with_path('public'), [], true, false);
+        ToolsExtend::copyfile($frdir, syspath('public'), [], true, false);
         // 复制数据库脚本
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
-        ToolsExtend::copyfile($frdir, with_path('database/migrations'), [], $force, false);
+        ToolsExtend::copyfile($frdir, syspath('database/migrations'), [], $force, false);
     }
 
     /**
@@ -164,7 +164,7 @@ class ModuleService extends Service
     {
         // 扫描规则文件
         foreach ($rules as $rule) {
-            $path = with_path(strtr(trim($rule, '\\/'), '\\', '/'));
+            $path = syspath(strtr(trim($rule, '\\/'), '\\', '/'));
             $data = array_merge($data, static::scanLocalFileHashList($path));
         }
         // 清除忽略文件
@@ -234,7 +234,7 @@ class ModuleService extends Service
                 return [false, $file['type'], $file['name']];
             }
         } elseif ($file['type'] == 'del') {
-            $real = with_path($file['name']);
+            $real = syspath($file['name']);
             if (is_file($real) && unlink($real)) {
                 ToolsExtend::removeEmptyDirectory(dirname($real));
                 return [true, $file['type'], $file['name']];
@@ -286,7 +286,7 @@ class ModuleService extends Service
         $source = static::getServer() . '/admin/api.update/get?encode=' . $encode;
         $result = json_decode(HttpExtend::get($source), true);
         if (empty($result['code'])) return false;
-        $filename = with_path(decode($encode));
+        $filename = syspath(decode($encode));
         file_exists(dirname($filename)) || mkdir(dirname($filename), 0755, true);
         return file_put_contents($filename, base64_decode($result['data']['content']));
     }
@@ -331,7 +331,7 @@ class ModuleService extends Service
      */
     private static function scanLocalFileHashList(string $path): array
     {
-        [$posi, $data] = [strlen(with_path()), []];
+        [$posi, $data] = [strlen(syspath()), []];
         foreach (ToolsExtend::scanDirectory($path, '', false) as $file) {
             if (static::checkAllowDownload($name = strtr(substr($file, $posi), '\\', '/'))) {
                 $data[] = ['name' => $name, 'hash' => md5(preg_replace('/\s+/', '', file_get_contents($file)))];

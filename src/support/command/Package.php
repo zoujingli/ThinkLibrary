@@ -50,7 +50,7 @@ class Package extends Command
     {
         try {
             // 创建数据库迁移脚本目录
-            $dirname = with_path('database/migrations');
+            $dirname = syspath('database/migrations');
             file_exists($dirname) or mkdir($dirname, 0755, true);
             // 开始创建数据库迁移脚本
             $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
@@ -76,7 +76,7 @@ class Package extends Command
     {
         $this->setQueueMessage(2, 1, '开始创建数据表创建脚本！');
         $phinx = PhinxExtend::create2phinx();
-        $target = with_path("database/migrations/{$phinx['file']}");
+        $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(2, 1, '成功创建数据表创建脚本！', 1);
             return true;
@@ -103,7 +103,7 @@ class Package extends Command
         }
         // 创建数据包安装脚本
         $phinx = PhinxExtend::create2package($tables);
-        $target = with_path("database/migrations/{$phinx['file']}");
+        $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(2, 2, '成功创建数据包安装脚本！', 1);
             return true;

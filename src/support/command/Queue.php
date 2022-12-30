@@ -106,7 +106,7 @@ class Queue extends Command
      */
     protected function webStopAction()
     {
-        $root = with_path('public' . DIRECTORY_SEPARATOR);
+        $root = syspath('public' . DIRECTORY_SEPARATOR);
         if (count($result = $this->process->query("{$root} {$root}router.php")) < 1) {
             $this->output->writeln("># There are no WebServer processes to stop");
         } else foreach ($result as $item) {
@@ -122,7 +122,7 @@ class Queue extends Command
     {
         $port = $this->input->getOption('port') ?: '80';
         $host = $this->input->getOption('host') ?: '127.0.0.1';
-        $root = with_path('public' . DIRECTORY_SEPARATOR);
+        $root = syspath('public' . DIRECTORY_SEPARATOR);
         $command = "php -S {$host}:{$port} -t {$root} {$root}router.php";
         $this->output->comment(">$ {$command}");
         if (count($result = $this->process->query($command)) > 0) {
@@ -144,7 +144,7 @@ class Queue extends Command
      */
     protected function webStatusAction()
     {
-        $root = with_path('public' . DIRECTORY_SEPARATOR);
+        $root = syspath('public' . DIRECTORY_SEPARATOR);
         if (count($result = $this->process->query("{$root} {$root}router.php")) > 0) {
             $this->output->comment(">$ {$result[0]['cmd']}");
             $this->output->writeln("># WebServer process {$result[0]['pid']} running");
