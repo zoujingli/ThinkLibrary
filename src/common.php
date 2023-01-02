@@ -3,11 +3,12 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2022 广州楚才信息科技有限公司 [ http://www.cuci.cc ]
+// | 版权所有 2014~2023 Anyon<zoujingli@qq.com>
 // +----------------------------------------------------------------------
-// | 官方网站: https://gitee.com/zoujingli/ThinkLibrary
+// | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
 // | 开源协议 ( https://mit-license.org )
+// | 免费声明 ( https://thinkadmin.top/disclaimer )
 // +----------------------------------------------------------------------
 // | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
@@ -101,6 +102,7 @@ if (!function_exists('encode')) {
      * 加密 UTF8 字符串
      * @param string $content
      * @return string
+     * @deprecated
      */
     function encode(string $content): string
     {
@@ -114,6 +116,7 @@ if (!function_exists('decode')) {
      * 解密 UTF8 字符串
      * @param string $content
      * @return string
+     * @deprecated
      */
     function decode(string $content): string
     {
