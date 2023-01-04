@@ -78,19 +78,12 @@ abstract class Plugin extends Service
     private static $addons = [];
 
     /**
-     * 当前静态对应
-     * @var static
-     */
-    protected static $static;
-
-    /**
      * 自动注册插件
      * @param \think\App $app
      */
     public function __construct(App $app)
     {
         parent::__construct($app);
-        static::$static = $this;
 
         // 获取基础服务类
         $ref = new \ReflectionClass(static::class);
