@@ -184,7 +184,10 @@ class Multiple
         if (is_file($file = $appPath . 'provider' . $ext)) {
             $this->app->bind(include $file);
         }
-        $this->app->lang->switchLangSet($this->app->lang->getLangSet());
+        // 重新加载应用语言包
+        if (method_exists($this->app->lang, 'switchLangSet')) {
+            $this->app->lang->switchLangSet($this->app->lang->getLangSet());
+        }
         return true;
     }
 }
