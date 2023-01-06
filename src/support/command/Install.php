@@ -19,8 +19,7 @@ declare (strict_types=1);
 namespace think\admin\support\command;
 
 use think\admin\Command;
-use think\admin\extend\ToolsExtend;
-use think\admin\service\ModuleService;
+use think\admin\service\ProcessService;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
@@ -32,42 +31,6 @@ use think\console\Output;
  */
 class Install extends Command
 {
-    /**
-     * 规则配置
-     * @var array
-     */
-    protected $bind = [
-        'admin'  => [
-            'rules'  => ['app/admin'],
-            'ignore' => [],
-        ],
-        'wechat' => [
-            'rules'  => ['app/wechat'],
-            'ignore' => [],
-        ],
-        'config' => [
-            'rules'  => [
-                'think',
-                'config/app.php',
-                'config/log.php',
-                'config/route.php',
-                'config/trace.php',
-                'config/view.php',
-                'public/index.php',
-                'public/router.php',
-            ],
-            'ignore' => [],
-        ],
-        'static' => [
-            'rules'  => [
-                'public/static/plugs',
-                'public/static/theme',
-                'public/static/admin.js',
-                'public/static/login.js',
-            ],
-            'ignore' => [],
-        ],
-    ];
 
     /**
      * 指令任务配置
@@ -84,67 +47,40 @@ class Install extends Command
      * @param \think\console\Input $input
      * @param \think\console\Output $output
      * @return void
+     * @throws \think\admin\Exception
      */
     protected function execute(Input $input, Output $output)
     {
+        // 获取待操作插件名称
         $name = trim($input->getArgument('name'));
-        if (empty($name)) {
-            $output->writeln('待安装或更新的模块名称不能为空！');
-        } elseif (isset($this->bind[$name])) {
-            [$rules, $ignore] = [$this->bind[$name]['rules'] ?? [], $this->bind[$name]['ignore'] ?? []];
-            if (in_array($name, ['admin', 'wechat', 'data']) && !file_exists($this->app->getBasePath() . $name)) {
-                $this->install($name, $rules, $ignore);
-            } elseif ($output->confirm($input, "安全警告：安装 {$name} 模块，将会替换或删除本地文件！")) {
-                $this->install($name, $rules, $ignore);
-            } else {
-                $output->info("未执行，未同意安装模块！");
-            }
+        if (empty($name)) $output->writeln('待安装或更新的插件不能为空！');
+
+        if ($name === 'static' || $name === 'config') {
+            $this->install($name, 'zoujingli/think-plugs-static');
+        } elseif ($name === 'admin') {
+            $this->install($name, 'zoujingli/think-plugs-admin');
+        } elseif ($name === 'wechat') {
+            $this->install($name, 'zoujingli/think-plugs-wechat');
         } else {
-            $output->error("未执行，待安装或更新的模块[ {$name} ] 不存在！");
+            $this->setQueueError("未执行，待安装或更新的模块[ {$name} ] 不存在！");
         }
     }
 
-    /**
-     * 安装本地文件
-     * @param string $name 更新模块
-     * @param array $rules 检查规则
-     * @param array $ignore 忽略规则
-     * @return void
-     */
-    private function install(string $name, array $rules = [], array $ignore = [])
+    private function install(string $name, string $package)
     {
-        // 更新模块文件
-        $data = ModuleService::grenDifference($rules, $ignore);
-        if (empty($data)) {
-            $this->output->writeln('未发现有变更的文件，不需要进行更新！');
-            return;
-        }
-        [$total, $count] = [count($data), 0];
-        foreach ($data as $file) {
-            [$state, $mode, $base] = ModuleService::updateFileByDownload($file);
-            if ($state) {
-                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} 添加成功");
-                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} 更新成功");
-                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} 删除成功");
-            } else {
-                if ($mode === 'add') $this->queue->message($total, ++$count, "--- {$base} 添加失败");
-                if ($mode === 'mod') $this->queue->message($total, ++$count, "--- {$base} 更新失败");
-                if ($mode === 'del') $this->queue->message($total, ++$count, "--- {$base} 删除失败");
+        $json = @json_decode(file_get_contents(syspath('composer.json')), true);
+        if (empty($json['require'][$package])) {
+            if ($this->output->confirm($this->input, "安全警告：安装更新 {$name} 模块将升级为插件模式，确定要安装吗？")) {
+                $this->doInstall($package);
             }
+        } else {
+            $this->doInstall($package);
         }
+    }
 
-        // 指定模块初始化
-        if ($name === 'static') {
-            $todir = syspath('public/static/extra/');
-            $frdir = dirname(__DIR__, 2) . "/service/bin/{$name}/";
-            $this->queue->message($total, $count, "--- 处理静态自定义目录");
-            ToolsExtend::copyfile($frdir, $todir, ['script.js', 'style.css'], false, false);
-        }
-
-        // 执行模块数据库操作
-        $frdir = syspath("{$name}/database", $this->app->getBasePath());
-        $todir = syspath('database/migrations', $this->app->getRootPath());
-        $this->queue->message($total, $count, "--- 处理数据库可执行脚本");
-        ToolsExtend::copyfile($frdir, $todir) && $this->app->console->call('migrate:run');
+    private function doInstall(string $package)
+    {
+        $this->output->writeln(">$ composer require {$package} -vvv");
+        ProcessService::system("composer require {$package} -vvv");
     }
 }
