@@ -55,6 +55,7 @@ class Install extends Command
         $name = trim($input->getArgument('name'));
         if (empty($name)) $output->writeln('待安装或更新的插件不能为空！');
 
+        // 兼容历史安装更新
         if ($name === 'static' || $name === 'config') {
             $this->install($name, 'zoujingli/think-plugs-static');
         } elseif ($name === 'admin') {
@@ -62,7 +63,7 @@ class Install extends Command
         } elseif ($name === 'wechat') {
             $this->install($name, 'zoujingli/think-plugs-wechat');
         } else {
-            $this->setQueueError("未执行，待安装或更新的模块[ {$name} ] 不存在！");
+            $this->setQueueError("待安装或更新的模块[ {$name} ] 不存在！");
         }
     }
 
@@ -70,7 +71,7 @@ class Install extends Command
     {
         $json = @json_decode(file_get_contents(syspath('composer.json')), true);
         if (empty($json['require'][$package])) {
-            if ($this->output->confirm($this->input, "安全警告：安装更新 {$name} 模块将升级为插件模式，确定要安装吗？")) {
+            if ($this->output->confirm($this->input, "安全警告：安装 {$name} 模块将升级为插件模式，确定要安装吗？")) {
                 $this->doInstall($package);
             }
         } else {
