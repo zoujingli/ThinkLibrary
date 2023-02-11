@@ -428,8 +428,10 @@ if (!function_exists('format_datetime')) {
             return '-';
         } elseif (is_numeric($datetime)) {
             return date(lang($format), intval($datetime));
-        } else {
+        }elseif (strtotime($datetime)) {
             return date(lang($format), strtotime($datetime));
+        }else{
+            return $datetime;
         }
     }
 }
