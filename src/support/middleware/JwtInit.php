@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2023 Anyon<zoujingli@qq.com>
+// | 版权所有 2014~2023 Anyon <zoujingli@qq.com>
 // +----------------------------------------------------------------------
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
@@ -111,11 +111,9 @@ class JwtInit
             }
         } else {
             // 非 Jwt 请求禁止使用 Jwt 会话
-            if ($isJwtSession) {
-                throw new HttpResponseException(json([
-                    'code' => 0, 'info' => lang('请使用JWT方式访问！')
-                ]));
-            }
+            if ($isJwtSession) throw new HttpResponseException(json([
+                'code' => 0, 'info' => lang('请使用JWT方式访问！')
+            ]));
             // 非 Jwt 请求需写入 Cookie 记录 SessionID
             $this->app->cookie->set($this->session->getName(), $this->session->getId());
         }
@@ -131,5 +129,6 @@ class JwtInit
     public function end()
     {
         $this->session->save();
+        JwtExtend::$isJwt = false;
     }
 }

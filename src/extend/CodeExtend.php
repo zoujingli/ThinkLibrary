@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2023 Anyon<zoujingli@qq.com>
+// | 版权所有 2014~2023 Anyon <zoujingli@qq.com>
 // +----------------------------------------------------------------------
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
@@ -26,7 +26,7 @@ namespace think\admin\extend;
 class CodeExtend
 {
     /**
-     * 获取随机字符串编码
+     * 生成随机编码
      * @param integer $size 编码长度
      * @param integer $type 编码类型(1纯数字,2纯字母,3数字字母)
      * @param string $prefix 编码前缀
@@ -44,7 +44,7 @@ class CodeExtend
     }
 
     /**
-     * 唯一日期编码
+     * 生成日期编码
      * @param integer $size 编码长度
      * @param string $prefix 编码前缀
      * @return string
@@ -58,7 +58,7 @@ class CodeExtend
     }
 
     /**
-     * 唯一数字编码
+     * 生成数字编码
      * @param integer $size 编码长度
      * @param string $prefix 编码前缀
      * @return string
@@ -73,7 +73,7 @@ class CodeExtend
     }
 
     /**
-     * 文本转为UTF8编码
+     * 文本转UTF8编码
      * @param string $content
      * @return string
      */

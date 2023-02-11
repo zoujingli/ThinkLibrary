@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2023 Anyon<zoujingli@qq.com>
+// | 版权所有 2014~2023 Anyon <zoujingli@qq.com>
 // +----------------------------------------------------------------------
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
@@ -185,7 +185,7 @@ class FaviconExtend
     /**
      * 读取图片资源
      * @param string $file 文件路径
-     * @return false|\GdImage|resource
+     * @return false|resource|\GdImage
      */
     private function loadImageFile(string $file)
     {

@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2023 Anyon<zoujingli@qq.com>
+// | 版权所有 2014~2023 Anyon <zoujingli@qq.com>
 // +----------------------------------------------------------------------
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
@@ -423,14 +423,13 @@ if (!function_exists('format_datetime')) {
      */
     function format_datetime($datetime, string $format = 'Y年m月d日 H:i:s'): string
     {
-
         if (empty($datetime)) {
             return '-';
         } elseif (is_numeric($datetime)) {
             return date(lang($format), intval($datetime));
-        }elseif (strtotime($datetime)) {
-            return date(lang($format), strtotime($datetime));
-        }else{
+        } elseif ($timestamp = strtotime($datetime)) {
+            return date(lang($format), $timestamp);
+        } else {
             return $datetime;
         }
     }
