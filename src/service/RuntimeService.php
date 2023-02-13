@@ -227,7 +227,6 @@ class RuntimeService
             return static::init($app)->console->run();
         } catch (\Exception $exception) {
             ProcessService::message($exception->getMessage());
-            trace_file($exception);
             return 0;
         }
     }

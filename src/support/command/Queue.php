@@ -329,7 +329,6 @@ class Queue extends Command
                 }
             }
         } catch (Exception|Throwable|Error $exception) {
-            trace_file($exception);
             $isDone = intval($exception->getCode()) === static::STATE_DONE;
             $this->updateQueue($isDone ? static::STATE_DONE : static::STATE_ERROR, $exception->getMessage());
         }
