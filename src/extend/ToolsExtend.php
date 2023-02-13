@@ -45,9 +45,9 @@ class ToolsExtend
         $todir = rtrim($todir, '\\/') . DIRECTORY_SEPARATOR;
         // 扫描目录文件
         if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
-            $files = static::findFilesArray($frdir, function (SplFileInfo $info) {
+            $files = static::findFilesArray($frdir, static function (SplFileInfo $info) {
                 return substr($info->getBasename(), 0, 1) !== '.';
-            }, function (SplFileInfo $info) {
+            }, static function (SplFileInfo $info) {
                 return substr($info->getBasename(), 0, 1) !== '.';
             });
         }
@@ -75,9 +75,9 @@ class ToolsExtend
      */
     public static function scanDirectory(string $path, string $filterExt = '', bool $shortPath = true): array
     {
-        return static::findFilesArray($path, function (SplFileInfo $info) use ($filterExt) {
+        return static::findFilesArray($path, static function (SplFileInfo $info) use ($filterExt) {
             return empty($filterExt) || $info->getExtension() === $filterExt;
-        }, function (SplFileInfo $info) {
+        }, static function (SplFileInfo $info) {
             return substr($info->getBasename(), 0, 1) !== '.';
         }, $shortPath);
     }
