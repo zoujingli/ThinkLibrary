@@ -54,12 +54,6 @@ abstract class Plugin extends Service
     protected $appPath = '';
 
     /**
-     * 拷贝目录
-     * @var string
-     */
-    protected $appCopy = '';
-
-    /**
      * 插件别名
      * @var string
      */
@@ -122,7 +116,7 @@ abstract class Plugin extends Service
         if ($this->appName === $this->appAlias) $this->appAlias = '';
 
         // 注册应用插件信息
-        self::add($this->appName, $this->appPath, $this->appCopy, $this->appAlias, $this->appSpace, $this->package, $this->service);
+        self::add($this->appName, $this->appPath, $this->appAlias, $this->appSpace, $this->package, $this->service);
     }
 
     /**
@@ -137,21 +131,19 @@ abstract class Plugin extends Service
      * 注册应用插件
      * @param string $name 插件名称
      * @param string $path 插件目录
-     * @param string $copy 插件资源
      * @param string $alias 插件别名
      * @param string $space 插件空间
      * @param string $package 插件包名
      * @param string $service 服务名称
      * @return void
      */
-    private static function add(string $name, string $path, string $copy = '', string $alias = '', string $space = '', string $package = '', string $service = ''): void
+    private static function add(string $name, string $path, string $alias = '', string $space = '', string $package = '', string $service = ''): void
     {
         if (is_dir($path)) {
-            $root = $space ?: NodeService::space($name);
-            $path = realpath($path) . DIRECTORY_SEPARATOR;
-            $copy = ($copy && is_dir($copy) ? realpath($copy) : dirname($path) . DIRECTORY_SEPARATOR . 'stc') . DIRECTORY_SEPARATOR;
+            $DS = DIRECTORY_SEPARATOR;
+            [$path, $space] = [realpath($path) . $DS, $space ?: NodeService::space($name)];
             // 写入插件参数信息
-            self::$addons[$name] = ['path' => $path, 'copy' => $copy, 'alias' => $alias, 'space' => $root, 'package' => $package, 'service' => $service];
+            self::$addons[$name] = ['path' => $path, 'alias' => $alias, 'space' => $space, 'package' => $package, 'service' => $service];
             // 插件别名动态设置
             if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
                 'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name]),

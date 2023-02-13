@@ -102,11 +102,10 @@ if (!function_exists('encode')) {
      * 加密 UTF8 字符串
      * @param string $content
      * @return string
-     * @deprecated
      */
     function encode(string $content): string
     {
-        [$chars, $length] = ['', strlen($string = iconv('UTF-8', 'GBK//TRANSLIT', $content))];
+        [$chars, $length] = ['', strlen($string = CodeExtend::text2utf8($content))];
         for ($i = 0; $i < $length; $i++) $chars .= str_pad(base_convert(strval(ord($string[$i])), 10, 36), 2, '0', 0);
         return $chars;
     }
@@ -116,7 +115,6 @@ if (!function_exists('decode')) {
      * 解密 UTF8 字符串
      * @param string $content
      * @return string
-     * @deprecated
      */
     function decode(string $content): string
     {

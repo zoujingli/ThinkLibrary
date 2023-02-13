@@ -30,6 +30,8 @@ use think\admin\Service;
 /**
  * 应用节点服务管理
  * Class NodeService
+ * @method static array getModules() 获取应用列表
+ * @method static array scanDirectory() 扫描目录列表
  * @package think\admin\service
  */
 class NodeService extends Service
@@ -98,20 +100,6 @@ class NodeService extends Service
                 $attrs[1] = static::nameTolower($attrs[1]);
                 return strtolower(join('/', $attrs));
         }
-    }
-
-    /**
-     * 获取应用列表
-     * @param array $data
-     * @return array
-     */
-    public static function getModules(array $data = []): array
-    {
-        $path = Library::$sapp->getBasePath();
-        foreach (scandir($path) as $item) if ($item[0] !== '.') {
-            if (is_dir(realpath($path . $item))) $data[] = $item;
-        }
-        return $data;
     }
 
     /**
@@ -201,12 +189,27 @@ class NodeService extends Service
      * @return array
      * @throws \think\admin\Exception
      */
+    public function __call(string $name, array $arguments)
+    {
+        return static::__callStatic($name, $arguments);
+    }
+
+    /**
+     * 重构兼容处理
+     * @param string $name
+     * @param array $arguments
+     * @return array
+     * @throws \think\admin\Exception
+     */
     public static function __callStatic(string $name, array $arguments)
     {
         if ($name === 'scanDirectory') {
             return ToolsExtend::scanDirectory(...$arguments);
+        } elseif ($name === 'getModules') {
+            return ModuleService::getModules(...$arguments);
         } else {
             throw new Exception("method not exists: NodeService::{$name}()");
         }
     }
+
 }
