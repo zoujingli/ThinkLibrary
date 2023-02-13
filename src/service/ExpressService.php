@@ -25,6 +25,7 @@ use think\admin\Service;
 /**
  * 百度快递100物流查询
  * Class ExpressService
+ * @deprecated 独立封装为插件
  * @package think\admin\service
  */
 class ExpressService extends Service
