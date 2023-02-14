@@ -53,8 +53,8 @@ class ModuleService extends Service
 
     /**
      * 获取本地组件
-     * @param string $package
-     * @param boolean $force
+     * @param string $package 指定包名
+     * @param boolean $force 强制刷新
      * @return array|string|null
      */
     public static function getLibrarys(string $package = '', bool $force = false)

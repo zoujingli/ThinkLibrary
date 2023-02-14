@@ -18,6 +18,7 @@ namespace think\admin\support\command;
 
 use think\admin\Command;
 use think\admin\extend\ToolsExtend;
+use think\admin\service\ModuleService;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -38,6 +39,7 @@ class Publish extends Command
     {
         $this->setName('xadmin:publish');
         $this->addOption('force', 'f', Option::VALUE_NONE, 'Overwrite any existing files');
+        $this->addOption('migrate', 'm', Option::VALUE_NONE, 'Execute phinx database script');
         $this->setDescription('Publish Plugs and Config Assets for ThinkAdmin');
     }
 
@@ -58,9 +60,14 @@ class Publish extends Command
      */
     private function plugin(): Publish
     {
+        // 执行子应用安装
         $force = boolval($this->input->getOption('force'));
-        foreach (glob("{$this->app->getBasePath()}*") as $appPath) {
+        foreach (ModuleService::getModules() as $appPath) {
             is_dir($appPath) && $this->copy($appPath, $force);
+        }
+        // 执行数据库脚本
+        if ($this->input->getOption('migrate')) {
+            $this->app->console->call('migrate:run', [], 'console');
         }
         return $this;
     }
@@ -76,9 +83,11 @@ class Publish extends Command
         // 复制系统配置文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
         ToolsExtend::copyfile($frdir, syspath('config'), [], $force, false);
+
         // 复制静态资料文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
         ToolsExtend::copyfile($frdir, syspath('public'), [], true, false);
+
         // 复制数据库脚本
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
         ToolsExtend::copyfile($frdir, syspath('database/migrations'), [], $force, false);
