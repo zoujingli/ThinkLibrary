@@ -145,6 +145,7 @@ class ProcessService extends Service
     /**
      * 执行外部程序
      * @param string $command 执行指令
+     * @param mixed $output
      * @return false|string
      */
     public static function system(string $command, &$output = null)

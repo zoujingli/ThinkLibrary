@@ -108,6 +108,7 @@ class Publish extends Command
                 $config = $package['extra']['config'] ?? [];
                 $versions[$package['name']] = [
                     'name'        => $config['name'] ?? ($package['name'] ?? ''),
+                    'icon'        => $config['icon'] ?? ($package['cover'] ?? ''),
                     'cover'       => $config['cover'] ?? ($package['cover'] ?? ''),
                     'license'     => $package['license'] ?? [],
                     'version'     => $config['version'] ?? ($package['version'] ?? ''),
