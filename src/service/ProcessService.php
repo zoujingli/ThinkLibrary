@@ -40,7 +40,7 @@ class ProcessService extends Service
         $command = syspath("think {$arguments}");
         try {
             if ($simple) return $command;
-            if (!($binary = sysconf('base.binary')) || empty($binary)) {
+            if (!($binary = sysconf('base.binary|raw')) || empty($binary)) {
                 $attrs = pathinfo(str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY));
                 $attrs['dirname'] = $attrs['dirname'] . DIRECTORY_SEPARATOR;
                 $attrs['filename'] = preg_replace('#-(cgi|fpm)$#', '', $attrs['filename']);

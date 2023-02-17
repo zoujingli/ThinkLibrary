@@ -57,12 +57,12 @@ class UpyunStorage extends Storage
     protected function initialize()
     {
         // 读取配置文件
-        $this->bucket = sysconf('storage.upyun_bucket');
-        $this->accessKey = sysconf('storage.upyun_access_key');
-        $this->secretKey = sysconf('storage.upyun_secret_key');
+        $this->bucket = sysconf('storage.upyun_bucket|raw');
+        $this->accessKey = sysconf('storage.upyun_access_key|raw');
+        $this->secretKey = sysconf('storage.upyun_secret_key|raw');
         // 计算链接前缀
-        $host = strtolower(sysconf('storage.upyun_http_domain'));
-        $type = strtolower(sysconf('storage.upyun_http_protocol'));
+        $host = strtolower(sysconf('storage.upyun_http_domain|raw'));
+        $type = strtolower(sysconf('storage.upyun_http_protocol|raw'));
         if ($type === 'auto') {
             $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {

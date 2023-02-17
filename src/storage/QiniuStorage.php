@@ -44,12 +44,12 @@ class QiniuStorage extends Storage
     protected function initialize()
     {
         // 读取配置文件
-        $this->bucket = sysconf('storage.qiniu_bucket');
-        $this->accessKey = sysconf('storage.qiniu_access_key');
-        $this->secretKey = sysconf('storage.qiniu_secret_key');
+        $this->bucket = sysconf('storage.qiniu_bucket|raw');
+        $this->accessKey = sysconf('storage.qiniu_access_key|raw');
+        $this->secretKey = sysconf('storage.qiniu_secret_key|raw');
         // 计算链接前缀
-        $host = strtolower(sysconf('storage.qiniu_http_domain'));
-        $type = strtolower(sysconf('storage.qiniu_http_protocol'));
+        $host = strtolower(sysconf('storage.qiniu_http_domain|raw'));
+        $type = strtolower(sysconf('storage.qiniu_http_protocol|raw'));
         if ($type === 'auto') {
             $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {
@@ -169,7 +169,7 @@ class QiniuStorage extends Storage
     {
         $protocol = $this->app->request->isSsl() ? 'https' : 'http';
         // 注：汉字为兼容旧版本区域配置
-        switch (sysconf('storage.qiniu_region')) {
+        switch (sysconf('storage.qiniu_region|raw')) {
             case '华东':
             case 'up.qiniup.com':
                 return "{$protocol}://up.qiniup.com";

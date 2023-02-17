@@ -115,7 +115,7 @@ class AdminService extends Service
      */
     public static function getUserTheme(): string
     {
-        $default = sysconf('base.site_theme') ?: 'default';
+        $default = sysconf('base.site_theme|raw') ?: 'default';
         return static::getUserData('site_theme', $default);
     }
 

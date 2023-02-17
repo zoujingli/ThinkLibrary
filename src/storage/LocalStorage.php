@@ -37,11 +37,11 @@ class LocalStorage extends Storage
      */
     protected function initialize()
     {
-        $type = sysconf('storage.local_http_protocol') ?: 'follow';
+        $type = sysconf('storage.local_http_protocol|raw') ?: 'follow';
         if ($type === 'follow') $type = $this->app->request->scheme();
         $this->domain = trim(dirname($this->app->request->baseFile()), '\\/');
         if ($type !== 'path') {
-            $domain = sysconf('storage.local_http_domain') ?: $this->app->request->host();
+            $domain = sysconf('storage.local_http_domain|raw') ?: $this->app->request->host();
             if ($type === 'auto') {
                 $this->domain = "//{$domain}";
             } elseif (in_array($type, ['http', 'https'])) {

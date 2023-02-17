@@ -68,9 +68,9 @@ class InterfaceService extends Service
     public function __construct(App $app)
     {
         parent::__construct($app);
-        $this->appid = sysconf('data.interface_appid') ?: '';
-        $this->appkey = sysconf('data.interface_appkey') ?: '';
-        $this->getway = sysconf('data.interface_getway') ?: '';
+        $this->appid = sysconf('data.interface_appid|raw') ?: '';
+        $this->appkey = sysconf('data.interface_appkey|raw') ?: '';
+        $this->getway = sysconf('data.interface_getway|raw') ?: '';
     }
 
     /**

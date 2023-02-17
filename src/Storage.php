@@ -71,7 +71,7 @@ abstract class Storage
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->link = sysconf('storage.link_type');
+        $this->link = sysconf('storage.link_type|raw');
         $this->initialize();
     }
 
@@ -115,7 +115,7 @@ abstract class Storage
             if (is_null($name) && static::class !== self::class) {
                 $class = static::class;
             } else {
-                $type = ucfirst(strtolower($name ?: sysconf('storage.type')));
+                $type = ucfirst(strtolower($name ?: sysconf('storage.type|raw')));
                 $class = "think\\admin\\storage\\{$type}Storage";
             }
         }

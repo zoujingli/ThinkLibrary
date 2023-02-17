@@ -210,7 +210,7 @@ class Queue extends Command
     protected function cleanAction()
     {
         // 清理任务历史记录
-        $days = intval(sysconf('base.queue_clean_days') ?: 7);
+        $days = intval(sysconf('base.queue_clean_days|raw') ?: 7);
         $clean = SystemQueue::mk()->where('exec_time', '<', time() - $days * 24 * 3600)->delete();
         // 标记超过 1 小时未完成的任务为失败状态，循环任务失败重置
         $map1 = [['loops_time', '>', 0], ['status', '=', static::STATE_ERROR]]; // 执行失败的循环任务

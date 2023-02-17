@@ -72,10 +72,10 @@ class MessageService extends Service
     protected function initialize(): MessageService
     {
         $this->table = 'SystemMessageHistory';
-        $this->chinaUsername = sysconf('sms_zt.china_username');
-        $this->chinaPassword = sysconf('sms_zt.china_password');
-        $this->globeUsername = sysconf('sms_zt.globe_username');
-        $this->globePassword = sysconf('sms_zt.globe_password');
+        $this->chinaUsername = sysconf('sms_zt.china_username|raw');
+        $this->chinaPassword = sysconf('sms_zt.china_password|raw');
+        $this->globeUsername = sysconf('sms_zt.globe_username|raw');
+        $this->globePassword = sysconf('sms_zt.globe_password|raw');
         return $this;
     }
 
@@ -173,7 +173,7 @@ class MessageService extends Service
             $dtime = ($cache['time'] + $wait < time()) ? 0 : ($wait - time() + $cache['time']);
             return [1, lang('短信验证码已经发送！'), ['time' => $dtime]];
         }
-        [$code, $content] = [rand(1000, 9999) . '', sysconf($type)];
+        [$code, $content] = [rand(1000, 9999) . '', sysconf("{$type}|raw")];
         if (empty($content) || stripos($content, '{code}') === false) {
             $content = lang('您的验证码为{code}，请在十分钟内完成操作！');
         }
@@ -254,8 +254,8 @@ class MessageService extends Service
         $tkey = date("YmdHis");
         $result = HttpExtend::get('http://intl.zthysms.com/intSendSms.do', [
             'tkey'     => $tkey, 'code' => $code, 'mobile' => $mobile,
-            'content'  => $content, 'username' => sysconf('sms_zt_username2'),
-            'password' => md5(md5(sysconf('sms_zt_password2')) . $tkey),
+            'content'  => $content, 'username' => sysconf('sms_zt_username2|raw'),
+            'password' => md5(md5(sysconf('sms_zt_password2|raw')) . $tkey),
         ]);
         $this->app->db->name($this->table)->insert([
             'region' => $code, 'phone' => $mobile, 'content' => $content, 'result' => $result,

@@ -63,13 +63,13 @@ class AliossStorage extends Storage
     protected function initialize()
     {
         // 读取配置文件
-        $this->point = sysconf('storage.alioss_point');
-        $this->bucket = sysconf('storage.alioss_bucket');
-        $this->accessKey = sysconf('storage.alioss_access_key');
-        $this->secretKey = sysconf('storage.alioss_secret_key');
+        $this->point = sysconf('storage.alioss_point|raw');
+        $this->bucket = sysconf('storage.alioss_bucket|raw');
+        $this->accessKey = sysconf('storage.alioss_access_key|raw');
+        $this->secretKey = sysconf('storage.alioss_secret_key|raw');
         // 计算链接前缀
-        $host = strtolower(sysconf('storage.alioss_http_domain'));
-        $type = strtolower(sysconf('storage.alioss_http_protocol'));
+        $host = strtolower(sysconf('storage.alioss_http_domain|raw'));
+        $type = strtolower(sysconf('storage.alioss_http_protocol|raw'));
         if ($type === 'auto') {
             $this->domain = "//{$host}";
         } elseif (in_array($type, ['http', 'https'])) {

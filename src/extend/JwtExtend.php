@@ -161,7 +161,7 @@ class JwtExtend
             if (!empty($jwtkey)) return $jwtkey;
 
             // 再次读取数据配置
-            $jwtkey = sysconf('data.jwtkey');
+            $jwtkey = sysconf('data.jwtkey|raw');
             if (!empty($jwtkey)) return $jwtkey;
 
             // 自动生成新的密钥

@@ -357,7 +357,7 @@ class SystemService extends Service
     public static function setFavicon(?string $icon = null): bool
     {
         try {
-            $icon = $icon ?: sysconf('base.site_icon');
+            $icon = $icon ?: sysconf('base.site_icon|raw');
             if (!preg_match('#^https?://#i', $icon)) {
                 throw new Exception(lang('无效的原文件地址！'));
             }
