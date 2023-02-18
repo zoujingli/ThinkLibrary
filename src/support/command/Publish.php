@@ -62,7 +62,8 @@ class Publish extends Command
     {
         // 执行子应用安装
         $force = boolval($this->input->getOption('force'));
-        foreach (ModuleService::getModules() as $appPath) {
+        foreach (ModuleService::getModules() as $appName) {
+            $appPath = $this->app->getBasePath() . $appName;
             is_dir($appPath) && $this->copy($appPath, $force);
         }
         // 执行数据库脚本
