@@ -5,11 +5,12 @@
 [![Total Downloads](https://poser.pugx.org/zoujingli/think-library/downloads)](https://packagist.org/packages/zoujingli/think-library)
 [![Monthly Downloads](https://poser.pugx.org/zoujingli/think-library/d/monthly)](https://packagist.org/packages/zoujingli/think-library)
 [![Daily Downloads](https://poser.pugx.org/zoujingli/think-library/d/daily)](https://packagist.org/packages/zoujingli/think-library)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D7.1-8892BF.svg)](http://www.php.net)
 [![License](https://poser.pugx.org/zoujingli/think-library/license)](https://packagist.org/packages/zoujingli/think-library)
 
-**ThinkLibrary** 是针对`ThinkPHP6`封装的一套常用工具类库，方便快速构建`Web`应用。
+**ThinkLibrary** 是针对 **ThinkPHP6** 封装的一套常用工具类库，方便快速构建 **Web** 应用。
 
-代码主仓库放在`Gitee`，`Github`仅为镜像仓库用于发布`Composer`包。
+代码主仓库放在 **Gitee**，**Github** 仅为镜像仓库用于发布 **Composer** 包。
 
 ## 包含组件
 
@@ -274,16 +275,61 @@ sysconf($keyname, $keyvalue);
 $keyvalue = sysconf($kename);
 ```
 
-#### UTF8加密算法
+### 数据加密
+
+**自研 UTF8 加密**
 
 ```php
-// 字符串加密操作
+// 自研 UTF8 字符串加密操作
 $string = encode($content);
 
-// 加密字符串解密
+// 自研 UTF8 加密字符串解密
 $content = decode($string);
 ```
 
-## 赞助打赏，请作者喝杯茶 ~
+**数据解密**
 
-![赞助](https://thinkadmin.top/static/img/pay.png)
+```php
+// 数据 AES-256-CBC 对称加密
+$encrypt = \think\admin\extend\CodeExtend::encrypt($content, $enckey);
+
+// 数据 AES-256-CBC 对称解密
+$content = \think\admin\extend\CodeExtend::decrypt($encrypt, $enckey);
+```
+
+**文本转 UTF8 编码**
+
+```php
+// 文本转 UTF8 编码
+$content = \think\admin\extend\CodeExtend::text2utf8($content)
+```
+
+**文本 Base64 URL 编码**
+
+```php
+// 文本 Base64 URL 编码
+$safe64 = \think\admin\extend\CodeExtend::enSafe64($content)
+
+// 文本 Base64 URL 解码
+$content = \think\admin\extend\CodeExtend::deSafe64($safe64)
+```
+
+### 数据压缩 
+
+```php
+// 数据压缩 ( 内容越大效果越好 )
+$enzip = \think\admin\extend\CodeExtend::enzip($content)
+
+// 数据解压 ( 内容越大效果越好 )
+$content = \think\admin\extend\CodeExtend::dezip($enzip)
+```
+
+### 数据结构
+
+```php
+// 二维数组 转为 立体数据结构，需要存在 id 及 pid 关系
+$tree = \think\admin\extend\CodeExtend::arr2tree($list);
+
+// 二维数组 转为 扁平数据结构，需要存在 id 及 pid 关系
+$tree = \think\admin\extend\CodeExtend::arr2table($list);
+```
