@@ -7,6 +7,9 @@ use think\admin\model\SystemMenu;
 use think\admin\model\SystemUser;
 use think\migration\Migrator;
 
+@set_time_limit(0);
+@ini_set('memory_limit', -1);
+
 /**
  * 数据安装包
  * @class __CLASS__
@@ -20,9 +23,6 @@ class __CLASS__ extends Migrator
      */
     public function change()
     {
-        set_time_limit(0);
-        @ini_set('memory_limit', -1);
-
         $this->inserData();
         $this->insertConf();
         $this->insertUser();

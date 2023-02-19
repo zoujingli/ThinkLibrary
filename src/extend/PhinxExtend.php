@@ -91,7 +91,7 @@ class PhinxExtend
         $br = "\r\n";
         $content = static::_build2phinx($tables, true);
         $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}class {$class} extends Migrator {{$br}{$content}}{$br}";
+        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', -1);{$br}{$br}class {$class} extends Migrator {{$br}{$content}}{$br}";
         return ['file' => static::_filename($class), 'text' => $content];
     }
 
@@ -161,7 +161,6 @@ class PhinxExtend
         }
         [$config, $schema] = [static::_config($tables), $connect->getConfig('database')];
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
-        $content .= "{$br}\t\tset_time_limit(0);{$br}\t\t@ini_set('memory_limit', -1);{$br}";
         foreach ($config['tables'] as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
