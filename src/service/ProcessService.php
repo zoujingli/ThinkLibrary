@@ -19,6 +19,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\extend\CodeExtend;
+use think\admin\Library;
 use think\admin\Service;
 
 /**
@@ -28,30 +29,53 @@ use think\admin\Service;
  */
 class ProcessService extends Service
 {
-
     /**
-     * 获取 Think 指令内容
-     * @param string $arguments 指令参数
-     * @param boolean $simple 指令内容
+     * 生成 Think 指令脚本
+     * @param string $args 指令参数
+     * @param boolean $simple 仅返回内容
      * @return string
      */
-    public static function think(string $arguments = '', bool $simple = false): string
+    public static function think(string $args = '', bool $simple = false): string
     {
-        $command = syspath("think {$arguments}");
-        try {
-            if ($simple) return $command;
-            if (!($binary = sysconf('base.binary|raw')) || empty($binary)) {
-                $attrs = pathinfo(str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY));
-                $attrs['dirname'] = $attrs['dirname'] . DIRECTORY_SEPARATOR;
-                $attrs['filename'] = preg_replace('#-(cgi|fpm)$#', '', $attrs['filename']);
-                $attrs['extension'] = empty($attrs['extension']) ? '' : ".{$attrs['extension']}";
-                $binary = $attrs['dirname'] . $attrs['filename'] . $attrs['extension'];
-            }
-            return (static::isfile($binary) ? $binary : 'php') . " {$command}";
-        } catch (\Exception $exception) {
-            trace_file($exception);
-            return "php {$command}";
+        $command = syspath("think {$args}");
+        return $simple ? $command : static::getPhpExec() . " {$command}";
+    }
+
+    /**
+     * 生成 Composer 指令脚本
+     * @param string $args 指令参数
+     * @param boolean $simple 仅返回内容
+     * @return string
+     */
+    public static function composer(string $args = '', bool $simple = false): string
+    {
+        $root = escapeshellarg(Library::$sapp->getRootPath());
+        if ($simple) return "-d {$root} {$args}";
+        static $comBinary;
+        if (empty($comBinary) && file_exists($file = syspath('vendor/binarys.php')) && is_array($binarys = include($file))) {
+            $comBinary = isset($binarys['com']) && static::isfile($binarys['com']) ? static::getPhpExec() . ' ' . $binarys['com'] : 'composer';
         }
+        return ($comBinary ?? 'composer') . " -d {$root} {$args}";
+    }
+
+    /**
+     * 获取PHP命令位置
+     * @return string
+     */
+    public static function getPhpExec(): string
+    {
+        static $phpBinary;
+        if (!empty($phpBinary)) return $phpBinary;
+        if (file_exists($file = syspath('vendor/binarys.php')) && is_array($binarys = include($file))) {
+            $phpBinary = isset($binarys['php']) && static::isfile($binarys['php']) ? $binarys['php'] : '';
+        }
+        if (empty($phpBinary)) {
+            $attrs = pathinfo(str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY));
+            $attrs['filename'] = preg_replace('#-(fcgi|cgi|fpm)$#', '', $attrs['filename']);
+            $attrs['extension'] = empty($attrs['extension']) ? '' : ".{$attrs['extension']}";
+            $phpBinary = $attrs['dirname'] . DIRECTORY_SEPARATOR . $attrs['filename'] . $attrs['extension'];
+        }
+        return $phpBinary = static::isfile($phpBinary) ? $phpBinary : 'php';
     }
 
     /**
