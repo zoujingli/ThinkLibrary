@@ -173,14 +173,14 @@ class RuntimeService
 
     /**
      * 清理运行缓存
+     * @param boolean $force 清理目录
      * @return boolean
      */
-    public static function clear(): bool
+    public static function clear(bool $force = true): bool
     {
-        AdminService::clear();
         $data = static::get();
-        Library::$sapp->cache->clear();
-        Library::$sapp->console->call('clear', ['--dir']);
+        AdminService::clear() && Library::$sapp->cache->clear();
+        $force && Library::$sapp->console->call('clear', ['--dir']);
         return static::set($data['mode'], $data['appmap'], $data['domain']);
     }
 

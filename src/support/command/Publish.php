@@ -19,6 +19,7 @@ namespace think\admin\support\command;
 use think\admin\Command;
 use think\admin\extend\ToolsExtend;
 use think\admin\service\ModuleService;
+use think\admin\service\RuntimeService;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -51,6 +52,7 @@ class Publish extends Command
      */
     public function execute(Input $input, Output $output)
     {
+        RuntimeService::clear(false);
         $this->parse()->plugin()->output->writeln('<info>Succeed!</info>');
     }
 
@@ -108,13 +110,13 @@ class Publish extends Command
                 $config = $package['extra']['config'] ?? [];
                 $versions[$package['name']] = [
                     'name'        => $config['name'] ?? ($package['name'] ?? ''),
-                    'icon'        => $config['icon'] ?? ($package['cover'] ?? ''),
-                    'cover'       => $config['cover'] ?? ($package['cover'] ?? ''),
+                    'icon'        => $config['icon'] ?? '',
+                    'cover'       => $config['cover'] ?? '',
                     'license'     => $package['license'] ?? [],
                     'version'     => $config['version'] ?? ($package['version'] ?? ''),
                     'homepage'    => $config['homepage'] ?? ($package['homepage'] ?? ''),
                     'document'    => $config['document'] ?? ($package['document'] ?? ''),
-                    'platforms'   => $config['platforms'] ?? ($package['platforms'] ?? []),
+                    'platforms'   => $config['platforms'] ?? [],
                     'description' => $config['description'] ?? ($package['description'] ?? ''),
                 ];
                 // 生成服务配置
@@ -147,7 +149,7 @@ class Publish extends Command
 
         // 写入组件版本
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($versions, true) . ';';
-        file_put_contents(syspath('vendor/versions.php'), $content);
+        file_put_contents(syspath('vendor/versions.php'), preg_replace('#\s+=>\s+array\s+\(#m', ' => array (', $content));
 
         return $this;
     }
