@@ -2,7 +2,7 @@
   "name": "zoujingli/think-library",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
-  "description": "ThinkPHP v6 Development Library",
+  "description": "Development Library for ThinkPHP6",
   "authors": [
     {
       "name": "Anyon",
@@ -42,5 +42,9 @@
         "think\\admin\\Library"
       ]
     }
+  },
+  "minimum-stability": "dev",
+  "config": {
+    "sort-packages": true
   }
 }
