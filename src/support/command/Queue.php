@@ -178,7 +178,12 @@ class Queue extends Command
         SystemQueue::mk()->count();
         $this->output->comment(">$ {$this->process->think(static::QUEUE_LISTEN)}");
         if (count($result = $this->process->thinkQuery(static::QUEUE_LISTEN)) > 0) {
-            $this->output->writeln("># Queue daemons already exist for pid {$result[0]['pid']}");
+            if (file_exists($lock = syspath('runtime/cache/time.queue')) && intval(file_get_contents($lock)) + 60 < time()) {
+                $this->output->writeln("># The task monitoring delay has exceeded 60 seconds, and the monitoring will be restarted.");
+                $this->process->close(intval($result[0]['pid'])) && $this->process->thinkCreate(static::QUEUE_LISTEN, 1000);
+            } else {
+                $this->output->writeln("># Queue daemons already exist for pid {$result[0]['pid']}");
+            }
         } else {
             $this->process->thinkCreate(static::QUEUE_LISTEN, 1000);
             if (count($result = $this->process->thinkQuery(static::QUEUE_LISTEN)) > 0) {
@@ -270,6 +275,7 @@ class Queue extends Command
         $this->output->writeln("\n\tYou can exit with <info>`CTRL-C`</info>");
         $this->output->writeln('=============== LISTENING ===============');
         while (true) {
+            @file_put_contents(syspath('runtime/cache/time.queue'), strval(time()));
             [$map, $start] = [[['status', '=', static::STATE_WAIT], ['exec_time', '<=', time()]], microtime(true)];
             foreach (SystemQueue::mk()->where($map)->order('exec_time asc')->cursor() as $queue) try {
                 $args = "xadmin:queue dorun {$queue['code']} -";
