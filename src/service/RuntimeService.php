@@ -112,7 +112,7 @@ class RuntimeService
         $rows[] = "mode = " . static::$env['mode'];
         foreach (static::$env['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
         foreach (static::$env['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
-        file_put_contents(syspath('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
+        @file_put_contents(syspath('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
 
         //  应用当前的配置文件
         return static::apply(static::$env);
