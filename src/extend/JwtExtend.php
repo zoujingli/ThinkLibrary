@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2023 Anyon <zoujingli@qq.com>
+// | 版权所有 2014~2023 ThinkAdmin [ thinkadmin.top ]
 // +----------------------------------------------------------------------
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
@@ -29,34 +29,30 @@ use think\admin\Library;
  */
 class JwtExtend
 {
-    /**
-     * 标识字段
-     * @var string
-     */
-    private static $skey = '__ISJWT_SESS__';
+    // 标识字段
+    private const skey = '__ISJWT_SESS__';
 
-    /**
-     * 头部参数
-     * @var string[]
-     */
-    private static $header = [
-        'typ' => 'JWT', // 类型
-        'alg' => 'HS256', // 算法
-    ];
+    // 头部参数
+    private const header = ['typ' => 'JWT', 'alg' => 'HS256'];
 
-    /**
-     * 签名配置
-     * @var string[]
-     */
-    private static $signTypes = [
+    // 签名配置
+    private const signTypes = [
         'HS256' => 'sha256',
+        'HS384' => 'sha384',
+        'HS512' => 'sha512'
     ];
 
     /**
      * 当前请求状态
      * @var boolean
      */
-    public static $isJwt = false;
+    public static $isjwt = false;
+
+    /**
+     * 是否返回令牌
+     * @var boolean
+     */
+    private static $rejwt = false;
 
     /**
      * 当前请求数据
@@ -71,13 +67,7 @@ class JwtExtend
     private static $outData = [];
 
     /**
-     * 是否输出令牌
-     * @var boolean
-     */
-    private static $outToken = false;
-
-    /**
-     * 获取 jwt token
+     * 生成 jwt token
      * @param array $payload jwt 载荷 格式如下非必须
      * [
      *     'iss' => 'jwt_admin',               // 该JWT的签发者
@@ -87,17 +77,17 @@ class JwtExtend
      *     'sub' => '',                        // 面向的用户
      *     'jti' => md5(uniqid('JWT').time())  // 该 Token 唯一标识
      * ]
-     * @param null|string $jwtkey 签名密钥
-     * @param null|boolean $outToken 输出令牌
+     * @param ?string $jwtkey 签名密钥
+     * @param ?boolean $rejwt 输出令牌
      * @return string
      */
-    public static function getToken(array $payload, ?string $jwtkey = null, ?bool $outToken = null): string
+    public static function getToken(array $payload, ?string $jwtkey = null, ?bool $rejwt = null): string
     {
-        is_bool($outToken) && static::$outToken = $outToken;
-        $payload['sub'] = CodeExtend::encrypt(static::setJwtSession(), static::jwtkey());
-        $base64header = CodeExtend::enSafe64(json_encode(static::$header, JSON_UNESCAPED_UNICODE));
+        is_bool($rejwt) && static::$rejwt = $rejwt;
+        $payload['sub'] = CodeExtend::encrypt(static::setJwtMode(), static::jwtkey());
+        $base64header = CodeExtend::enSafe64(json_encode(static::header, JSON_UNESCAPED_UNICODE));
         $base64payload = CodeExtend::enSafe64(json_encode($payload, JSON_UNESCAPED_UNICODE));
-        $signature = static::_sign($base64header . '.' . $base64payload, $jwtkey, static::$header['alg']);
+        $signature = static::withSign($base64header . '.' . $base64payload, static::header['alg'], $jwtkey);
         return $base64header . '.' . $base64payload . '.' . $signature;
     }
 
@@ -120,7 +110,7 @@ class JwtExtend
         if (empty($header['alg'])) throw new Exception('数据解密失败！', 0, []);
 
         // 签名验证
-        if (self::_sign("{$base64header}.{$base64payload}", static::jwtkey($jwtkey), $header['alg']) !== $signature) {
+        if (self::withSign("{$base64header}.{$base64payload}", $header['alg'], static::jwtkey($jwtkey)) !== $signature) {
             throw new Exception('验证签名失败！', 0, []);
         }
 
@@ -142,7 +132,7 @@ class JwtExtend
             throw new Exception('不接收处理该TOKEN', 0, $payload);
         }
 
-        static::$isJwt = true;
+        static::$isjwt = true;
         return static::$inData = $payload;
     }
 
@@ -193,7 +183,7 @@ class JwtExtend
     }
 
     /**
-     * 获取当前请求的数据
+     * 获取请求数据
      * @return array
      */
     public static function getInData(): array
@@ -202,7 +192,7 @@ class JwtExtend
     }
 
     /**
-     * 获取需要输出的数据
+     * 获取输出数据
      * @return array
      */
     public static function getOutData(): array
@@ -211,67 +201,48 @@ class JwtExtend
     }
 
     /**
-     * 设置需要输出的数据
+     * 设置输出数据
      * @param array $data
      * @return array
      */
     public static function setOutData(array $data = []): array
     {
-        static::$outToken = true;
+        static::$rejwt = true;
         return static::$outData = $data;
-    }
-
-    /**
-     * 获取是否输出令牌
-     * @return boolean
-     */
-    public static function getOutToken(): bool
-    {
-        return static::$outToken;
-    }
-
-    /**
-     * 设置是否输出令牌
-     * @param boolean $output
-     * @return boolean
-     */
-    public static function setOutToken(bool $output = true): bool
-    {
-        return static::$outToken = $output;
-    }
-
-    /**
-     * 升级 Jwt 会话模式
-     * @return string
-     */
-    public static function setJwtSession(): string
-    {
-        if (!Library::$sapp->session->get(static::$skey)) {
-            Library::$sapp->session->save(); // 保存原会话数据
-            Library::$sapp->session->regenerate(); // 切换新会话编号
-            Library::$sapp->session->set(static::$skey, true);
-        }
-        return Library::$sapp->session->getId();
     }
 
     /**
      * 判断 Jwt 会话模式
      * @return bool
      */
-    public static function isJwtSession(): bool
+    public static function isJwtMode(): bool
     {
-        return boolval(Library::$sapp->session->get(static::$skey));
+        return boolval(Library::$sapp->session->get(static::skey));
     }
 
     /**
-     * 生成 JWT 签名
-     * @param string $input 为 base64UrlEncode(header).".".base64UrlEncode(payload)
-     * @param ?string $key 签名密钥
-     * @param string $alg 算法方式
+     * 升级 Jwt 会话模式
      * @return string
      */
-    private static function _sign(string $input, ?string $key = null, string $alg = 'HS256'): string
+    public static function setJwtMode(): string
     {
-        return CodeExtend::enSafe64(hash_hmac(static::$signTypes[$alg], $input, static::jwtkey($key), true));
+        if (!Library::$sapp->session->get(self::skey)) {
+            Library::$sapp->session->save(); // 保存原会话数据
+            Library::$sapp->session->regenerate(); // 切换新会话编号
+            Library::$sapp->session->set(self::skey, true);
+        }
+        return Library::$sapp->session->getId();
+    }
+
+    /**
+     * 生成数据签名
+     * @param string $input 为 base64UrlEncode(header).".".base64UrlEncode(payload)
+     * @param string $alg 算法方式
+     * @param ?string $key 签名密钥
+     * @return string
+     */
+    private static function withSign(string $input, string $alg = 'HS256', ?string $key = null): string
+    {
+        return CodeExtend::enSafe64(hash_hmac(self::signTypes[$alg], $input, static::jwtkey($key), true));
     }
 }

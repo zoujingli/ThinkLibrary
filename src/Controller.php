@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------
 // | Library for ThinkAdmin
 // +----------------------------------------------------------------------
-// | 版权所有 2014~2023 Anyon <zoujingli@qq.com>
+// | 版权所有 2014~2023 ThinkAdmin [ thinkadmin.top ]
 // +----------------------------------------------------------------------
 // | 官方网站: https://thinkadmin.top
 // +----------------------------------------------------------------------
@@ -127,7 +127,7 @@ class Controller extends stdClass
     {
         if ($data === '{-null-}') $data = new stdClass();
         $result = ['code' => $code, 'info' => $info, 'data' => $data];
-        if (JwtExtend::getOutToken()) {
+        if (JwtExtend::getRejwt()) {
             $result['token'] = JwtExtend::getToken(JwtExtend::getOutData());
         }
         throw new HttpResponseException(json($result));
@@ -151,7 +151,7 @@ class Controller extends stdClass
      */
     public function fetch(string $tpl = '', array $vars = [], ?string $node = null): void
     {
-        if (JwtExtend::$isJwt) {
+        if (JwtExtend::$isjwt) {
             JwtExtend::fetch($this, $vars);
         } else {
             foreach ($this as $name => $value) {
