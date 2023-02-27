@@ -26,14 +26,13 @@ use think\App;
 use think\exception\HttpResponseException;
 use think\Request;
 use think\Response;
-use think\Session;
 
 /**
  * 兼容会话中间键
- * @class JwtInit
+ * @class JwtSession
  * @package think\admin\support\middleware
  */
-class JwtInit
+class JwtSession
 {
     /**
      * 当前 App 对象
@@ -50,16 +49,15 @@ class JwtInit
     /**
      * Construct
      * @param \think\App $app
-     * @param \think\Session $session
      */
-    public function __construct(App $app, Session $session)
+    public function __construct(App $app)
     {
         $this->app = $app;
-        $this->session = $session;
+        $this->session = $app->session;
     }
 
     /**
-     * Jwt Session 初始化
+     * 中间键处理
      * @param \think\Request $request
      * @param \Closure $next
      * @return \think\Response

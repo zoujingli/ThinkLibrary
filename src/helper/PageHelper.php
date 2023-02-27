@@ -74,7 +74,7 @@ class PageHelper extends Helper
                 $select .= "<option selected>{$limit}</option>";
             }
             $html = lang('think_library_page_html', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
-            $link = $inner ? str_replace('<a href=', '<a data-open=', $paginate->render() ?: '') : ($paginate->render() ?: '');
+            $link = $inner ? str_replace('<a href="', '<a data-open="' . $prefix, $paginate->render() ?: '') : ($paginate->render() ?: '');
             $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
             $result = ['list' => $query->select()->toArray()];

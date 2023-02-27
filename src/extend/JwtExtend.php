@@ -212,7 +212,16 @@ class JwtExtend
     }
 
     /**
-     * 判断 Jwt 会话模式
+     * 是否返回令牌
+     * @return boolean
+     */
+    public static function isRejwt(): bool
+    {
+        return self::$rejwt;
+    }
+
+    /**
+     * 判断会话模式
      * @return bool
      */
     public static function isJwtMode(): bool
@@ -221,17 +230,21 @@ class JwtExtend
     }
 
     /**
-     * 升级 Jwt 会话模式
+     * 切换会话模式
      * @return string
      */
     public static function setJwtMode(): string
     {
-        if (!Library::$sapp->session->get(self::skey)) {
-            Library::$sapp->session->save(); // 保存原会话数据
-            Library::$sapp->session->regenerate(); // 切换新会话编号
-            Library::$sapp->session->set(self::skey, true);
+        if (isset(Library::$sapp->session)) {
+            if (!static::isJwtMode()) {
+                Library::$sapp->session->save(); // 保存原会话数据
+                Library::$sapp->session->regenerate(); // 切换新会话编号
+                Library::$sapp->session->set(self::skey, true);
+            }
+            return Library::$sapp->session->getId();
+        } else {
+            return md5(uniqid(strval(rand(0, 999))));
         }
-        return Library::$sapp->session->getId();
     }
 
     /**

@@ -18,8 +18,6 @@ declare (strict_types=1);
 
 namespace think\admin;
 
-use Closure;
-use think\admin\service\AdminService;
 use think\admin\service\RuntimeService;
 use think\admin\support\command\Database;
 use think\admin\support\command\Package;
@@ -27,8 +25,9 @@ use think\admin\support\command\Publish;
 use think\admin\support\command\Queue;
 use think\admin\support\command\Replace;
 use think\admin\support\command\Sysmenu;
-use think\admin\support\middleware\JwtInit;
-use think\admin\support\middleware\Multiple;
+use think\admin\support\middleware\JwtSession;
+use think\admin\support\middleware\MultAccess;
+use think\admin\support\middleware\RbacAccess;
 use think\App;
 use think\middleware\LoadLangPack;
 use think\Request;
@@ -80,6 +79,7 @@ class Library extends Service
             $request->filter([function ($value) {
                 return is_string($value) ? xss_safe($value) : $value;
             }]);
+
             // 判断访问模式兼容处理
             if ($request->isCli()) {
                 // 兼容 CLI 访问控制器
@@ -90,8 +90,9 @@ class Library extends Service
                 // 兼容 HTTP 调用 Console 后 URL 问题
                 $request->setHost($request->host());
             }
+
             // 注册多应用中间键
-            $this->app->middleware->add(Multiple::class);
+            $this->app->middleware->add(MultAccess::class);
         });
 
     }
@@ -109,51 +110,19 @@ class Library extends Service
 
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
-            // YAR 接口或指定情况下不需要初始化会话和语言包，否则有可能会报错
-            $isApiRpc = $this->app->request->header('api-token', '') !== '';
-            $isNotRpc = intval($this->app->request->get('not_init_session', 0)) > 0;
-            $isYarRpc = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
-            if (!($isApiRpc || $isNotRpc || $isYarRpc)) {
+
+            // 接口模式或指定情况下不初始化会话和语言包
+            $isApiRequest = $this->app->request->header('api-token', '') !== '';
+            $isYarRequest = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
+            if (!($isApiRequest || $isYarRequest || $this->app->request->get('not_init_session', 0) > 0)) {
                 // 注册会话初始化中间键
-                $this->app->middleware->add(JwtInit::class);
+                $this->app->middleware->add(JwtSession::class);
                 // 注册语言包处理中间键
                 $this->app->middleware->add(LoadLangPack::class);
             }
-            // 注册访问处理中间键
-            $this->app->middleware->add(function (Request $request, Closure $next) {
-                $header = [];
 
-                // 加载对应组件的语言包
-                $langSet = $this->app->lang->getLangSet();
-                if (file_exists($file = __DIR__ . "/lang/{$langSet}.php")) {
-                    $this->app->lang->load($file, $langSet);
-                }
-
-                // HTTP.CORS 跨域规则配置
-                if (($origin = $request->header('origin', '*')) !== '*') {
-                    if (is_string($hosts = $this->app->config->get('app.cors_host', []))) $hosts = str2arr($hosts);
-                    if ($this->app->config->get('app.cors_auto', 1) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
-                        $headers = $this->app->config->get('app.cors_headers', 'Api-Name,Api-Type,Api-Token,User-Form-Token,User-Token,Token');
-                        $header['Access-Control-Allow-Origin'] = $origin;
-                        $header['Access-Control-Allow-Methods'] = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE');
-                        $header['Access-Control-Allow-Headers'] = "Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,{$headers}";
-                        $header['Access-Control-Allow-Credentials'] = 'true';
-                        $header['Access-Control-Expose-Headers'] = $headers;
-                    }
-                }
-
-                // 访问模式及访问权限检查
-                if ($request->isOptions()) {
-                    return response()->code(204)->header($header);
-                } elseif (AdminService::check()) {
-                    $header['X-Frame-Options'] = 'sameorigin';
-                    return $next($request)->header($header);
-                } elseif (AdminService::isLogin()) {
-                    return json(['code' => 0, 'info' => lang('think_library_not_auth')])->header($header);
-                } else {
-                    return json(['code' => 0, 'info' => lang('think_library_not_login'), 'url' => sysuri('admin/login/index')])->header($header);
-                }
-            }, 'route');
+            // 注册网络请求权限中间键
+            $this->app->middleware->add(RbacAccess::class, 'route');
         }
     }
 }

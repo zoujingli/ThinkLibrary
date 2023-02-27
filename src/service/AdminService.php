@@ -142,6 +142,7 @@ class AdminService extends Service
     public static function check(?string $node = ''): bool
     {
         $methods = NodeService::getMethods();
+        $current = NodeService::fullNode($node);
         // 兼容 windows 控制器不区分大小写的验证问题
         foreach ($methods as $key => $rule) {
             if (preg_match('#.*?/.*?_.*?#', $key)) {
@@ -150,13 +151,15 @@ class AdminService extends Service
                 $methods[join('/', $attr)] = $rule;
             }
         }
-        $current = NodeService::fullNode($node);
+        // 自定义权限
         if (function_exists('admin_check_filter')) {
             $nodes = Library::$sapp->session->get('user.nodes', []);
-            return admin_check_filter($current, $methods, $nodes);
-        } elseif (static::isSuper()) {
-            return true;
-        } elseif (empty($methods[$current]['isauth'])) {
+            return call_user_func('admin_check_filter', $current, $methods, $nodes);
+        }
+        // 超级用户权限
+        if (static::isSuper()) return true;
+        // 节点权限检查
+        if (empty($methods[$current]['isauth'])) {
             return !(!empty($methods[$current]['islogin']) && !static::isLogin());
         } else {
             return in_array($current, Library::$sapp->session->get('user.nodes', []));

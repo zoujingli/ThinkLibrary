@@ -27,11 +27,11 @@ use think\Request;
 use think\Response;
 
 /**
- * 多应用支持中间键
- * Class Multiple
+ * 多应用调度中间键
+ * Class MultAccess
  * @package think\admin\support\middleware
  */
-class Multiple
+class MultAccess
 {
     /**
      * 应用实例
@@ -95,7 +95,6 @@ class Multiple
             return $this->setMultiApp($this->appName ?: $script, true);
         } else {
             // 域名绑定处理
-
             $domains = $this->app->config->get('app.domain_bind', []);
             if (!empty($domains)) foreach ([$this->app->request->host(true), $this->app->request->subDomain(), '*'] as $key) {
                 if (isset($domains[$key])) return $this->setMultiApp($domains[$key], true);

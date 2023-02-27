@@ -118,25 +118,31 @@ class NodeService extends Service
         } else {
             $data = [];
         }
-        /*! 排除内置方法，禁止访问内置方法 */
-        $ignores = get_class_methods('\think\admin\Controller');
+        /*! 排除内置方法，禁止访问内置方法 及 忽略的应用模块配置 */
+        $ignoreMethods = get_class_methods('\think\admin\Controller');
+        $ignoreAppNames = Library::$sapp->config->get('app.rbac_ignore', []);
         /*! 扫描所有代码控制器节点，更新节点缓存 */
         foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $name) {
             if (preg_match("|^(\w+)/controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                 [, $appName, $className] = $matches;
-                static::_parseClass($appName, self::space($appName), $className, $ignores, $data);
+                if (in_array($appName, $ignoreAppNames)) continue;
+                static::_parseClass($appName, self::space($appName), $className, $ignoreMethods, $data);
             }
         }
         // 扫描所有插件代码
         foreach (Plugin::all() as $appName => $plugin) {
+            if (in_array($appName, $ignoreAppNames)) continue;
             [$appPath, $appSpace] = [$plugin['path'], $plugin['space']];
             foreach (ToolsExtend::scanDirectory($appPath, 'php') as $name) {
                 if (preg_match("|^.*?controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
-                    static::_parseClass($appName, $appSpace, $matches[1], $ignores, $data);
+                    static::_parseClass($appName, $appSpace, $matches[1], $ignoreMethods, $data);
                 }
             }
         }
-        if (function_exists('admin_node_filter')) admin_node_filter($data);
+        // 节点数据自定义处理
+        if (function_exists('admin_node_filter')) {
+            $data = call_user_func('admin_node_filter', $data);
+        }
         Library::$sapp->cache->set('SystemAuthNode', $data);
         return $data;
     }
