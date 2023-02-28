@@ -29,7 +29,6 @@ use think\admin\Service;
 use think\admin\storage\LocalStorage;
 use think\App;
 use think\db\Query;
-use think\helper\Str;
 use think\Model;
 
 /**
@@ -193,33 +192,6 @@ class SystemService extends Service
         }
         [$field, $outer] = explode('|', "{$rule}|");
         return [$type, $field, strtolower($outer)];
-    }
-
-    /**
-     * 生成最短URL地址
-     * @param string $url 路由地址
-     * @param array $vars PATH 变量
-     * @param boolean|string $suffix 后缀
-     * @param boolean|string $domain 域名
-     * @return string
-     */
-    public static function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
-    {
-        // 读取默认节点配置
-        $app = Library::$sapp->config->get('route.default_app') ?: 'index';
-        $ext = Library::$sapp->config->get('route.url_html_suffix') ?: 'html';
-        $act = Str::lower(Library::$sapp->config->get('route.default_action') ?: 'index');
-        $ctr = Str::snake(Library::$sapp->config->get('route.default_controller') ?: 'index');
-        // 生成完整链接地址
-        $pre = Library::$sapp->route->buildUrl('@')->suffix(false)->domain($domain)->build();
-        $uri = Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
-        // 替换省略链接路径
-        return preg_replace([
-            "#^({$pre}){$app}/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)?#i",
-            "#^({$pre}[\w.]+)/{$ctr}/{$act}(\.{$ext}|^\w|\?|$)#i",
-            "#^({$pre}[\w.]+)(/[\w.]+)/{$act}(\.{$ext}|^\w|\?|$)#i",
-            "#/\.{$ext}$#i",
-        ], ['$1$2', '$1$2', '$1$2$3', ''], $uri);
     }
 
     /**

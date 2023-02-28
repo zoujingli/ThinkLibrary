@@ -27,6 +27,7 @@ use think\admin\service\RuntimeService;
 use think\admin\service\SystemService;
 use think\admin\Storage;
 use think\db\Query;
+use think\helper\Str;
 use think\Model;
 
 if (!function_exists('p')) {
@@ -93,7 +94,17 @@ if (!function_exists('sysuri')) {
      */
     function sysuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
-        return SystemService::sysuri($url, $vars, $suffix, $domain);
+        if (preg_match('#^(https?://|\\|/|@)#', $url)) {
+            return Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
+        }
+        if (count($attr = $url === '' ? [] : explode('/', rtrim($url, '/'))) < 3) {
+            $map = [Library::$sapp->http->getName(), Library::$sapp->request->controller(true), Library::$sapp->request->action(true)];
+            while (count($attr) < 3) array_unshift($attr, $map[2 - count($attr)] ?? 'index');
+        }
+        [$rcf, $tmp] = [Library::$sapp->config->get('route', []), uniqid('think_admin_replace_temp_vars_')];
+        $map = [Str::lower($rcf['default_app'] ?? ''), Str::snake($rcf['default_controller'] ?? ''), Str::lower($rcf['default_action'] ?? '')];
+        for ($idx = count($attr) - 1; $idx >= 0; $idx--) if ($attr[$idx] == ($map[$idx] ?: 'index')) $attr[$idx] = $tmp; else break;
+        return preg_replace("#/{$tmp}#", '', Library::$sapp->route->buildUrl(join('/', $attr), $vars)->suffix(false)->domain($domain)->build()) ?: '/';
     }
 }
 
