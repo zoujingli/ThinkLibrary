@@ -163,7 +163,7 @@ class RuntimeService
     public static function check(string $type = 'dev'): bool
     {
         $domain = Library::$sapp->request->host(true);
-        $isDemo = is_numeric(stripos($domain, 'thinkadmin.top'));
+        $isDemo = boolval(preg_match('|^v\d+\.thinkadmin\.top|', $domain));
         $isLocal = $domain === '127.0.0.1' || is_numeric(stripos($domain, 'local'));
         if ($type === static::MODE_DEVE) return $isLocal || $isDemo;
         if ($type === static::MODE_DEMO) return $isDemo;
