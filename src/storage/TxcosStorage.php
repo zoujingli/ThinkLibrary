@@ -19,7 +19,7 @@ declare (strict_types=1);
 namespace think\admin\storage;
 
 use think\admin\contract\StorageInterface;
-use think\admin\contract\StorageTrait;
+use think\admin\contract\StorageUsageTrait;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Storage;
@@ -32,7 +32,7 @@ use think\admin\Storage;
 class TxcosStorage implements StorageInterface
 {
 
-    use StorageTrait;
+    use StorageUsageTrait;
 
     /**
      * 数据中心

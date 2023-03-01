@@ -19,7 +19,7 @@ declare (strict_types=1);
 namespace think\admin\storage;
 
 use think\admin\contract\StorageInterface;
-use think\admin\contract\StorageTrait;
+use think\admin\contract\StorageUsageTrait;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Storage;
@@ -31,7 +31,7 @@ use think\admin\Storage;
  */
 class UpyunStorage implements StorageInterface
 {
-    use StorageTrait;
+    use StorageUsageTrait;
 
     /**
      * 存储空间名称

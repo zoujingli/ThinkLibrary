@@ -20,7 +20,7 @@ namespace think\admin\storage;
 
 use Exception;
 use think\admin\contract\StorageInterface;
-use think\admin\contract\StorageTrait;
+use think\admin\contract\StorageUsageTrait;
 
 /**
  * 本地存储支持
@@ -29,7 +29,7 @@ use think\admin\contract\StorageTrait;
  */
 class LocalStorage implements StorageInterface
 {
-    use StorageTrait;
+    use StorageUsageTrait;
 
     /**
      * 初始化入口

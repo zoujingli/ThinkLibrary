@@ -23,10 +23,10 @@ use think\Container;
 
 /**
  * 文件存储公共属性
- * @class StorageTrait
+ * @class StorageUsageTrait
  * @package think\admin\contract
  */
-trait StorageTrait
+trait StorageUsageTrait
 {
     /**
      * @var \think\App $app
