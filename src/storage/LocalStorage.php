@@ -19,15 +19,17 @@ declare (strict_types=1);
 namespace think\admin\storage;
 
 use Exception;
-use think\admin\Storage;
+use think\admin\contract\StorageInterface;
+use think\admin\contract\StorageTrait;
 
 /**
  * 本地存储支持
  * Class LocalStorage
  * @package think\admin\storage
  */
-class LocalStorage extends Storage
+class LocalStorage implements StorageInterface
 {
+    use StorageTrait;
 
     /**
      * 初始化入口
@@ -35,7 +37,7 @@ class LocalStorage extends Storage
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function initialize()
+    protected function init()
     {
         $type = sysconf('storage.local_http_protocol|raw') ?: 'follow';
         if ($type === 'follow') $type = $this->app->request->scheme();
@@ -51,11 +53,11 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 文件储存在本地
+     * 上传文件内容
      * @param string $name 文件名称
      * @param string $file 文件内容
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return array
      */
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
@@ -72,7 +74,7 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 根据文件名读取文件内容
+     * 读取文件内容
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return string
@@ -84,7 +86,7 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 删除存储的文件
+     * 删除存储文件
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return boolean
@@ -99,7 +101,7 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 检查文件是否已经存在
+     * 判断是否存在
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return boolean
@@ -110,10 +112,10 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 获取文件当前URL地址
+     * 获取访问地址
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return string
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
@@ -122,7 +124,7 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 获取文件存储路径
+     * 获取存储路径
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return string
@@ -134,10 +136,10 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 获取文件存储信息
+     * 获取文件信息
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return array
      */
     public function info(string $name, bool $safe = false, ?string $attname = null): array
@@ -149,11 +151,20 @@ class LocalStorage extends Storage
     }
 
     /**
-     * 获取文件上传地址
+     * 获取上传地址
      * @return string
      */
     public function upload(): string
     {
         return url('admin/api.upload/file')->build();
+    }
+
+    /**
+     * 获取存储区域
+     * @return array
+     */
+    public static function region(): array
+    {
+        return [];
     }
 }

@@ -18,8 +18,8 @@ declare (strict_types=1);
 
 namespace think\admin;
 
+use think\admin\contract\StorageInterface;
 use think\admin\storage\LocalStorage;
-use think\App;
 use think\Container;
 
 /**
@@ -37,92 +37,27 @@ use think\Container;
  */
 abstract class Storage
 {
-    /**
-     * 应用实例
-     * @var App
-     */
-    protected $app;
-
-    /**
-     * 存储类型
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * 链接类型
-     * @var string
-     */
-    protected $link;
-
-    /**
-     * 链接前缀
-     * @var string
-     */
-    protected $domain;
-
-    /**
-     * Storage constructor.
-     * @param App $app
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    public function __construct(App $app)
-    {
-        $this->app = $app;
-        $this->link = sysconf('storage.link_type|raw');
-        $this->initialize();
-    }
-
-    /**
-     * 存储驱动初始化
-     */
-    abstract protected function initialize();
-
-    /**
-     * 静态访问启用
-     * @param string $method 方法名称
-     * @param array $arguments 调用参数
-     * @return mixed
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
-     */
-    public static function __callStatic(string $method, array $arguments)
-    {
-        if (method_exists($storage = static::instance(), $method)) {
-            return call_user_func_array([$storage, $method], $arguments);
-        } else {
-            throw new Exception("method not exists: " . get_class($storage) . "->{$method}()");
-        }
-    }
 
     /**
      * 实例化存储操作对象
-     * @param null|string $name 驱动名称
-     * @param null|string $class 驱动类名
-     * @return mixed|object|string|static
+     * @param ?string $name 驱动名称
+     * @param ?string $class 驱动类名
+     * @return \think\admin\contract\StorageInterface
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function instance(?string $name = null, ?string $class = null)
+    public static function instance(?string $name = null, ?string $class = null): StorageInterface
     {
-        if (is_null($class)) {
-            if (is_null($name) && static::class !== self::class) {
-                $class = static::class;
-            } else {
+        try {
+            if (is_null($class)) {
                 $type = ucfirst(strtolower($name ?: sysconf('storage.type|raw')));
                 $class = "think\\admin\\storage\\{$type}Storage";
             }
-        }
-        if (class_exists($class)) {
-            return Container::getInstance()->make($class);
-        } else {
+            if (class_exists($class)) return Container::getInstance()->make($class);
             throw new Exception("Storage driver [{$class}] does not exist.");
+        } catch (Exception $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage());
         }
     }
 
@@ -151,14 +86,14 @@ abstract class Storage
     public static function down(string $url, bool $force = false, int $expire = 0): array
     {
         try {
-            $file = LocalStorage::instance();
-            $name = static::name($url, '', 'down/');
-            if (empty($force) && $file->has($name)) {
-                if ($expire < 1 || filemtime($file->path($name)) + $expire > time()) {
-                    return $file->info($name);
+            $local = LocalStorage::instance();
+            $filename = static::name($url, '', 'down/');
+            if (empty($force) && $local->has($filename)) {
+                if ($expire < 1 || filemtime($local->path($filename)) + $expire > time()) {
+                    return $local->info($filename);
                 }
             }
-            return $file->set($name, static::curlGet($url));
+            return $local->set($filename, static::curlGet($url));
         } catch (\Exception $exception) {
             return ['url' => $url, 'hash' => md5($url), 'key' => $url, 'file' => $url];
         }
@@ -225,49 +160,21 @@ abstract class Storage
     }
 
     /**
-     * 获取下载链接后缀
-     * @param null|string $attname 下载名称
-     * @param null|string $filename 文件名称
-     * @return string
+     * 静态访问启用
+     * @param string $method 方法名称
+     * @param array $arguments 调用参数
+     * @return mixed
+     * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function getSuffix(?string $attname = null, ?string $filename = null): string
+    public static function __callStatic(string $method, array $arguments)
     {
-        $suffix = '';
-        if (is_string($filename) && stripos($this->link, 'compress') !== false) {
-            $compress = [
-                'LocalStorage'  => '',
-                'QiniuStorage'  => '?imageslim',
-                'UpyunStorage'  => '!/format/webp',
-                'TxcosStorage'  => '?imageMogr2/format/webp',
-                'AliossStorage' => '?x-oss-process=image/format,webp',
-            ];
-            $class = basename(get_class($this));
-            $extens = strtolower(pathinfo($this->delSuffix($filename), PATHINFO_EXTENSION));
-            $suffix = in_array($extens, ['png', 'jpg', 'jpeg']) ? ($compress[$class] ?? '') : '';
+        if (method_exists($storage = static::instance(), $method)) {
+            return call_user_func_array([$storage, $method], $arguments);
+        } else {
+            throw new Exception("method not exists: " . get_class($storage) . "->{$method}()");
         }
-        if (is_string($attname) && strlen($attname) > 0 && stripos($this->link, 'full') !== false) {
-            if ($this->type === 'upyun') {
-                $suffix .= ($suffix ? '&' : '?') . '_upd=' . urlencode($attname);
-            } else {
-                $suffix .= ($suffix ? '&' : '?') . 'attname=' . urlencode($attname);
-            }
-        }
-        return $suffix;
-    }
-
-    /**
-     * 获取文件基础名称
-     * @param string $name 文件名称
-     * @return string
-     */
-    protected function delSuffix(string $name): string
-    {
-        if (strpos($name, '?') !== false) {
-            return strstr($name, '?', true);
-        }
-        if (stripos($name, '!') !== false) {
-            return strstr($name, '!', true);
-        }
-        return $name;
     }
 }

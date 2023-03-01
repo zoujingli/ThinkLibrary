@@ -18,6 +18,8 @@ declare (strict_types=1);
 
 namespace think\admin\storage;
 
+use think\admin\contract\StorageInterface;
+use think\admin\contract\StorageTrait;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Storage;
@@ -27,8 +29,10 @@ use think\admin\Storage;
  * Class UpyunStorage
  * @package think\admin\storage
  */
-class UpyunStorage extends Storage
+class UpyunStorage implements StorageInterface
 {
+    use StorageTrait;
+
     /**
      * 存储空间名称
      * @var string
@@ -54,7 +58,7 @@ class UpyunStorage extends Storage
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function initialize()
+    protected function init()
     {
         // 读取配置文件
         $this->bucket = sysconf('storage.upyun_bucket|raw');
@@ -77,7 +81,7 @@ class UpyunStorage extends Storage
      * @param string $name 文件名称
      * @param string $file 文件内容
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return array
      */
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
@@ -95,18 +99,18 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 根据文件名读取文件内容
+     * 读取文件内容
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return string
      */
     public function get(string $name, bool $safe = false): string
     {
-        return static::curlGet($this->url($name, $safe));
+        return Storage::curlGet($this->url($name, $safe));
     }
 
     /**
-     * 删除存储的文件
+     * 删除存储文件
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return boolean
@@ -121,7 +125,7 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 判断文件是否存在
+     * 判断是否存在
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return boolean
@@ -136,10 +140,10 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 获取文件当前URL地址
+     * 获取访问地址
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return string
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
@@ -148,7 +152,7 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 获取文件存储路径
+     * 获取存储路径
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return string
@@ -159,10 +163,10 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 获取文件存储信息
+     * 获取文件信息
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return array
      */
     public function info(string $name, bool $safe = false, ?string $attname = null): array
@@ -174,7 +178,7 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 获取文件上传地址
+     * 获取上传地址
      * @return string
      */
     public function upload(): string
@@ -184,11 +188,11 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 获取文件上传令牌
+     * 生成上传令牌
      * @param string $name 文件名称
      * @param integer $expires 有效时间
-     * @param string|null $attname 下载名称
-     * @param string|null $fileHash 文件哈希
+     * @param ?string $attname 下载名称
+     * @param ?string $fileHash 文件哈希
      * @return array
      */
     public function buildUploadToken(string $name, int $expires = 3600, ?string $attname = null, ?string $fileHash = ''): array
@@ -208,7 +212,7 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 操作请求头信息签名
+     * 生成请求签名
      * @param string $method 请求方式
      * @param string $name 资源名称
      * @return array
@@ -221,7 +225,7 @@ class UpyunStorage extends Storage
     }
 
     /**
-     * 又拍云存储区域
+     * 获取存储区域
      * @return array
      */
     public static function region(): array

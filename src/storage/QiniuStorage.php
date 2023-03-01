@@ -18,6 +18,8 @@ declare (strict_types=1);
 
 namespace think\admin\storage;
 
+use think\admin\contract\StorageInterface;
+use think\admin\contract\StorageTrait;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Storage;
@@ -27,8 +29,9 @@ use think\admin\Storage;
  * Class QiniuStorage
  * @package think\admin\storage
  */
-class QiniuStorage extends Storage
+class QiniuStorage implements StorageInterface
 {
+    use StorageTrait;
 
     private $bucket;
     private $accessKey;
@@ -41,7 +44,7 @@ class QiniuStorage extends Storage
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    protected function initialize()
+    protected function init()
     {
         // 读取配置文件
         $this->bucket = sysconf('storage.qiniu_bucket|raw');
@@ -64,12 +67,9 @@ class QiniuStorage extends Storage
      * @param string $name 文件名称
      * @param string $file 文件内容
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return array
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
     {
@@ -80,9 +80,8 @@ class QiniuStorage extends Storage
         return json_decode($result, true);
     }
 
-
     /**
-     * 根据文件名读取文件内容
+     * 读取文件内容
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return string
@@ -91,11 +90,11 @@ class QiniuStorage extends Storage
     {
         $url = $this->url($name, $safe) . "?e=" . time();
         $token = "{$this->accessKey}:{$this->safeBase64(hash_hmac('sha1', $url, $this->secretKey, true))}";
-        return static::curlGet("{$url}&token={$token}");
+        return Storage::curlGet("{$url}&token={$token}");
     }
 
     /**
-     * 删除存储的文件
+     * 删除存储文件
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return boolean
@@ -110,7 +109,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 检查文件是否已经存在
+     * 判断是否存在
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return boolean
@@ -121,10 +120,10 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取文件当前URL地址
+     * 获取访问地址
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return string
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
@@ -133,7 +132,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取文件存储路径
+     * 获取存储路径
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
      * @return string
@@ -144,10 +143,10 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取文件存储信息
+     * 获取文件信息
      * @param string $name 文件名称
      * @param boolean $safe 安全模式
-     * @param null|string $attname 下载名称
+     * @param ?string $attname 下载名称
      * @return array
      */
     public function info(string $name, bool $safe = false, ?string $attname = null): array
@@ -158,44 +157,46 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取文件上传地址
+     * 获取上传地址
      * @return string
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function upload(): string
     {
-        $protocol = $this->app->request->isSsl() ? 'https' : 'http';
+        try {
+            $proc = $this->app->request->isSsl() ? 'https' : 'http';
+            $region = sysconf('storage.qiniu_region|raw');
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage());
+        }
         // 注：汉字为兼容旧版本区域配置
-        switch (sysconf('storage.qiniu_region|raw')) {
+        switch ($region) {
             case '华东':
             case 'up.qiniup.com':
-                return "{$protocol}://up.qiniup.com";
+                return "{$proc}://up.qiniup.com";
             case 'up-cn-east-2.qiniup.com':
-                return "{$protocol}://up-cn-east-2.qiniup.com";
+                return "{$proc}://up-cn-east-2.qiniup.com";
             case '华北':
             case 'up-z1.qiniup.com':
-                return "{$protocol}://up-z1.qiniup.com";
+                return "{$proc}://up-z1.qiniup.com";
             case '华南':
             case 'up-z2.qiniup.com':
-                return "{$protocol}://up-z2.qiniup.com";
+                return "{$proc}://up-z2.qiniup.com";
             case '北美':
             case 'up-na0.qiniup.com':
-                return "{$protocol}://up-na0.qiniup.com";
+                return "{$proc}://up-na0.qiniup.com";
             case '东南亚':
             case 'up-as0.qiniup.com':
-                return "{$protocol}://up-as0.qiniup.com";
+                return "{$proc}://up-as0.qiniup.com";
             case 'up-ap-northeast-1.qiniup.com':
-                return "{$protocol}://up-ap-northeast-1.qiniup.com";
+                return "{$proc}://up-ap-northeast-1.qiniup.com";
             default:
                 throw new Exception(lang('未配置七牛云空间区域哦'));
         }
     }
 
     /**
-     * 获取文件上传令牌
+     * 生成上传令牌
      * @param ?string $name 文件名称
      * @param integer $expires 有效时间
      * @param ?string $attname 下载名称
@@ -213,7 +214,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * URL安全的Base64编码
+     * 安全BASE64编码
      * @param string $content
      * @return string
      */
@@ -223,7 +224,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 获取对象管理凭证
+     * 生成管理凭证
      * @param string $name 文件名称
      * @param string $type 操作类型
      * @return array
@@ -236,7 +237,7 @@ class QiniuStorage extends Storage
     }
 
     /**
-     * 七牛云对象存储区域
+     * 获取存储区域
      * @return array
      */
     public static function region(): array
