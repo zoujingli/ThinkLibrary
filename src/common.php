@@ -98,7 +98,7 @@ if (!function_exists('sysuri')) {
             return Library::$sapp->route->buildUrl($url, $vars)->suffix($suffix)->domain($domain)->build();
         }
         if (count($attr = $url === '' ? [] : explode('/', rtrim($url, '/'))) < 3) {
-            $map = [Library::$sapp->http->getName(), Library::$sapp->request->controller(true), Library::$sapp->request->action(true)];
+            $map = [Library::$sapp->http->getName(), Library::$sapp->request->controller(), Library::$sapp->request->action(true)];
             while (count($attr) < 3) array_unshift($attr, $map[2 - count($attr)] ?? 'index');
         }
         [$rcf, $tmp] = [Library::$sapp->config->get('route', []), uniqid('think_admin_replace_temp_vars_')];
