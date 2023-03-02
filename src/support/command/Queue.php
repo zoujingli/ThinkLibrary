@@ -320,6 +320,7 @@ class Queue extends Command
                 defined('WorkQueueCode') or define('WorkQueueCode', $this->code);
                 if (class_exists($command = $this->queue->record['command'])) {
                     // 自定义任务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
+                    /**@var \think\admin\Queue|QueueService $class */
                     $class = $this->app->make($command, [], true);
                     if ($class instanceof \think\admin\Queue) {
                         $this->updateQueue(static::STATE_DONE, $class->initialize($this->queue)->execute($this->queue->data) ?: '');

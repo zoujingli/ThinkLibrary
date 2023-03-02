@@ -26,6 +26,7 @@ use think\admin\model\SystemConfig;
 use think\admin\model\SystemData;
 use think\admin\model\SystemOplog;
 use think\admin\Service;
+use think\admin\Storage;
 use think\admin\storage\LocalStorage;
 use think\App;
 use think\db\Query;
@@ -338,7 +339,7 @@ class SystemService extends Service
                 $info = LocalStorage::instance()->info($vars[1]);
             }
             if (empty($info) || empty($info['file'])) {
-                $info = LocalStorage::down($icon);
+                $info = Storage::down($icon);
             }
             if (empty($info) || empty($info['file'])) return false;
             $favicon = new FaviconExtend($info['file'], [48, 48]);
