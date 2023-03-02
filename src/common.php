@@ -35,7 +35,7 @@ if (!function_exists('p')) {
      * 打印输出数据到文件
      * @param mixed $data 输出的数据
      * @param boolean $new 强制替换文件
-     * @param null|string $file 保存文件名称
+     * @param ?string $file 保存文件名称
      * @return false|int
      */
     function p($data, bool $new = false, ?string $file = null)
@@ -59,7 +59,7 @@ if (!function_exists('m')) {
 if (!function_exists('auth')) {
     /**
      * 访问权限检查
-     * @param null|string $node
+     * @param ?string $node
      * @return boolean
      * @throws ReflectionException
      */
@@ -101,10 +101,15 @@ if (!function_exists('sysuri')) {
             $map = [Library::$sapp->http->getName(), Library::$sapp->request->controller(), Library::$sapp->request->action(true)];
             while (count($attr) < 3) array_unshift($attr, $map[2 - count($attr)] ?? 'index');
         }
+        $attr[1] = Str::snake($attr[1]);
         [$rcf, $tmp] = [Library::$sapp->config->get('route', []), uniqid('think_admin_replace_temp_vars_')];
         $map = [Str::lower($rcf['default_app'] ?? ''), Str::snake($rcf['default_controller'] ?? ''), Str::lower($rcf['default_action'] ?? '')];
         for ($idx = count($attr) - 1; $idx >= 0; $idx--) if ($attr[$idx] == ($map[$idx] ?: 'index')) $attr[$idx] = $tmp; else break;
-        return preg_replace("#/{$tmp}#", '', Library::$sapp->route->buildUrl(join('/', $attr), $vars)->suffix(false)->domain($domain)->build()) ?: '/';
+        $url = Library::$sapp->route->buildUrl(join('/', $attr), $vars)->suffix($suffix)->domain($domain)->build();
+        $ext = is_string($suffix) ? $suffix : ($rcf['url_html_suffix'] ?? 'html');
+        $new = preg_replace("#/{$tmp}(\.{$ext})?#", '', $old = parse_url($url, PHP_URL_PATH) ?: '', -1, $count);
+        $count > 0 && $suffix && $new && $new !== Library::$sapp->request->baseUrl() && $new .= ".{$ext}";
+        return str_replace($old, $new ?: '/', $url);
     }
 }
 
@@ -143,7 +148,7 @@ if (!function_exists('str2arr')) {
      * 字符串转数组
      * @param string $text 待转内容
      * @param string $separ 分隔字符
-     * @param null|array $allow 限定规则
+     * @param ?array $allow 限定规则
      * @return array
      */
     function str2arr(string $text, string $separ = ',', ?array $allow = null): array
@@ -162,7 +167,7 @@ if (!function_exists('arr2str')) {
      * 数组转字符串
      * @param array $data 待转数组
      * @param string $separ 分隔字符
-     * @param null|array $allow 限定规则
+     * @param ?array $allow 限定规则
      * @return string
      */
     function arr2str(array $data, string $separ = ',', ?array $allow = null): string
