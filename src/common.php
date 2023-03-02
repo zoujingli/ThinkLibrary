@@ -121,6 +121,7 @@ if (!function_exists('encode')) {
         return $chars;
     }
 }
+
 if (!function_exists('decode')) {
     /**
      * 解密 UTF8 字符串
@@ -133,7 +134,7 @@ if (!function_exists('decode')) {
         foreach (str_split($content, 2) as $char) {
             $chars .= chr(intval(base_convert($char, 36, 10)));
         }
-        return iconv('GBK//TRANSLIT', 'UTF-8', $chars);
+        return CodeExtend::text2utf8($chars);
     }
 }
 

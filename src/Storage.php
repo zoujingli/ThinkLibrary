@@ -165,9 +165,6 @@ abstract class Storage
      * @param array $arguments 调用参数
      * @return mixed
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function __callStatic(string $method, array $arguments)
     {
