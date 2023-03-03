@@ -201,12 +201,12 @@ class ProcessService extends Service
         } finally {
             try {
                 if (self::iswin()) {
-                    return self::exec("if exist \"{$file}\" echo 1") !== '1';
+                    return self::exec("if exist \"{$file}\" echo 1") === '1';
                 } else {
-                    return self::exec("if [ -f \"{$file}\" ];then echo 1;fi") !== '1';
+                    return self::exec("if [ -f \"{$file}\" ];then echo 1;fi") === '1';
                 }
             } finally {
-                return true;
+                return false;
             }
         }
     }
