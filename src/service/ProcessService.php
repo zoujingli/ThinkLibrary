@@ -49,13 +49,17 @@ class ProcessService extends Service
      */
     public static function composer(string $args = '', bool $simple = false): string
     {
-        $root = escapeshellarg(Library::$sapp->getRootPath());
+        $root = Library::$sapp->getRootPath();
         if ($simple) return "-d {$root} {$args}";
         static $comBinary;
-        if (empty($comBinary) && file_exists($file = syspath('vendor/binarys.php')) && is_array($binarys = include($file))) {
-            $comBinary = isset($binarys['com']) && static::isfile($binarys['com']) ? static::getPhpExec() . ' ' . $binarys['com'] : 'composer';
+        if (empty($comBinary)) {
+            if (self::isfile($comBinary = self::getRunVar('com'))) {
+                $comBinary = self::getPhpExec() . ' ' . $comBinary;
+            } else {
+                $comBinary = 'composer';
+            }
         }
-        return ($comBinary ?? 'composer') . " -d {$root} {$args}";
+        return "{$comBinary} -d {$root} {$args}";
     }
 
     /**
@@ -65,17 +69,16 @@ class ProcessService extends Service
     public static function getPhpExec(): string
     {
         static $phpBinary;
-        if (!empty($phpBinary)) return $phpBinary;
-        if (file_exists($file = syspath('vendor/binarys.php')) && is_array($binarys = include($file))) {
-            $phpBinary = isset($binarys['php']) && static::isfile($binarys['php']) ? $binarys['php'] : '';
-        }
-        if (empty($phpBinary)) {
+        if ($phpBinary) return $phpBinary;
+        if (!static::isfile($phpBinary = self::getRunVar('php'))) {
             $attrs = pathinfo(str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY));
             $attrs['filename'] = preg_replace('#-(fcgi|cgi|fpm)$#', '', $attrs['filename']);
             $attrs['extension'] = empty($attrs['extension']) ? '' : ".{$attrs['extension']}";
             $phpBinary = $attrs['dirname'] . DIRECTORY_SEPARATOR . $attrs['filename'] . $attrs['extension'];
+            return $phpBinary = static::isfile($phpBinary) ? $phpBinary : 'php';
+        } else {
+            return $phpBinary;
         }
-        return $phpBinary = static::isfile($phpBinary) ? $phpBinary : 'php';
     }
 
     /**
@@ -193,10 +196,18 @@ class ProcessService extends Service
      */
     public static function isfile(string $file): bool
     {
-        if (static::iswin()) {
-            return static::exec("if exist \"{$file}\" echo 1") === '1';
-        } else {
-            return static::exec("if [ -f \"{$file}\" ];then echo 1;fi") === '1';
+        try {
+            return $file !== '' && is_file($file);
+        } finally {
+            try {
+                if (self::iswin()) {
+                    return self::exec("if exist \"{$file}\" echo 1") !== '1';
+                } else {
+                    return self::exec("if [ -f \"{$file}\" ];then echo 1;fi") !== '1';
+                }
+            } finally {
+                return true;
+            }
         }
     }
 
@@ -210,6 +221,22 @@ class ProcessService extends Service
     {
         while ($backline-- > 0) $message = "\033[1A\r\033[K{$message}";
         print_r($message . PHP_EOL);
+    }
+
+    /**
+     * 获取运行参数
+     * @param string $field 指定字段
+     * @param string $default 默认值
+     * @return string
+     */
+    public static function getRunVar(string $field, string $default = ''): string
+    {
+        $file = syspath('vendor/binarys.php');
+        if (file_exists($file) && is_array($binarys = include $file)) {
+            return $binarys[$field] ?? $default;
+        } else {
+            return $default;
+        }
     }
 
     /**
