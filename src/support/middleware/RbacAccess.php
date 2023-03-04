@@ -86,10 +86,12 @@ class RbacAccess
             return $next($request)->header($header);
         }
 
-        // 需要 RBAC 授权且授权通过
+        // 强制 RBAC 权限检测
         if (AdminService::check()) {
             $header['X-Frame-Options'] = 'sameorigin';
             return $next($request)->header($header);
+        } elseif (AdminService::isLogin()) {
+            return json(['code' => 0, 'info' => lang('think_library_not_auth')])->header($header);
         }
 
         // 无访问权限时需跳转到后台登录
