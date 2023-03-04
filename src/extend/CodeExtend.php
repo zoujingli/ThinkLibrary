@@ -80,10 +80,10 @@ class CodeExtend
      */
     public static function text2utf8(string $text, string $target = 'UTF-8'): string
     {
-        [$first2, $first3] = [substr($text, 0, 2), substr($text, 0, 3)];
-        if ($first3 === chr(0xEF) . chr(0xBB) . chr(0xBF)) $ft = 'UTF-8';
-        elseif ($first3 === chr(0x00) . chr(0x00) . chr(0xFE) . chr(0xFF)) $ft = 'UTF-32BE';
-        elseif ($first3 === chr(0xFF) . chr(0xFE) . chr(0x00) . chr(0x00)) $ft = 'UTF-32LE';
+        [$first2, $first4] = [substr($text, 0, 2), substr($text, 0, 4)];
+        if ($first4 === chr(0xEF) . chr(0xBB) . chr(0xBF)) $ft = 'UTF-8';
+        elseif ($first4 === chr(0x00) . chr(0x00) . chr(0xFE) . chr(0xFF)) $ft = 'UTF-32BE';
+        elseif ($first4 === chr(0xFF) . chr(0xFE) . chr(0x00) . chr(0x00)) $ft = 'UTF-32LE';
         elseif ($first2 === chr(0xFE) . chr(0xFF)) $ft = 'UTF-16BE';
         elseif ($first2 === chr(0xFF) . chr(0xFE)) $ft = 'UTF-16LE';
         return mb_convert_encoding($text, $target, $ft ?? mb_detect_encoding($text));
