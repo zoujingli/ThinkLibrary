@@ -43,7 +43,7 @@ class Library extends Service
     /**
      * 组件版本号
      */
-    const VERSION = '6.1.21';
+    const VERSION = '6.1.22';
 
     /**
      * 静态应用实例
@@ -111,17 +111,17 @@ class Library extends Service
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->request->isCli()) {
 
-            // 接口模式或指定情况下不初始化会话和语言包
+            // 初始化会话和语言包
             $isApiRequest = $this->app->request->header('api-token', '') !== '';
             $isYarRequest = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
             if (!($isApiRequest || $isYarRequest || $this->app->request->get('not_init_session', 0) > 0)) {
-                // 注册会话初始化中间键
+                // 注册会话中间键
                 $this->app->middleware->add(JwtSession::class);
-                // 注册语言包处理中间键
+                // 注册语言包中间键
                 $this->app->middleware->add(LoadLangPack::class);
             }
 
-            // 注册网络请求权限中间键
+            // 注册权限验证中间键
             $this->app->middleware->add(RbacAccess::class, 'route');
         }
     }

@@ -81,20 +81,24 @@ class RbacAccess
             return response()->code(204)->header($header);
         }
 
-        // 跳配置忽略的应用
-        if (in_array($this->app->http->getName(), $this->app->config->get('app.rbac_ignore', []))) {
+        // 跳忽略配置忽略的应用
+        $ignore = $this->app->config->get('app.rbac_ignore', []);
+        if (in_array($this->app->http->getName(), $ignore)) {
             return $next($request)->header($header);
         }
 
-        // 强制 RBAC 权限检测
+        // 有权限访问，进入下一步
         if (AdminService::check()) {
             $header['X-Frame-Options'] = 'sameorigin';
             return $next($request)->header($header);
-        } elseif (AdminService::isLogin()) {
+        }
+
+        // 无权限已登录，提示异常
+        if (AdminService::isLogin()) {
             return json(['code' => 0, 'info' => lang('think_library_not_auth')])->header($header);
         }
 
-        // 无访问权限时需跳转到后台登录
+        // 无权限未登录，跳转登录
         $loginUrl = $this->app->config->get('app.rbac_login') ?: 'admin/login/index';
         $loginPage = preg_match('#^(/|https?://)#', $loginUrl) ? $loginUrl : sysuri($loginUrl);
         return json(['code' => 0, 'info' => lang('think_library_not_login'), 'url' => $loginPage])->header($header);
