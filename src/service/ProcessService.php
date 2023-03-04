@@ -18,6 +18,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
+use Symfony\Component\Process\Process;
 use think\admin\extend\CodeExtend;
 use think\admin\Library;
 use think\admin\Service;
@@ -42,43 +43,17 @@ class ProcessService extends Service
     }
 
     /**
-     * 生成 Composer 指令脚本
-     * @param string $args 指令参数
-     * @param boolean $simple 仅返回内容
+     * 生成 Composer 脚本
+     * @param string $args 参数
      * @return string
      */
-    public static function composer(string $args = '', bool $simple = false): string
+    public static function composer(string $args = ''): string
     {
+        if (empty($comExec) && self::isfile($comExec = self::getRunVar('com'))) {
+            $comExec = self::getPhpExec() . ' ' . $comExec;
+        }
         $root = Library::$sapp->getRootPath();
-        if ($simple) return "-d {$root} {$args}";
-        static $comBinary;
-        if (empty($comBinary)) {
-            if (self::isfile($comBinary = self::getRunVar('com'))) {
-                $comBinary = self::getPhpExec() . ' ' . $comBinary;
-            } else {
-                $comBinary = 'composer';
-            }
-        }
-        return "{$comBinary} -d {$root} {$args}";
-    }
-
-    /**
-     * 获取PHP命令位置
-     * @return string
-     */
-    public static function getPhpExec(): string
-    {
-        static $phpBinary;
-        if ($phpBinary) return $phpBinary;
-        if (!static::isfile($phpBinary = self::getRunVar('php'))) {
-            $attrs = pathinfo(str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY));
-            $attrs['filename'] = preg_replace('#-(fcgi|cgi|fpm)$#', '', $attrs['filename']);
-            $attrs['extension'] = empty($attrs['extension']) ? '' : ".{$attrs['extension']}";
-            $phpBinary = $attrs['dirname'] . DIRECTORY_SEPARATOR . $attrs['filename'] . $attrs['extension'];
-            return $phpBinary = static::isfile($phpBinary) ? $phpBinary : 'php';
-        } else {
-            return $phpBinary;
-        }
+        return ($comExec ?: 'composer') . " -d {$root} {$args}";
     }
 
     /**
@@ -165,8 +140,10 @@ class ProcessService extends Service
      */
     public static function exec(string $command, $outarr = false)
     {
-        exec($command, $output);
-        return $outarr ? $output : CodeExtend::text2utf8(join("\n", $output));
+        $process = Process::fromShellCommandline($command);
+        $process->setWorkingDirectory(Library::$sapp->getRootPath())->run();
+        $output = str_replace("\r\n", "\n", CodeExtend::text2utf8($process->getOutput()));
+        return $outarr ? explode("\n", $output) : trim($output);
     }
 
     /**
@@ -191,21 +168,21 @@ class ProcessService extends Service
 
     /**
      * 检查文件是否存在
-     * @param string $file 待检查的文件
+     * @param string $file 文件路径
      * @return boolean
      */
     public static function isfile(string $file): bool
     {
         try {
             return $file !== '' && is_file($file);
-        } finally {
+        } catch (\Error|\Exception $exception) {
             try {
                 if (self::iswin()) {
                     return self::exec("if exist \"{$file}\" echo 1") === '1';
                 } else {
                     return self::exec("if [ -f \"{$file}\" ];then echo 1;fi") === '1';
                 }
-            } finally {
+            } catch (\Error|\Exception $exception) {
                 return false;
             }
         }
@@ -237,6 +214,20 @@ class ProcessService extends Service
         } else {
             return $default;
         }
+    }
+
+    /**
+     * 获取 PHP 路径
+     * @return string
+     */
+    private static function getPhpExec(): string
+    {
+        static $phpExec;
+        if ($phpExec) return $phpExec;
+        if (self::isfile($phpExec = self::getRunVar('php'))) return $phpExec;
+        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
+        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
+        return self::isfile($phpExec) ? $phpExec : $phpExec = 'php';
     }
 
     /**
