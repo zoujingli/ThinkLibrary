@@ -31,7 +31,7 @@ use think\admin\Service;
 class ProcessService extends Service
 {
     /**
-     * 生成 Think 指令脚本
+     * 生成 Think 脚本
      * @param string $args 指令参数
      * @param boolean $simple 仅返回内容
      * @return string
@@ -49,6 +49,7 @@ class ProcessService extends Service
      */
     public static function composer(string $args = ''): string
     {
+        static $comExec;
         if (empty($comExec) && self::isfile($comExec = self::getRunVar('com'))) {
             $comExec = self::getPhpExec() . ' ' . $comExec;
         }
@@ -57,7 +58,7 @@ class ProcessService extends Service
     }
 
     /**
-     * 检查 Think 运行进程
+     * 检查 Think 进程
      * @param string $args 执行参数
      * @return array
      */
@@ -67,7 +68,7 @@ class ProcessService extends Service
     }
 
     /**
-     * 执行 Think 指令内容
+     * 创建 Think 进程
      * @param string $args 执行参数
      * @param integer $usleep 延时时间
      */
@@ -92,7 +93,7 @@ class ProcessService extends Service
     }
 
     /**
-     * 查询相关进程列表
+     * 查询进程列表
      * @param string $cmd 任务指令
      * @param string $name 进程名称
      * @return array
@@ -101,15 +102,15 @@ class ProcessService extends Service
     {
         $list = [];
         if (static::iswin()) {
-            $lines = static::exec('wmic process where name="' . $name . '" get processid,CommandLine', true);
-            foreach ($lines as $line) if (static::_issub($line, $cmd) !== false) {
-                $attr = explode(' ', static::_trim($line));
+            $lines = static::exec("wmic process where name=\"{$name}\" get processid,CommandLine", true);
+            foreach ($lines as $line) if (is_numeric(stripos($line, $cmd))) {
+                $attr = explode(' ', trim(preg_replace('#\s+#', ' ', $line)));
                 $list[] = ['pid' => array_pop($attr), 'cmd' => join(' ', $attr)];
             }
         } else {
             $lines = static::exec("ps ax|grep -v grep|grep \"{$cmd}\"", true);
-            foreach ($lines as $line) if (static::_issub($line, $cmd) !== false) {
-                $attr = explode(' ', static::_trim($line));
+            foreach ($lines as $line) if (is_numeric(stripos($line, $cmd))) {
+                $attr = explode(' ', trim(preg_replace('#\s+#', ' ', $line)));
                 [$pid] = [array_shift($attr), array_shift($attr), array_shift($attr), array_shift($attr)];
                 $list[] = ['pid' => $pid, 'cmd' => join(' ', $attr)];
             }
@@ -118,7 +119,7 @@ class ProcessService extends Service
     }
 
     /**
-     * 关闭任务进程
+     * 关闭独立进程
      * @param integer $pid 进程号
      * @return boolean
      */
@@ -147,23 +148,12 @@ class ProcessService extends Service
     }
 
     /**
-     * 执行外部程序
-     * @param string $command 执行指令
-     * @param mixed $output
-     * @return false|string
-     */
-    public static function system(string $command, &$output = null)
-    {
-        return system($command, $output);
-    }
-
-    /**
      * 判断系统类型
      * @return boolean
      */
     public static function iswin(): bool
     {
-        return PATH_SEPARATOR === ';';
+        return defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
     /**
@@ -189,7 +179,7 @@ class ProcessService extends Service
     }
 
     /**
-     * 输出文档消息
+     * 输出命令行消息
      * @param string $message 输出内容
      * @param integer $backline 回退行数
      * @return void
@@ -203,16 +193,15 @@ class ProcessService extends Service
     /**
      * 获取运行参数
      * @param string $field 指定字段
-     * @param string $default 默认值
      * @return string
      */
-    public static function getRunVar(string $field, string $default = ''): string
+    private static function getRunVar(string $field): string
     {
         $file = syspath('vendor/binarys.php');
         if (file_exists($file) && is_array($binarys = include $file)) {
-            return $binarys[$field] ?? $default;
+            return $binarys[$field] ?? '';
         } else {
-            return $default;
+            return '';
         }
     }
 
@@ -228,26 +217,5 @@ class ProcessService extends Service
         $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
         $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
         return self::isfile($phpExec) ? $phpExec : $phpExec = 'php';
-    }
-
-    /**
-     * 清除空白字符过滤
-     * @param string $content
-     * @return string
-     */
-    private static function _trim(string $content): string
-    {
-        return preg_replace('|\s+|', ' ', strtr(trim($content), '\\', '/'));
-    }
-
-    /**
-     * 判断是否包含字符串
-     * @param string $content
-     * @param string $searcher
-     * @return boolean
-     */
-    private static function _issub(string $content, string $searcher): bool
-    {
-        return stripos(static::_trim($content), static::_trim($searcher)) !== false;
     }
 }
