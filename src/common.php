@@ -106,9 +106,9 @@ if (!function_exists('sysuri')) {
         $map = [Str::lower($rcf['default_app'] ?? ''), Str::snake($rcf['default_controller'] ?? ''), Str::lower($rcf['default_action'] ?? '')];
         for ($idx = count($attr) - 1; $idx >= 0; $idx--) if ($attr[$idx] == ($map[$idx] ?: 'index')) $attr[$idx] = $tmp; else break;
         $url = Library::$sapp->route->buildUrl(join('/', $attr), $vars)->suffix($suffix)->domain($domain)->build();
-        if (($ext = is_string($suffix) ? $suffix : ($rcf['url_html_suffix'] ?? 'html')) === '') return $url;
+        $ext = is_string($suffix) ? $suffix : ($rcf['url_html_suffix'] ?? 'html');
         $new = preg_replace("#/{$tmp}(\.{$ext})?#", '', $old = parse_url($url, PHP_URL_PATH) ?: '', -1, $count);
-        $count > 0 && $suffix && $new && $new !== Library::$sapp->request->baseUrl() && $new .= ".{$ext}";
+        $count > 0 && $suffix && $new && $ext !== '' && $new !== Library::$sapp->request->baseUrl() && $new .= ".{$ext}";
         return str_replace($old, $new ?: '/', $url);
     }
 }
