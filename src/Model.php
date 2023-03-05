@@ -28,8 +28,6 @@ use think\Container;
 /**
  * 基础模型类
  * Class Model
- * @see \think\db\Query
- * @mixin \think\db\Query
  * @package think\admin
  *
  * 模型日志记录
@@ -39,11 +37,11 @@ use think\Container;
  * @method void onAdminDelete(string $ids) 记录删除数据日志
  *
  * 静态助手调用
- * @method static bool mSave(array $data = [], string $field = '', mixed $where = []) static 快捷更新逻辑器
- * @method static bool|null mDelete(string $field = '', mixed $where = []) static 快捷删除逻辑器
- * @method static bool|array mForm(string $template = '', string $field = '', mixed $where = [], array $data = []) static 快捷表单逻辑器
- * @method static QueryHelper mQuery($input = null, callable $callable = null) static 快捷查询逻辑器
- * @method static bool|integer mUpdate(array $data = [], string $field = '', mixed $where = []) static 快捷保存逻辑器
+ * @method static bool mSave(array $data = [], string $field = '', mixed $where = []) 快捷更新
+ * @method static bool mDelete(string $field = '', mixed $where = []) 快捷删除
+ * @method static bool|array mForm(string $template = '', string $field = '', mixed $where = [], array $data = []) 快捷表单
+ * @method static bool|integer mUpdate(array $data = [], string $field = '', mixed $where = []) 快捷保存
+ * @method static QueryHelper mQuery($input = null, callable $callable = null) 快捷查询
  */
 abstract class Model extends \think\Model
 {
@@ -67,7 +65,9 @@ abstract class Model extends \think\Model
 
     /**
      * 创建模型实例
-     * @return static
+     * @template t of static
+     * @param mixed $data
+     * @return t|static
      */
     public static function mk($data = [])
     {

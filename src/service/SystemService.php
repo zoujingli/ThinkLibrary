@@ -174,7 +174,7 @@ class SystemService extends Service
         if ($model->save($data) === false) return false;
         // 模型自定义事件回调
         if ($model instanceof \think\admin\Model) {
-            $model->$action(strval($model[$key] ?? ''));
+            $model->$action(strval($model->getAttr($key)));
         }
         $data = $model->toArray();
         return $model[$key] ?? true;

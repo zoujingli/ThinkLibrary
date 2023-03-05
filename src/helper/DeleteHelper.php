@@ -34,10 +34,10 @@ class DeleteHelper extends Helper
      * @param BaseQuery|Model|string $dbQuery
      * @param string $field 操作数据主键
      * @param mixed $where 额外更新条件
-     * @return bool|null
+     * @return bool
      * @throws \think\db\exception\DbException
      */
-    public function init($dbQuery, string $field = '', $where = []): ?bool
+    public function init($dbQuery, string $field = '', $where = []): bool
     {
         $query = static::buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
@@ -51,7 +51,7 @@ class DeleteHelper extends Helper
 
         // 前置回调处理
         if (false === $this->class->callback('_delete_filter', $query, $where)) {
-            return null;
+            return false;
         }
 
         // 阻止危险操作

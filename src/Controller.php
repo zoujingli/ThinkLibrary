@@ -280,10 +280,10 @@ class Controller extends stdClass
      * @param BaseQuery|Model|string $dbQuery
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件
-     * @return boolean|null
+     * @return boolean
      * @throws \think\db\exception\DbException
      */
-    protected function _delete($dbQuery, string $field = '', $where = []): ?bool
+    protected function _delete($dbQuery, string $field = '', $where = []): bool
     {
         return DeleteHelper::instance()->init($dbQuery, $field, $where);
     }
