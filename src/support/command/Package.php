@@ -55,7 +55,7 @@ class Package extends Command
             file_exists($dirname) or mkdir($dirname, 0755, true);
             // 开始创建数据库迁移脚本
             $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
-            if ($this->createScheme() && $this->createPackage()) {
+            if ($this->createPackage() && $this->createScheme()) {
                 $this->setQueueSuccess('--- 数据库迁移脚本创建成功 ---');
             } else {
                 $this->setQueueError('--- 数据库迁移脚本创建失败 ---');
@@ -75,14 +75,14 @@ class Package extends Command
      */
     private function createScheme(): bool
     {
-        $this->setQueueMessage(2, 1, '开始创建数据表创建脚本！');
+        $this->setQueueMessage(4, 3, '开始创建数据表创建脚本！');
         $phinx = PhinxExtend::create2phinx();
         $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
-            $this->setQueueMessage(2, 1, '成功创建数据表创建脚本！', 1);
+            $this->setQueueMessage(4, 4, '成功创建数据表创建脚本！');
             return true;
         } else {
-            $this->setQueueMessage(2, 1, '创建数据表创建脚本失败！', 1);
+            $this->setQueueMessage(4, 4, '创建数据表创建脚本失败！');
             return false;
         }
     }
@@ -96,7 +96,7 @@ class Package extends Command
      */
     private function createPackage(): bool
     {
-        $this->setQueueMessage(2, 2, '开始创建数据包安装脚本！');
+        $this->setQueueMessage(4, 1, '开始创建数据包安装脚本！');
         // 接收指定打包数据表
         $tables = str2arr(strtr($this->input->getArgument('table'), '|', ','));
         if (empty($tables) && $this->input->getOption('all')) {
@@ -106,10 +106,10 @@ class Package extends Command
         $phinx = PhinxExtend::create2package($tables);
         $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
-            $this->setQueueMessage(2, 2, '成功创建数据包安装脚本！', 1);
+            $this->setQueueMessage(4, 2, '成功创建数据包安装脚本！');
             return true;
         } else {
-            $this->setQueueMessage(2, 2, '创建数据包安装脚本失败！', 1);
+            $this->setQueueMessage(4, 2, '创建数据包安装脚本失败！');
             return false;
         }
     }

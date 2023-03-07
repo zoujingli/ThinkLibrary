@@ -259,13 +259,17 @@ CODE;
      */
     private static function _filename(string $class): string
     {
+        [$filename, $vers, $start] = [Str::snake($class), [], 20009999999999];
         if (count($files = glob(syspath('database/migrations/*.php'))) > 0) {
-            $name = basename(end($files));
-            $verint = date('Ymd') === substr($name, 0, 8) ? substr($name, 8, 6) : 0;
-            $version = str_pad(strval(intval($verint) + 1), 6, '0', STR_PAD_LEFT);
-        } else {
-            $version = '000001';
+            foreach ($files as $file) {
+                $vers[] = intval(substr($bname = pathinfo($file, 8), 0, 14));
+                if ($filename === substr($bname, 15) && unlink($file)) {
+                    echo " * Notify: Class {$class} file has been replaced." . PHP_EOL;
+                }
+            }
+            $version = min($vers) - 1;
         }
-        return date("Ymd{$version}_") . Str::snake($class) . '.php';
+        if (!isset($version) || $version > $start) $version = $start;
+        return "{$version}_{$filename}.php";
     }
 }
