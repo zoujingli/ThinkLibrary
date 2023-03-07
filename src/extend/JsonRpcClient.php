@@ -77,13 +77,19 @@ class JsonRpcClient
                 'content' => json_encode(['jsonrpc' => '2.0', 'method' => $method, 'params' => $params, 'id' => $this->id], JSON_UNESCAPED_UNICODE),
             ],
         ];
-        // Performs the HTTP POST
-        if ($fp = fopen($this->proxy, 'r', false, stream_context_create($options))) {
-            $response = '';
-            while ($line = fgets($fp)) $response .= trim($line) . "\n";
-            [, $response] = [fclose($fp), json_decode($response, true)];
-        } else {
-            throw new Exception(lang("Unable connect: %s", [$this->proxy]));
+        try {
+            // Performs the HTTP POST
+            if ($fp = fopen($this->proxy, 'r', false, stream_context_create($options))) {
+                $response = '';
+                while ($line = fgets($fp)) $response .= trim($line) . "\n";
+                [, $response] = [fclose($fp), json_decode($response, true)];
+            } else {
+                throw new Exception(lang("Unable connect: %s", [$this->proxy]));
+            }
+        } catch (Exception $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage());
         }
         // Compatible with normal
         if (isset($response['code']) && isset($response['info'])) {
