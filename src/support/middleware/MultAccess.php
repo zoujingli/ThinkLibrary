@@ -40,12 +40,6 @@ class MultAccess
     private $app;
 
     /**
-     * 应用名称
-     * @var string
-     */
-    private $appName;
-
-    /**
      * 应用路径
      * @var string
      */
@@ -64,8 +58,6 @@ class MultAccess
     public function __construct(App $app)
     {
         $this->app = $app;
-        $this->appName = $this->app->http->getName();
-        $this->appPath = $this->app->http->getPath();
     }
 
     /**
@@ -76,6 +68,7 @@ class MultAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
+        [$this->appName, $this->appPath, $this->appSpace] = ['', '', ''];
         if (!$this->parseMultiApp()) return $next($request);
         return $this->app->middleware->pipeline('app')->send($request)->then(function ($request) use ($next) {
             return $next($request);
@@ -90,9 +83,9 @@ class MultAccess
     {
         $defaultApp = $this->app->config->get('route.default_app') ?: 'index';
         [$script, $pathinfo] = [$this->scriptName(), $this->app->request->pathinfo()];
-        if ($this->appName || ($script && !in_array($script, ['index', 'router', 'think']))) {
+        if ($script && !in_array($script, ['index', 'router', 'think'])) {
             $this->app->request->setPathinfo(preg_replace("#^{$script}\.php(/|\.|$)#i", '', $pathinfo) ?: '/');
-            return $this->setMultiApp($this->appName ?: $script, true);
+            return $this->setMultiApp($script, true);
         } else {
             // 域名绑定处理
             $domains = $this->app->config->get('app.domain_bind', []);
@@ -112,15 +105,16 @@ class MultAccess
                 $appName = $appmap['*'];
             } else {
                 $appName = $name ?: $defaultApp;
-                if (!isset($addons[$appName]) && !is_dir($this->appPath ?: $this->app->getBasePath() . $appName)) {
+                if (!isset($addons[$appName]) && !is_dir($this->app->getBasePath() . $appName)) {
                     return $this->app->config->get('app.app_express', false) && $this->setMultiApp($defaultApp, false);
                 }
             }
             // 插件绑定处理
-            $this->app->config->set(['view_path' => ''], 'view');
             if (isset($addons[$appName])) {
                 [$this->appPath, $this->appSpace] = [$addons[$appName]['path'], $addons[$appName]['space']];
                 $this->app->config->set(['view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR], 'view');
+            } else {
+                $this->app->config->set(['view_path' => ''], 'view');
             }
             if ($name) {
                 $this->app->request->setRoot('/' . $name);
@@ -150,7 +144,7 @@ class MultAccess
     private function setMultiApp(string $appName, bool $appBind): bool
     {
         if (is_dir($this->appPath = $this->appPath ?: syspath("app/{$appName}/"))) {
-            $this->app->setNamespace($this->appSpace = $this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
+            $this->app->setNamespace($this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
             $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
             return $this->loadMultiApp($this->appPath);
         } else {

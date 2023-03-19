@@ -81,7 +81,7 @@ class Library extends Service
             }]);
 
             // 判断访问模式兼容处理
-            if ($request->isCli()) {
+            if ($this->app->runningInConsole()) {
                 // 兼容 CLI 访问控制器
                 if (empty($_SERVER['REQUEST_URI']) && isset($_SERVER['argv'][1])) {
                     $request->setPathinfo($_SERVER['argv'][1]);
@@ -109,7 +109,7 @@ class Library extends Service
         }
 
         // 终端 HTTP 访问时特殊处理
-        if (!$this->app->request->isCli()) {
+        if (!$this->app->runningInConsole()) {
 
             // 初始化会话和语言包
             $isApiRequest = $this->app->request->header('api-token', '') !== '';

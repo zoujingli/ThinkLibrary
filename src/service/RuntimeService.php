@@ -23,6 +23,7 @@ use think\admin\support\Route;
 use think\admin\support\Url;
 use think\App;
 use think\Container;
+use think\Request;
 use think\Response;
 
 /**
@@ -145,9 +146,13 @@ class RuntimeService
      */
     public static function push(): string
     {
-        self::set('product'); // 切换运行模式
         $connection = Library::$sapp->db->getConfig('default');
         Library::$sapp->console->call('optimize:schema', ["--connection={$connection}"]);
+//        foreach (ModuleService::getModules() as $module) {
+//            $path = syspath("runtime/{$module}");
+//            file_exists($path) && is_dir($path) || mkdir($path, 0755, true);
+//            Library::$sapp->console->call('optimize:route', [$module]);
+//        }
         return $connection;
     }
 
@@ -202,12 +207,13 @@ class RuntimeService
     /**
      * 初始化主程序
      * @param ?\think\App $app
+     * @param ?\think\Request $request
      * @return \think\Response
      */
-    public static function doWebsiteInit(?App $app = null): Response
+    public static function doWebsiteInit(?App $app = null, ?Request $request = null): Response
     {
         $http = static::init($app)->http;
-        ($response = $http->run())->send();
+        ($response = $http->run($request))->send();
         $http->end($response);
         return $response;
     }

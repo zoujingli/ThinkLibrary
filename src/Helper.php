@@ -68,7 +68,7 @@ abstract class Helper
         $this->class = $class;
         // 计算指定输出格式
         $output = $app->request->request('output', 'default');
-        $method = $app->request->method() ?: ($app->request->isCli() ? 'cli' : 'nil');
+        $method = $app->request->method() ?: ($app->runningInConsole() ? 'cli' : 'nil');
         $this->output = strtolower("{$method}.{$output}");
     }
 
