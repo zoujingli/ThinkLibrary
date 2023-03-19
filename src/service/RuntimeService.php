@@ -63,7 +63,7 @@ class RuntimeService
      * @param ?\think\App $app
      * @return App
      */
-    private static function init(?App $app = null): App
+    public static function init(?App $app = null): App
     {
         // 替换 ThinkPHP 地址，并初始化运行环境
         Library::$sapp = $app ?: Container::getInstance()->make(App::class);
