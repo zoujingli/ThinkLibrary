@@ -30,20 +30,31 @@ use think\admin\Service;
  */
 class ProcessService extends Service
 {
+
     /**
-     * 生成 Think 脚本
+     * 生成 PHP 指令
+     * @param string $args
+     * @return string
+     */
+    public static function php(string $args = ''): string
+    {
+        return static::getPhpExec() . ' ' . $args;
+    }
+
+    /**
+     * 生成 Think 指令
      * @param string $args 指令参数
      * @param boolean $simple 仅返回内容
      * @return string
      */
     public static function think(string $args = '', bool $simple = false): string
     {
-        $command = syspath("think {$args}");
+        $command = syspath('think') . ' ' . $args;
         return $simple ? $command : static::getPhpExec() . " {$command}";
     }
 
     /**
-     * 生成 Composer 脚本
+     * 生成 Composer 指令
      * @param string $args 参数
      * @return string
      */
