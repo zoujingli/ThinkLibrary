@@ -109,6 +109,7 @@ class Publish extends Command
                 // 生成组件版本
                 $config = $package['extra']['config'] ?? [];
                 $versions[$package['name']] = [
+                    'type'        => $config['type'] ?? 'plugin',
                     'name'        => $config['name'] ?? ($package['name'] ?? ''),
                     'icon'        => $config['icon'] ?? '',
                     'cover'       => $config['cover'] ?? '',
