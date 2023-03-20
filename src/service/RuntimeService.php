@@ -146,13 +146,9 @@ class RuntimeService
      */
     public static function push(): string
     {
+        self::set('product');
         $connection = Library::$sapp->db->getConfig('default');
         Library::$sapp->console->call('optimize:schema', ["--connection={$connection}"]);
-//        foreach (ModuleService::getModules() as $module) {
-//            $path = syspath("runtime/{$module}");
-//            file_exists($path) && is_dir($path) || mkdir($path, 0755, true);
-//            Library::$sapp->console->call('optimize:route', [$module]);
-//        }
         return $connection;
     }
 
