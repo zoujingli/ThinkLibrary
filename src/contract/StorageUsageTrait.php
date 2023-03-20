@@ -70,9 +70,9 @@ trait StorageUsageTrait
 
     /**
      * 获取对象实例
-     * @return \think\admin\contract\StorageInterface
+     * @return static
      */
-    public static function instance(): StorageInterface
+    public static function instance()
     {
         /** @var \think\admin\contract\StorageInterface */
         return Container::getInstance()->make(static::class);
