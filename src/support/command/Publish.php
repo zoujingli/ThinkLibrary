@@ -107,9 +107,10 @@ class Publish extends Command
             $packages = json_decode(@file_get_contents($file), true);
             foreach ($packages['packages'] ?? $packages as $package) {
                 // 生成组件版本
+                $type = $package['type'] ?? '';
                 $config = $package['extra']['config'] ?? [];
                 $versions[$package['name']] = [
-                    'type'        => $config['type'] ?? 'plugin',
+                    'type'        => $config['type'] ?? ($type === 'think-admin-plugin' ? 'plugin' : 'library'),
                     'name'        => $config['name'] ?? ($package['name'] ?? ''),
                     'icon'        => $config['icon'] ?? '',
                     'cover'       => $config['cover'] ?? '',
