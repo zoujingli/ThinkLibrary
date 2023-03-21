@@ -171,6 +171,10 @@ class PhinxExtend
             'tinyblob' => 'binary', 'blob' => 'binary', 'mediumblob' => 'binary', 'longblob' => 'binary', // 文件
             'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'integer', // 整型
         ];
+        // 字段默认长度
+        $lengths = [
+            'tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20
+        ];
         foreach ($config['tables'] as $table) {
 
             // 读取数据表 - 备注参数
@@ -212,7 +216,12 @@ CODE;
                     $data = array_merge(['limit' => intval($attr[2])], $data);
                 } elseif (preg_match('/(tinyint|smallint|mediumint|int|bigint)\((\d+)\)/', $field['type'], $attr)) {
                     $type = $types[$attr[1]] ?? 'integer';
-                    $data = array_merge(['limit' => intval($attr[2])], $data);
+                    $data = array_merge(['limit' => intval($attr[2])], $data, ['default' => intval($data['default'])]);
+                } elseif (preg_match('/(tinyint|smallint|mediumint|int|bigint)\s+unsigned/i', $field['type'], $attr)) {
+                    $type = $types[$attr[1]] ?? 'integer';
+                    if (isset($lengths[$attr[1]])) {
+                        $data = array_merge(['limit' => $lengths[$attr[1]]], $data);
+                    }
                     $data['default'] = intval($data['default']);
                 } elseif (preg_match('/(float|decimal)\((\d+),(\d+)\)/', $field['type'], $attr)) {
                     $type = $types[$attr[1]] ?? 'decimal';
