@@ -52,7 +52,7 @@ class Package extends Command
         try {
             // 创建数据库迁移脚本目录
             $dirname = syspath('database/migrations');
-            file_exists($dirname) or mkdir($dirname, 0755, true);
+            file_exists($dirname) or mkdir($dirname, 0777, true);
             // 开始创建数据库迁移脚本
             $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
             if ($this->createPackage() && $this->createScheme()) {

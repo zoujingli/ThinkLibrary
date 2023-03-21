@@ -55,7 +55,7 @@ class ToolsExtend
         foreach ($files as $target) {
             if ($force || !file_exists($todir . $target)) {
                 $dir = dirname($todir . $target);
-                file_exists($dir) or mkdir($dir, 0755, true);
+                file_exists($dir) or mkdir($dir, 0777, true);
                 copy($frdir . $target, $todir . $target);
             }
             // 删除来源文件

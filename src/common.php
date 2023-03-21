@@ -399,7 +399,7 @@ if (!function_exists('trace_file')) {
     function trace_file(Exception $exception): bool
     {
         $path = Library::$sapp->getRuntimePath() . 'trace';
-        if (!file_exists($path)) mkdir($path, 0755, true);
+        if (!file_exists($path)) mkdir($path, 0777, true);
         $name = substr($exception->getFile(), strlen(syspath()));
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
         $class = get_class($exception);
