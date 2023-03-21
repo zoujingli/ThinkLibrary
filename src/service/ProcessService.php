@@ -26,9 +26,8 @@ use think\admin\Service;
 
 /**
  * 系统进程管理服务
- * Class ProcessService
+ * @class ProcessService
  * @package think\admin\service
- * @method static void thinkCreate(string $args, int $usleep = 0)
  */
 class ProcessService extends Service
 {
@@ -63,7 +62,7 @@ class ProcessService extends Service
     public static function composer(string $args = ''): string
     {
         static $comExec;
-        if (empty($comExec) && self::isfile($comExec = self::getRunVar('com'))) {
+        if (empty($comExec) && self::isFile($comExec = self::getRunVar('com'))) {
             $comExec = self::getPhpExec() . ' ' . $comExec;
         }
         $root = Library::$sapp->getRootPath();
@@ -97,7 +96,7 @@ class ProcessService extends Service
      */
     public static function create(string $command, int $usleep = 0)
     {
-        if (static::iswin()) {
+        if (static::isWin()) {
             static::exec(__DIR__ . "/bin/console.exe {$command}");
         } else {
             static::exec("{$command} > /dev/null 2>&1 &");
@@ -114,7 +113,7 @@ class ProcessService extends Service
     public static function query(string $cmd, string $name = 'php.exe'): array
     {
         $list = [];
-        if (static::iswin()) {
+        if (static::isWin()) {
             $lines = static::exec("wmic process where name=\"{$name}\" get processid,CommandLine", true);
             foreach ($lines as $line) if (is_numeric(stripos($line, $cmd))) {
                 $attr = explode(' ', trim(preg_replace('#\s+#', ' ', $line)));
@@ -132,13 +131,13 @@ class ProcessService extends Service
     }
 
     /**
-     * 关闭独立进程
+     * 关闭指定进程
      * @param integer $pid 进程号
      * @return boolean
      */
     public static function close(int $pid): bool
     {
-        if (static::iswin()) {
+        if (static::isWin()) {
             static::exec("wmic process {$pid} call terminate");
         } else {
             static::exec("kill -9 {$pid}");
@@ -158,37 +157,6 @@ class ProcessService extends Service
         $process->setWorkingDirectory(Library::$sapp->getRootPath())->run();
         $output = str_replace("\r\n", "\n", CodeExtend::text2utf8($process->getOutput()));
         return $outarr ? explode("\n", $output) : trim($output);
-    }
-
-    /**
-     * 判断系统类型
-     * @return boolean
-     */
-    public static function iswin(): bool
-    {
-        return defined('PHP_WINDOWS_VERSION_BUILD');
-    }
-
-    /**
-     * 检查文件是否存在
-     * @param string $file 文件路径
-     * @return boolean
-     */
-    public static function isfile(string $file): bool
-    {
-        try {
-            return $file !== '' && is_file($file);
-        } catch (\Error|\Exception $exception) {
-            try {
-                if (self::iswin()) {
-                    return self::exec("if exist \"{$file}\" echo 1") === '1';
-                } else {
-                    return self::exec("if [ -f \"{$file}\" ];then echo 1;fi") === '1';
-                }
-            } catch (\Error|\Exception $exception) {
-                return false;
-            }
-        }
     }
 
     /**
@@ -226,10 +194,41 @@ class ProcessService extends Service
     {
         static $phpExec;
         if ($phpExec) return $phpExec;
-        if (self::isfile($phpExec = self::getRunVar('php'))) return $phpExec;
+        if (self::isFile($phpExec = self::getRunVar('php'))) return $phpExec;
         $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
         $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
-        return self::isfile($phpExec) ? $phpExec : $phpExec = 'php';
+        return self::isFile($phpExec) ? $phpExec : $phpExec = 'php';
+    }
+
+    /**
+     * 判断系统类型
+     * @return boolean
+     */
+    public static function isWin(): bool
+    {
+        return defined('PHP_WINDOWS_VERSION_BUILD');
+    }
+
+    /**
+     * 检查文件是否存在
+     * @param string $file 文件路径
+     * @return boolean
+     */
+    public static function isFile(string $file): bool
+    {
+        try {
+            return $file !== '' && is_file($file);
+        } catch (\Error|\Exception $exception) {
+            try {
+                if (self::isWin()) {
+                    return self::exec("if exist \"{$file}\" echo 1") === '1';
+                } else {
+                    return self::exec("if [ -f \"{$file}\" ];then echo 1;fi") === '1';
+                }
+            } catch (\Error|\Exception $exception) {
+                return false;
+            }
+        }
     }
 
     /**
@@ -247,4 +246,5 @@ class ProcessService extends Service
             throw new Exception("method not exists: ProcessService::{$method}()");
         }
     }
+
 }

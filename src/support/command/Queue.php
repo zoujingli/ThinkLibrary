@@ -127,13 +127,13 @@ class Queue extends Command
         $command = "php -S {$host}:{$port} -t {$root} {$root}router.php";
         $this->output->comment(">$ {$command}");
         if (count($result = $this->process->query($command)) > 0) {
-            if ($this->process->iswin()) $this->process->exec("start http://{$host}:{$port}");
+            if ($this->process->isWin()) $this->process->exec("start http://{$host}:{$port}");
             $this->output->writeln("># WebServer process already exist for pid {$result[0]['pid']}");
         } else {
             $this->process->create($command, 2000);
             if (count($result = $this->process->query($command)) > 0) {
                 $this->output->writeln("># WebServer process started successfully for pid {$result[0]['pid']}");
-                if ($this->process->iswin()) $this->process->exec("start http://{$host}:{$port}");
+                if ($this->process->isWin()) $this->process->exec("start http://{$host}:{$port}");
             } else {
                 $this->output->writeln('># WebServer process failed to start');
             }
