@@ -19,6 +19,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use Symfony\Component\Process\Process;
+use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\Library;
 use think\admin\Service;
@@ -27,6 +28,7 @@ use think\admin\Service;
  * 系统进程管理服务
  * Class ProcessService
  * @package think\admin\service
+ * @method static void thinkCreate(string $args, int $usleep = 0)
  */
 class ProcessService extends Service
 {
@@ -69,6 +71,16 @@ class ProcessService extends Service
     }
 
     /**
+     * 创建 Think 进程
+     * @param string $args 执行参数
+     * @param integer $usleep 延时时间
+     */
+    public static function thinkExec(string $args, int $usleep = 0)
+    {
+        static::create(static::think($args), $usleep);
+    }
+
+    /**
      * 检查 Think 进程
      * @param string $args 执行参数
      * @return array
@@ -76,16 +88,6 @@ class ProcessService extends Service
     public static function thinkQuery(string $args): array
     {
         return static::query(static::think($args, true));
-    }
-
-    /**
-     * 创建 Think 进程
-     * @param string $args 执行参数
-     * @param integer $usleep 延时时间
-     */
-    public static function thinkCreate(string $args, int $usleep = 0)
-    {
-        static::create(static::think($args), $usleep);
     }
 
     /**
@@ -228,5 +230,21 @@ class ProcessService extends Service
         $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
         $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
         return self::isfile($phpExec) ? $phpExec : $phpExec = 'php';
+    }
+
+    /**
+     * 静态兼容处理
+     * @param string $method
+     * @param array $arguments
+     * @return void
+     * @throws \think\admin\Exception
+     */
+    public static function __callStatic(string $method, array $arguments)
+    {
+        if ($method === 'thinkCreate') {
+            self::thinkExec(...$arguments);
+        } else {
+            throw new Exception("method not exists: ProcessService::{$method}()");
+        }
     }
 }

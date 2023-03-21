@@ -180,12 +180,12 @@ class Queue extends Command
         if (count($result = $this->process->thinkQuery(static::QUEUE_LISTEN)) > 0) {
             if (file_exists($lock = syspath('runtime/cache/time.queue')) && intval(file_get_contents($lock)) + 60 < time()) {
                 $this->output->writeln("># The task monitoring delay has exceeded 60 seconds, and the monitoring will be restarted.");
-                $this->process->close(intval($result[0]['pid'])) && $this->process->thinkCreate(static::QUEUE_LISTEN, 1000);
+                $this->process->close(intval($result[0]['pid'])) && $this->process->thinkExec(static::QUEUE_LISTEN, 1000);
             } else {
                 $this->output->writeln("># Queue daemons already exist for pid {$result[0]['pid']}");
             }
         } else {
-            $this->process->thinkCreate(static::QUEUE_LISTEN, 1000);
+            $this->process->thinkExec(static::QUEUE_LISTEN, 1000);
             if (count($result = $this->process->thinkQuery(static::QUEUE_LISTEN)) > 0) {
                 $this->output->writeln("># Queue daemons started successfully for pid {$result[0]['pid']}");
             } else {
@@ -283,7 +283,7 @@ class Queue extends Command
                 if (count($this->process->thinkQuery($args)) > 0) {
                     $this->output->writeln("># Already in progress -> [{$queue['code']}] {$queue['title']}");
                 } else {
-                    $this->process->thinkCreate($args);
+                    $this->process->thinkExec($args);
                     $this->output->writeln("># Created new process -> [{$queue['code']}] {$queue['title']}");
                 }
             } catch (Exception $exception) {
