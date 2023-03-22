@@ -151,13 +151,16 @@ class ProcessService extends Service
     /**
      * 立即执行指令
      * @param string $command 执行指令
-     * @param boolean|array $outarr 返回类型
+     * @param boolean $outarr 返回数组
+     * @param ?callable $callable 逐行处理
      * @return string|array
      */
-    public static function exec(string $command, $outarr = false)
+    public static function exec(string $command, bool $outarr = false, ?callable $callable = null)
     {
-        $process = Process::fromShellCommandline($command);
-        $process->setWorkingDirectory(Library::$sapp->getRootPath())->run();
+        $process = Process::fromShellCommandline($command)->setWorkingDirectory(Library::$sapp->getRootPath());
+        $process->run(is_callable($callable) ? static function ($type, $text) use ($callable, $process) {
+            call_user_func($callable, $process, $type, trim(CodeExtend::text2utf8($text))) === true && $process->stop();
+        } : null);
         $output = str_replace("\r\n", "\n", CodeExtend::text2utf8($process->getOutput()));
         return $outarr ? explode("\n", $output) : trim($output);
     }
