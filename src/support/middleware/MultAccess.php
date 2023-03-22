@@ -68,7 +68,7 @@ class MultAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-        [$this->appName, $this->appPath, $this->appSpace] = ['', '', ''];
+        [$this->appPath, $this->appSpace] = ['', ''];
         if (!$this->parseMultiApp()) return $next($request);
         return $this->app->middleware->pipeline('app')->send($request)->then(function ($request) use ($next) {
             return $next($request);
