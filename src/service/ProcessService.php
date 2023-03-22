@@ -72,7 +72,7 @@ class ProcessService extends Service
     /**
      * 创建 Think 进程
      * @param string $args 执行参数
-     * @param integer $usleep 延时时间
+     * @param integer $usleep 延时等待
      * @param boolean $doQuery 查询进程
      * @return array
      */
