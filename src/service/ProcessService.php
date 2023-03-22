@@ -151,7 +151,7 @@ class ProcessService extends Service
     /**
      * 立即执行指令
      * @param string $command 执行指令
-     * @param boolean|array $outarr 返回类型
+     * @param boolean|array $outarr 返回数组
      * @return string|array
      */
     public static function exec(string $command, $outarr = false)
