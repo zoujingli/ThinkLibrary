@@ -65,9 +65,7 @@ class MessageService extends Service
 
     /**
      * @return $this
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     protected function initialize(): MessageService
     {
@@ -140,7 +138,7 @@ class MessageService extends Service
     public function sendChinaSms($phone, $content, $productid = '676767'): bool
     {
         $tkey = date("YmdHis");
-        $result = HttpExtend::get('http://www.ztsms.cn/sendNSms.do', [
+        $result = HttpExtend::get('http' . '://www.ztsms.cn/sendNSms.do', [
             'tkey'      => $tkey,
             'mobile'    => $phone,
             'content'   => $content,
@@ -162,9 +160,7 @@ class MessageService extends Service
      * @param integer $wait 等待时间
      * @param string $type 短信模板
      * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public function sendChinaSmsByCode($phone, int $wait = 120, string $type = 'sms_reg_template'): array
     {
@@ -206,7 +202,7 @@ class MessageService extends Service
     public function queryChinaSmsBalance(): array
     {
         $tkey = date("YmdHis");
-        $result = HttpExtend::get('http://www.ztsms.cn/balanceN.do', [
+        $result = HttpExtend::get('http' . '://www.ztsms.cn/balanceN.do', [
             'username' => $this->chinaUsername, 'tkey' => $tkey,
             'password' => md5(md5($this->chinaPassword) . $tkey),
         ]);
@@ -245,14 +241,12 @@ class MessageService extends Service
      * @param integer|string $mobile 手机号码
      * @param string $content 发送内容
      * @return boolean
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public function sendGlobeSms($code, $mobile, string $content): bool
     {
         $tkey = date("YmdHis");
-        $result = HttpExtend::get('http://intl.zthysms.com/intSendSms.do', [
+        $result = HttpExtend::get('http' . '://intl.zthysms.com/intSendSms.do', [
             'tkey'     => $tkey, 'code' => $code, 'mobile' => $mobile,
             'content'  => $content, 'username' => sysconf('sms_zt_username2|raw'),
             'password' => md5(md5(sysconf('sms_zt_password2|raw')) . $tkey),
@@ -270,7 +264,7 @@ class MessageService extends Service
     public function queryGlobeSmsBalance(): array
     {
         $tkey = date("YmdHis");
-        $result = HttpExtend::get('http://intl.zthysms.com/intBalance.do', [
+        $result = HttpExtend::get('http' . '://intl.zthysms.com/intBalance.do', [
             'username' => $this->globeUsername, 'tkey' => $tkey, 'password' => md5(md5($this->globePassword) . $tkey),
         ]);
         if (!is_numeric($result) && ($state = intval($result)) && isset($this->globeMessageMap[$state])) {
