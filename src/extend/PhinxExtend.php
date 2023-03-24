@@ -237,7 +237,7 @@ CODE;
                 $params = static::_arr2str(['name' => "idx_{$index['Table']}_{$index["Column_name"]}"]);
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
-            $content .= "{$br}\t\t->save();{$br}{$br}\t\t// 修改主键长度";
+            $content .= "{$br}\t\t->create();{$br}{$br}\t\t// 修改主键长度";
             $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','integer',['limit'=>20,'identity'=>true]);";
             $content .= "{$br}\t}{$br}{$br}";
         }
