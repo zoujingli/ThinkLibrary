@@ -62,22 +62,22 @@ class RuntimeService
      * 运行缓存数据
      * @var array
      */
-    private static $data = [];
+    private static $mdata = [];
 
     /**
-     * 读写运行缓存数组
+     * 读写内存缓存数据
      * @param null|string $name 数据名称
      * @param null|mixed $value 数据内容
      * @return null|array|mixed 返回内容
      */
-    public static function data(?string $name = null, $value = null)
+    public static function mdata(?string $name = null, $value = null)
     {
         if ($name === '' && $value === '') {
-            return self::$data = [];
+            return self::$mdata = [];
         } elseif (is_null($value)) {
-            return is_null($name) ? self::$data : (self::$data[$name] ?? null);
+            return is_null($name) ? self::$mdata : (self::$mdata[$name] ?? null);
         } else {
-            return self::$data[$name] = $value;
+            return self::$mdata[$name] = $value;
         }
     }
 
