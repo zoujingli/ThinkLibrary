@@ -61,9 +61,6 @@ class TxcosStorage implements StorageInterface
     /**
      * 初始化入口
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function init()
     {

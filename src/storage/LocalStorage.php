@@ -18,7 +18,6 @@ declare (strict_types=1);
 
 namespace think\admin\storage;
 
-use Exception;
 use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
 
@@ -33,9 +32,7 @@ class LocalStorage implements StorageInterface
 
     /**
      * 初始化入口
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     protected function init()
     {
@@ -68,7 +65,7 @@ class LocalStorage implements StorageInterface
             if (file_put_contents($path, $file)) {
                 return $this->info($name, $safe, $attname);
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
         }
         return [];
     }
