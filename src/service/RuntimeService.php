@@ -59,6 +59,29 @@ class RuntimeService
     private static $env = [];
 
     /**
+     * 运行缓存数据
+     * @var array
+     */
+    private static $data = [];
+
+    /**
+     * 读写运行缓存数组
+     * @param null|string $name 数据名称
+     * @param null|mixed $value 数据内容
+     * @return null|array|mixed 返回内容
+     */
+    public static function data(?string $name = null, $value = null)
+    {
+        if ($name === '' && $value === '') {
+            return self::$data = [];
+        } elseif (is_null($value)) {
+            return is_null($name) ? self::$data : (self::$data[$name] ?? null);
+        } else {
+            return self::$data[$name] = $value;
+        }
+    }
+
+    /**
      * 系统服务初始化
      * @param ?\think\App $app
      * @return App
