@@ -153,7 +153,7 @@ class LocalStorage implements StorageInterface
      */
     public function upload(): string
     {
-        return url('admin/api.upload/file')->build();
+        return url('admin/api.upload/file', [], false, true)->build();
     }
 
     /**
