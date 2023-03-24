@@ -61,9 +61,7 @@ class InterfaceService extends Service
      * 接口服务初始化
      * InterfaceService constructor.
      * @param App $app
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public function __construct(App $app)
     {
