@@ -37,6 +37,14 @@
       "think\\admin\\": "src"
     }
   },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "think\\admin\\tests\\": "tests"
+    }
+  },
   "extra": {
     "think": {
       "services": [
