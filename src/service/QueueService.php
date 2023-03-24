@@ -100,9 +100,6 @@ class QueueService extends Service
      * @param integer $loops 循环时间
      * @return $this
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function addCleanQueue(int $loops = 3600): QueueService
     {
@@ -119,33 +116,36 @@ class QueueService extends Service
      * @param integer $loops 循环等待时间
      * @return $this
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public static function register(string $title, string $command, int $later = 0, array $data = [], int $rscript = 0, int $loops = 0): QueueService
     {
-        $map = [['title', '=', $title], ['status', 'in', [1, 2]]];
-        if (empty($rscript) && ($queue = SystemQueue::mk()->where($map)->find())) {
-            throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
+        try {
+            $map = [['title', '=', $title], ['status', 'in', [1, 2]]];
+            if (empty($rscript) && ($queue = SystemQueue::mk()->where($map)->find())) {
+                throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
+            }
+            $code = CodeExtend::uniqidDate(16, 'Q');
+            SystemQueue::mk()->failException()->insert([
+                'code'       => $code,
+                'title'      => $title,
+                'command'    => $command,
+                'attempts'   => 0,
+                'rscript'    => intval(boolval($rscript)),
+                'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
+                'exec_time'  => $later > 0 ? time() + $later : time(),
+                'enter_time' => 0,
+                'outer_time' => 0,
+                'loops_time' => $loops,
+                'create_at'  => date('Y-m-d H:i:s'),
+            ]);
+            $that = static::instance([], true)->initialize($code);
+            $that->progress(1, '>>> 任务创建成功 <<<', '0.00');
+            return $that;
+        } catch (Exception $exception) {
+            throw $exception;
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
         }
-        $code = CodeExtend::uniqidDate(16, 'Q');
-        SystemQueue::mk()->failException()->insert([
-            'code'       => $code,
-            'title'      => $title,
-            'command'    => $command,
-            'attempts'   => 0,
-            'rscript'    => intval(boolval($rscript)),
-            'exec_data'  => json_encode($data, JSON_UNESCAPED_UNICODE),
-            'exec_time'  => $later > 0 ? time() + $later : time(),
-            'enter_time' => 0,
-            'outer_time' => 0,
-            'loops_time' => $loops,
-            'create_at'  => date('Y-m-d H:i:s'),
-        ]);
-        $that = static::instance([], true)->initialize($code);
-        $that->progress(1, '>>> 任务创建成功 <<<', '0.00');
-        return $that;
     }
 
     /**

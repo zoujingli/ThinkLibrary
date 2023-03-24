@@ -96,9 +96,7 @@ class AdminService extends Service
      * @param array $data
      * @param boolean $replace
      * @return boolean|integer
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public static function setUserData(array $data, bool $replace = false)
     {
@@ -109,9 +107,7 @@ class AdminService extends Service
     /**
      * 获取用户主题名称
      * @return string
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public static function getUserTheme(): string
     {
@@ -123,9 +119,7 @@ class AdminService extends Service
      * 设置用户主题名称
      * @param string $theme 主题名称
      * @return boolean|integer
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public static function setUserTheme(string $theme)
     {

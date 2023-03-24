@@ -49,9 +49,7 @@ class ZtSmsService extends Service
 
     /**
      * 短信服务初始化
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     protected function initialize()
     {
@@ -96,9 +94,7 @@ class ZtSmsService extends Service
      * @param integer $wait 等待时间
      * @param string $template 模板编码
      * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public function sendVerifyCode(string $phone, int $wait = 120, string $template = 'ztsms.register_verify'): array
     {
