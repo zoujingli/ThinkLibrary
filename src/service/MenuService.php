@@ -57,7 +57,7 @@ class MenuService extends Service
     public static function getTree(): array
     {
         $menus = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray();
-        if (function_exists('admin_menu_filter')) admin_menu_filter($menus);
+        if (function_exists('admin_menu_filter')) $menus = call_user_func('admin_menu_filter', $menus);
         return static::filter(DataExtend::arr2tree($menus));
     }
 
