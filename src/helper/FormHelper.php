@@ -39,6 +39,7 @@ class FormHelper extends Helper
      * @param mixed $where 限定更新条件
      * @param array $edata 表单扩展数据
      * @return void|array|boolean
+     * @throws \think\admin\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
