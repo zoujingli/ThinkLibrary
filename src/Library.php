@@ -72,7 +72,7 @@ class Library extends Service
         // 动态应用运行参数
         RuntimeService::apply();
 
-        // 服务初始化处理
+        // 请求初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
 
             // 配置默认输入过滤
@@ -95,6 +95,10 @@ class Library extends Service
             $this->app->middleware->add(MultAccess::class);
         });
 
+        // 请求结束后处理
+        $this->app->event->listen('HttpEnd', function () {
+            RuntimeService::data('', '');
+        });
     }
 
     /**
