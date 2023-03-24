@@ -49,9 +49,6 @@ trait StorageUsageTrait
      * 存储器构造方法
      * @param \think\App $app
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
      */
     public function __construct(App $app)
     {

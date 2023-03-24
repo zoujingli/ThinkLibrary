@@ -57,10 +57,10 @@ use think\Model;
 class SystemService extends Service
 {
     /**
-     * 配置数据缓存
+     * 配置缓存数据
      * @var array
      */
-    private static $data = [];
+    private static $config = [];
 
     /**
      * 生成静态路径链接
@@ -101,11 +101,11 @@ class SystemService extends Service
      * @param string $name 配置名称
      * @param mixed $value 配置内容
      * @return integer|string
-     * @throws \think\db\exception\DbException
+     * @throws \think\admin\Exception
      */
     public static function set(string $name, $value = '')
     {
-        static::$data = [];
+        static::$config = [];
         [$type, $field] = static::_parse($name);
         if (is_array($value)) {
             $count = 0;
@@ -113,12 +113,14 @@ class SystemService extends Service
                 $count += static::set("{$field}.{$kk}", $vv);
             }
             return $count;
-        } else {
+        } else try {
             Library::$sapp->cache->delete('SystemConfig');
             $map = ['type' => $type, 'name' => $field];
             $data = array_merge($map, ['value' => $value]);
             $query = SystemConfig::mk()->master()->where($map);
             return (clone $query)->count() > 0 ? $query->update($data) : $query->insert($data);
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }
 
@@ -127,28 +129,30 @@ class SystemService extends Service
      * @param string $name
      * @param string $default
      * @return array|mixed|string
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public static function get(string $name = '', string $default = '')
     {
-        if (empty(static::$data)) {
-            SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) {
-                static::$data[$item['type']][$item['name']] = $item['value'];
-            });
-        }
-        [$type, $field, $outer] = static::_parse($name);
-        if (empty($name)) {
-            return static::$data;
-        } elseif (isset(static::$data[$type])) {
-            $group = static::$data[$type];
-            if ($outer !== 'raw') foreach ($group as $kk => $vo) {
-                $group[$kk] = htmlspecialchars(strval($vo));
+        try {
+            if (empty(static::$config)) {
+                SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) {
+                    static::$config[$item['type']][$item['name']] = $item['value'];
+                });
             }
-            return $field ? ($group[$field] ?? $default) : $group;
-        } else {
-            return $default;
+            [$type, $field, $outer] = static::_parse($name);
+            if (empty($name)) {
+                return static::$config;
+            } elseif (isset(static::$config[$type])) {
+                $group = static::$config[$type];
+                if ($outer !== 'raw') foreach ($group as $kk => $vo) {
+                    $group[$kk] = htmlspecialchars(strval($vo));
+                }
+                return $field ? ($group[$field] ?? $default) : $group;
+            } else {
+                return $default;
+            }
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }
 
@@ -159,25 +163,27 @@ class SystemService extends Service
      * @param string $key 更新条件查询主键
      * @param mixed $map 额外更新查询条件
      * @return boolean|integer 失败返回 false, 成功返回主键值或 true
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public static function save($query, array &$data, string $key = 'id', $map = [])
     {
-        $query = Helper::buildQuery($query)->master()->strict(false);
-        if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
-        $model = $query->where($map)->findOrEmpty();
-        // 当前操作方法描述
-        $action = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
-        // 写入或更新模型数据
-        if ($model->save($data) === false) return false;
-        // 模型自定义事件回调
-        if ($model instanceof \think\admin\Model) {
-            $model->$action(strval($model->getAttr($key)));
+        try {
+            $query = Helper::buildQuery($query)->master()->strict(false);
+            if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
+            $model = $query->where($map)->findOrEmpty();
+            // 当前操作方法描述
+            $action = $model->isExists() ? 'onAdminUpdate' : 'onAdminInsert';
+            // 写入或更新模型数据
+            if ($model->save($data) === false) return false;
+            // 模型自定义事件回调
+            if ($model instanceof \think\admin\Model) {
+                $model->$action(strval($model->getAttr($key)));
+            }
+            $data = $model->toArray();
+            return $model[$key] ?? true;
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
         }
-        $data = $model->toArray();
-        return $model[$key] ?? true;
     }
 
     /**
@@ -213,20 +219,23 @@ class SystemService extends Service
      * @param boolean $copy 是否复制
      * @param mixed $where 复制条件
      * @throws \think\admin\Exception
-     * @throws \think\db\exception\DbException
      */
     public static function copyTableStruct(string $from, string $create, array $tables = [], bool $copy = false, $where = [])
     {
-        if (empty($tables)) [$tables] = static::getTables();
-        if (!in_array($from, $tables)) {
-            throw new Exception("待复制的数据表 {$from} 不存在！");
-        }
-        if (!in_array($create, $tables)) {
-            Library::$sapp->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
-            if ($copy) {
-                $sql1 = Library::$sapp->db->name($from)->where($where)->buildSql(false);
-                Library::$sapp->db->query("INSERT INTO {$create} {$sql1}");
+        try {
+            if (empty($tables)) [$tables] = static::getTables();
+            if (!in_array($from, $tables)) {
+                throw new Exception("待复制的数据表 {$from} 不存在！");
             }
+            if (!in_array($create, $tables)) {
+                Library::$sapp->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
+                if ($copy) {
+                    $sql1 = Library::$sapp->db->name($from)->where($where)->buildSql(false);
+                    Library::$sapp->db->query("INSERT INTO {$create} {$sql1}");
+                }
+            }
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }
 
@@ -235,14 +244,16 @@ class SystemService extends Service
      * @param string $name
      * @param mixed $value
      * @return boolean
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\admin\Exception
      */
     public static function setData(string $name, $value)
     {
-        $data = ['name' => $name, 'value' => serialize($value)];
-        return static::save('SystemData', $data, 'name');
+        try {
+            $data = ['name' => $name, 'value' => serialize($value)];
+            return static::save('SystemData', $data, 'name');
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
+        }
     }
 
     /**
@@ -385,6 +396,12 @@ class SystemService extends Service
             'clearRuntime'  => 'clear',
             'checkRunMode'  => 'check',
         ];
+        switch (strtolower($method)) {
+            case 'setconfig':
+                return self::setData(...$arguments);
+            case 'getconfig':
+                return self::getData(...$arguments);
+        }
         if (isset($map[$method])) {
             return RuntimeService::{$map[$method]}(...$arguments);
         } else {

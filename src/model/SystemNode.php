@@ -23,6 +23,7 @@ use think\admin\Model;
 /**
  * 授权节点模型
  * Class SystemNode
+ * @mixin \think\db\Query
  * @package think\admin\model
  */
 class SystemNode extends Model
