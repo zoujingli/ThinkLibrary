@@ -18,6 +18,7 @@ declare (strict_types=1);
 
 namespace think\admin\extend;
 
+use think\admin\contract\StreamInterface;
 use think\Model;
 
 /**
@@ -25,7 +26,7 @@ use think\Model;
  * Class VirtualModel
  * @package think\admin\extend
  */
-class VirtualModel
+class VirtualModel extends \stdClass implements StreamInterface
 {
     /**
      * 虚拟模型模板
@@ -39,7 +40,7 @@ class VirtualModel
      */
     private $position;
 
-    public function stream_open($path, $mode, $options, &$opened_path): bool
+    public function stream_open(string $path, string $mode, int $options, ?string &$opened_path): bool
     {
         // 解析链接参数
         $attr = parse_url($path);
@@ -58,7 +59,7 @@ class VirtualModel
         return true;
     }
 
-    public function stream_read($count)
+    public function stream_read(int $count)
     {
         $content = substr($this->template, $this->position, $count);
         $this->position += strlen($content);
@@ -70,11 +71,11 @@ class VirtualModel
         return $this->position >= strlen($this->template);
     }
 
-    public function stream_cast()
+    public function stream_cast(int $cast_as)
     {
     }
 
-    public function stream_close()
+    public function stream_close(): void
     {
     }
 
@@ -83,17 +84,17 @@ class VirtualModel
         return true;
     }
 
-    public function stream_lock(): bool
+    public function stream_lock(int $operation): bool
     {
         return true;
     }
 
-    public function stream_set_option(): bool
+    public function stream_set_option(int $option, int $arg1, int $arg2): bool
     {
         return true;
     }
 
-    public function stream_metadata(): bool
+    public function stream_metadata(string $path, int $option, $value): bool
     {
         return true;
     }
@@ -108,12 +109,12 @@ class VirtualModel
         return $this->position;
     }
 
-    public function stream_truncate(): bool
+    public function stream_truncate(int $new_size): bool
     {
         return true;
     }
 
-    public function stream_seek(): bool
+    public function stream_seek(int $offset, int $whence = SEEK_SET): bool
     {
         return true;
     }
@@ -123,7 +124,7 @@ class VirtualModel
         return strlen($data);
     }
 
-    public function dir_opendir(): bool
+    public function dir_opendir(string $path, int $options): bool
     {
         return true;
     }
@@ -143,22 +144,27 @@ class VirtualModel
         return true;
     }
 
-    public function rmdir(): bool
+    public function mkdir(string $path, int $mode, int $options): bool
     {
         return true;
     }
 
-    public function rename(): bool
+    public function rmdir(string $path, int $options): bool
     {
         return true;
     }
 
-    public function unlink(): bool
+    public function rename(string $path_from, string $path_to): bool
     {
         return true;
     }
 
-    public function url_stat()
+    public function unlink(string $path): bool
+    {
+        return true;
+    }
+
+    public function url_stat(string $path, int $flags)
     {
         return stat(__FILE__);
     }
