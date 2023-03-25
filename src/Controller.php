@@ -241,14 +241,13 @@ class Controller extends stdClass
      * @param array $data 表单扩展数据
      * @return array|boolean
      * @throws \think\admin\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
      */
     protected function _form($dbQuery, string $template = '', string $field = '', $where = [], array $data = [])
     {
-        try {
-            return FormHelper::instance()->init($dbQuery, $template, $field, $where, $data);
-        } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage(), $exception->getCode());
-        }
+        return FormHelper::instance()->init($dbQuery, $template, $field, $where, $data);
     }
 
     /**
