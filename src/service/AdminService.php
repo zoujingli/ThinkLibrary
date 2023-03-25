@@ -224,19 +224,29 @@ class AdminService extends Service
      */
     public static function withUploadUnid(?string $uptoken = null): array
     {
-        if ($uptoken === '') return [0, []];
-        /** @var \think\Session $session */
-        $session = Library::$sapp->invokeClass(Session::class);
-        if (is_null($uptoken)) {
-            $session->setId(Library::$sapp->session->get('UploadSessionId'));
-            $session->init();
-            $unid = intval($session->get('UploadUploadUnid') ?: 0);
-            return [$unid, $session->get('UploadUploadExts', [])];
-        } else try {
-            $session->setId(CodeExtend::decrypt($uptoken, sysconf('data.jwtkey')));
-            $session->init();
-            if ($unid = intval($session->get('UploadUploadUnid') ?: 0)) {
-                Library::$sapp->session->set('UploadSessionId', $session->getId());
+        try {
+            if ($uptoken === '') return [0, []];
+            $session = Library::$sapp->session;
+            if (is_null($uptoken)) {
+                $sessid = Library::$sapp->session->get('UploadSessionId');
+                if (empty($sessid)) return [0, []];
+                if (Library::$sapp->session->getId() !== $sessid) {
+                    $session = Library::$sapp->invokeClass(Session::class);
+                    $session->setId($sessid);
+                    $session->init();
+                }
+                $unid = intval($session->get('UploadUploadUnid') ?: 0);
+            } else {
+                $sessid = CodeExtend::decrypt($uptoken, sysconf('data.jwtkey'));
+                if (empty($sessid)) return [0, []];
+                if (Library::$sapp->session->getId() !== $sessid) {
+                    $session = Library::$sapp->invokeClass(Session::class);
+                    $session->setId($sessid);
+                    $session->init();
+                }
+                if ($unid = intval($session->get('UploadUploadUnid') ?: 0)) {
+                    Library::$sapp->session->set('UploadSessionId', $session->getId());
+                }
             }
             return [$unid, $session->get('UploadUploadExts', [])];
         } catch (\Error|\Exception $exception) {
