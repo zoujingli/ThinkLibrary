@@ -19,6 +19,7 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use think\admin\Exception;
+use think\admin\extend\CodeExtend;
 use think\admin\extend\DataExtend;
 use think\admin\Library;
 use think\admin\model\SystemAuth;
@@ -26,6 +27,7 @@ use think\admin\model\SystemNode;
 use think\admin\model\SystemUser;
 use think\admin\Service;
 use think\helper\Str;
+use think\Session;
 
 /**
  * 系统权限管理服务
@@ -216,6 +218,47 @@ class AdminService extends Service
     }
 
     /**
+     * 获取会员上传配置
+     * @param ?string $uptoken
+     * @return array [unid,exts]
+     */
+    public static function withUploadUnid(?string $uptoken = null): array
+    {
+        if ($uptoken === '') return [0, []];
+        /** @var \think\Session $session */
+        $session = Library::$sapp->invokeClass(Session::class);
+        if (is_null($uptoken)) {
+            $session->setId(Library::$sapp->session->get('UploadSessionId'));
+            $session->init();
+            $unid = intval($session->get('UploadUploadUnid') ?: 0);
+            return [$unid, $session->get('UploadUploadExts', [])];
+        } else try {
+            $session->setId(CodeExtend::decrypt($uptoken, sysconf('data.jwtkey')));
+            $session->init();
+            if ($unid = intval($session->get('UploadUploadUnid') ?: 0)) {
+                Library::$sapp->session->set('UploadSessionId', $session->getId());
+            }
+            return [$unid, $session->get('UploadUploadExts', [])];
+        } catch (\Error|\Exception $exception) {
+            return [0, []];
+        }
+    }
+
+    /**
+     * 生成上传入口令牌
+     * @param integer $unid 会员编号
+     * @param string $exts 允许后缀(多个以英文逗号隔开)
+     * @return string
+     * @throws \think\admin\Exception
+     */
+    public static function withUploadToken(int $unid, string $exts = ''): string
+    {
+        Library::$sapp->session->set('UploadUploadUnid', $unid);
+        Library::$sapp->session->set('UploadUploadExts', str2arr(strtolower($exts)));
+        return CodeExtend::encrypt(Library::$sapp->session->getId(), sysconf('data.jwtkey'));
+    }
+
+    /**
      * 静态方法兼容(停时)
      * @param string $method
      * @param array $arguments
@@ -224,7 +267,7 @@ class AdminService extends Service
      */
     public static function __callStatic(string $method, array $arguments)
     {
-        if ($method === 'clearCache') {
+        if (strtolower($method) === 'clearCache') {
             return static::clear();
         } else {
             throw new Exception("method not exists: AdminService::{$method}()");
@@ -232,7 +275,7 @@ class AdminService extends Service
     }
 
     /**
-     * 对象方法兼容(停时)
+     * 对象方法兼容(临时)
      * @param string $method
      * @param array $arguments
      * @return bool
