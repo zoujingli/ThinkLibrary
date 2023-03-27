@@ -27,7 +27,8 @@ use think\Container;
 
 /**
  * 基础模型类
- * Class Model
+ * @class Model
+ * @mixin \think\db\Query
  * @package think\admin
  *
  * 模型日志记录
