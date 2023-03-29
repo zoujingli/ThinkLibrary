@@ -89,7 +89,7 @@ class JwtExtend
      * @param boolean $only 升级会话
      * @return string
      */
-    public static function getToken(?array $payload = null, ?string $jwtkey = null, ?bool $rejwt = null, bool $only = true): string
+    public static function token(?array $payload = null, ?string $jwtkey = null, ?bool $rejwt = null, bool $only = true): string
     {
         if (is_bool($rejwt)) static::$rejwt = $rejwt;
         if (is_null($payload)) $payload = self::$outData;
@@ -107,7 +107,7 @@ class JwtExtend
      * @return array
      * @throws \think\admin\Exception
      */
-    public static function verifyToken(string $token, ?string $jwtkey = null): array
+    public static function verify(string $token, ?string $jwtkey = null): array
     {
         $tokens = explode('.', $token);
         if (count($tokens) != 3) throw new Exception('数据解密失败！', 0, []);
@@ -255,7 +255,7 @@ class JwtExtend
      * 兼容历史方法
      * @param string $method
      * @param array $arguments
-     * @return array
+     * @return array|string
      * @throws \think\admin\Exception
      */
     public static function __callStatic(string $method, array $arguments)
@@ -265,6 +265,10 @@ class JwtExtend
                 return self::$inData;
             case 'getOutData': // 获取输出数据
                 return self::$outData;
+            case 'getToken': // 生成街道口令牌
+                return self::token(...$arguments);
+            case 'verifyToken': // 验证接口令牌
+                return self::verify(...$arguments);
             default:
                 throw new Exception("method not exists: JwtExtend::{$method}()");
         }

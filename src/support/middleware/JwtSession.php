@@ -67,7 +67,7 @@ class JwtSession
         // 处理 Jwt 请求，请求头存在 jwt-token 字段
         if (($token = $request->header('jwt-token', ''))) try {
             if (preg_match('#^\s*([\w\-]+\.[\w\-]+\.[\w\-]+)\s*$#', $token, $match)) {
-                if (($data = JwtExtend::verifyToken($match[1])) && !empty($data['sub'])) {
+                if (($data = JwtExtend::verify($match[1])) && !empty($data['sub'])) {
                     $sessionId = CodeExtend::decrypt($data['sub'], JwtExtend::jwtkey());
                 }
             } else {
