@@ -26,6 +26,7 @@ use think\admin\Library;
  * 接口 JWT 接口扩展
  * Class JwtExtend
  * @package think\admin\extend
+ * @method static array getInData() 获取输入数据
  */
 class JwtExtend
 {
@@ -41,6 +42,12 @@ class JwtExtend
         'HS384' => 'sha384',
         'HS512' => 'sha512'
     ];
+
+    /**
+     * 当前会话模式
+     * @var boolean
+     */
+    private static $olny = true;
 
     /**
      * 当前请求状态
@@ -68,7 +75,7 @@ class JwtExtend
 
     /**
      * 生成 jwt token
-     * @param array $payload jwt 载荷 格式如下非必须
+     * @param ?array $payload jwt 载荷 格式如下非必须
      * [
      *     'iss' => 'jwt_admin',               // 该JWT的签发者
      *     'iat' => time(),                    // 签发时间
@@ -79,14 +86,16 @@ class JwtExtend
      * ]
      * @param ?string $jwtkey 签名密钥
      * @param ?boolean $rejwt 输出令牌
+     * @param boolean $only 升级会话
      * @return string
      */
-    public static function getToken(array $payload, ?string $jwtkey = null, ?bool $rejwt = null): string
+    public static function getToken(?array $payload = null, ?string $jwtkey = null, ?bool $rejwt = null, bool $only = true): string
     {
-        is_bool($rejwt) && static::$rejwt = $rejwt;
+        if (is_bool($rejwt)) static::$rejwt = $rejwt;
+        if (is_null($payload)) $payload = self::$outData;
         $payload['sub'] = CodeExtend::encrypt(static::setJwtMode(), static::jwtkey());
         $base64header = CodeExtend::enSafe64(json_encode(static::header, JSON_UNESCAPED_UNICODE));
-        $base64payload = CodeExtend::enSafe64(json_encode($payload, JSON_UNESCAPED_UNICODE));
+        $base64payload = CodeExtend::enSafe64(json_encode($payload + ['jwt' => intval($only)], JSON_UNESCAPED_UNICODE));
         $signature = static::withSign($base64header . '.' . $base64payload, static::header['alg'], $jwtkey);
         return $base64header . '.' . $base64payload . '.' . $signature;
     }
@@ -132,7 +141,8 @@ class JwtExtend
             throw new Exception('不接收处理该TOKEN', 0, $payload);
         }
 
-        static::$isjwt = true;
+        static::$isjwt = !empty($payload['jwt']);
+        unset($payload['jwt']);
         return static::$inData = $payload;
     }
 
@@ -166,48 +176,13 @@ class JwtExtend
     }
 
     /**
-     * 输出模板变量
-     * @param \think\admin\Controller $class
-     * @param array $vars
-     * @return void
-     */
-    public static function fetch(Controller $class, array $vars = [])
-    {
-        $ignore = array_keys(get_class_vars(Controller::class));
-        foreach ($class as $name => $value) if (!in_array($name, $ignore)) {
-            if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
-                $vars[$name] = $value;
-            }
-        }
-        $class->success('获取变量成功！', $vars);
-    }
-
-    /**
-     * 获取请求数据
-     * @return array
-     */
-    public static function getInData(): array
-    {
-        return static::$inData;
-    }
-
-    /**
-     * 获取输出数据
-     * @return array
-     */
-    public static function getOutData(): array
-    {
-        return static::$outData;
-    }
-
-    /**
-     * 设置输出数据
+     * 设置输出数据并切换模式
      * @param array $data
      * @return array
      */
     public static function setOutData(array $data = []): array
     {
-        static::$rejwt = true;
+        self::$isjwt = true;
         return static::$outData = $data;
     }
 
@@ -236,15 +211,32 @@ class JwtExtend
     public static function setJwtMode(): string
     {
         if (isset(Library::$sapp->session)) {
-            if (!static::isJwtMode()) {
-                Library::$sapp->session->save(); // 保存原会话数据
-                Library::$sapp->session->regenerate(); // 切换新会话编号
+            if (self::$olny && !static::isJwtMode()) {
+                Library::$sapp->session->save();
+                Library::$sapp->session->regenerate();
                 Library::$sapp->session->set(self::skey, true);
             }
             return Library::$sapp->session->getId();
         } else {
             return md5(uniqid(strval(rand(0, 999))));
         }
+    }
+
+    /**
+     * 输出模板变量
+     * @param \think\admin\Controller $class
+     * @param array $vars
+     * @return void
+     */
+    public static function fetch(Controller $class, array $vars = [])
+    {
+        $ignore = array_keys(get_class_vars(Controller::class));
+        foreach ($class as $name => $value) if (!in_array($name, $ignore)) {
+            if (is_array($value) || is_numeric($value) || is_string($value) || is_bool($value) || is_null($value)) {
+                $vars[$name] = $value;
+            }
+        }
+        $class->success('获取变量成功！', $vars);
     }
 
     /**
@@ -257,5 +249,24 @@ class JwtExtend
     private static function withSign(string $input, string $alg = 'HS256', ?string $key = null): string
     {
         return CodeExtend::enSafe64(hash_hmac(self::signTypes[$alg], $input, static::jwtkey($key), true));
+    }
+
+    /**
+     * 兼容历史方法
+     * @param string $method
+     * @param array $arguments
+     * @return array
+     * @throws \think\admin\Exception
+     */
+    public static function __callStatic(string $method, array $arguments)
+    {
+        switch ($method) {
+            case 'getInData':  // 获取请求数据
+                return self::$inData;
+            case 'getOutData': // 获取输出数据
+                return self::$outData;
+            default:
+                throw new Exception("method not exists: JwtExtend::{$method}()");
+        }
     }
 }
