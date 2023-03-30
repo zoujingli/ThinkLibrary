@@ -19,6 +19,7 @@ namespace think\admin\support\command;
 use think\admin\Command;
 use think\admin\Exception;
 use think\admin\extend\PhinxExtend;
+use think\admin\Library;
 use think\admin\service\SystemService;
 use think\console\input\Option;
 
@@ -80,11 +81,18 @@ class Package extends Command
             $tables = str2arr(strtr($this->input->getOption('table'), '|', ','));
         } elseif ($this->input->hasOption('all')) {
             [$tables] = SystemService::getTables();
+        } else {
+            $tables = Library::$sapp->config->get('phinx.tables', []);
+            if (empty($tables)) [$tables] = SystemService::getTables();
         }
+
+        // 去除忽略的数据表
+        $ignore = Library::$sapp->config->get('phinx.ignore', []);
+        $tables = array_unique(array_diff($tables, $ignore, ['migrations']));
 
         // 创建数据库结构安装脚本
         $this->setQueueMessage(4, 3, '开始创建数据表创建脚本！');
-        $phinx = PhinxExtend::create2phinx($tables ?? []);
+        $phinx = PhinxExtend::create2table($tables);
         $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(4, 4, '成功创建数据表创建脚本！');
@@ -109,11 +117,18 @@ class Package extends Command
             $tables = str2arr(strtr($this->input->getOption('backup'), '|', ','));
         } elseif ($this->input->hasOption('all')) {
             [$tables] = SystemService::getTables();
+        } else {
+            [$tables] = SystemService::getTables();
+            $tables = array_intersect($tables, Library::$sapp->config->get('phinx.backup', []));
         }
+
+        // 去除忽略的数据表
+        $ignore = Library::$sapp->config->get('phinx.ignore', []);
+        $tables = array_unique(array_diff($tables, $ignore, ['migrations']));
 
         // 创建数据库记录安装脚本
         $this->setQueueMessage(4, 1, '开始创建数据包安装脚本！');
-        $phinx = PhinxExtend::create2package($tables ?? []);
+        $phinx = PhinxExtend::create2backup($tables);
         $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(4, 2, '成功创建数据包安装脚本！');

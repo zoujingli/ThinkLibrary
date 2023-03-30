@@ -108,9 +108,10 @@ class ToolsExtend
      * @param string $path
      * @param \Closure|null $filterFile
      * @param \Closure|null $filterPath
+     * @param boolean $fullDirectory
      * @return \Generator|\SplFileInfo[]
      */
-    public static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null): Generator
+    public static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $fullDirectory = false): Generator
     {
         if (file_exists($path)) {
             $items = is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path);
@@ -118,6 +119,7 @@ class ToolsExtend
                 if (is_null($filterPath) || $filterPath($item)) {
                     yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath);
                 }
+                $fullDirectory && yield $item;
             } elseif (is_null($filterFile) || $filterFile($item)) {
                 yield $item;
             }
@@ -125,16 +127,15 @@ class ToolsExtend
     }
 
     /**
-     * 移除空目录
+     * 移除清空目录
      * @param string $path
-     * @return void
+     * @return boolean
      */
-    public static function removeEmptyDirectory(string $path)
+    public static function removeEmptyDirectory(string $path): bool
     {
-        if (file_exists($path) && is_dir($path)) {
-            if (count(scandir($path)) === 2 && rmdir($path)) {
-                static::removeEmptyDirectory(dirname($path));
-            }
+        foreach (self::findFilesYield($path, null, null, true) as $item) {
+            ($item->isFile() || $item->isLink()) ? unlink($item->getRealPath()) : rmdir($item->getRealPath());
         }
+        return is_file($path) ? unlink($path) : (!is_dir($path) || rmdir($path));
     }
 }

@@ -21,7 +21,7 @@ namespace think\admin\extend;
 use Exception;
 use think\admin\Library;
 use think\admin\model\SystemMenu;
-use think\admin\service\SystemService;
+use think\admin\service\ProcessService;
 use think\helper\Str;
 
 /**
@@ -39,8 +39,9 @@ class PhinxExtend
      */
     public static function write2menu(array $zdata, $check = []): bool
     {
-        try { // 检查是否需要写入菜单
-            if (!empty($check) && SystemMenu::mk()->where($check)->count() > 0) {
+        // 检查是否需要写入菜单
+        try {
+            if (!empty($check) && SystemMenu::mk()->where($check)->findOrEmpty()->isExists()) {
                 return false;
             }
         } catch (Exception $exception) {
@@ -48,11 +49,11 @@ class PhinxExtend
         }
         // 循环写入系统菜单数据
         foreach ($zdata as $one) {
-            $pid1 = static::_write2menu($one);
+            $pid1 = static::write1menu($one);
             if (!empty($one['subs'])) foreach ($one['subs'] as $two) {
-                $pid2 = static::_write2menu($two, $pid1);
+                $pid2 = static::write1menu($two, $pid1);
                 if (!empty($two['subs'])) foreach ($two['subs'] as $thr) {
-                    static::_write2menu($thr, $pid2);
+                    static::write1menu($thr, $pid2);
                 }
             }
         }
@@ -62,12 +63,12 @@ class PhinxExtend
     /**
      * 单个写入菜单
      * @param array $menu 菜单数据
-     * @param mixed $ppid 上级菜单
-     * @return integer|string
+     * @param integer $ppid 上级菜单
+     * @return integer
      */
-    private static function _write2menu(array $menu, $ppid = 0)
+    private static function write1menu(array $menu, int $ppid = 0): int
     {
-        return SystemMenu::mk()->insertGetId([
+        return (int)SystemMenu::mk()->insertGetId([
             'pid'    => $ppid,
             'url'    => empty($menu['url']) ? (empty($menu['node']) ? '#' : $menu['node']) : $menu['url'],
             'sort'   => $menu['sort'] ?? 0,
@@ -86,25 +87,26 @@ class PhinxExtend
      * @return string[]
      * @throws \Exception
      */
-    public static function create2phinx(array $tables = [], string $class = 'InstallTable'): array
+    public static function create2table(array $tables = [], string $class = 'InstallTable'): array
     {
         $br = "\r\n";
         $content = static::_build2phinx($tables, true);
         $content = substr($content, strpos($content, "\n") + 1);
         $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', -1);{$br}{$br}class {$class} extends Migrator {{$br}{$content}}{$br}";
-        return ['file' => static::_filename($class), 'text' => $content];
+        return ['file' => static::nextFile($class), 'text' => $content];
     }
 
     /**
      * 创建 Phinx 安装脚本
      * @param array $tables
      * @param string $class
+     * @param boolean $progress
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public static function create2package(array $tables = [], string $class = 'InstallPackage'): array
+    public static function create2backup(array $tables = [], string $class = 'InstallPackage', bool $progress = true): array
     {
         // 处理菜单数据
         [$menuData, $menuList] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
@@ -121,18 +123,35 @@ class PhinxExtend
             if (empty($one['subs'])) unset($one['subs']);
             $menuData[] = $one;
         }
-        // 读取配置并备份数据
-        [$extra, $config] = [[], static::_config([], $tables)];
-        if (count($config['backup']) > 0) foreach ($config['backup'] as $table) {
-            if (($db = Library::$sapp->db->table($table))->count() > 0) {
-                $extra[$table] = CodeExtend::enzip($db->select()->toJson(JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        // 备份数据表
+        [$extra, $version] = [[], strstr($filename = static::nextFile($class), '_', true)];
+        if (count($tables) > 0) foreach ($tables as $table) {
+            if (($count = ($db = Library::$sapp->db->table($table))->count()) > 0) {
+                $dataFileName = "{$version}/{$table}.data";
+                $dataFilePath = syspath("database/migrations/{$dataFileName}");
+                is_dir($dataDirectory = dirname($dataFilePath)) || mkdir($dataDirectory, 0777, true);
+                $progress && ProcessService::message(" =--- Starting write {$table}.data ..." . PHP_EOL);
+                [$used, $fp] = [0, fopen($dataFilePath, 'w+')];
+                foreach ($db->cursor() as $item) {
+                    fwrite($fp, json_encode($item, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\r\n");
+                    if ($progress && ($number = sprintf("%.4f", (++$used / $count) * 100) . '%')) {
+                        ProcessService::message(" -- -- write {$table}.data: {$used}/{$count} {$number}", 1);
+                    }
+                }
+                fclose($fp);
+                $extra[$table] = $dataFileName;
+                $progress && ProcessService::message(" -- Finished write {$table}.data, Total {$used} rows.", 2);
             }
         }
+
         // 生成迁移脚本
-        $search = ['__CLASS__', '__MENU_ZIPS__', '__DATA_JSON__'];
-        $content = file_get_contents(dirname(__DIR__) . '/service/bin/package.stub');
-        $replace = [$class, CodeExtend::enzip($menuData), json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)];
-        return ['file' => static::_filename($class), 'text' => str_replace($search, $replace, $content)];
+        $menuFile = "database/migrations/{$version}/_menu.json";
+        $menuJson = json_encode($menuData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        file_put_contents(syspath($menuFile), $menuJson);
+        $search = ['__CLASS__', '__MENU_JSON_FILE__', '__DATA_JSON__'];
+        $replace = [$class, $menuFile, json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)];
+        return ['file' => $filename, 'text' => str_replace($search, $replace, file_get_contents(dirname(__DIR__) . '/service/bin/package.stub'))];
     }
 
     /**
@@ -148,20 +167,20 @@ class PhinxExtend
     /**
      * 生成 Phinx 迁移脚本
      * @param array $tables 指定数据表
-     * @param boolean $source 是否原样返回
+     * @param boolean $rehtml 是否返回内容
      * @return string
      * @throws \Exception
      */
-    private static function _build2phinx(array $tables = [], bool $source = false): string
+    private static function _build2phinx(array $tables = [], bool $rehtml = false): string
     {
         $br = "\r\n";
         $connect = Library::$sapp->db->connect();
         if ($connect->getConfig('type') !== 'mysql') {
-            throw new Exception('只支持 MySql 数据库生成 Phinx 迁移脚本');
+            throw new Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
         }
-        [$config, $schema] = [static::_config($tables), $connect->getConfig('database')];
+        $schema = $connect->getConfig('database');
         $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
-        foreach ($config['tables'] as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
+        foreach ($tables as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
         // 字段类型转换
@@ -172,10 +191,9 @@ class PhinxExtend
             'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'integer', // 整型
         ];
         // 字段默认长度
-        $lengths = [
-            'tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20
-        ];
-        foreach ($config['tables'] as $table) {
+        $lengths = ['tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20];
+
+        foreach ($tables as $table) {
 
             // 读取数据表 - 备注参数
             $comment = Library::$sapp->db->table('information_schema.TABLES')->where([
@@ -241,24 +259,7 @@ CODE;
             $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','integer',['limit'=>20,'identity'=>true]);";
             $content .= "{$br}\t}{$br}{$br}";
         }
-        return $source ? $content : highlight_string($content, true);
-    }
-
-    /**
-     * 生成 Phinx 配置参数
-     * @param array $tables 数据表结构
-     * @param array $backup 数据表备份
-     * @return array
-     */
-    private static function _config(array $tables = [], array $backup = []): array
-    {
-        if (empty($tables)) {
-            $tables = Library::$sapp->config->get('phinx.tables', []);
-            if (empty($tables)) [$tables] = SystemService::getTables();
-        }
-        $tables = array_unique(array_diff($tables, Library::$sapp->config->get('phinx.ignore', []), ['migrations']));
-        $backup = array_unique(array_intersect($tables, array_merge($backup, Library::$sapp->config->get('phinx.backup', []))));
-        return ['tables' => $tables, 'backup' => $backup];
+        return $rehtml ? $content : highlight_string($content, true);
     }
 
     /**
@@ -266,17 +267,20 @@ CODE;
      * @param string $class 脚本类名
      * @return string
      */
-    private static function _filename(string $class): string
+    private static function nextFile(string $class): string
     {
-        [$filename, $vers, $start] = [Str::snake($class), [], 20009999999999];
+        [$filename, $versions, $start] = [Str::snake($class), [], 20009999999999];
         if (count($files = glob(syspath('database/migrations/*.php'))) > 0) {
             foreach ($files as $file) {
-                $vers[] = intval(substr($bname = pathinfo($file, 8), 0, 14));
+                $versions[] = $version = intval(substr($bname = pathinfo($file, 8), 0, 14));
                 if ($filename === substr($bname, 15) && unlink($file)) {
-                    echo " * Notify: Class {$class} file has been replaced." . PHP_EOL;
+                    echo " ** Notify: Class {$class} file has been replaced." . PHP_EOL;
+                    if (is_dir($dataPath = dirname($file) . DIRECTORY_SEPARATOR . $version)) {
+                        ToolsExtend::removeEmptyDirectory($dataPath);
+                    }
                 }
             }
-            $version = min($vers) - 1;
+            $version = min($versions) - 1;
         }
         if (!isset($version) || $version > $start) $version = $start;
         return "{$version}_{$filename}.php";
