@@ -20,7 +20,6 @@ use think\admin\Command;
 use think\admin\Exception;
 use think\admin\extend\PhinxExtend;
 use think\admin\service\SystemService;
-use think\console\input\Argument;
 use think\console\input\Option;
 
 /**
@@ -37,8 +36,9 @@ class Package extends Command
     public function configure()
     {
         $this->setName('xadmin:package');
-        $this->addOption('all', 'a', Option::VALUE_NONE, 'Packaging All Tables');
-        $this->addArgument('table', Argument::OPTIONAL, 'Packaging Custom Tables', '');
+        $this->addOption('all', 'a', Option::VALUE_NONE, 'Backup All Tables');
+        $this->addOption('table', 't', Option::VALUE_OPTIONAL, 'Package Tables Scheme', '');
+        $this->addOption('backup', 'b', Option::VALUE_OPTIONAL, 'Package Tables Backup', '');
         $this->setDescription('Generate System Install Package for ThinkAdmin');
     }
 
@@ -55,7 +55,7 @@ class Package extends Command
             file_exists($dirname) or mkdir($dirname, 0777, true);
             // 开始创建数据库迁移脚本
             $this->output->writeln('--- 开始创建数据库迁移脚本 ---');
-            if ($this->createPackage() && $this->createScheme()) {
+            if ($this->createBackup() && $this->createScheme()) {
                 $this->setQueueSuccess('--- 数据库迁移脚本创建成功 ---');
             } else {
                 $this->setQueueError('--- 数据库迁移脚本创建失败 ---');
@@ -75,8 +75,16 @@ class Package extends Command
      */
     private function createScheme(): bool
     {
+        // 接收指定打包数据表
+        if ($this->input->hasOption('table')) {
+            $tables = str2arr(strtr($this->input->getOption('table'), '|', ','));
+        } elseif ($this->input->hasOption('all')) {
+            [$tables] = SystemService::getTables();
+        }
+
+        // 创建数据库结构安装脚本
         $this->setQueueMessage(4, 3, '开始创建数据表创建脚本！');
-        $phinx = PhinxExtend::create2phinx();
+        $phinx = PhinxExtend::create2phinx($tables ?? []);
         $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(4, 4, '成功创建数据表创建脚本！');
@@ -94,16 +102,18 @@ class Package extends Command
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    private function createPackage(): bool
+    private function createBackup(): bool
     {
-        $this->setQueueMessage(4, 1, '开始创建数据包安装脚本！');
         // 接收指定打包数据表
-        $tables = str2arr(strtr($this->input->getArgument('table'), '|', ','));
-        if (empty($tables) && $this->input->getOption('all')) {
+        if ($this->input->hasOption('backup')) {
+            $tables = str2arr(strtr($this->input->getOption('backup'), '|', ','));
+        } elseif ($this->input->hasOption('all')) {
             [$tables] = SystemService::getTables();
         }
-        // 创建数据包安装脚本
-        $phinx = PhinxExtend::create2package($tables);
+
+        // 创建数据库记录安装脚本
+        $this->setQueueMessage(4, 1, '开始创建数据包安装脚本！');
+        $phinx = PhinxExtend::create2package($tables ?? []);
         $target = syspath("database/migrations/{$phinx['file']}");
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(4, 2, '成功创建数据包安装脚本！');
