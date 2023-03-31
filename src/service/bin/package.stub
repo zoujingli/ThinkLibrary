@@ -43,7 +43,7 @@ class __CLASS__ extends Migrator
         if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
             foreach ($tables as $table => $path) if (($model = m($table))->count() < 1) {
                 $name = Str::studly($table);
-                ProcessService::message(" -- Starting write {$name} ..." . PHP_EOL);
+                ProcessService::message(" -- Starting write {$table} table ..." . PHP_EOL);
                 [$ls, $rs, $fp] = [0, [], fopen(__DIR__ . DIRECTORY_SEPARATOR . $path, 'r+')];
                 while (!feof($fp)) {
                     if (empty($text = trim(fgets($fp)))) continue; else $ls++;
@@ -52,7 +52,7 @@ class __CLASS__ extends Migrator
                     ProcessService::message(" -- -- {$name}:{$ls}", 1);
                 }
                 count($rs) > 0 && $model->strict(false)->insertAll($rs);
-                ProcessService::message(" -- Finished write {$name}, Total {$ls} rows.", 2);
+                ProcessService::message(" -- Finished write {$table} table, Total {$ls} rows.", 2);
             }
         }
     }
@@ -64,7 +64,7 @@ class __CLASS__ extends Migrator
     private function insertConf()
     {
         $modal = SystemConfig::mk()->whereRaw('1=1')->findOrEmpty();
-        $modal->isExists() ?: $modal->insertAll([
+        $modal->isEmpty() && $modal->insertAll([
             ['type' => 'base', 'name' => 'app_name', 'value' => 'ThinkAdmin'],
             ['type' => 'base', 'name' => 'app_version', 'value' => 'v6'],
             ['type' => 'base', 'name' => 'editor', 'value' => 'ckeditor5'],
@@ -86,7 +86,7 @@ class __CLASS__ extends Migrator
     private function insertUser()
     {
         $modal = SystemUser::mk()->whereRaw('1=1')->findOrEmpty();
-        $modal->isExists() ?: $modal->insert([
+        $modal->isEmpty() && $modal->insert([
             'id'       => '10000',
             'username' => 'admin',
             'nickname' => '超级管理员',
@@ -101,11 +101,10 @@ class __CLASS__ extends Migrator
      */
     private function insertMenu()
     {
-        // 检查数据是否存在
-        $modal = SystemMenu::mk()->whereRaw('1=1')->findOrEmpty();
-        if ($modal->isExists()) return;
-        // 解析并初始化菜单数据
-        $json = file_get_contents(syspath('__MENU_JSON_FILE__'));
-        PhinxExtend::write2menu(json_decode($json, true));
+        if (SystemMenu::mk()->whereRaw('1=1')->findOrEmpty()->isEmpty()) {
+            // 解析并初始化菜单数据
+            $json = '__MENU_JSON__';
+            PhinxExtend::write2menu(json_decode($json, true) ?: []);
+        }
     }
 }

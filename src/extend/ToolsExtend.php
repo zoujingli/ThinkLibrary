@@ -117,7 +117,7 @@ class ToolsExtend
             $items = is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path);
             foreach ($items as $item) if ($item->isDir() && !$item->isLink()) {
                 if (is_null($filterPath) || $filterPath($item)) {
-                    yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath);
+                    yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath, $fullDirectory);
                 }
                 $fullDirectory && yield $item;
             } elseif (is_null($filterFile) || $filterFile($item)) {

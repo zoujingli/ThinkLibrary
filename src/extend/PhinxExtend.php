@@ -34,14 +34,14 @@ class PhinxExtend
     /**
      * 批量写入菜单
      * @param array $zdata 菜单数据
-     * @param mixed $check 检测条件
+     * @param mixed $exists 检测条件
      * @return boolean
      */
-    public static function write2menu(array $zdata, $check = []): bool
+    public static function write2menu(array $zdata, $exists = []): bool
     {
         // 检查是否需要写入菜单
         try {
-            if (!empty($check) && SystemMenu::mk()->where($check)->findOrEmpty()->isExists()) {
+            if (!empty($exists) && SystemMenu::mk()->where($exists)->findOrEmpty()->isExists()) {
                 return false;
             }
         } catch (Exception $exception) {
@@ -81,7 +81,7 @@ class PhinxExtend
     }
 
     /**
-     * 创建 Phinx 迁移脚本
+     * 创建数据库安装脚本
      * @param array $tables
      * @param string $class
      * @return string[]
@@ -90,14 +90,14 @@ class PhinxExtend
     public static function create2table(array $tables = [], string $class = 'InstallTable'): array
     {
         $br = "\r\n";
-        $content = static::_build2phinx($tables, true);
+        $content = static::_build2table($tables, true);
         $content = substr($content, strpos($content, "\n") + 1);
         $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', -1);{$br}{$br}class {$class} extends Migrator {{$br}{$content}}{$br}";
         return ['file' => static::nextFile($class), 'text' => $content];
     }
 
     /**
-     * 创建 Phinx 安装脚本
+     * 创建数据库备份脚本
      * @param array $tables
      * @param string $class
      * @param boolean $progress
@@ -146,12 +146,11 @@ class PhinxExtend
         }
 
         // 生成迁移脚本
-        $menuFile = "database/migrations/{$version}/_menu.json";
+        $template = file_get_contents(dirname(__DIR__) . '/service/bin/package.stub');
+        $dataJson = json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $menuJson = json_encode($menuData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        file_put_contents(syspath($menuFile), $menuJson);
-        $search = ['__CLASS__', '__MENU_JSON_FILE__', '__DATA_JSON__'];
-        $replace = [$class, $menuFile, json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)];
-        return ['file' => $filename, 'text' => str_replace($search, $replace, file_get_contents(dirname(__DIR__) . '/service/bin/package.stub'))];
+        $replaces = ['__CLASS__' => $class, '__MENU_JSON__' => $menuJson, '__DATA_JSON__' => $dataJson];
+        return ['file' => $filename, 'text' => str_replace(array_keys($replaces), array_values($replaces), $template)];
     }
 
     /**
@@ -165,13 +164,13 @@ class PhinxExtend
     }
 
     /**
-     * 生成 Phinx 迁移脚本
+     * 生成数据库表格创建模板
      * @param array $tables 指定数据表
      * @param boolean $rehtml 是否返回内容
      * @return string
      * @throws \Exception
      */
-    private static function _build2phinx(array $tables = [], bool $rehtml = false): string
+    private static function _build2table(array $tables = [], bool $rehtml = false): string
     {
         $br = "\r\n";
         $connect = Library::$sapp->db->connect();
@@ -263,7 +262,7 @@ CODE;
     }
 
     /**
-     * 生成脚本名称
+     * 生成下一个脚本名称
      * @param string $class 脚本类名
      * @return string
      */
