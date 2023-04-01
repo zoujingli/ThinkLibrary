@@ -62,7 +62,7 @@ class RuntimeService
      * 运行缓存数据
      * @var array
      */
-    private static $mdata = [];
+    private static $swap = [];
 
     /**
      * 读写内存缓存数据
@@ -70,14 +70,14 @@ class RuntimeService
      * @param null|mixed $value 数据内容
      * @return null|array|mixed 返回内容
      */
-    public static function mdata(?string $name = null, $value = null)
+    public static function swap(?string $name = null, $value = null)
     {
         if ($name === '' && $value === '') {
-            return self::$mdata = [];
+            return self::$swap = [];
         } elseif (is_null($value)) {
-            return is_null($name) ? self::$mdata : (self::$mdata[$name] ?? null);
+            return is_null($name) ? self::$swap : (self::$swap[$name] ?? null);
         } else {
-            return self::$mdata[$name] = $value;
+            return self::$swap[$name] = $value;
         }
     }
 
