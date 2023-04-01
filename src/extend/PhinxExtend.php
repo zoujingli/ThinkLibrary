@@ -131,7 +131,7 @@ class PhinxExtend
                 $dataFileName = "{$version}/{$table}.data";
                 $dataFilePath = syspath("database/migrations/{$dataFileName}");
                 is_dir($dataDirectory = dirname($dataFilePath)) || mkdir($dataDirectory, 0777, true);
-                $progress && ProcessService::message(" =--- Starting write {$table}.data ..." . PHP_EOL);
+                $progress && ProcessService::message(" -- Starting write {$table}.data ..." . PHP_EOL);
                 [$used, $fp] = [0, fopen($dataFilePath, 'w+')];
                 foreach ($db->cursor() as $item) {
                     fwrite($fp, json_encode($item, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\r\n");
