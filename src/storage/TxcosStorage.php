@@ -91,7 +91,7 @@ class TxcosStorage implements StorageInterface
      */
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
     {
-        $data = $this->buildUploadToken($name) + ['key' => $name];
+        $data = $this->token($name) + ['key' => $name];
         if (is_string($attname) && strlen($attname) > 0) {
             $data['Content-Disposition'] = urlencode($attname);
         }
@@ -125,7 +125,7 @@ class TxcosStorage implements StorageInterface
     {
         [$file] = explode('?', $name);
         $result = HttpExtend::request('DELETE', "https://{$this->bucket}.{$this->point}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
+            'returnHeader' => true, 'headers' => $this->_sign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, '204 No Content'));
     }
@@ -140,7 +140,7 @@ class TxcosStorage implements StorageInterface
     {
         $file = $this->delSuffix($name);
         $result = HttpExtend::request('HEAD', "https://{$this->bucket}.{$this->point}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $name),
+            'returnHeader' => true, 'headers' => $this->_sign('HEAD', $name),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
     }
@@ -200,7 +200,7 @@ class TxcosStorage implements StorageInterface
      * @param ?string $attname 下载名称
      * @return array
      */
-    public function buildUploadToken(string $name, int $expires = 3600, ?string $attname = null): array
+    public function token(string $name, int $expires = 3600, ?string $attname = null): array
     {
         $startTimestamp = time();
         $endTimestamp = $startTimestamp + $expires;
@@ -223,7 +223,7 @@ class TxcosStorage implements StorageInterface
      * @param string $soruce 资源名称
      * @return array
      */
-    private function headerSign(string $method, string $soruce): array
+    private function _sign(string $method, string $soruce): array
     {
         $header = [];
         // 1.生成 KeyTime

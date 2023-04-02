@@ -84,7 +84,7 @@ class UpyunStorage implements StorageInterface
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
     {
         $data = [];
-        $token = $this->buildUploadToken($name, 3600, $attname, md5($file));
+        $token = $this->token($name, 3600, $attname, md5($file));
         $data['policy'] = $token['policy'];
         $data['authorization'] = $token['authorization'];
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
@@ -116,7 +116,7 @@ class UpyunStorage implements StorageInterface
     {
         [$file] = explode('?', $name);
         $result = HttpExtend::request('DELETE', "{$this->upload()}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
+            'returnHeader' => true, 'headers' => $this->_sign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
     }
@@ -131,7 +131,7 @@ class UpyunStorage implements StorageInterface
     {
         $file = $this->delSuffix($name);
         $result = HttpExtend::request('HEAD', "{$this->upload()}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $file),
+            'returnHeader' => true, 'headers' => $this->_sign('HEAD', $file),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
     }
@@ -192,7 +192,7 @@ class UpyunStorage implements StorageInterface
      * @param ?string $fileHash 文件哈希
      * @return array
      */
-    public function buildUploadToken(string $name, int $expires = 3600, ?string $attname = null, ?string $fileHash = ''): array
+    public function token(string $name, int $expires = 3600, ?string $attname = null, ?string $fileHash = ''): array
     {
         $policy = ['save-key' => $name];
         $policy['date'] = gmdate('D, d M Y H:i:s \G\M\T');
@@ -214,7 +214,7 @@ class UpyunStorage implements StorageInterface
      * @param string $name 资源名称
      * @return array
      */
-    private function headerSign(string $method, string $name): array
+    private function _sign(string $method, string $name): array
     {
         $data = [$method, "/{$this->bucket}/{$name}", $date = gmdate('D, d M Y H:i:s \G\M\T')];
         $signature = base64_encode(hash_hmac('sha1', join('&', $data), md5($this->secretKey), true));

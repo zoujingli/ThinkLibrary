@@ -90,7 +90,7 @@ class AliossStorage implements StorageInterface
      */
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
     {
-        $token = $this->buildUploadToken($name);
+        $token = $this->token($name);
         $data = ['key' => $name];
         $data['policy'] = $token['policy'];
         $data['Signature'] = $token['signature'];
@@ -128,7 +128,7 @@ class AliossStorage implements StorageInterface
     {
         [$file] = explode('?', $name);
         $result = HttpExtend::request('DELETE', "https://{$this->bucket}.{$this->point}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->headerSign('DELETE', $file),
+            'returnHeader' => true, 'headers' => $this->_sign('DELETE', $file),
         ]);
         return is_numeric(stripos($result, '204 No Content'));
     }
@@ -143,7 +143,7 @@ class AliossStorage implements StorageInterface
     {
         $file = $this->delSuffix($name);
         $result = HttpExtend::request('HEAD', "https://{$this->bucket}.{$this->point}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->headerSign('HEAD', $file),
+            'returnHeader' => true, 'headers' => $this->_sign('HEAD', $file),
         ]);
         return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
     }
@@ -203,7 +203,7 @@ class AliossStorage implements StorageInterface
      * @param ?string $attname 下载名称
      * @return array
      */
-    public function buildUploadToken(string $name, int $expires = 3600, ?string $attname = null): array
+    public function token(string $name, int $expires = 3600, ?string $attname = null): array
     {
         $data = [
             'policy'  => base64_encode(json_encode([
@@ -223,7 +223,7 @@ class AliossStorage implements StorageInterface
      * @param string $soruce 资源名称
      * @return array
      */
-    private function headerSign(string $method, string $soruce): array
+    private function _sign(string $method, string $soruce): array
     {
         $header = [];
         $header['Date'] = gmdate('D, d M Y H:i:s \G\M\T');

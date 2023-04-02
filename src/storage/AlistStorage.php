@@ -67,10 +67,11 @@ class AlistStorage implements StorageInterface
         } else {
             throw new Exception(lang('未配置Alist域名哦'));
         }
-        $this->savepath = sysconf('storage.alist_savepath|raw') ?: '/';
-        $this->savepath = trim($this->savepath, '\\/') . '/';
         $this->username = sysconf('storage.alist_username|raw') ?: '';
         $this->password = sysconf('storage.alist_password|raw') ?: '';
+        // 计算文件存储目录
+        $path = trim(sysconf('storage.alist_path|raw') ?: '', '\\/');
+        $this->savepath = $path ? "/{$path}/" : '/';
     }
 
     /**
@@ -85,7 +86,7 @@ class AlistStorage implements StorageInterface
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
     {
         $file = ['field' => 'file', 'name' => $name, 'content' => $file];
-        $header = ["Authorization: {$this->token()}", "file-path:" . urlencode($this->realpath($name))];
+        $header = ["Authorization: {$this->token()}", "file-path:" . urlencode($this->real($name))];
         $result = HttpExtend::submit("{$this->domain}/api/fs/form", [], $file, $header, 'PUT', false);
         if (is_array($data = json_decode($result, true))) {
             if ($data['code'] === 200 && $data['message'] === 'success') {
@@ -117,7 +118,7 @@ class AlistStorage implements StorageInterface
     public function del(string $name, bool $safe = false): bool
     {
         try {
-            $path = $this->realpath($name);
+            $path = $this->real($this->delSuffix($name));
             $data = ['dir' => dirname($path) ?: '/', 'names' => [basename($path)]];
             $this->post('/api/fs/remove', $data);
             return true;
@@ -136,7 +137,7 @@ class AlistStorage implements StorageInterface
     {
         try {
             $this->post('/api/fs/get', [
-                'path' => $this->realpath($name)
+                'path' => $this->real($name)
             ]);
             return true;
         } catch (\Exception $exception) {
@@ -153,7 +154,8 @@ class AlistStorage implements StorageInterface
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        return $this->domain . '/d/' . trim($this->realpath($name), '\\/');
+        $path = $this->real($name);
+        return "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
     }
 
     /**
@@ -209,7 +211,7 @@ class AlistStorage implements StorageInterface
     {
         try {
             $this->post('/api/fs/mkdir', [
-                'path' => $this->realpath($path)
+                'path' => $this->real($path)
             ]);
             return true;
         } catch (\Exception $exception) {
@@ -220,10 +222,14 @@ class AlistStorage implements StorageInterface
     /**
      * 转换为绝对路径
      * @param string $path
+     * @param boolean $mkdir
      * @return string
      */
-    private function realpath(string $path): string
+    public function real(string $path, bool $mkdir = false): string
     {
+        if ($mkdir && stripos($path, '/') !== false) {
+            $this->mkdir(dirname($path));
+        }
         return $this->savepath . trim($path, '\\/');
     }
 
@@ -255,15 +261,15 @@ class AlistStorage implements StorageInterface
      * @return string
      * @throws \think\admin\Exception
      */
-    private function token(bool $force = false): string
+    public function token(bool $force = false): string
     {
-        $skey = 'AlistStorage#' . md5($this->domain . $this->username . $this->password);
-        // if (empty($force) && ($token = $this->app->cache->get($skey))) return $token;
         try {
-            $params = http_build_query($data = ['Password' => $this->password, 'Username' => $this->username]);
-            $body = $this->post("/api/auth/login?$params", $data, false);
+            $skey = 'AlistStorage#' . md5($this->domain . $this->username . $this->password);
+            if (empty($force) && ($token = $this->app->cache->get($skey))) return $token;
+            $data = ['Password' => $this->password, 'Username' => $this->username];
+            $body = $this->post("/api/auth/login", $data, false);
             if (!empty($body['data']['token'])) {
-                // $this->app->cache->set($skey, $data['data']['token'], 60);
+                $this->app->cache->set($skey, $body['data']['token'], 60);
                 return $body['data']['token'];
             } else {
                 throw new Exception('获取用户 Token 失败！');

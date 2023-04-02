@@ -70,7 +70,7 @@ class QiniuStorage implements StorageInterface
      */
     public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
     {
-        $token = $this->buildUploadToken($name, 3600, $attname);
+        $token = $this->token($name, 3600, $attname);
         $data = ['key' => $name, 'token' => $token, 'fileName' => $name];
         $file = ['field' => "file", 'name' => $name, 'content' => $file];
         $result = HttpExtend::submit($this->upload(), $data, $file, [], 'POST', false);
@@ -199,7 +199,7 @@ class QiniuStorage implements StorageInterface
      * @param ?string $attname 下载名称
      * @return string
      */
-    public function buildUploadToken(?string $name = null, int $expires = 3600, ?string $attname = null): string
+    public function token(?string $name = null, int $expires = 3600, ?string $attname = null): string
     {
         $key = is_null($name) ? '$(key)' : $name;
         $url = "{$this->domain}/$(key){$this->getSuffix($attname,$name)}";

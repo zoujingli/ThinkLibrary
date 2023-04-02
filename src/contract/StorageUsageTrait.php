@@ -18,6 +18,7 @@ declare (strict_types=1);
 
 namespace think\admin\contract;
 
+use think\admin\Exception;
 use think\App;
 use think\Container;
 
@@ -119,5 +120,24 @@ trait StorageUsageTrait
             return strstr($name, '!', true);
         }
         return $name;
+    }
+
+    /**
+     * 重构后兼容处理
+     * @param string $method
+     * @param array $arguments
+     * @return array|string
+     * @throws \think\admin\Exception
+     */
+    public function __call(string $method, array $arguments)
+    {
+        if (strtolower($method) === 'builduploadtoken') {
+            if (method_exists($this, 'token')) {
+                return $this->token(...$arguments);
+            }
+        }
+        // 调用方法异常处理
+        $class = class_basename(static::class);
+        throw new Exception("method not exists: {$class}->{$method}()");
     }
 }
