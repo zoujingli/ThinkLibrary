@@ -328,9 +328,12 @@ class SystemService extends Service
      */
     public static function putDebug($data, bool $new = false, ?string $file = null)
     {
-        if (is_null($file)) $file = syspath('runtime' . DIRECTORY_SEPARATOR . date('Ymd') . '.log');
-        $str = (is_string($data) ? $data : ((is_array($data) || is_object($data)) ? print_r($data, true) : var_export($data, true))) . PHP_EOL;
-        return $new ? file_put_contents($file, $str) : file_put_contents($file, $str, FILE_APPEND);
+        ob_start();
+        var_dump($data);
+        $output = preg_replace('/\]\=\>\n(\s+)/m', '] => ', ob_get_clean());
+        if (is_null($file)) $file = syspath('runtime/' . date('Ymd') . '.log');
+        is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
+        return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
     }
 
     /**
