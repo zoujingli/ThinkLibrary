@@ -49,7 +49,7 @@ class AlistStorage implements StorageInterface
      * 保存路径
      * @var string
      */
-    protected $savepath;
+    protected $userpath;
 
     /**
      * 存储引擎初始化
@@ -70,8 +70,8 @@ class AlistStorage implements StorageInterface
         $this->username = sysconf('storage.alist_username|raw') ?: '';
         $this->password = sysconf('storage.alist_password|raw') ?: '';
         // 计算用户基础目录
-        $path = trim(sysconf('storage.alist_path|raw') ?: '', '\\/');
-        $this->savepath = $path ? "/{$path}/" : '/';
+        $this->userpath = trim(sysconf('storage.alist_userpath|raw') ?: '', '\\/');
+        $this->userpath = $this->userpath ? "/{$this->userpath}/" : '/';
     }
 
     /**
@@ -154,7 +154,7 @@ class AlistStorage implements StorageInterface
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        $path = $this->savepath . trim($name, '\\/');
+        $path = $this->userpath . trim($name, '\\/');
         return "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
     }
 
@@ -264,7 +264,7 @@ class AlistStorage implements StorageInterface
     public function token(bool $force = false): string
     {
         try {
-            $skey = 'AlistStorage#' . md5($this->domain . $this->username . $this->password);
+            $skey = md5($this->domain . $this->userpath . $this->username . $this->password);
             if (empty($force) && ($token = $this->app->cache->get($skey))) return $token;
             $data = ['Password' => $this->password, 'Username' => $this->username];
             $body = $this->post("/api/auth/login", $data, false);
