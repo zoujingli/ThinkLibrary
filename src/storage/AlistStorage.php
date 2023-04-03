@@ -25,7 +25,7 @@ use think\admin\extend\HttpExtend;
 use think\admin\Storage;
 
 /**
- * Alist自建存储支持
+ * Alist 自建存储支持
  * Class AlistStorage
  * @package think\admin\storage
  */
@@ -49,7 +49,13 @@ class AlistStorage implements StorageInterface
      * 保存路径
      * @var string
      */
-    protected $userpath;
+    protected $savepath;
+
+    /**
+     * 缓存前缀
+     * @var string
+     */
+    protected $cachekey;
 
     /**
      * 存储引擎初始化
@@ -69,9 +75,9 @@ class AlistStorage implements StorageInterface
         }
         $this->username = sysconf('storage.alist_username|raw') ?: '';
         $this->password = sysconf('storage.alist_password|raw') ?: '';
-        // 计算用户基础目录
-        $this->userpath = trim(sysconf('storage.alist_userpath|raw') ?: '', '\\/');
-        $this->userpath = $this->userpath ? "/{$this->userpath}/" : '/';
+        $this->savepath = trim(sysconf('storage.alist_savepath|raw') ?: '', '\\/');
+        $this->savepath = $this->savepath ? "{$this->savepath}/" : '';
+        $this->cachekey = md5($this->domain . $this->username . $this->password);
     }
 
     /**
@@ -120,7 +126,7 @@ class AlistStorage implements StorageInterface
         try {
             $path = $this->real($this->delSuffix($name));
             $data = ['dir' => dirname($path) ?: '/', 'names' => [basename($path)]];
-            $this->post('/api/fs/remove', $data);
+            $this->httpPost('/api/fs/remove', $data);
             return true;
         } catch (\Exception $exception) {
             return false;
@@ -136,7 +142,7 @@ class AlistStorage implements StorageInterface
     public function has(string $name, bool $safe = false): bool
     {
         try {
-            $this->post('/api/fs/get', [
+            $this->httpPost('/api/fs/get', [
                 'path' => $this->real($name)
             ]);
             return true;
@@ -154,7 +160,7 @@ class AlistStorage implements StorageInterface
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        $path = $this->userpath . trim($name, '\\/');
+        $path = $this->userPath() . $this->real($name);
         return "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
     }
 
@@ -179,8 +185,9 @@ class AlistStorage implements StorageInterface
     public function info(string $name, bool $safe = false, ?string $attname = null): array
     {
         return $this->has($name, $safe) ? [
-            'url' => $this->url($name, $safe, $attname),
-            'key' => $name, 'file' => $this->path($name, $safe),
+            'key'  => $name,
+            'url'  => $this->url($name, $safe, $attname),
+            'file' => $this->path($name, $safe),
         ] : [];
     }
 
@@ -207,10 +214,10 @@ class AlistStorage implements StorageInterface
      * @param string $path
      * @return boolean
      */
-    private function mkdir(string $path): bool
+    protected function mkdir(string $path): bool
     {
         try {
-            $this->post('/api/fs/mkdir', [
+            $this->httpPost('/api/fs/mkdir', [
                 'path' => $this->real($path)
             ]);
             return true;
@@ -222,37 +229,11 @@ class AlistStorage implements StorageInterface
     /**
      * 转换为绝对路径
      * @param string $path
-     * @param boolean $mkdir
      * @return string
      */
-    public function real(string $path, bool $mkdir = false): string
+    public function real(string $path): string
     {
-        if ($mkdir && stripos($path, '/') !== false) {
-            $this->mkdir(dirname($path));
-        }
-        return '/' . trim($path, '\\/');
-    }
-
-    /**
-     * POST 提交数据
-     * @param string $uri
-     * @param array $body
-     * @param boolean $auth
-     * @return array
-     * @throws \think\admin\Exception
-     */
-    private function post(string $uri, array $body = [], bool $auth = true): array
-    {
-        $body = json_encode($body, JSON_UNESCAPED_UNICODE);
-        $header = $auth ? ["Authorization: {$this->token()}"] : [];
-        $header[] = "Content-Type: application/json;charset=UTF-8";
-        $result = HttpExtend::post($this->domain . $uri, $body, ['headers' => $header]);
-        if (is_array($data = json_decode($result, true))) {
-            if ($data['code'] === 200 && $data['message'] === 'success') return $data;
-            throw new Exception($data['message'] ?? '接口请求失败！', intval($data['code'] ?? 0));
-        } else {
-            throw new Exception('接口请求失败！');
-        }
+        return "/{$this->savepath}" . trim($path, '\\/');
     }
 
     /**
@@ -264,10 +245,10 @@ class AlistStorage implements StorageInterface
     public function token(bool $force = false): string
     {
         try {
-            $skey = md5($this->domain . $this->userpath . $this->username . $this->password);
+            $skey = "{$this->cachekey}.token";
             if (empty($force) && ($token = $this->app->cache->get($skey))) return $token;
             $data = ['Password' => $this->password, 'Username' => $this->username];
-            $body = $this->post("/api/auth/login", $data, false);
+            $body = $this->httpPost("/api/auth/login", $data, false);
             if (!empty($body['data']['token'])) {
                 $this->app->cache->set($skey, $body['data']['token'], 60);
                 return $body['data']['token'];
@@ -276,6 +257,66 @@ class AlistStorage implements StorageInterface
             }
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage());
+        }
+    }
+
+    /**
+     * 获取基础路径
+     * @return string
+     */
+    private function userPath(): string
+    {
+        try {
+            $skey = "{$this->cachekey}.path";
+            if ($path = $this->app->cache->get($skey)) return $path;
+            $data = $this->httGet('/api/me');
+            if (empty($data['data']['base_path'])) return '/';
+            $path = trim($data['data']['base_path'], '\\/');
+            $this->app->cache->set($skey, $path = $path ? "/{$path}/" : '/', 60);
+            return $path;
+        } catch (\Exception $exception) {
+            return "/{$this->savepath}";
+        }
+    }
+
+    /**
+     * Get 提交数据
+     * @param string $uri
+     * @return array
+     * @throws \think\admin\Exception
+     */
+    private function httGet(string $uri): array
+    {
+        $header = ["Authorization: {$this->token()}"];
+        $header[] = "Content-Type: application/json;charset=UTF-8";
+        $result = HttpExtend::get($this->domain . $uri, [], ['headers' => $header]);
+        if (is_array($data = json_decode($result, true))) {
+            if ($data['code'] === 200 && $data['message'] === 'success') return $data;
+            throw new Exception($data['message'] ?? '接口请求失败！', intval($data['code'] ?? 0));
+        } else {
+            throw new Exception('接口请求失败！');
+        }
+    }
+
+    /**
+     * POST 提交数据
+     * @param string $uri
+     * @param array $body
+     * @param boolean $auth
+     * @return array
+     * @throws \think\admin\Exception
+     */
+    private function httpPost(string $uri, array $body = [], bool $auth = true): array
+    {
+        $body = json_encode($body, JSON_UNESCAPED_UNICODE);
+        $header = $auth ? ["Authorization: {$this->token()}"] : [];
+        $header[] = "Content-Type: application/json;charset=UTF-8";
+        $result = HttpExtend::post($this->domain . $uri, $body, ['headers' => $header]);
+        if (is_array($data = json_decode($result, true))) {
+            if ($data['code'] === 200 && $data['message'] === 'success') return $data;
+            throw new Exception($data['message'] ?? '接口请求失败！', intval($data['code'] ?? 0));
+        } else {
+            throw new Exception('接口请求失败！');
         }
     }
 }
