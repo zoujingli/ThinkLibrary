@@ -160,7 +160,7 @@ class AlistStorage implements StorageInterface
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        $path = $this->userPath() . $this->real($name);
+        $path = rtrim($this->userPath(), '\\/') . $this->real($name);
         return "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
     }
 
