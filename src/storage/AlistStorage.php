@@ -69,7 +69,7 @@ class AlistStorage implements StorageInterface
         }
         $this->username = sysconf('storage.alist_username|raw') ?: '';
         $this->password = sysconf('storage.alist_password|raw') ?: '';
-        // 计算文件存储目录
+        // 计算用户基础目录
         $path = trim(sysconf('storage.alist_path|raw') ?: '', '\\/');
         $this->savepath = $path ? "/{$path}/" : '/';
     }
@@ -154,7 +154,7 @@ class AlistStorage implements StorageInterface
      */
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
-        $path = $this->real($name);
+        $path = $this->savepath . trim($name, '\\/');
         return "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
     }
 
@@ -230,7 +230,7 @@ class AlistStorage implements StorageInterface
         if ($mkdir && stripos($path, '/') !== false) {
             $this->mkdir(dirname($path));
         }
-        return $this->savepath . trim($path, '\\/');
+        return '/' . trim($path, '\\/');
     }
 
     /**
