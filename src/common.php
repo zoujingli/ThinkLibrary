@@ -56,6 +56,7 @@ if (!function_exists('m')) {
         return Helper::buildModel($name, $data, $conn);
     }
 }
+
 if (!function_exists('auth')) {
     /**
      * 访问权限检查
@@ -68,7 +69,6 @@ if (!function_exists('auth')) {
         return AdminService::check($node);
     }
 }
-
 if (!function_exists('admuri')) {
     /**
      * 生成后台 URL 地址
@@ -81,6 +81,25 @@ if (!function_exists('admuri')) {
     function admuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         return sysuri('admin/index/index') . '#' . url($url, $vars, $suffix, $domain)->build();
+    }
+}
+if (!function_exists('sysvar')) {
+    /**
+     * 读写单次请求的内存缓存
+     * @param null|string $name 数据名称
+     * @param null|mixed $value 数据内容
+     * @return null|array|mixed 返回内容
+     */
+    function sysvar(?string $name = null, $value = null)
+    {
+        static $swap = [];
+        if ($name === '' && $value === '') {
+            return $swap = [];
+        } elseif (is_null($value)) {
+            return is_null($name) ? $swap : ($swap[$name] ?? null);
+        } else {
+            return $swap[$name] = $value;
+        }
     }
 }
 if (!function_exists('sysuri')) {

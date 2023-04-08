@@ -59,29 +59,6 @@ class RuntimeService
     private static $env = [];
 
     /**
-     * 运行缓存数据
-     * @var array
-     */
-    private static $swap = [];
-
-    /**
-     * 读写内存缓存数据
-     * @param null|string $name 数据名称
-     * @param null|mixed $value 数据内容
-     * @return null|array|mixed 返回内容
-     */
-    public static function swap(?string $name = null, $value = null)
-    {
-        if ($name === '' && $value === '') {
-            return self::$swap = [];
-        } elseif (is_null($value)) {
-            return is_null($name) ? self::$swap : (self::$swap[$name] ?? null);
-        } else {
-            return self::$swap[$name] = $value;
-        }
-    }
-
-    /**
      * 系统服务初始化
      * @param ?\think\App $app
      * @return App

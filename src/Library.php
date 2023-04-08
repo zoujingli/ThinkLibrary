@@ -97,7 +97,7 @@ class Library extends Service
 
         // 请求结束后处理
         $this->app->event->listen('HttpEnd', function () {
-            RuntimeService::swap('', '');
+            function_exists('sysvar') && sysvar('', '');
         });
     }
 
