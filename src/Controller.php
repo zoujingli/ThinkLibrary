@@ -136,7 +136,7 @@ class Controller extends stdClass
      * @param string $url 跳转链接
      * @param integer $code 跳转代码
      */
-    public function redirect(string $url, int $code = 301): void
+    public function redirect(string $url, int $code = 302): void
     {
         throw new HttpResponseException(redirect($url, $code));
     }
