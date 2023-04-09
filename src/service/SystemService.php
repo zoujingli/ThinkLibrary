@@ -367,7 +367,7 @@ class SystemService extends Service
     }
 
     /**
-     * 魔术方法调用(停时)
+     * 魔术方法调用(临时)
      * @param string $method 方法名称
      * @param array $arguments 调用参数
      * @return mixed
@@ -379,7 +379,7 @@ class SystemService extends Service
     }
 
     /**
-     * 静态方法兼容(停时)
+     * 静态方法兼容(临时)
      * @param string $method 方法名称
      * @param array $arguments 调用参数
      * @return mixed
