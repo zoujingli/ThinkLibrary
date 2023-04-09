@@ -269,7 +269,7 @@ class AdminService extends Service
     }
 
     /**
-     * 静态方法兼容(停时)
+     * 静态方法兼容(临时)
      * @param string $method
      * @param array $arguments
      * @return bool
@@ -277,11 +277,8 @@ class AdminService extends Service
      */
     public static function __callStatic(string $method, array $arguments)
     {
-        if (strtolower($method) === 'clearcache') {
-            return static::clear();
-        } else {
-            throw new Exception("method not exists: AdminService::{$method}()");
-        }
+        if (strtolower($method) === 'clearcache') return static::clear();
+        throw new Exception("method not exists: AdminService::{$method}()");
     }
 
     /**
