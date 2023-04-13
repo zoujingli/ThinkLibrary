@@ -113,7 +113,7 @@ class QiniuStorage implements StorageInterface
      */
     public function has(string $name, bool $safe = false): bool
     {
-        return is_array($this->info($name, $safe));
+        return !empty($this->info($name, $safe));
     }
 
     /**
