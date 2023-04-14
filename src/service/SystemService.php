@@ -241,16 +241,16 @@ class SystemService extends Service
 
     /**
      * 保存数据内容
-     * @param string $name
-     * @param mixed $value
+     * @param string $name 数据名称
+     * @param mixed $value 数据内容
      * @return boolean
      * @throws \think\admin\Exception
      */
-    public static function setData(string $name, $value)
+    public static function setData(string $name, $value): bool
     {
         try {
-            $data = ['name' => $name, 'value' => serialize($value)];
-            return static::save('SystemData', $data, 'name');
+            $data = ['name' => $name, 'value' => json_encode([$value], 64 | 256)];
+            return SystemData::mk()->where(['name' => $name])->findOrEmpty()->save($data);
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
@@ -258,16 +258,19 @@ class SystemService extends Service
 
     /**
      * 读取数据内容
-     * @param string $name
-     * @param mixed $default
+     * @param string $name 数据名称
+     * @param mixed $default 默认内容
      * @return mixed
      */
     public static function getData(string $name, $default = [])
     {
         try {
-            // 读取原始序列化数据
+            // 读取原始序列化或JSON数据
             $value = SystemData::mk()->where(['name' => $name])->value('value');
             if (is_null($value)) return $default;
+            if (is_string($value) && strpos($value, '[') === 0) {
+                return json_decode(substr($value, 5), true)[0];
+            }
         } catch (\Exception $exception) {
             trace_file($exception);
             return $default;
