@@ -269,7 +269,7 @@ class SystemService extends Service
             $value = SystemData::mk()->where(['name' => $name])->value('value');
             if (is_null($value)) return $default;
             if (is_string($value) && strpos($value, '[') === 0) {
-                return json_decode(substr($value, 5), true)[0];
+                return json_decode($value, true)[0];
             }
         } catch (\Exception $exception) {
             trace_file($exception);
