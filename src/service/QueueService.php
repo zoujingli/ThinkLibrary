@@ -18,7 +18,6 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
-use Error;
 use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\model\SystemQueue;
@@ -171,12 +170,12 @@ class QueueService extends Service
             $data = $this->app->cache->get($ckey, [
                 'code' => $this->code, 'status' => $status, 'message' => $message, 'progress' => $progress, 'history' => [],
             ]);
-        } catch (\Exception|Error $exception) {
+        } catch (\Exception|\Error $exception) {
             return $this->progress($status, $message, $progress, $backline);
         }
         while (--$backline > -1 && count($data['history']) > 0) array_pop($data['history']);
         if (is_numeric($status)) $data['status'] = intval($status);
-        if (is_numeric($progress)) $progress = str_pad(sprintf("%.2f", $progress), 6, '0', STR_PAD_LEFT);
+        if (is_numeric($progress)) $progress = str_pad(sprintf('%.2f', $progress), 6, '0', STR_PAD_LEFT);
         if (is_string($message) && is_null($progress)) {
             $data['message'] = $message;
             $data['history'][] = ['message' => $message, 'progress' => $data['progress'], 'datetime' => date('Y-m-d H:i:s')];
@@ -192,7 +191,7 @@ class QueueService extends Service
             if (count($data['history']) > 10) {
                 $data['history'] = array_slice($data['history'], -10);
             }
-            $this->app->cache->set($ckey, $data, 86400);
+            $this->app->cache->set($ckey, $data, 864000);
         }
         return $data;
     }

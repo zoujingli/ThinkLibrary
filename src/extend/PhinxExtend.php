@@ -182,15 +182,16 @@ class PhinxExtend
         foreach ($tables as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
         $content .= "{$br}{$br}\t}{$br}{$br}";
 
+        // 字段默认长度
+        $sizes = ['tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20];
+
         // 字段类型转换
         $types = [
-            'varchar'  => 'string', 'enum' => 'string', 'char' => 'string', // 字符
-            'longtext' => 'text', 'tinytext' => 'text', 'mediumtext' => 'text', // 文本
-            'tinyblob' => 'binary', 'blob' => 'binary', 'mediumblob' => 'binary', 'longblob' => 'binary', // 文件
-            'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'integer', // 整型
+            'varchar'  => 'string', 'enum' => 'string', 'char' => 'char', // 字符
+            'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'biginteger', // 整型
+            'tinytext' => 'text', 'mediumtext' => 'text', 'longtext' => 'text', // 文本
+            'tinyblob' => 'binary', 'blob' => 'binary', 'mediumblob' => 'binary', 'longblob' => 'binary', 'varbinary' => 'binary', 'bit' => 'binary', // 文件
         ];
-        // 字段默认长度
-        $lengths = ['tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20];
 
         foreach ($tables as $table) {
 
@@ -228,7 +229,7 @@ CODE;
                 if ($field['type'] === 'enum') {
                     $type = $types[$field['type']] ?? 'string';
                     $data = array_merge(['limit' => 10], $data);
-                } elseif (preg_match('/(tinyblob|blob|mediumblob|longblob|varchar|char)\((\d+)\)/', $field['type'], $attr)) {
+                } elseif (preg_match('/(tinyblob|blob|mediumblob|longblob|varbinary|bit|binary|varchar|char)\((\d+)\)/', $field['type'], $attr)) {
                     $type = $types[$attr[1]] ?? 'string';
                     $data = array_merge(['limit' => intval($attr[2])], $data);
                 } elseif (preg_match('/(tinyint|smallint|mediumint|int|bigint)\((\d+)\)/', $field['type'], $attr)) {
@@ -236,8 +237,8 @@ CODE;
                     $data = array_merge(['limit' => intval($attr[2])], $data, ['default' => intval($data['default'])]);
                 } elseif (preg_match('/(tinyint|smallint|mediumint|int|bigint)\s+unsigned/i', $field['type'], $attr)) {
                     $type = $types[$attr[1]] ?? 'integer';
-                    if (isset($lengths[$attr[1]])) {
-                        $data = array_merge(['limit' => $lengths[$attr[1]]], $data);
+                    if (isset($sizes[$attr[1]])) {
+                        $data = array_merge(['limit' => $sizes[$attr[1]]], $data);
                     }
                     $data['default'] = intval($data['default']);
                 } elseif (preg_match('/(float|decimal)\((\d+),(\d+)\)/', $field['type'], $attr)) {
@@ -255,7 +256,7 @@ CODE;
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
             $content .= "{$br}\t\t->create();{$br}{$br}\t\t// 修改主键长度";
-            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','integer',['limit'=>20,'identity'=>true]);";
+            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','biginteger',['limit'=>20,'identity'=>true]);";
             $content .= "{$br}\t}{$br}{$br}";
         }
         return $rehtml ? $content : highlight_string($content, true);
