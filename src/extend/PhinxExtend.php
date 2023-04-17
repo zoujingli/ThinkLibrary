@@ -256,7 +256,7 @@ CODE;
                 $content .= "{$br}\t\t->addIndex('{$index["Column_name"]}', {$params})";
             }
             $content .= "{$br}\t\t->create();{$br}{$br}\t\t// 修改主键长度";
-            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','biginteger',['limit'=>20,'identity'=>true]);";
+            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id','integer',['limit'=>11,'identity'=>true]);";
             $content .= "{$br}\t}{$br}{$br}";
         }
         return $rehtml ? $content : highlight_string($content, true);
