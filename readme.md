@@ -5,8 +5,8 @@
 [![Total Downloads](https://poser.pugx.org/zoujingli/think-library/downloads)](https://packagist.org/packages/zoujingli/think-library)
 [![Monthly Downloads](https://poser.pugx.org/zoujingli/think-library/d/monthly)](https://packagist.org/packages/zoujingli/think-library)
 [![Daily Downloads](https://poser.pugx.org/zoujingli/think-library/d/daily)](https://packagist.org/packages/zoujingli/think-library)
-[![PHP Version](https://img.shields.io/badge/php-%3E%3D7.1-8892BF.svg)](http://www.php.net)
-[![License](https://poser.pugx.org/zoujingli/think-library/license)](https://packagist.org/packages/zoujingli/think-library)
+[![PHP Version](https://doc.thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
+[![License](https://doc.thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
 
 **ThinkLibrary** 是针对 **ThinkPHP6** 封装的一套常用工具类库，方便快速构建 **Web** 应用。
 
@@ -314,7 +314,7 @@ $safe64 = \think\admin\extend\CodeExtend::enSafe64($content)
 $content = \think\admin\extend\CodeExtend::deSafe64($safe64)
 ```
 
-### 数据压缩 
+### 数据压缩
 
 ```php
 // 数据压缩 ( 内容越大效果越好 )
