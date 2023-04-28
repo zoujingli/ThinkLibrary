@@ -25,6 +25,19 @@ namespace think\admin\extend;
  */
 class CodeExtend
 {
+
+    /**
+     * 生成 UUID 编码
+     * @return string
+     */
+    public static function uuid(): string
+    {
+        $chars = md5(uniqid(strval(mt_rand(0, 9999)), true));
+        $value = substr($chars, 0, 8) . '-' . substr($chars, 8, 4) . '-';
+        $value .= substr($chars, 12, 4) . '-' . substr($chars, 16, 4) . '-';
+        return strtoupper($value . substr($chars, 20, 12));
+    }
+
     /**
      * 生成随机编码
      * @param integer $size 编码长度

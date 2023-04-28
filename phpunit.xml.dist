@@ -11,11 +11,6 @@
          cacheDirectory=".phpunit.cache"
          beStrictAboutTestsThatDoNotTestAnything="false"
 >
-    <coverage>
-        <include>
-            <directory suffix=".php">src</directory>
-        </include>
-    </coverage>
     <testsuites>
         <testsuite name="ThinkAdmin Test Suite">
             <directory suffix="Test.php">./tests</directory>
