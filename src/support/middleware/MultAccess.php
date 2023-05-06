@@ -21,6 +21,7 @@ namespace think\admin\support\middleware;
 use Closure;
 use think\admin\Plugin;
 use think\admin\service\NodeService;
+use think\admin\service\SystemService;
 use think\App;
 use think\exception\HttpException;
 use think\Request;
@@ -112,9 +113,6 @@ class MultAccess
             // 插件绑定处理
             if (isset($addons[$appName])) {
                 [$this->appPath, $this->appSpace] = [$addons[$appName]['path'], $addons[$appName]['space']];
-                $this->app->config->set(['view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR], 'view');
-            } else {
-                $this->app->config->set(['view_path' => ''], 'view');
             }
             if ($name) {
                 $this->app->request->setRoot('/' . $name);
@@ -144,8 +142,13 @@ class MultAccess
     private function setMultiApp(string $appName, bool $appBind): bool
     {
         if (is_dir($this->appPath = $this->appPath ?: syspath("app/{$appName}/"))) {
+            // 设置多应用模式
             $this->app->setNamespace($this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
             $this->app->http->setBind($appBind)->name($appName)->path($this->appPath)->setRoutePath($this->appPath . 'route' . DIRECTORY_SEPARATOR);
+            // 修改模板参数配置
+            $uris = array_merge($this->app->config->get('view.tpl_replace_string', []), SystemService::uris());
+            $this->app->config->set(['view_path' => $this->appPath . 'view' . DIRECTORY_SEPARATOR, 'tpl_replace_string' => $uris], 'view');
+            // 初始化多应用文件
             return $this->loadMultiApp($this->appPath);
         } else {
             return false;

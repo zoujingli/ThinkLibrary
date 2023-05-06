@@ -131,11 +131,6 @@ class RuntimeService
         $appmap = static::uniqueMergeArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']);
         $domain = static::uniqueMergeArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']);
         Library::$sapp->config->set(['app_map' => $appmap, 'domain_bind' => $domain], 'app');
-
-        // 设置模板变量
-        $vars = Library::$sapp->config->get('view.tpl_replace_string', []);
-        Library::$sapp->config->set(['tpl_replace_string' => array_merge(SystemService::uris(), $vars)], 'view');
-
         // 初始化调试配置
         return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
     }

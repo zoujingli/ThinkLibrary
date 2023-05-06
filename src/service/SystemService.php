@@ -71,17 +71,14 @@ class SystemService extends Service
      */
     public static function uri(string $path = '', ?string $type = '__ROOT__', $default = '')
     {
-        static $app, $prefix, $domain, $plugin;
-        empty($app) && $app = rtrim(url('@')->build(), '\\/');
-        empty($prefix) && $prefix = rtrim(dirname(Library::$sapp->request->basefile()), '\\/');
-        empty($plugin) && $plugin = Library::$sapp->http->getName();
-        empty($domain) && $domain = Library::$sapp->request->domain();
-        if (strlen($path) > 0) $path = '/' . ltrim($path, '/');
+        $plugin = Library::$sapp->http->getName();
+        if (strlen($path)) $path = '/' . ltrim($path, '/');
+        $prefix = rtrim(dirname(Library::$sapp->request->basefile()), '\\/');
         $data = [
-            '__APP__'  => $app . $path,
+            '__APP__'  => rtrim(url('@')->build(), '\\/') . $path,
             '__ROOT__' => $prefix . $path,
             '__PLUG__' => "{$prefix}/static/extra/{$plugin}{$path}",
-            '__FULL__' => $domain . $prefix . $path,
+            '__FULL__' => Library::$sapp->request->domain() . $prefix . $path
         ];
         return is_null($type) ? $data : ($data[$type] ?? $default);
     }
