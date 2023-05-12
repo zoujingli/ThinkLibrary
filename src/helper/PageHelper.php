@@ -125,8 +125,8 @@ class PageHelper extends Helper
                 $data = $query->paginate($cfg, static::getCount($query))->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
             }
-            static::xssFilter($result['data']);
             if (false !== $this->class->callback('_page_filter', $result['data'], $result)) {
+                static::xssFilter($result['data']);
                 throw new HttpResponseException(json($result));
             } else {
                 return $result;
