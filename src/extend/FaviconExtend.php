@@ -149,7 +149,7 @@ class FaviconExtend
                 $alpha = ($color & 0x7F000000) >> 24;
                 $alpha = (1 - ($alpha / 127)) * 255;
                 $color &= 0xFFFFFF;
-                $color |= 0xFF000000 & ($alpha << 24);
+                $color |= 0xFF000000 & (intval($alpha) << 24);
                 $pixelData[] = $color;
                 $opacity = ($alpha <= 127) ? 1 : 0;
                 $opacityValue = ($opacityValue << 1) | $opacity;
