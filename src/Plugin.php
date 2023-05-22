@@ -24,46 +24,52 @@ use think\Service;
 
 /**
  * 插件注册服务
- * Class Plugin
+ * @class Plugin
  * @package think\admin\service
  */
 abstract class Plugin extends Service
 {
     /**
-     * 插件包名
+     * 必填，插件包名
      * @var string
      */
     protected $package = '';
 
     /**
-     * 插件服务
+     * 必填，插件编码
      * @var string
      */
-    protected $service = '';
+    protected $appCode = '';
 
     /**
-     * 插件名称
+     * 必填，插件名称
      * @var string
      */
     protected $appName = '';
 
     /**
-     * 插件目录
+     * 可选，插件目录
      * @var string
      */
     protected $appPath = '';
 
     /**
-     * 插件别名
+     * 可选，插件别名
      * @var string
      */
     protected $appAlias = '';
 
     /**
-     * 命名空间
+     * 可选，命名空间
      * @var string
      */
     protected $appSpace = '';
+
+    /**
+     * 可选，注册服务
+     * @var string
+     */
+    protected $appService = '';
 
     /**
      * 插件配置
@@ -82,14 +88,14 @@ abstract class Plugin extends Service
         // 获取基础服务类
         $ref = new \ReflectionClass(static::class);
 
+        // 应用服务注册类
+        if (empty($this->appService)) {
+            $this->appService = static::class;
+        }
+
         // 应用命名空间名
         if (empty($this->appSpace)) {
             $this->appSpace = $ref->getNamespaceName();
-        }
-
-        // 应用服务注册类
-        if (empty($this->service)) {
-            $this->service = static::class;
         }
 
         // 应用插件路径计算
@@ -111,12 +117,29 @@ abstract class Plugin extends Service
         $attr = explode('\\', $ref->getNamespaceName());
         if ($attr[0] === NodeService::space()) array_shift($attr);
 
-        $this->appName = $this->appName ?: join('-', $attr);
+        $this->appCode = $this->appCode ?: join('-', $attr);
         $this->appAlias = $this->appAlias ?: join('-', $attr);
-        if ($this->appName === $this->appAlias) $this->appAlias = '';
+        if ($this->appCode === $this->appAlias) $this->appAlias = '';
 
-        // 注册应用插件信息
-        self::add($this->appName, $this->appPath, $this->appAlias, $this->appSpace, $this->package, $this->service);
+        if (is_dir($this->appPath)) {
+            // 写入插件参数信息
+            self::$addons[$this->appCode] = [
+                'name'    => $this->appName,
+                'path'    => realpath($this->appPath) . DIRECTORY_SEPARATOR,
+                'alias'   => $this->appAlias,
+                'space'   => $this->appSpace ?: NodeService::space($this->appCode),
+                'package' => $this->package,
+                'service' => $this->appService
+            ];
+            // 插件别名动态设置
+            if (!empty($this->appAlias) && $this->appCode !== $this->appAlias) {
+                Library::$sapp->config->set([
+                    'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [
+                        $this->appAlias => $this->appCode
+                    ]),
+                ], 'app');
+            }
+        }
     }
 
     /**
@@ -128,37 +151,13 @@ abstract class Plugin extends Service
     }
 
     /**
-     * 注册应用插件
-     * @param string $name 插件名称
-     * @param string $path 插件目录
-     * @param string $alias 插件别名
-     * @param string $space 插件空间
-     * @param string $package 插件包名
-     * @param string $service 服务名称
-     * @return void
-     */
-    private static function add(string $name, string $path, string $alias = '', string $space = '', string $package = '', string $service = ''): void
-    {
-        if (is_dir($path)) {
-            $DS = DIRECTORY_SEPARATOR;
-            [$path, $space] = [realpath($path) . $DS, $space ?: NodeService::space($name)];
-            // 写入插件参数信息
-            self::$addons[$name] = ['path' => $path, 'alias' => $alias, 'space' => $space, 'package' => $package, 'service' => $service];
-            // 插件别名动态设置
-            if (strlen($alias) > 0 && $alias !== $name) Library::$sapp->config->set([
-                'app_map' => array_merge(Library::$sapp->config->get('app.app_map', []), [$alias => $name]),
-            ], 'app');
-        }
-    }
-
-    /**
      * 获取所有插件
-     * @param string $code 指定编号
+     * @param string $name 指定名称
      * @return ?array
      */
-    public static function all(string $code = ''): ?array
+    public static function get(string $name = ''): ?array
     {
-        return empty($code) ? self::$addons : (self::$addons[$code] ?? null);
+        return empty($name) ? self::$addons : (self::$addons[$name] ?? null);
     }
 
     /**
@@ -169,6 +168,35 @@ abstract class Plugin extends Service
     public function __get(string $name)
     {
         return $this->$name ?? '';
+    }
+
+    /**
+     * 静态调用方法兼容
+     * @param string $method
+     * @param array $arguments
+     * @return array|null
+     * @throws \think\admin\Exception
+     */
+    public static function __callStatic(string $method, array $arguments)
+    {
+        if (strtolower($method) === 'all') {
+            return self::get(...$arguments);
+        } else {
+            $class = basename(str_replace('\\', '/', static::class));
+            throw new Exception("method not exists: {$class}::{$method}()");
+        }
+    }
+
+    /**
+     * 魔术方法调用兼容处理
+     * @param string $method
+     * @param array $arguments
+     * @return array|null
+     * @throws \think\admin\Exception
+     */
+    public function __call(string $method, array $arguments)
+    {
+        return self::__callStatic($method, $arguments);
     }
 
     /**
