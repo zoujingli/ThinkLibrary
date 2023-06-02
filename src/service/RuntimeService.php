@@ -204,6 +204,8 @@ class RuntimeService
     public static function doWebsiteInit(?App $app = null, ?Request $request = null): Response
     {
         $http = static::init($app)->http;
+        $request = $request ?: Library::$sapp->make(Request::class);
+        Library::$sapp->instance('request', $request);
         ($response = $http->run($request))->send();
         $http->end($response);
         return $response;
