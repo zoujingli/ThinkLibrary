@@ -83,7 +83,7 @@ class CaptchaService extends Service
      */
     public function getData(): string
     {
-        return "data:image/png;base64,{$this->makeBase64Image()}";
+        return "data:image/png;base64,{$this->_image()}";
     }
 
     /**
@@ -121,7 +121,7 @@ class CaptchaService extends Service
      * 创建验证码图片
      * @return string
      */
-    private function makeBase64Image(): string
+    private function _image(): string
     {
         // 生成背景
         $img = imagecreatetruecolor($this->width, $this->height);
