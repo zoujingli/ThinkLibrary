@@ -20,7 +20,6 @@ namespace think\admin\service;
 
 use think\admin\Exception;
 use think\admin\extend\CodeExtend;
-use think\admin\Library;
 use think\admin\model\SystemQueue;
 use think\admin\Service;
 
@@ -237,7 +236,7 @@ class QueueService extends Service
     {
         if (empty($this->mess['swrite'])) {
             [$this->mess['swrite'], $this->mess['sctime']] = [1, microtime(true)];
-            Library::$sapp->cache->set("queue_{$this->code}_progress", $this->mess, 864000);
+            $this->app->cache->set("queue_{$this->code}_progress", $this->mess, 864000);
         }
     }
 
