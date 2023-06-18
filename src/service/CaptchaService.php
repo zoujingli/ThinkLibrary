@@ -18,6 +18,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
+use think\admin\Library;
 use think\admin\Service;
 
 /**
@@ -33,7 +34,6 @@ class CaptchaService extends Service
     private $width = 130; // 图片宽度
     private $height = 50; // 图片高度
     private $length = 4; // 验证码长度
-    private $fontfile; // 指定字体文件
     private $fontsize = 20; // 指定字体大小
 
     /**
@@ -52,21 +52,10 @@ class CaptchaService extends Service
         for ($i = 0; $i < $this->length; $i++) {
             $this->code .= $this->charset[mt_rand(0, $length)];
         }
-        // 设置字体文件路径
-        $this->fontfile = static::font();
         // 缓存验证码字符串
         $this->app->cache->set($this->uniqid, $this->code, 360);
         // 返回当前对象
         return $this;
-    }
-
-    /**
-     * 获取字体文件
-     * @return string
-     */
-    public static function font(): string
-    {
-        return __DIR__ . '/bin/captcha.ttf';
     }
 
     /**
@@ -94,7 +83,7 @@ class CaptchaService extends Service
      */
     public function getData(): string
     {
-        return "data:image/png;base64,{$this->createImage()}";
+        return "data:image/png;base64,{$this->makeBase64Image()}";
     }
 
     /**
@@ -120,24 +109,6 @@ class CaptchaService extends Service
     }
 
     /**
-     * 检查验证码是否正确
-     * @param string $code 需要验证的值
-     * @param null|string $uniqid 验证码编号
-     * @return boolean
-     */
-    public function check(string $code, ?string $uniqid = null): bool
-    {
-        $_uni = is_string($uniqid) ? $uniqid : input('uniqid', '-');
-        $_val = $this->app->cache->get($_uni, '');
-        if (is_string($_val) && strtolower($_val) === strtolower($code)) {
-            $this->app->cache->delete($_uni);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * 输出图形验证码
      * @return string
      */
@@ -150,7 +121,7 @@ class CaptchaService extends Service
      * 创建验证码图片
      * @return string
      */
-    private function createImage(): string
+    private function makeBase64Image(): string
     {
         // 生成背景
         $img = imagecreatetruecolor($this->width, $this->height);
@@ -168,10 +139,11 @@ class CaptchaService extends Service
         }
         // 生成文字
         $_x = $this->width / $this->length;
+        $fontfile = self::font();
         for ($i = 0; $i < $this->length; $i++) {
             $fontcolor = imagecolorallocate($img, mt_rand(0, 156), mt_rand(0, 156), mt_rand(0, 156));
             if (function_exists('imagettftext')) {
-                imagettftext($img, $this->fontsize, mt_rand(-30, 30), intval($_x * $i + mt_rand(1, 5)), intval($this->height / 1.4), $fontcolor, $this->fontfile, $this->code[$i]);
+                imagettftext($img, $this->fontsize, mt_rand(-30, 30), intval($_x * $i + mt_rand(1, 5)), intval($this->height / 1.4), $fontcolor, $fontfile, $this->code[$i]);
             } else {
                 imagestring($img, 15, intval($_x * $i + mt_rand(10, 15)), mt_rand(10, 30), $this->code[$i], $fontcolor);
             }
@@ -182,5 +154,32 @@ class CaptchaService extends Service
         ob_end_clean();
         imagedestroy($img);
         return base64_encode($data);
+    }
+
+    /**
+     * 获取字体文件
+     * @return string
+     */
+    public static function font(): string
+    {
+        return __DIR__ . '/bin/captcha.ttf';
+    }
+
+    /**
+     * 检查验证码是否正确
+     * @param string $code 需要验证的值
+     * @param null|string $uniqid 验证码编号
+     * @return boolean
+     */
+    public static function check(string $code, ?string $uniqid = null): bool
+    {
+        $_uni = is_string($uniqid) ? $uniqid : input('uniqid', '-');
+        $_val = Library::$sapp->cache->get($_uni, '');
+        if (is_string($_val) && strtolower($_val) === strtolower($code)) {
+            Library::$sapp->cache->delete($_uni);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
