@@ -97,10 +97,10 @@ class AdminService extends Service
      * 设置用户扩展数据
      * @param array $data
      * @param boolean $replace
-     * @return boolean|integer
+     * @return boolean
      * @throws \think\admin\Exception
      */
-    public static function setUserData(array $data, bool $replace = false)
+    public static function setUserData(array $data, bool $replace = false): bool
     {
         $data = $replace ? $data : array_merge(static::getUserData(), $data);
         return SystemService::setData('UserData_' . static::getUserId(), $data);
@@ -120,10 +120,10 @@ class AdminService extends Service
     /**
      * 设置用户主题名称
      * @param string $theme 主题名称
-     * @return boolean|integer
+     * @return boolean
      * @throws \think\admin\Exception
      */
-    public static function setUserTheme(string $theme)
+    public static function setUserTheme(string $theme): bool
     {
         return static::setUserData(['site_theme' => $theme]);
     }
@@ -228,9 +228,9 @@ class AdminService extends Service
             if ($uptoken === '') return [0, []];
             $session = Library::$sapp->session;
             if (is_null($uptoken)) {
-                $sessid = Library::$sapp->session->get('UploadSessionId');
+                $sessid = $session->get('UploadSessionId');
                 if (empty($sessid)) return [0, []];
-                if (Library::$sapp->session->getId() !== $sessid) {
+                if ($session->getId() !== $sessid) {
                     $session = Library::$sapp->invokeClass(Session::class);
                     $session->setId($sessid);
                     $session->init();
@@ -239,13 +239,13 @@ class AdminService extends Service
             } else {
                 $sessid = CodeExtend::decrypt($uptoken, sysconf('data.jwtkey'));
                 if (empty($sessid)) return [0, []];
-                if (Library::$sapp->session->getId() !== $sessid) {
+                if ($session->getId() !== $sessid) {
                     $session = Library::$sapp->invokeClass(Session::class);
                     $session->setId($sessid);
                     $session->init();
                 }
                 if ($unid = intval($session->get('UploadUploadUnid') ?: 0)) {
-                    Library::$sapp->session->set('UploadSessionId', $session->getId());
+                    $session->set('UploadSessionId', $session->getId());
                 }
             }
             return [$unid, $session->get('UploadUploadExts', [])];
