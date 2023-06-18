@@ -110,7 +110,7 @@ class NodeService extends Service
      */
     public static function getMethods(bool $force = false): array
     {
-        static $data = [];
+        $data = sysvar('think-library-methods');
         if (empty($force)) {
             if (count($data) > 0) return $data;
             $data = Library::$sapp->cache->get('SystemAuthNode', []);
@@ -130,7 +130,7 @@ class NodeService extends Service
             }
         }
         // 扫描所有插件代码
-        foreach (Plugin::all() as $appName => $plugin) {
+        foreach (Plugin::get() as $appName => $plugin) {
             if (in_array($appName, $ignoreAppNames)) continue;
             [$appPath, $appSpace] = [$plugin['path'], $plugin['space']];
             foreach (ToolsExtend::scanDirectory($appPath, 'php') as $name) {
@@ -144,7 +144,7 @@ class NodeService extends Service
             $data = call_user_func('admin_node_filter', $data);
         }
         Library::$sapp->cache->set('SystemAuthNode', $data);
-        return $data;
+        return sysvar('think-library-methods', $data);
     }
 
     /**

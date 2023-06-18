@@ -25,6 +25,7 @@ use think\admin\Service;
  * 旧助通短信接口服务
  * Class MessageService
  * @package app\store\service
+ * @deprecated 建议使用云平台服务
  * =================================
  *
  *  CREATE TABLE `system_message_history` (

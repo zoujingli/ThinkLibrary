@@ -59,9 +59,10 @@ class ModuleService extends Service
      */
     public static function getLibrarys(string $package = '', bool $force = false)
     {
-        static $plugs;
+        $plugs = sysvar('think-library-version');
         if (empty($plugs) || $force) {
             $plugs = include syspath('vendor/versions.php');
+            sysvar('think-library-version', $plugs);
         }
         return empty($package) ? $plugs : ($plugs[$package] ?? null);
     }
