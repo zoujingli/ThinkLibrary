@@ -110,7 +110,7 @@ class NodeService extends Service
      */
     public static function getMethods(bool $force = false): array
     {
-        $data = sysvar('think-library-methods');
+        $data = sysvar('think-library-methods') ?: [];
         if (empty($force)) {
             if (count($data) > 0) return $data;
             $data = Library::$sapp->cache->get('SystemAuthNode', []);
