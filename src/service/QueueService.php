@@ -56,13 +56,13 @@ class QueueService extends Service
     public $record = [];
 
     /**
-     * 运行历史记录
+     * 运行消息记录
      * @var array
      */
     private $mess = [];
 
     /**
-     * 消息是否写入数据库
+     * 运行消息写库
      * @var boolean
      */
     private $messWriteDb = false;
