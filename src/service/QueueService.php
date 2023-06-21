@@ -62,6 +62,12 @@ class QueueService extends Service
     private $mess = [];
 
     /**
+     * 消息是否写入数据库
+     * @var boolean
+     */
+    private $messWriteDb = false;
+
+    /**
      * 数据初始化
      * @param string $code
      * @return static
@@ -85,6 +91,8 @@ class QueueService extends Service
             $this->data = json_decode($this->record['exec_data'], true) ?: [];
             $this->title = $this->record['title'];
         }
+        // 消息写入数据库
+        $this->messWriteDb = in_array('message', SystemQueue::mk()->getTableFields());
         return $this;
     }
 
@@ -243,6 +251,9 @@ class QueueService extends Service
         if (empty($this->mess['swrite'])) {
             [$this->mess['swrite'], $this->mess['sctime']] = [1, microtime(true)];
             $this->app->cache->set("queue_{$this->code}_progress", $this->mess, 864000);
+            if ($this->messWriteDb) SystemQueue::mk()->where(['code' => $this->code])->update([
+                'message' => json_encode($this->mess, JSON_UNESCAPED_UNICODE)
+            ]);
         }
     }
 
