@@ -69,6 +69,12 @@ class QueueService extends Service
      */
     public function initialize(string $code = ''): QueueService
     {
+        // 重置消息内容
+        if ($this->code !== $code && !empty($this->code)) {
+            $this->_lazyWirteReal();
+            $this->mess = [];
+        }
+        // 初始化新任务数据
         if (!empty($code)) {
             $this->code = $code;
             $this->record = SystemQueue::mk()->where(['code' => $code])->findOrEmpty()->toArray();
