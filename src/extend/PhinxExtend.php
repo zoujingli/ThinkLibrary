@@ -274,7 +274,7 @@ CODE;
             foreach ($files as $file) {
                 $versions[] = $version = intval(substr($bname = pathinfo($file, 8), 0, 14));
                 if ($filename === substr($bname, 15) && unlink($file)) {
-                    echo " ** Notify: Class {$class} file has been replaced." . PHP_EOL;
+                    echo " ** Notify: Class {$class} already exists and has been replaced." . PHP_EOL;
                     if (is_dir($dataPath = dirname($file) . DIRECTORY_SEPARATOR . $version)) {
                         ToolsExtend::removeEmptyDirectory($dataPath);
                     }

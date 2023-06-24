@@ -91,16 +91,29 @@ class Package extends Command
         $tables = array_unique(array_diff($tables, $ignore, ['migrations']));
 
         // 创建数据库结构安装脚本
-        $this->setQueueMessage(4, 3, '开始创建数据表创建脚本！');
-        $phinx = PhinxExtend::create2table($tables);
-        $target = syspath("database/migrations/{$phinx['file']}");
-        if (file_put_contents($target, $phinx['text']) !== false) {
-            $this->setQueueMessage(4, 4, '成功创建数据表创建脚本！');
-            return true;
-        } else {
-            $this->setQueueMessage(4, 4, '创建数据表创建脚本失败！');
-            return false;
+        [$prefix, $groups] = ['', []];
+        foreach ($tables as $table) {
+            $attr = explode('_', $table);
+            if ($attr[0] === 'plugin') array_shift($attr);
+            if (empty($prefix) || $prefix !== $attr[0]) {
+                $prefix = $attr[0];
+            }
+            $groups[$prefix][] = $table;
         }
+        [$total, $count] = [count($groups), 0];
+        $this->setQueueMessage($total, 0, '开始创建数据表创建脚本！');
+        foreach ($groups as $key => $tbs) {
+            $name = 'Install' . ucfirst($key) . 'Table';
+            $phinx = PhinxExtend::create2table($tbs, $name);
+            $target = syspath("database/migrations/{$phinx['file']}");
+            if (file_put_contents($target, $phinx['text']) !== false) {
+                $this->setQueueMessage($total, ++$count, "创建数据库 {$name} 安装脚本成功！");
+            } else {
+                $this->setQueueMessage($total, ++$count, "创建数据库 {$name} 安装脚本失败！");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
