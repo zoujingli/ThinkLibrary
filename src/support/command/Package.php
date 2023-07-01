@@ -137,6 +137,7 @@ class Package extends Command
 
         // 去除忽略的数据表
         $ignore = Library::$sapp->config->get('phinx.ignore', []);
+        if (empty($ignore)) $ignore = ['system_queue', 'system_oplog'];
         $tables = array_unique(array_diff($tables, $ignore, ['migrations']));
 
         // 创建数据库记录安装脚本
