@@ -106,11 +106,16 @@ class Library extends Service
      */
     public function register()
     {
-        // 动态加载应用初始化系统函数
+        // 加载应用函数
         $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
-        foreach (glob("{$this->app->getBasePath()}*/sys.php") as $file) {
-            include $file;
-        }
+
+        // 动态加载全局配置
+        [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
+        foreach (glob("{$dir}*/sys{$ext}") as $file) include_once $file;
+        if (is_file($file = $dir . 'common' . $ext)) include_once $file;
+        if (is_file($file = $dir . 'event' . $ext)) $this->app->loadEvent(include $file);
+        if (is_file($file = $dir . 'provider' . $ext)) $this->app->bind(include $file);
+        if (is_file($file = $dir . 'middleware' . $ext)) $this->app->middleware->import(include $file, 'app');
 
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->runningInConsole()) {
