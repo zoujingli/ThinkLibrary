@@ -164,21 +164,21 @@ class MultAccess
     private function loadMultiApp(string $appPath): bool
     {
         [$ext, $fmaps] = [$this->app->getConfigExt(), []];
-        if (is_file($file = $appPath . 'common' . $ext)) include_once $file;
+        if (is_file($file = "{$appPath}common{$ext}")) include_once $file;
         foreach (glob($appPath . 'config' . DIRECTORY_SEPARATOR . '*' . $ext) as $file) {
             $this->app->config->load($file, $fmaps[] = pathinfo($file, PATHINFO_FILENAME));
         }
         if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();
         }
-        if (is_file($file = $appPath . 'event' . $ext)) {
+        if (is_file($file = "{$appPath}provider{$ext}")) {
+            $this->app->bind(include $file);
+        }
+        if (is_file($file = "{$appPath}event{$ext}")) {
             $this->app->loadEvent(include $file);
         }
-        if (is_file($file = $appPath . 'middleware' . $ext)) {
+        if (is_file($file = "{$appPath}middleware{$ext}")) {
             $this->app->middleware->import(include $file, 'app');
-        }
-        if (is_file($file = $appPath . 'provider' . $ext)) {
-            $this->app->bind(include $file);
         }
         // 重新加载应用语言包
         if (method_exists($this->app->lang, 'switchLangSet')) {
