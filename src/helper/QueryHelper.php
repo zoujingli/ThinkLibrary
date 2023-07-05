@@ -292,12 +292,13 @@ class QueryHelper extends Helper
      * QueryHelper call.
      * @param string $name 调用方法名称
      * @param array $args 调用参数内容
-     * @return $this
+     * @return $this|mixed
      */
-    public function __call(string $name, array $args): QueryHelper
+    public function __call(string $name, array $args)
     {
         if (is_callable($callable = [$this->query, $name])) {
-            call_user_func_array($callable, $args);
+            $result = call_user_func_array($callable, $args);
+            if (!$result instanceof $this->query) return $result;
         }
         return $this;
     }
