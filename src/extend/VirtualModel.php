@@ -51,7 +51,7 @@ class VirtualModel extends \stdClass implements StreamInterface
         $this->position = 0;
         $this->template = '<?php ';
         $this->template .= "namespace virtual\\model\\_{$type}; ";
-        $this->template .= "class {$attr['host']} extends \\think\\Model{ ";
+        $this->template .= "class {$attr['host']} extends \\think\\admin\\Model { ";
         if (!empty($attr['fragment'])) {
             $this->template .= "protected \$connection='{$attr['fragment']}'; ";
         }
