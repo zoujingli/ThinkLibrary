@@ -298,7 +298,9 @@ class QueryHelper extends Helper
     {
         if (is_callable($callable = [$this->query, $name])) {
             $result = call_user_func_array($callable, $args);
-            if (!$result instanceof $this->query) return $result;
+            if ($name[0] !== '_' && !$result instanceof $this->query) {
+                return $result;
+            }
         }
         return $this;
     }
