@@ -76,6 +76,16 @@ abstract class Model extends \think\Model
     }
 
     /**
+     * 创建查询实例
+     * @param array $data
+     * @return \think\db\Query|\think\db\Mongo
+     */
+    public static function mq(array $data = [])
+    {
+        return static::mk($data)->newQuery();
+    }
+
+    /**
      * 调用魔术方法
      * @param string $method 方法名称
      * @param array $args 调用参数
