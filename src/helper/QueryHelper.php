@@ -348,4 +348,13 @@ class QueryHelper extends Helper
             return $this->app->request->$input();
         }
     }
+
+    /**
+     * 克隆属性复制
+     * @return void
+     */
+    public function __clone()
+    {
+        $this->query = clone $this->query;
+    }
 }
