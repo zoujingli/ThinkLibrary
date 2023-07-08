@@ -355,6 +355,7 @@ class QueryHelper extends Helper
      */
     public function __clone()
     {
+        $this->page = clone $this->page;
         $this->query = clone $this->query;
     }
 }
