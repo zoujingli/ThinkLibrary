@@ -25,7 +25,7 @@ use think\Model;
 
 /**
  * 搜索条件处理器
- * Class QueryHelper
+ * @class QueryHelper
  * @package think\admin\helper
  * @see \think\db\Query
  * @mixin Query
@@ -297,12 +297,15 @@ class QueryHelper extends Helper
     public function __call(string $name, array $args)
     {
         if (is_callable($callable = [$this->query, $name])) {
-            $result = call_user_func_array($callable, $args);
-            if ($name[0] !== '_' && !$result instanceof $this->query) {
-                return $result;
+            $value = call_user_func_array($callable, $args);
+            if ($name[0] === '_' || $value instanceof $this->query) {
+                return $this;
+            } else {
+                return $value;
             }
+        } else {
+            return $this;
         }
-        return $this;
     }
 
     /**
