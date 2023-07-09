@@ -152,7 +152,7 @@ class ImageVerify
 
         // 随机位置
         $srcX1 = mt_rand(150, $this->dstWidth - $this->picWidth); // 水印位于大图X坐标
-        $srcY1 = mt_rand(000, $this->dstHeight - $this->picHeight); // 水印位于大图Y坐标
+        $srcY1 = mt_rand(110, $this->dstHeight - $this->picHeight); // 水印位于大图Y坐标
 
         do { // 干扰位置
             $srcX2 = mt_rand(0, $this->dstWidth - $this->picWidth);
