@@ -66,7 +66,7 @@ class ImageVerify
      * @param integer $retry 容错次数
      * @return array [code, bgimg, water]
      */
-    public static function render(string $image, int $time = 1800, int $diff = 5, int $retry = 3): array
+    public static function render(string $image, int $time = 1800, int $diff = 10, int $retry = 3): array
     {
         $data = (new static($image))->create();
         $range = [$data['point'] - $diff, $data['point'] + $diff];
@@ -152,10 +152,10 @@ class ImageVerify
 
         // 随机位置
         $srcX1 = mt_rand(150, $this->dstWidth - $this->picWidth); // 水印位于大图X坐标
-        $srcY1 = mt_rand(110, $this->dstHeight - $this->picHeight); // 水印位于大图Y坐标
+        $srcY1 = mt_rand(0, $this->dstHeight - $this->picHeight); // 水印位于大图Y坐标
 
         do { // 干扰位置
-            $srcX2 = mt_rand(0, $this->dstWidth - $this->picWidth);
+            $srcX2 = mt_rand(100, $this->dstWidth - $this->picWidth);
             $srcY2 = mt_rand(0, $this->dstHeight - $this->picHeight);
         } while (abs($srcX1 - $srcX2) < $this->picWidth);
 
