@@ -170,7 +170,7 @@ class ImageVerify
         shuffle($broders);
         $c1 = array_pop($broders);
         $c2 = array_pop($broders);
-        $gray = imageColorAllocateAlpha($dstim, 0, 0, 0, 111);
+        $gray = imageColorAllocateAlpha($dstim, 0, 0, 0, 80);
         $blue = imageColorAllocateAlpha($watim, 0, 100, 250, 50);
 
         // 取原图像素颜色，生成浮层图
