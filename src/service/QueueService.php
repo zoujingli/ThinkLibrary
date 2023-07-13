@@ -143,7 +143,10 @@ class QueueService extends Service
             if (empty($rscript) && ($queue = SystemQueue::mk()->where($map)->find())) {
                 throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
             }
-            $code = CodeExtend::uniqidDate(16, 'Q');
+            // 生成唯一编号
+            do $code = CodeExtend::uniqidDate(16, 'Q');
+            while (SystemQueue::mk()->where(['code' => $code])->findOrEmpty()->isExists());
+            // 写入任务数据
             SystemQueue::mk()->failException()->insert([
                 'code'       => $code,
                 'title'      => $title,
