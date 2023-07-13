@@ -145,7 +145,7 @@ class QueueService extends Service
             }
             // 生成唯一编号
             do $code = CodeExtend::uniqidDate(16, 'Q');
-            while (SystemQueue::mk()->where(['code' => $code])->findOrEmpty()->isExists());
+            while (SystemQueue::mk()->master()->where(['code' => $code])->findOrEmpty()->isExists());
             // 写入任务数据
             SystemQueue::mk()->failException()->insert([
                 'code'       => $code,
