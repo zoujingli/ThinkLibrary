@@ -416,6 +416,7 @@ if (!function_exists('trace_file')) {
         return false !== file_put_contents($file,
                 "[CODE] {$exception->getCode()}" . PHP_EOL .
                 "[INFO] {$exception->getMessage()}" . PHP_EOL .
+                ($exception instanceof \think\admin\Exception ? "[DATA] {$exception->getData()}" . PHP_EOL : '') .
                 "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL .
                 "[TIME] " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL .
                 '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
