@@ -330,8 +330,9 @@ class SystemService extends Service
     {
         ob_start();
         var_dump($data);
-        $output = preg_replace('/\]\=\>\n(\s+)/m', '] => ', ob_get_clean());
+        $output = preg_replace('/]=>\n(\s+)/m', '] => ', ob_get_clean());
         if (is_null($file)) $file = syspath('runtime/' . date('Ymd') . '.log');
+        else if (!preg_match('#[/\\\\]+#', $file)) $file = syspath("runtime/{$file}.log");
         is_dir($dir = dirname($file)) or mkdir($dir, 0777, true);
         return $new ? file_put_contents($file, $output) : file_put_contents($file, $output, FILE_APPEND);
     }
