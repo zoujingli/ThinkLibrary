@@ -119,7 +119,6 @@ class Publish extends Command
                     'homepage'    => $config['homepage'] ?? ($package['homepage'] ?? ''),
                     'document'    => $config['document'] ?? ($package['document'] ?? ''),
                     'platforms'   => $config['platforms'] ?? [],
-                    'repository'  => $config['repository'] ?? ($package['repository'] ?? ''),
                     'description' => $config['description'] ?? ($package['description'] ?? ''),
                 ];
                 // 生成服务配置
