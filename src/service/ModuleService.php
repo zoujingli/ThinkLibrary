@@ -38,7 +38,7 @@ class ModuleService extends Service
     }
 
     /**
-     * 获取应用列表
+     * 获取应用模块
      * @param array $data
      * @return array
      */
@@ -60,9 +60,8 @@ class ModuleService extends Service
     public static function getLibrarys(string $package = '', bool $force = false)
     {
         $plugs = sysvar('think-library-version');
-        if (empty($plugs) || $force) {
-            $plugs = include syspath('vendor/versions.php');
-            sysvar('think-library-version', $plugs);
+        if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
+            $plugs = sysvar('think-library-version', include syspath('vendor/versions.php'));
         }
         return empty($package) ? $plugs : ($plugs[$package] ?? null);
     }

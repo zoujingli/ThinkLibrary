@@ -18,6 +18,7 @@ declare (strict_types=1);
 
 namespace think\admin;
 
+use think\admin\service\ModuleService;
 use think\admin\service\NodeService;
 use think\App;
 use think\Service;
@@ -160,18 +161,14 @@ abstract class Plugin extends Service
     {
         $data = empty($name) ? self::$addons : (self::$addons[$name] ?? null);
         if (empty($data) || empty($append)) return $data;
-        // 关联安装版本
-        $versions = sysvar('plugin-versions');
-        if (empty($versions) && is_file($file = syspath('vendor/versions.php'))) {
-            $versions = sysvar('plugin-versions', include syspath('vendor/versions.php'));
-        }
+        $versions = ModuleService::getLibrarys();
         if (empty($name)) {
             foreach ($data as &$item) {
                 $item['install'] = $versions[$item['package']] ?? [];
             }
-        } else {
-            $data['install'] = $versions[$data['package']] ?? [];
+            return $data;
         }
+        $data['install'] = $versions[$data['package']] ?? [];
         return $data;
     }
 
