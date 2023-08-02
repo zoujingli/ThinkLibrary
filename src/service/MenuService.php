@@ -41,7 +41,7 @@ class MenuService extends Service
         $nodes = sysvar('think-library-menus') ?: [];
         if (empty($force) && count($nodes) > 0) return $nodes; else $nodes = [];
         foreach (NodeService::getMethods($force) as $node => $method) {
-            if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => $method['title']];
+            if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => lang($method['title'])];
         }
         return sysvar('think-library-menus', $nodes);
     }
@@ -58,6 +58,7 @@ class MenuService extends Service
     {
         $menus = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray();
         if (function_exists('admin_menu_filter')) $menus = call_user_func('admin_menu_filter', $menus);
+        foreach ($menus as &$menu) $menu['title'] = lang($menu['title']);
         return static::filter(DataExtend::arr2tree($menus));
     }
 
