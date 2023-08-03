@@ -16,10 +16,10 @@
 
 namespace think\admin\support\command;
 
-use think\admin\Command;
 use think\admin\extend\ToolsExtend;
 use think\admin\service\ModuleService;
 use think\admin\service\RuntimeService;
+use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
