@@ -23,7 +23,7 @@ use think\exception\HttpResponseException;
 /**
  * 表单模板构建器
  * 后面会在兼容的基础上慢慢完善
- * Class Builder
+ * @class Builder
  * @deprecated 试验中建议不使用
  * @package think\admin
  */

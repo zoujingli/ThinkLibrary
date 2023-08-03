@@ -23,7 +23,7 @@ use think\Validate;
 
 /**
  * 快捷输入验证器
- * Class ValidateHelper
+ * @class ValidateHelper
  * @package think\admin\helper
  */
 class ValidateHelper extends Helper

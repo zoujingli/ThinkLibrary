@@ -24,7 +24,7 @@ use think\exception\HttpResponseException;
 
 /**
  * JsonRpc 服务端
- * Class JsonRpcServer
+ * @class JsonRpcServer
  * @package think\admin\extend
  */
 class JsonRpcServer

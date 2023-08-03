@@ -29,7 +29,7 @@ use think\Response;
 
 /**
  * 多应用调度中间键
- * Class MultAccess
+ * @class MultAccess
  * @package think\admin\support\middleware
  */
 class MultAccess
@@ -96,7 +96,7 @@ class MultAccess
             $name = current(explode('/', $pathinfo));
             if (strpos($name, '.')) $name = strstr($name, '.', true);
             // 应用绑定与插件处理
-            $addons = Plugin::all();
+            $addons = Plugin::get();
             $appmap = $this->app->config->get('app.app_map', []);
             if (isset($appmap[$name])) {
                 $appName = $appmap[$name] instanceof Closure ? (call_user_func_array($appmap[$name], [$this->app]) ?: $name) : $appmap[$name];

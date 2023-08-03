@@ -24,7 +24,7 @@ use think\exception\HttpResponseException;
 
 /**
  * 表单令牌验证器
- * Class TokenHelper
+ * @class TokenHelper
  * @package think\admin\helper
  */
 class TokenHelper extends Helper
@@ -41,7 +41,7 @@ class TokenHelper extends Helper
         $token = $this->app->request->post('_token_');
         $extra = ['_token_' => $token ?: $this->app->request->header('User-Form-Token')];
         if ($this->app->request->checkToken('_token_', $extra)) return true; elseif ($return) return false;
-        $this->class->error($this->class->csrf_message ?: lang('think_library_csrf_error'));
+        $this->class->error($this->class->csrf_message ?: '表单令牌验证失败！');
     }
 
     /**

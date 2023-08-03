@@ -107,7 +107,7 @@ class JwtSession
         } else {
             // 非 Jwt 请求禁止使用 Jwt 会话
             if (JwtExtend::isJwtMode()) throw new HttpResponseException(json([
-                'code' => 0, 'info' => lang('请使用JWT方式访问！')
+                'code' => 0, 'info' => lang('请使用 JWT 方式访问！')
             ]));
             // 非 Jwt 请求需写入 Cookie 记录 SessionID
             $this->app->cookie->set($this->session->getName(), $this->session->getId());

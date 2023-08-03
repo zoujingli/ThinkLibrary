@@ -23,7 +23,7 @@ use think\admin\Service;
 
 /**
  * 图形验证码服务
- * Class CaptchaService
+ * @class CaptchaService
  * @package think\admin\service
  */
 class CaptchaService extends Service

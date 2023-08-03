@@ -23,7 +23,7 @@ use think\Container;
 
 /**
  * 自定义服务基类
- * Class Service
+ * @class Service
  * @package think\admin
  */
 abstract class Service
@@ -35,7 +35,7 @@ abstract class Service
     protected $app;
 
     /**
-     * Service constructor.
+     * constructor.
      * @param App $app
      */
     public function __construct(App $app)

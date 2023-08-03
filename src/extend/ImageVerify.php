@@ -240,7 +240,7 @@ class ImageVerify
 
         // 第二个圆中心点
         $c_2_x = $this->picHeight - $this->r;
-        $c_2_y = $lw + ($this->picHeight - ($lw) * 2) / 2;;
+        $c_2_y = $lw + ($this->picHeight - ($lw) * 2) / 2;
 
         for ($i = 0; $i < $this->picHeight; $i++) {
             for ($j = 0; $j < $this->picWidth; $j++) {

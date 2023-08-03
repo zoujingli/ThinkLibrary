@@ -24,7 +24,7 @@ use think\Model;
 
 /**
  * 通用删除管理器
- * Class DeleteHelper
+ * @class DeleteHelper
  * @package think\admin\helper
  */
 class DeleteHelper extends Helper
@@ -56,7 +56,7 @@ class DeleteHelper extends Helper
 
         // 阻止危险操作
         if (!$query->getOptions('where')) {
-            $this->class->error(lang('think_library_delete_error'));
+            $this->class->error('数据删除失败！');
         }
 
         // 组装执行数据
@@ -87,9 +87,9 @@ class DeleteHelper extends Helper
 
         // 回复返回结果
         if ($result !== false) {
-            $this->class->success(lang('think_library_delete_success'), '');
+            $this->class->success('数据删除成功！', '');
         } else {
-            $this->class->error(lang('think_library_delete_error'));
+            $this->class->error('数据删除失败！');
         }
     }
 }

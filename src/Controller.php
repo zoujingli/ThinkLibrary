@@ -37,7 +37,7 @@ use think\Request;
 
 /**
  * 标准控制器基类
- * Class Controller
+ * @class Controller
  * @package think\admin
  */
 class Controller extends stdClass
@@ -113,7 +113,7 @@ class Controller extends stdClass
     {
         if ($data === '{-null-}') $data = new stdClass();
         throw new HttpResponseException(json([
-            'code' => $code, 'info' => $info, 'data' => $data,
+            'code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data,
         ]));
     }
 
@@ -126,7 +126,7 @@ class Controller extends stdClass
     public function success($info, $data = '{-null-}', $code = 1): void
     {
         if ($data === '{-null-}') $data = new stdClass();
-        $result = ['code' => $code, 'info' => $info, 'data' => $data];
+        $result = ['code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data];
         if (JwtExtend::isRejwt()) $result['token'] = JwtExtend::token();
         throw new HttpResponseException(json($result));
     }
@@ -310,11 +310,11 @@ class Controller extends stdClass
     {
         try {
             $queue = QueueService::register($title, $command, $later, $data, $rscript, $loops);
-            $this->success(lang('创建任务成功！'), $queue->code);
+            $this->success('创建任务成功！', $queue->code);
         } catch (Exception $exception) {
             $code = $exception->getData();
             if (is_string($code) && stripos($code, 'Q') === 0) {
-                $this->success(lang('任务已经存在，无需再次创建！'), $code);
+                $this->success('任务已经存在，无需再次创建！', $code);
             } else {
                 $this->error($exception->getMessage());
             }

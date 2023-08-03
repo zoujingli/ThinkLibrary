@@ -23,7 +23,7 @@ use think\Model;
 
 /**
  * 虚拟模型构建协议
- * Class VirtualModel
+ * @class VirtualModel
  * @package think\admin\extend
  */
 class VirtualModel extends \stdClass implements StreamInterface

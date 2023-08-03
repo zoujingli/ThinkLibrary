@@ -25,7 +25,7 @@ use think\console\Output;
 
 /**
  * 自定义指令基类
- * Class Command
+ * @class Command
  * @package think\admin
  */
 abstract class Command extends \think\console\Command

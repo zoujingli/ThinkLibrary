@@ -22,7 +22,7 @@ use think\admin\Model;
 
 /**
  * 系统菜单模型
- * Class SystemMenu
+ * @class SystemMenu
  * @package think\admin\model
  */
 class SystemMenu extends Model

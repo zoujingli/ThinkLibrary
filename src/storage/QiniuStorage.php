@@ -26,7 +26,7 @@ use think\admin\Storage;
 
 /**
  * 七牛云存储支持
- * Class QiniuStorage
+ * @class QiniuStorage
  * @package think\admin\storage
  */
 class QiniuStorage implements StorageInterface
@@ -55,7 +55,7 @@ class QiniuStorage implements StorageInterface
         } elseif (in_array($type, ['http', 'https'])) {
             $this->domain = "{$type}://{$host}";
         } else {
-            throw new Exception(lang('未配置七牛云URL域名哦'));
+            throw new Exception(lang('未配置七牛云域名'));
         }
     }
 

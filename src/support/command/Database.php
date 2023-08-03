@@ -26,7 +26,7 @@ use think\console\Output;
 
 /**
  * 数据库修复优化指令
- * Class Database
+ * @class Database
  * @package think\admin\support\command
  */
 class Database extends Command

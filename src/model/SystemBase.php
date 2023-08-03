@@ -22,7 +22,7 @@ use think\admin\Model;
 
 /**
  * 数据字典模型
- * Class SystemBase
+ * @class SystemBase
  * @package think\admin\model
  */
 class SystemBase extends Model

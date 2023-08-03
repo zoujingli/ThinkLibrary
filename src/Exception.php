@@ -20,7 +20,7 @@ namespace think\admin;
 
 /**
  * 自定义数据异常
- * Class Exception
+ * @class Exception
  * @package think\admin
  */
 class Exception extends \Exception

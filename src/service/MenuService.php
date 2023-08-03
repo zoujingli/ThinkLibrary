@@ -24,11 +24,26 @@ use think\admin\Service;
 
 /**
  * 系统菜单管理服务
- * Class MenuService
+ * @class MenuService
  * @package app\admin\service
  */
 class MenuService extends Service
 {
+
+    /**
+     * 菜单分组语言包
+     * @param string $name
+     * @return string
+     */
+    private static function lang(string $name): string
+    {
+        $lang = lang("menus_{$name}");
+        if (stripos($lang, 'menus_') === 0) {
+            return lang(substr($lang, 6));
+        } else {
+            return $lang;
+        }
+    }
 
     /**
      * 获取可选菜单节点
@@ -41,7 +56,7 @@ class MenuService extends Service
         $nodes = sysvar('think-library-menus') ?: [];
         if (empty($force) && count($nodes) > 0) return $nodes; else $nodes = [];
         foreach (NodeService::getMethods($force) as $node => $method) {
-            if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => lang($method['title'])];
+            if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => self::lang($method['title'])];
         }
         return sysvar('think-library-menus', $nodes);
     }
@@ -58,7 +73,7 @@ class MenuService extends Service
     {
         $menus = SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray();
         if (function_exists('admin_menu_filter')) $menus = call_user_func('admin_menu_filter', $menus);
-        foreach ($menus as &$menu) $menu['title'] = lang($menu['title']);
+        foreach ($menus as &$menu) $menu['title'] = self::lang($menu['title']);
         return static::filter(DataExtend::arr2tree($menus));
     }
 

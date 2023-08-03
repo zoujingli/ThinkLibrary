@@ -20,7 +20,7 @@ namespace think\admin\extend;
 
 /**
  * 导出 CSV 文件扩展
- * Class ExcelExtend
+ * @class ExcelExtend
  * @deprecated 改用 JavaScript
  * @package think\admin\extend
  */

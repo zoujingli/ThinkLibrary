@@ -22,7 +22,7 @@ use think\admin\Model;
 
 /**
  * 系统数据模型
- * Class SystemData
+ * @class SystemData
  * @package think\admin\model
  */
 class SystemData extends Model

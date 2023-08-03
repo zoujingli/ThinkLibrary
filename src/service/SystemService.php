@@ -34,7 +34,7 @@ use think\Model;
 
 /**
  * 系统参数管理服务
- * Class SystemService
+ * @class SystemService
  * @package think\admin\service
  *
  * @method static bool isDebug() 调式模式运行
@@ -312,7 +312,7 @@ class SystemService extends Service
     {
         return [
             'node'      => NodeService::getCurrent(),
-            'action'    => $action, 'content' => $content,
+            'action'    => lang($action), 'content' => lang($content),
             'geoip'     => Library::$sapp->request->ip() ?: '127.0.0.1',
             'username'  => AdminService::getUserName() ?: '-',
             'create_at' => date('Y-m-d H:i:s'),

@@ -23,7 +23,7 @@ use think\Route as ThinkRoute;
 
 /**
  * 自定义路由对象
- * Class Route
+ * @class Route
  * @package think\admin\support
  */
 class Route extends ThinkRoute

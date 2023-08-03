@@ -22,7 +22,7 @@ use think\admin\Exception;
 
 /**
  * JsonRpc 客户端
- * Class JsonRpcClient
+ * @class JsonRpcClient
  * @package think\admin\extend
  */
 class JsonRpcClient

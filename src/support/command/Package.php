@@ -25,7 +25,7 @@ use think\console\input\Option;
 
 /**
  * 生成数据安装包
- * Class Package
+ * @class Package
  * @package think\admin\support\command
  */
 class Package extends Command

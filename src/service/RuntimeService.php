@@ -28,7 +28,7 @@ use think\Response;
 
 /**
  * 系统运行服务
- * Class RuntimeService
+ * @class RuntimeService
  * @package think\admin\service
  */
 class RuntimeService

@@ -23,7 +23,7 @@ use think\admin\Service;
 
 /**
  * 新助通短信接口服务
- * Class ZtSmsService
+ * @class ZtSmsService
  * @deprecated 独立封装为插件
  * @package think\admin\service
  */

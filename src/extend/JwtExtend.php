@@ -24,7 +24,7 @@ use think\admin\Library;
 
 /**
  * 接口 JWT 接口扩展
- * Class JwtExtend
+ * @class JwtExtend
  * @package think\admin\extend
  * @method static array getInData() 获取输入数据
  */

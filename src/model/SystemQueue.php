@@ -22,7 +22,7 @@ use think\admin\Model;
 
 /**
  * 系统任务模型
- * Class SystemQueue
+ * @class SystemQueue
  * @package think\admin\model
  */
 class SystemQueue extends Model

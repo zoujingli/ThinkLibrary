@@ -22,7 +22,7 @@ use think\admin\Model;
 
 /**
  * 授权节点模型
- * Class SystemNode
+ * @class SystemNode
  * @mixin \think\db\Query
  * @package think\admin\model
  */

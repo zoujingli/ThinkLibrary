@@ -15,16 +15,16 @@
 ## 包含组件
 
 * 数据列表展示（可带高级搜索器）
-* FORM 表单处理器（表单展示及数据入库）
+* **FORM** 表单处理器（表单展示及数据入库）
 * 数据状态快速处理（数据指定字段更新，支持多字段同时）
-* 数据安全删除处理（硬删除 + 软删除，`is_deleted`或`deleted`字段存在则自动软删除）
-* 文件存储通用组件（本地服务存储 + 又拍云存储 + 七牛云对象存储 + 又拍云`USS`存储 + 阿里云`OSS`存储 + 腾讯云`COS`存储）
-* 通用数据保存更新（通过`key`值及`where`判定是否存在，存在则更新，不存在则新增）
-* 通用网络请求（支持`get`及`post`，可配置请求证书等）
-* 系统参数通用`g`-`k`-`v`配置（快速参数长久化配置）
-* UTF8 加密算法支持（安全`URL`传递参数）
-* 接口`CORS`跨域默认支持（输出`JSON`标准化）
-* 支持表单`CSRF`安全验证（自动化`FORM`标签替换）
+* 数据安全删除处理（硬删除 + 软删除，`is_deleted` 或 `deleted` 字段存在则自动软删除）
+* 文件存储通用组件（本地服务存储 + 又拍云存储 + 自建 `Alist` 存储 + 七牛云对象存储 + 又拍云 `USS` 存储 + 阿里云 `OSS` 存储 + 腾讯云 `COS` 存储）
+* 通用数据保存更新（通过 `key` 值及 `where` 判定是否存在，存在则更新，不存在则新增）
+* 通用网络请求（支持 `get` 及 `post`，可配置请求证书等）
+* 系统参数通用 `g`-`k`-`v` 配置（快速参数长久化配置）
+* **UTF8** 加密算法支持（安全 `URL` 传递参数）
+* 接口 `CORS` 跨域默认支持（输出 `JSON` 标准化）
+* 支持表单 `CSRF` 安全验证（自动化 `FORM` 标签替换）
 * 更新功能等待您来发现哦....
 
 ## 参考项目
@@ -37,19 +37,19 @@
 
 ## 代码仓库
 
-ThinkLibrary 遵循MIT开源协议发布，并免费提供使用。
+**ThinkLibrary** 遵循 **MIT** 开源协议发布，并免费提供使用。
 
 部分代码来自互联网，若有异议可以联系作者进行删除。
 
-* 在线体验地址：https://v6.thinkadmin.top （账号和密码都是 admin ）
-* Gitee 仓库地址：https://gitee.com/zoujingli/ThinkLibrary
-* Github 仓库地址：https://github.com/zoujingli/ThinkLibrary
+* 在线体验地址：https://v6.thinkadmin.top （账号和密码都是 `admin` ）
+* **Gitee** 仓库地址：https://gitee.com/zoujingli/ThinkLibrary
+* **Github** 仓库地址：https://github.com/zoujingli/ThinkLibrary
 
 ## 使用说明
 
-* ThinkLibrary 需要 Composer 支持
+* **ThinkLibrary** 需要 **Composer** 支持
 * 安装命令：`composer require zoujingli/think-library`
-* 案例代码： 控制器需要继承 `think\admin\Controller`，然后`$this`就可能使用全部功能
+* 案例代码： 控制器需要继承 `think\admin\Controller`，然后 `$this` 就可能使用全部功能
 
 ```php
 // 定义 MyController 控制器
@@ -290,46 +290,56 @@ $content = decode($string);
 **数据解密**
 
 ```php
+use think\admin\extend\CodeExtend;
+
 // 数据 AES-256-CBC 对称加密
-$encrypt = \think\admin\extend\CodeExtend::encrypt($content, $enckey);
+$encrypt = CodeExtend::encrypt($content, $enckey);
 
 // 数据 AES-256-CBC 对称解密
-$content = \think\admin\extend\CodeExtend::decrypt($encrypt, $enckey);
+$content = CodeExtend::decrypt($encrypt, $enckey);
 ```
 
 **文本转 UTF8 编码**
 
 ```php
+use think\admin\extend\CodeExtend;
+
 // 文本转 UTF8 编码
-$content = \think\admin\extend\CodeExtend::text2utf8($content)
+$content = CodeExtend::text2utf8($content)
 ```
 
 **文本 Base64 URL 编码**
 
 ```php
+use think\admin\extend\CodeExtend;
+
 // 文本 Base64 URL 编码
-$safe64 = \think\admin\extend\CodeExtend::enSafe64($content)
+$safe64 = CodeExtend::enSafe64($content)
 
 // 文本 Base64 URL 解码
-$content = \think\admin\extend\CodeExtend::deSafe64($safe64)
+$content = CodeExtend::deSafe64($safe64)
 ```
 
-### 数据压缩
+### 数据压缩处理
 
 ```php
+use think\admin\extend\CodeExtend;
+
 // 数据压缩 ( 内容越大效果越好 )
-$enzip = \think\admin\extend\CodeExtend::enzip($content)
+$enzip = CodeExtend::enzip($content)
 
 // 数据解压 ( 内容越大效果越好 )
-$content = \think\admin\extend\CodeExtend::dezip($enzip)
+$content = CodeExtend::dezip($enzip)
 ```
 
-### 数据结构
+### 数组结构处理
 
 ```php
+use think\admin\extend\CodeExtend;
+
 // 二维数组 转为 立体数据结构，需要存在 id 及 pid 关系
-$tree = \think\admin\extend\CodeExtend::arr2tree($list);
+$tree = CodeExtend::arr2tree($list);
 
 // 二维数组 转为 扁平数据结构，需要存在 id 及 pid 关系
-$tree = \think\admin\extend\CodeExtend::arr2table($list);
+$tree = CodeExtend::arr2table($list);
 ```

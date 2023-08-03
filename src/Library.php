@@ -35,7 +35,7 @@ use think\Service;
 
 /**
  * 模块注册服务
- * Class Library
+ * @class Library
  * @package think\admin
  */
 class Library extends Service
@@ -106,9 +106,6 @@ class Library extends Service
      */
     public function register()
     {
-        // 加载应用函数
-        $this->app->lang->load(__DIR__ . '/lang/zh-cn.php', 'zh-cn');
-
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
         foreach (glob("{$dir}*/sys{$ext}") as $file) include_once $file;

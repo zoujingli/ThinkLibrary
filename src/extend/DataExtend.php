@@ -20,7 +20,7 @@ namespace think\admin\extend;
 
 /**
  * 数据处理扩展
- * Class DataExtend
+ * @class DataExtend
  * @package think\admin\extend
  */
 class DataExtend

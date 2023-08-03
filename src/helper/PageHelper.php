@@ -27,7 +27,7 @@ use think\Model;
 
 /**
  * 列表处理管理器
- * Class PageHelper
+ * @class PageHelper
  * @package think\admin\helper
  */
 class PageHelper extends Helper
@@ -73,7 +73,7 @@ class PageHelper extends Helper
             } else {
                 $select .= "<option selected>{$limit}</option>";
             }
-            $html = lang('think_library_page_html', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
+            $html = lang('共 %s 条记录，每页显示 %s 条，共 %s 页当前显示第 %s 页。', [$data['total'], "{$select}</select>", $data['last_page'], $data['current_page']]);
             $link = $inner ? str_replace('<a href="', '<a data-open="' . $prefix, $paginate->render() ?: '') : ($paginate->render() ?: '');
             $this->class->assign('pagehtml', "<div class='pagination-container nowrap'><span>{$html}</span>{$link}</div>");
         } else {
@@ -177,17 +177,17 @@ class PageHelper extends Helper
     {
         $query = static::buildQuery($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            AdminService::isLogin() or $this->class->error(lang('think_library_not_login'));
+            AdminService::isLogin() or $this->class->error('登录授权无效，请重新登录！');
             if (method_exists($query, 'getTableFields') && in_array('sort', $query->getTableFields())) {
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
                     $data = ['sort' => intval($this->app->request->post('sort', 0))];
                     if ($query->newQuery()->where($map)->update($data) !== false) {
-                        $this->class->success(lang('think_library_sort_success'), '');
+                        $this->class->success('列表排序成功！', '');
                     }
                 }
             }
-            $this->class->error(lang('think_library_sort_error'));
+            $this->class->error('列表排序失败！');
         }
         return $query;
     }

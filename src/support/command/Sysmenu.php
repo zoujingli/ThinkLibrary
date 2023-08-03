@@ -24,7 +24,7 @@ use think\admin\model\SystemMenu;
 
 /**
  * 重置并清理系统菜单
- * Class Sysmenu
+ * @class Sysmenu
  * @package think\admin\support\command
  */
 class Sysmenu extends Command

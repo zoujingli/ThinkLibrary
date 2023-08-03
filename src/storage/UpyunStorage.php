@@ -26,7 +26,7 @@ use think\admin\Storage;
 
 /**
  * 又拍云存储支持
- * Class UpyunStorage
+ * @class UpyunStorage
  * @package think\admin\storage
  */
 class UpyunStorage implements StorageInterface
@@ -69,7 +69,7 @@ class UpyunStorage implements StorageInterface
         } elseif (in_array($type, ['http', 'https'])) {
             $this->domain = "{$type}://{$host}";
         } else {
-            throw new Exception(lang('未配置又拍云URL域名哦'));
+            throw new Exception(lang('未配置又拍云域名'));
         }
     }
 

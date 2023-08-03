@@ -24,7 +24,7 @@ use think\App;
 
 /**
  * 任务基础类
- * Class Queue
+ * @class Queue
  * @package think\admin
  */
 abstract class Queue

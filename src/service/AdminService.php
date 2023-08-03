@@ -31,7 +31,7 @@ use think\Session;
 
 /**
  * 系统权限管理服务
- * Class AdminService
+ * @class AdminService
  * @package think\admin\service
  */
 class AdminService extends Service

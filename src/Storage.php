@@ -24,7 +24,7 @@ use think\Container;
 
 /**
  * 文件存储引擎管理
- * Class Storage
+ * @class Storage
  * @package think\admin
  * @method static array info($name, $safe = false, $attname = null) 文件存储信息
  * @method static array set($name, $file, $safe = false, $attname = null) 储存文件

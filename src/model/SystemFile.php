@@ -23,7 +23,7 @@ use think\model\relation\HasOne;
 
 /**
  * 文件管理系统
- * Class SystemFile
+ * @class SystemFile
  * @package think\admin\model
  */
 class SystemFile extends Model

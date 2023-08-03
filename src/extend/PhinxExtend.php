@@ -26,7 +26,7 @@ use think\helper\Str;
 
 /**
  * 数据库迁移扩展
- * Class PhinxExtend
+ * @class PhinxExtend
  * @package think\admin\extend
  */
 class PhinxExtend

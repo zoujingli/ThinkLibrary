@@ -20,7 +20,7 @@ namespace think\admin\extend;
 
 /**
  * 随机数码管理扩展
- * Class CodeExtend
+ * @class CodeExtend
  * @package think\admin\extend
  */
 class CodeExtend

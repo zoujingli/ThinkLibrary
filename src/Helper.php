@@ -27,8 +27,8 @@ use think\db\Query;
 use think\Model;
 
 /**
- * 控制器挂件
- * Class Helper
+ * 控制器助手
+ * @class Helper
  * @package think\admin
  */
 abstract class Helper

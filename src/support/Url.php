@@ -34,7 +34,7 @@ use think\route\Url as ThinkUrl;
 
 /**
  * 多应用 URL 生成与解析
- * Class Url
+ * @class Url
  * @package think\admin\support
  */
 class Url extends ThinkUrl

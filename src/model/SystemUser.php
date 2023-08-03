@@ -23,7 +23,7 @@ use think\model\relation\HasOne;
 
 /**
  * 系统用户模型
- * Class SystemUser
+ * @class SystemUser
  * @package think\admin\model
  */
 class SystemUser extends Model

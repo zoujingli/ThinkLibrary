@@ -22,7 +22,7 @@ use think\admin\Model;
 
 /**
  * 系统日志模型
- * Class SystemOplog
+ * @class SystemOplog
  * @package think\admin\model
  */
 class SystemOplog extends Model

@@ -26,7 +26,7 @@ use think\admin\Storage;
 
 /**
  * 阿里云OSS存储支持
- * Class AliossStorage
+ * @class AliossStorage
  * @package think\admin\storage
  */
 class AliossStorage implements StorageInterface
@@ -76,7 +76,7 @@ class AliossStorage implements StorageInterface
         } elseif (in_array($type, ['http', 'https'])) {
             $this->domain = "{$type}://{$host}";
         } else {
-            throw new Exception(lang('未配置阿里云URL域名哦'));
+            throw new Exception(lang('未配置阿里云域名'));
         }
     }
 

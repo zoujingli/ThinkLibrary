@@ -26,7 +26,7 @@ use think\console\Output;
 
 /**
  * 组件安装指令
- * Class Publish
+ * @class Publish
  * @package think\admin\support\command
  */
 class Publish extends Command

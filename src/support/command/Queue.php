@@ -32,7 +32,7 @@ use Throwable;
 
 /**
  * 异步任务管理指令
- * Class Queue
+ * @class Queue
  * @package think\admin\support\command
  */
 class Queue extends Command

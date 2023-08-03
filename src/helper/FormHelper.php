@@ -25,7 +25,7 @@ use think\Model;
 
 /**
  * 表单视图管理器
- * Class FormHelper
+ * @class FormHelper
  * @package think\admin\helper
  */
 class FormHelper extends Helper
@@ -67,9 +67,9 @@ class FormHelper extends Helper
                 $result = SystemService::save($query, $edata, $field, $where) !== false;
                 if (false !== $this->class->callback('_form_result', $result, $edata)) {
                     if ($result !== false) {
-                        $this->class->success(lang('think_library_form_success'));
+                        $this->class->success('数据保存成功！');
                     } else {
-                        $this->class->error(lang('think_library_form_error'));
+                        $this->class->error('数据保存失败！');
                     }
                 }
                 return $result;

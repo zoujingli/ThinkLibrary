@@ -28,7 +28,7 @@ use think\exception\HttpResponseException;
 
 /**
  * 通用接口基础服务
- * Class InterfaceService
+ * @class InterfaceService
  * @package think\admin\service
  */
 class InterfaceService extends Service
@@ -132,22 +132,22 @@ class InterfaceService extends Service
     {
         // 基础参数获取
         $input = ValidateHelper::instance()->init([
-            'time.require'  => lang('think_library_params_failed_empty', ['time']),
-            'sign.require'  => lang('think_library_params_failed_empty', ['sign']),
-            'data.require'  => lang('think_library_params_failed_empty', ['data']),
-            'appid.require' => lang('think_library_params_failed_empty', ['appid']),
-            'nostr.require' => lang('think_library_params_failed_empty', ['nostr']),
+            'time.require'  => lang('请求参数 %s 不能为空！', ['time']),
+            'sign.require'  => lang('请求参数 %s 不能为空！', ['sign']),
+            'data.require'  => lang('请求参数 %s 不能为空！', ['data']),
+            'appid.require' => lang('请求参数 %s 不能为空！', ['appid']),
+            'nostr.require' => lang('请求参数 %s 不能为空！', ['nostr']),
         ], 'post', [$this, 'baseError']);
 
         // 检查请求签名，使用通用签名方式
         $build = $this->signString($input['data'], $input['time'], $input['nostr']);
         if ($build['sign'] !== $input['sign']) {
-            $this->baseError(lang('think_library_params_failed_sign'));
+            $this->baseError(lang('接口签名验证失败！'));
         }
 
         // 检查请求时间，与服务差不能超过 30 秒
         if (abs(intval($input['time']) - time()) > 30) {
-            $this->baseError(lang('think_library_params_failed_time'));
+            $this->baseError(lang('接口请求时差过大！'));
         }
 
         // 返回并解析数据内容，如果解析失败返回空数组
@@ -163,7 +163,7 @@ class InterfaceService extends Service
     public function error($info, $data = '{-null-}', $code = 0): void
     {
         if ($data === '{-null-}') $data = new stdClass();
-        $this->baseResponse(lang('think_library_response_failed'), [
+        $this->baseResponse(lang('请求响应异常！'), [
             'code' => $code, 'info' => $info, 'data' => $data,
         ]);
     }
@@ -177,8 +177,8 @@ class InterfaceService extends Service
     public function success($info, $data = '{-null-}', $code = 1): void
     {
         if ($data === '{-null-}') $data = new stdClass();
-        $this->baseResponse(lang('think_library_response_success'), [
-            'code' => $code, 'info' => $info, 'data' => $data,
+        $this->baseResponse(lang('请求响应成功！'), [
+            'code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data,
         ]);
     }
 
@@ -234,7 +234,7 @@ class InterfaceService extends Service
         $content = HttpExtend::post($url, $this->signData($data)) ?: '';
         // 解析返回的结果
         if (!($result = json_decode($content, true)) || empty($result)) {
-            throw new Exception(lang('接口请求异常，请检查地址是否正确！'));
+            throw new Exception(lang('接口请求响应格式异常！'));
         }
         // 返回业务异常结果
         if (empty($result['code'])) throw new Exception($result['info']);

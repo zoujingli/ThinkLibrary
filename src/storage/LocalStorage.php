@@ -23,7 +23,7 @@ use think\admin\contract\StorageUsageTrait;
 
 /**
  * 本地存储支持
- * Class LocalStorage
+ * @class LocalStorage
  * @package think\admin\storage
  */
 class LocalStorage implements StorageInterface

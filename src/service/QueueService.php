@@ -25,7 +25,7 @@ use think\admin\Service;
 
 /**
  * 任务基础服务
- * Class QueueService
+ * @class QueueService
  * @package think\admin\service
  */
 class QueueService extends Service
@@ -141,7 +141,7 @@ class QueueService extends Service
         try {
             $map = [['title', '=', $title], ['status', 'in', [1, 2]]];
             if (empty($rscript) && ($queue = SystemQueue::mk()->where($map)->find())) {
-                throw new Exception(lang('think_library_queue_exist'), 0, $queue['code']);
+                throw new Exception(lang('已创建请等待处理完成！'), 0, $queue['code']);
             }
             // 生成唯一编号
             do $code = CodeExtend::uniqidDate(16, 'Q');

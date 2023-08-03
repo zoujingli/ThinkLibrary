@@ -20,7 +20,7 @@ namespace think\admin\extend;
 
 /**
  * CURL模拟请求扩展
- * Class HttpExtend
+ * @class HttpExtend
  * @package think\admin\extend
  */
 class HttpExtend

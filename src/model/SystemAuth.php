@@ -22,7 +22,7 @@ use think\admin\Model;
 
 /**
  * 用户权限模型
- * Class SystemAuth
+ * @class SystemAuth
  * @package think\admin\model
  */
 class SystemAuth extends Model

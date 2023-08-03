@@ -27,7 +27,7 @@ use think\helper\Str;
 
 /**
  * 数据库字符替换
- * Class Replace
+ * @class Replace
  * @package think\admin\support\command
  */
 class Replace extends Command

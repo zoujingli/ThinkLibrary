@@ -29,7 +29,7 @@ use think\admin\Service;
 
 /**
  * 应用节点服务管理
- * Class NodeService
+ * @class NodeService
  * @method static array getModules() 获取应用列表
  * @method static array scanDirectory() 扫描目录列表
  * @package think\admin\service

@@ -23,7 +23,7 @@ use think\admin\Service;
 
 /**
  * 系统模块管理
- * Class ModuleService
+ * @class ModuleService
  * @package think\admin\service
  */
 class ModuleService extends Service

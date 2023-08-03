@@ -24,7 +24,7 @@ use think\admin\Service;
 
 /**
  * 百度快递100物流查询
- * Class ExpressService
+ * @class ExpressService
  * @deprecated 独立封装为插件
  * @package think\admin\service
  */
@@ -97,7 +97,7 @@ class ExpressService extends Service
                 return $result;
             }
         }
-        return ['message' => lang('暂无轨迹信息'), 'status' => 1, 'express' => $code, 'number' => $number, 'data' => $list];
+        return ['message' => lang('暂无轨迹信息~'), 'status' => 1, 'express' => $code, 'number' => $number, 'data' => $list];
     }
 
     /**

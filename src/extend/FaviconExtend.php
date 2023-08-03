@@ -22,7 +22,7 @@ use think\admin\Exception;
 
 /**
  * 网站 ICO 文件生成工具
- * Class FaviconExtend
+ * @class FaviconExtend
  * @package think\admin\extend
  */
 class FaviconExtend

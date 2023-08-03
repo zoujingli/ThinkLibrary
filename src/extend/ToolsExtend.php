@@ -25,7 +25,7 @@ use SplFileInfo;
 
 /**
  * 通用工具扩展
- * Class ToolsExtend
+ * @class ToolsExtend
  * @package think\admin\extend
  */
 class ToolsExtend

@@ -24,7 +24,7 @@ use think\Model;
 
 /**
  * 数据更新管理器
- * Class SaveHelper
+ * @class SaveHelper
  * @package think\admin\helper
  */
 class SaveHelper extends Helper
@@ -73,9 +73,9 @@ class SaveHelper extends Helper
 
         // 回复前端结果
         if ($result !== false) {
-            $this->class->success(lang('think_library_save_success'), '');
+            $this->class->success('数据保存成功！', '');
         } else {
-            $this->class->error(lang('think_library_save_error'));
+            $this->class->error('数据保存参数！');
         }
     }
 }

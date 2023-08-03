@@ -26,7 +26,7 @@ use think\admin\Storage;
 
 /**
  * Alist 自建存储支持
- * Class AlistStorage
+ * @class AlistStorage
  * @package think\admin\storage
  */
 class AlistStorage implements StorageInterface
@@ -71,7 +71,7 @@ class AlistStorage implements StorageInterface
         } elseif (!empty($host) && in_array($type, ['http', 'https'])) {
             $this->domain = "{$type}://{$host}";
         } else {
-            throw new Exception(lang('未配置Alist域名哦'));
+            throw new Exception(lang('未配置Alist域名'));
         }
         $this->username = sysconf('storage.alist_username|raw') ?: '';
         $this->password = sysconf('storage.alist_password|raw') ?: '';
