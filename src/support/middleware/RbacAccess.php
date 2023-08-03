@@ -58,7 +58,7 @@ class RbacAccess
 
         // HTTP.LANG 语言包处理
         $langSet = $this->app->lang->getLangSet();
-        if (file_exists($file = __DIR__ . "/lang/{$langSet}.php")) {
+        if (file_exists($file = dirname(__DIR__, 2) . "/lang/{$langSet}.php")) {
             $this->app->lang->load($file, $langSet);
         }
 
