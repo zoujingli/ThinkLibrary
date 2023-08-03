@@ -100,14 +100,14 @@ abstract class Plugin extends Service
         }
 
         // 应用插件路径计算
-        if (empty($this->appPath) || !file_exists($this->appPath)) {
+        if (empty($this->appPath) || !is_dir($this->appPath)) {
             $this->appPath = dirname($ref->getFileName());
         }
 
         // 应用插件包名计算
         if (empty($this->package) && ($path = $ref->getFileName())) {
             for ($level = 1; $level <= 3; $level++) {
-                if (file_exists($file = dirname($path, $level) . '/composer.json')) {
+                if (is_file($file = dirname($path, $level) . '/composer.json')) {
                     $this->package = json_decode(file_get_contents($file), true)['name'] ?? '';
                     break;
                 }

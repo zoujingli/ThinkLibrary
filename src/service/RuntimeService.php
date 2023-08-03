@@ -83,8 +83,8 @@ class RuntimeService
         if (empty(static::$env)) {
 
             // 读取默认配置
-            if (file_exists($file = syspath('runtime/.env'))) {
-                is_file($file) && Library::$sapp->env->load($file);
+            if (is_file($file = syspath('runtime/.env'))) {
+                Library::$sapp->env->load($file);
             }
 
             // 动态判断赋值

@@ -61,7 +61,7 @@ class LocalStorage implements StorageInterface
     {
         try {
             $path = $this->path($name, $safe);
-            file_exists($dir = dirname($path)) || mkdir($dir, 0777, true);
+            is_dir($dir = dirname($path)) || mkdir($dir, 0777, true);
             if (file_put_contents($path, $file)) {
                 return $this->info($name, $safe, $attname);
             }
@@ -105,7 +105,7 @@ class LocalStorage implements StorageInterface
      */
     public function has(string $name, bool $safe = false): bool
     {
-        return file_exists($this->path($name, $safe));
+        return is_file($this->path($name, $safe));
     }
 
     /**

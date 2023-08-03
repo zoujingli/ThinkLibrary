@@ -185,7 +185,7 @@ class ProcessService extends Service
     private static function getRunVar(string $field): string
     {
         $file = syspath('vendor/binarys.php');
-        if (file_exists($file) && is_array($binarys = include $file)) {
+        if (is_file($file) && is_array($binarys = include $file)) {
             return $binarys[$field] ?? '';
         } else {
             return '';

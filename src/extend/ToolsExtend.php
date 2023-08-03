@@ -44,7 +44,7 @@ class ToolsExtend
         $frdir = rtrim($frdir, '\\/') . DIRECTORY_SEPARATOR;
         $todir = rtrim($todir, '\\/') . DIRECTORY_SEPARATOR;
         // 扫描目录文件
-        if (empty($files) && file_exists($frdir) && is_dir($frdir)) {
+        if (empty($files) && is_dir($frdir)) {
             $files = static::findFilesArray($frdir, static function (SplFileInfo $info) {
                 return substr($info->getBasename(), 0, 1) !== '.';
             }, static function (SplFileInfo $info) {
@@ -53,9 +53,9 @@ class ToolsExtend
         }
         // 复制文件列表
         foreach ($files as $target) {
-            if ($force || !file_exists($todir . $target)) {
+            if ($force || !is_file($todir . $target)) {
                 $dir = dirname($todir . $target);
-                file_exists($dir) or mkdir($dir, 0777, true);
+                is_dir($dir) or mkdir($dir, 0777, true);
                 copy($frdir . $target, $todir . $target);
             }
             // 删除来源文件

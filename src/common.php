@@ -409,7 +409,7 @@ if (!function_exists('trace_file')) {
     function trace_file(Exception $exception): bool
     {
         $path = Library::$sapp->getRuntimePath() . 'trace';
-        if (!file_exists($path)) mkdir($path, 0777, true);
+        if (!is_dir($path)) mkdir($path, 0777, true);
         $name = substr($exception->getFile(), strlen(syspath()));
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
         $json = json_encode($exception instanceof \think\admin\Exception ? $exception->getData() : [], 64 | 128 | 256);

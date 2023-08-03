@@ -103,7 +103,7 @@ class Publish extends Command
     private function parse(): Publish
     {
         [$services, $versions] = [[], []];
-        if (file_exists($file = syspath('vendor/composer/installed.json'))) {
+        if (is_file($file = syspath('vendor/composer/installed.json'))) {
             $packages = json_decode(@file_get_contents($file), true);
             foreach ($packages['packages'] ?? $packages as $package) {
                 // 生成组件版本

@@ -179,7 +179,7 @@ class Queue extends Command
         SystemQueue::mk()->count();
         $this->output->comment(">$ {$this->process->think(static::QUEUE_LISTEN)}");
         if (count($result = $this->process->thinkQuery(static::QUEUE_LISTEN)) > 0) {
-            if (file_exists($lock = syspath('runtime/cache/time.queue')) && intval(file_get_contents($lock)) + 60 < time()) {
+            if (is_file($lock = syspath('runtime/cache/time.queue')) && intval(file_get_contents($lock)) + 60 < time()) {
                 $this->output->writeln("># The task monitoring delay has exceeded 60 seconds, and the monitoring will be restarted.");
                 $this->process->close(intval($result[0]['pid'])) && $this->process->thinkExec(static::QUEUE_LISTEN, 1000);
             } else {
