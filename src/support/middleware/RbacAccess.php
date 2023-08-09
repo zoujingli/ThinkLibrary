@@ -61,7 +61,10 @@ class RbacAccess
         if (is_file($file = dirname(__DIR__, 2) . "/lang/{$langSet}.php")) {
             $this->app->lang->load($file, $langSet);
         }
-
+        // 动态加载全局语言包
+        if (is_file($file = syspath("lang/{$langSet}.php"))) {
+            $this->app->lang->load($file, $langSet);
+        }
         $header = [];
         // HTTP.CORS 跨域规则配置
         if ($this->app->config->get('app.cors_on', true) && ($origin = $request->header('origin', '-')) !== '-') {
