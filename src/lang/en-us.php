@@ -23,7 +23,7 @@ use think\admin\model\SystemBase;
 if (count($langs = Library::$sapp->cache->get('lang-en-us', [])) < 1) {
     $langs = array_column(SystemBase::items('英文字典'), 'name', 'code');
     $menus = array_column(SystemBase::items('英文菜单'), 'name', 'code');
-    foreach ($menus as $key => $name) $langs['menus_{$key}'] = $name;
+    foreach ($menus as $key => $name) $langs["menus_{$key}"] = $name;
     Library::$sapp->cache->set('lang-en-us', $langs, 360);
 }
 
