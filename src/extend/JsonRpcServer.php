@@ -61,7 +61,7 @@ class JsonRpcServer
     public function handle($object)
     {
         // Checks if a JSON-RCP request has been received
-        if ($this->app->request->method() !== "POST" || $this->app->request->contentType() !== 'application/json') {
+        if ($this->app->request->method() !== 'POST' || $this->app->request->contentType() !== 'application/json') {
             $this->printMethod($object);
         } else {
             // Reads the input data
