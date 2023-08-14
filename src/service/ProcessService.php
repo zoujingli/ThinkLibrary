@@ -207,12 +207,21 @@ class ProcessService extends Service
     }
 
     /**
-     * 判断系统类型
+     * 判断系统类型 WINDOWS
      * @return boolean
      */
     public static function isWin(): bool
     {
         return defined('PHP_WINDOWS_VERSION_BUILD');
+    }
+
+    /**
+     * 判断系统类型 UNIX
+     * @return bool
+     */
+    public static function isUnix(): bool
+    {
+        return !defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
     /**
@@ -241,16 +250,15 @@ class ProcessService extends Service
      * 静态兼容处理
      * @param string $method
      * @param array $arguments
-     * @return void
+     * @return array
      * @throws \think\admin\Exception
      */
     public static function __callStatic(string $method, array $arguments)
     {
         if ($method === 'thinkCreate') {
-            self::thinkExec(...$arguments);
+            return self::thinkExec(...$arguments);
         } else {
             throw new Exception("method not exists: ProcessService::{$method}()");
         }
     }
-
 }
