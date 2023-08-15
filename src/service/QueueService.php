@@ -59,7 +59,7 @@ class QueueService extends Service
      * 运行消息记录
      * @var array
      */
-    private $mess = [];
+    private $msgs = [];
 
     /**
      * 运行消息写库
@@ -78,7 +78,7 @@ class QueueService extends Service
         // 重置消息内容
         if ($this->code !== $code && !empty($this->code)) {
             $this->_lazyWirteReal();
-            $this->mess = [];
+            $this->msgs = [];
         }
         // 初始化新任务数据
         if (!empty($code)) {
@@ -180,7 +180,6 @@ class QueueService extends Service
      */
     public function progress(?int $status = null, ?string $message = null, ?string $progress = null, int $backline = 0): array
     {
-        $ckey = "queue_{$this->code}_progress";
         if (is_numeric($status) && intval($status) === 3) {
             if (!is_numeric($progress)) $progress = '100.00';
             if (is_null($message)) $message = '>>> 任务已经完成 <<<';
@@ -190,31 +189,31 @@ class QueueService extends Service
             if (is_null($message)) $message = '>>> 任务执行失败 <<<';
         }
         try {
-            if (empty($this->mess)) $this->mess = $this->app->cache->get($ckey, [
+            if (empty($this->msgs)) $this->msgs = $this->app->cache->get("queue_{$this->code}_progress", [
                 'code' => $this->code, 'status' => $status, 'sctime' => 0, 'message' => $message, 'progress' => $progress, 'history' => []
             ]);
         } catch (\Exception|\Error $exception) {
             return $this->progress($status, $message, $progress, $backline);
         }
-        while (--$backline > -1 && count($this->mess['history']) > 0) array_pop($this->mess['history']);
-        if (is_numeric($status)) $this->mess['status'] = intval($status);
+        while (--$backline > -1 && count($this->msgs['history']) > 0) array_pop($this->msgs['history']);
+        if (is_numeric($status)) $this->msgs['status'] = intval($status);
         if (is_numeric($progress)) $progress = str_pad(sprintf('%.2f', $progress), 6, '0', STR_PAD_LEFT);
         if (is_string($message) && is_null($progress)) {
-            $this->mess['swrite'] = 0;
-            $this->mess['message'] = $message;
-            $this->mess['history'][] = ['message' => $message, 'progress' => $this->mess['progress'], 'datetime' => date('Y-m-d H:i:s')];
+            $this->msgs['swrite'] = 0;
+            $this->msgs['message'] = $message;
+            $this->msgs['history'][] = ['message' => $message, 'progress' => $this->msgs['progress'], 'datetime' => date('Y-m-d H:i:s')];
         } elseif (is_null($message) && is_numeric($progress)) {
-            $this->mess['swrite'] = 0;
-            $this->mess['progress'] = $progress;
-            $this->mess['history'][] = ['message' => $this->mess['message'], 'progress' => $progress, 'datetime' => date('Y-m-d H:i:s')];
+            $this->msgs['swrite'] = 0;
+            $this->msgs['progress'] = $progress;
+            $this->msgs['history'][] = ['message' => $this->msgs['message'], 'progress' => $progress, 'datetime' => date('Y-m-d H:i:s')];
         } elseif (is_string($message) && is_numeric($progress)) {
-            $this->mess['swrite'] = 0;
-            $this->mess['message'] = $message;
-            $this->mess['progress'] = $progress;
-            $this->mess['history'][] = ['message' => $message, 'progress' => $progress, 'datetime' => date('Y-m-d H:i:s')];
+            $this->msgs['swrite'] = 0;
+            $this->msgs['message'] = $message;
+            $this->msgs['progress'] = $progress;
+            $this->msgs['history'][] = ['message' => $message, 'progress' => $progress, 'datetime' => date('Y-m-d H:i:s')];
         }
-        if (is_string($message) || is_numeric($progress)) if (count($this->mess['history']) > 10) {
-            $this->mess['history'] = array_slice($this->mess['history'], -10);
+        if (is_string($message) || is_numeric($progress)) if (count($this->msgs['history']) > 10) {
+            $this->msgs['history'] = array_slice($this->msgs['history'], -10);
         }
         // 延时写入并返回内容
         return $this->_lazyWrite();
@@ -234,16 +233,14 @@ class QueueService extends Service
      */
     private function _lazyWrite(): array
     {
-        if (isset($this->mess['status'])) {
-            if (empty($this->mess['sctime'])) {
+        if (isset($this->msgs['status'])) {
+            if (empty($this->msgs['sctime']) || in_array($this->msgs['status'], [3, 4])) {
                 $this->_lazyWirteReal();
-            } elseif (in_array($this->mess['status'], [3, 4])) {
-                $this->_lazyWirteReal();
-            } elseif (microtime(true) - $this->mess['sctime'] > 0.6) {
+            } elseif (microtime(true) - $this->msgs['sctime'] > 0.6) {
                 $this->_lazyWirteReal();
             }
         }
-        return $this->mess;
+        return $this->msgs;
     }
 
     /**
@@ -251,11 +248,11 @@ class QueueService extends Service
      */
     private function _lazyWirteReal()
     {
-        if (empty($this->mess['swrite'])) {
-            [$this->mess['swrite'], $this->mess['sctime']] = [1, microtime(true)];
-            $this->app->cache->set("queue_{$this->code}_progress", $this->mess, 864000);
+        if (empty($this->msgs['swrite'])) {
+            [$this->msgs['swrite'], $this->msgs['sctime']] = [1, microtime(true)];
+            $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
             if ($this->messWriteDb) SystemQueue::mk()->where(['code' => $this->code])->update([
-                'message' => json_encode($this->mess, JSON_UNESCAPED_UNICODE)
+                'message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)
             ]);
         }
     }
