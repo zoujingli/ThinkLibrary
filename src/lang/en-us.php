@@ -63,8 +63,8 @@ $menus = [
 
 $extra = [];
 $extra['Y年m月d日 H:i:s'] = 'Y/m/d H:i:s';
-$extra['共 %s 条记录，每页显示 %s 条，共 %s 页当前显示第 %s 页。'] = 'Total %s records, display %s per page, total %s page current display %s page.';
 $extra['登录授权无效，请重新登录！'] = 'Invalid login authorization, Please login again.';
+$extra['共 %s 条记录，每页显示 %s 条，共 %s 页当前显示第 %s 页。'] = 'Total %s records, display %s per page, total %s page current display %s page.';
 
 return array_merge([
     // 常规操作翻译
