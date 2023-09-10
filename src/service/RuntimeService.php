@@ -38,19 +38,19 @@ class RuntimeService
      * 开发运行模式
      * @var string
      */
-    const MODE_DEVE = 'dev';
+    public const MODE_DEVE = 'dev';
 
     /**
      * 演示运行模式
      * @var string
      */
-    const MODE_DEMO = 'demo';
+    public const MODE_DEMO = 'demo';
 
     /**
      * 本地运行模式
      * @var string
      */
-    const MODE_LOCAL = 'local';
+    public const MODE_LOCAL = 'local';
 
     /**
      * 动态环境变量
