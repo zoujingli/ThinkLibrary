@@ -90,6 +90,7 @@ return array_merge([
     '批量恢复'              => 'Resume Selected',
     '已禁用记录'            => 'Disabled Records',
     '已激活记录'            => 'Activated Records',
+    // 接口提示内容
     '数据删除成功！'         => 'Successfully deleted.',
     '数据删除失败！'         => 'Sorry, Delete failed.',
     '数据保存成功！'         => 'Successfully saved.',
