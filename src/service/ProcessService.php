@@ -39,7 +39,7 @@ class ProcessService extends Service
      */
     public static function php(string $args = ''): string
     {
-        return static::getPhpExec() . ' ' . $args;
+        return ModuleService::getPhpExec() . ' ' . $args;
     }
 
     /**
@@ -51,7 +51,7 @@ class ProcessService extends Service
     public static function think(string $args = '', bool $simple = false): string
     {
         $command = syspath('think') . ' ' . $args;
-        return $simple ? $command : static::getPhpExec() . " {$command}";
+        return $simple ? $command : self::php($command);
     }
 
     /**
@@ -62,11 +62,12 @@ class ProcessService extends Service
     public static function composer(string $args = ''): string
     {
         static $comExec;
-        if (empty($comExec) && self::isFile($comExec = self::getRunVar('com'))) {
-            $comExec = self::getPhpExec() . ' ' . $comExec;
+        if (empty($comExec)) {
+            $comExec = ModuleService::getRunVar('com');
+            $comExec = self::isFile($comExec) ? self::php($comExec) : 'composer';
         }
         $root = Library::$sapp->getRootPath();
-        return ($comExec ?: 'composer') . " -d {$root} {$args}";
+        return "{$comExec} -d {$root} {$args}";
     }
 
     /**
@@ -175,35 +176,6 @@ class ProcessService extends Service
     {
         while ($backline-- > 0) $message = "\033[1A\r\033[K{$message}";
         print_r($message . PHP_EOL);
-    }
-
-    /**
-     * 获取运行参数
-     * @param string $field 指定字段
-     * @return string
-     */
-    private static function getRunVar(string $field): string
-    {
-        $file = syspath('vendor/binarys.php');
-        if (is_file($file) && is_array($binarys = include $file)) {
-            return $binarys[$field] ?? '';
-        } else {
-            return '';
-        }
-    }
-
-    /**
-     * 获取 PHP 路径
-     * @return string
-     */
-    private static function getPhpExec(): string
-    {
-        static $phpExec;
-        if ($phpExec) return $phpExec;
-        if (self::isFile($phpExec = self::getRunVar('php'))) return $phpExec;
-        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
-        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
-        return self::isFile($phpExec) ? $phpExec : $phpExec = 'php';
     }
 
     /**

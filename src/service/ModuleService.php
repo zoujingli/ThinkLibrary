@@ -38,6 +38,34 @@ class ModuleService extends Service
     }
 
     /**
+     * 获取运行参数
+     * @param string $field 指定字段
+     * @return string
+     */
+    public static function getRunVar(string $field): string
+    {
+        $file = syspath('vendor/binarys.php');
+        if (is_file($file) && is_array($binarys = include $file)) {
+            return $binarys[$field] ?? '';
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * 获取 PHP 执行路径
+     * @return string
+     */
+    public static function getPhpExec(): string
+    {
+        if ($phpExec = sysvar('phpBinary')) return $phpExec;
+        if ($phpExec = self::getRunVar('php')) return $phpExec;
+        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
+        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
+        return sysvar('phpBinary', ProcessService::isFile($phpExec) ? $phpExec : 'php');
+    }
+
+    /**
      * 获取应用模块
      * @param array $data
      * @return array
