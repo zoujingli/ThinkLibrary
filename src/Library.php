@@ -41,11 +41,6 @@ use think\Service;
 class Library extends Service
 {
     /**
-     * 组件版本号
-     */
-    const VERSION = '6.1.49';
-
-    /**
      * 静态应用实例
      * @var App
      */

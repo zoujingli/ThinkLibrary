@@ -34,11 +34,12 @@ class ModuleService extends Service
      */
     public static function getVersion(): string
     {
-        return trim(Library::VERSION, 'v');
+        $libray = self::getLibrarys('zoujingli/think-library');
+        return trim($libray['version'] ?? 'v6.0.0', 'v');
     }
 
     /**
-     * 获取运行参数
+     * 获取运行参数变量
      * @param string $field 指定字段
      * @return string
      */
