@@ -36,10 +36,10 @@ class SaveHelper extends Helper
      * @param array $edata 表单扩展数据
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件
-     * @return bool
+     * @return boolean|void
      * @throws \think\db\exception\DbException
      */
-    public function init($dbQuery, array $edata = [], string $field = '', $where = []): bool
+    public function init($dbQuery, array $edata = [], string $field = '', $where = [])
     {
         $query = static::buildQuery($dbQuery);
         $field = $field ?: ($query->getPk() ?: 'id');
@@ -58,24 +58,21 @@ class SaveHelper extends Helper
         }
 
         // 检查原始数据
-        $result = $query->master()->where($where)->update($edata) !== false;
+        $query->master()->where($where)->update($edata);
 
         // 模型自定义事件回调
         $model = $query->getModel();
-        if ($result && $model instanceof \think\admin\Model) {
+        if ($model instanceof \think\admin\Model) {
             $model->onAdminSave(strval($value));
         }
 
         // 结果回调处理
+        $result = true;
         if (false === $this->class->callback('_save_result', $result, $model)) {
             return $result;
         }
 
         // 回复前端结果
-        if ($result !== false) {
-            $this->class->success('数据保存成功！', '');
-        } else {
-            $this->class->error('数据保存参数！');
-        }
+        $this->class->success('数据保存成功！', '');
     }
 }

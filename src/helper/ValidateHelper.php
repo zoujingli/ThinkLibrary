@@ -33,7 +33,7 @@ class ValidateHelper extends Helper
      * @param array $rules 验证规则（ 验证信息数组 ）
      * @param string|array $input 输入内容 ( post. 或 get. )
      * @param callable|null $callable 异常处理操作
-     * @return array
+     * @return array|void
      *
      * age.require => message // 最大值限定
      * age.between:1,120 => message // 范围限定
@@ -43,7 +43,7 @@ class ValidateHelper extends Helper
      *
      * 更多规则参照 ThinkPHP 官方的验证类
      */
-    public function init(array $rules, $input = '', ?callable $callable = null): array
+    public function init(array $rules, $input = '', ?callable $callable = null)
     {
         if (is_string($input)) {
             $type = trim($input, '.') ?: 'request';

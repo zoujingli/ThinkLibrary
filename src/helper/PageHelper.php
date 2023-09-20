@@ -182,9 +182,8 @@ class PageHelper extends Helper
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
                     $data = ['sort' => intval($this->app->request->post('sort', 0))];
-                    if ($query->newQuery()->where($map)->update($data) !== false) {
-                        $this->class->success('列表排序成功！', '');
-                    }
+                    $query->newQuery()->where($map)->update($data);
+                    $this->class->success('列表排序成功！', '');
                 }
             }
             $this->class->error('列表排序失败！');

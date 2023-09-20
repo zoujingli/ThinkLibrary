@@ -56,13 +56,13 @@ class Controller extends stdClass
     public $get = [];
 
     /**
-     * 当前节点
+     * 当前功能节点
      * @var string
      */
     public $node;
 
     /**
-     * 请求对象
+     * 请求参数对象
      * @var Request
      */
     public $request;
@@ -80,19 +80,18 @@ class Controller extends stdClass
     public $csrf_message;
 
     /**
-     * Controller constructor.
+     * Constructor.
      * @param App $app
      */
     public function __construct(App $app)
     {
-        $this->app = $app;
-        $this->app->bind('think\admin\Controller', $this);
-        $this->request = $app->request;
-        if (in_array($this->request->action(), get_class_methods(__CLASS__))) {
-            $this->error('Access without permission.');
+        if (in_array($app->request->action(), get_class_methods(__CLASS__))) {
+            $this->error('禁止访问内置方法！');
         }
-        $this->get = $this->request->get();
+        $this->get = $app->request->get();
+        $this->app = $app->bind('think\admin\Controller', $this);
         $this->node = NodeService::getCurrent();
+        $this->request = $this->app->request;
         $this->initialize();
     }
 
@@ -104,21 +103,18 @@ class Controller extends stdClass
     }
 
     /**
-     * 返回失败的操作
+     * 返回失败的内容
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
      * @param mixed $code 返回代码
      */
     public function error($info, $data = '{-null-}', $code = 0): void
     {
-        if ($data === '{-null-}') $data = new stdClass();
-        throw new HttpResponseException(json([
-            'code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data,
-        ]));
+        $this->success($info, $data, $code);
     }
 
     /**
-     * 返回成功的操作
+     * 返回成功的内容
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
      * @param mixed $code 返回代码

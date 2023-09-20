@@ -32,9 +32,9 @@ class TokenHelper extends Helper
     /**
      * 初始化验证码器
      * @param boolean $return
-     * @return boolean
+     * @return boolean|void
      */
-    public function init(bool $return = false): bool
+    public function init(bool $return = false)
     {
         $this->class->csrf_state = true;
         if (!$this->app->request->isPost()) return true;
