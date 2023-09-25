@@ -64,7 +64,7 @@ class NodeService extends Service
 
     /**
      * 获取当前节点内容
-     * @param string $type
+     * @param string $type app|module|controller|action
      * @return string
      */
     public static function getCurrent(string $type = ''): string
