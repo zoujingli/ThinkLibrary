@@ -57,12 +57,6 @@ use think\Model;
 class SystemService extends Service
 {
     /**
-     * 配置缓存数据
-     * @var array
-     */
-    private static $config = [];
-
-    /**
      * 生成静态路径链接
      * @param string $path 后缀路径
      * @param ?string $type 路径类型
@@ -102,7 +96,6 @@ class SystemService extends Service
      */
     public static function set(string $name, $value = '')
     {
-        static::$config = [];
         [$type, $field] = static::_parse($name);
         if (is_array($value)) {
             $count = 0;
@@ -131,16 +124,17 @@ class SystemService extends Service
     public static function get(string $name = '', string $default = '')
     {
         try {
-            if (empty(static::$config)) {
-                SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) {
-                    static::$config[$item['type']][$item['name']] = $item['value'];
+            if (empty($config = sysvar('think-library-config') ?: [])) {
+                SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) use (&$config) {
+                    $config[$item['type']][$item['name']] = $item['value'];
                 });
+                $config = sysvar('think-library-config', $config);
             }
             [$type, $field, $outer] = static::_parse($name);
             if (empty($name)) {
-                return static::$config;
-            } elseif (isset(static::$config[$type])) {
-                $group = static::$config[$type];
+                return $config;
+            } elseif (isset($config[$type])) {
+                $group = $config[$type];
                 if ($outer !== 'raw') foreach ($group as $kk => $vo) {
                     $group[$kk] = htmlspecialchars(strval($vo));
                 }
@@ -165,6 +159,7 @@ class SystemService extends Service
     public static function save($query, array &$data, string $key = 'id', $map = [])
     {
         try {
+            sysvar('think-library-config', false);
             $query = Helper::buildQuery($query)->master()->strict(false);
             if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
             $model = $query->where($map)->findOrEmpty();
