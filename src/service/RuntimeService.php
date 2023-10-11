@@ -84,6 +84,7 @@ class RuntimeService
         if (empty($envs)) {
             // 读取默认配置
             if (is_file($file = syspath('runtime/.env'))) {
+                self::$evnHash = md5_file($file);
                 Library::$sapp->env->load($file);
             }
             // 动态判断赋值
@@ -117,7 +118,9 @@ class RuntimeService
         // 写入并刷新文件希值
         $env = syspath('runtime/.env');
         @file_put_contents($env, "[RUNTIME]\n" . join("\n", $rows));
-        self::$evnHash = md5_file($env);
+
+        // 清理当前静态缓存数据
+        sysvar('think-library-runtime', []);
 
         //  应用当前的配置文件
         return static::apply($envs);
@@ -145,7 +148,7 @@ class RuntimeService
      */
     public static function httpRun()
     {
-        if (self::$evnHash !== '' && is_file($env = syspath('runtime/.env'))) {
+        if (is_file($env = syspath('runtime/.env'))) {
             md5_file($env) !== self::$evnHash && self::apply();
         }
     }
