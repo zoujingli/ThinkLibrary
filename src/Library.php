@@ -70,6 +70,9 @@ class Library extends Service
         // 请求初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
 
+            // 运行环境配置同步
+            RuntimeService::httpRun();
+
             // 配置默认输入过滤
             $request->filter([function ($value) {
                 return is_string($value) ? xss_safe($value) : $value;

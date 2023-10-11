@@ -53,6 +53,12 @@ class RuntimeService
     public const MODE_LOCAL = 'local';
 
     /**
+     * 初始化文件哈希值
+     * @var string
+     */
+    private static $evnHash = '';
+
+    /**
      * 系统服务初始化
      * @param ?\think\App $app
      * @return App
@@ -107,7 +113,11 @@ class RuntimeService
         $rows[] = "mode = " . $envs['mode'];
         foreach ($envs['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
         foreach ($envs['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
-        @file_put_contents(syspath('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
+
+        // 写入并刷新文件希值
+        $env = syspath('runtime/.env');
+        @file_put_contents($env, "[RUNTIME]\n" . join("\n", $rows));
+        self::$evnHash = md5_file($env);
 
         //  应用当前的配置文件
         return static::apply($envs);
@@ -127,6 +137,17 @@ class RuntimeService
         Library::$sapp->config->set(['app_map' => $appmap, 'domain_bind' => $domain], 'app');
         // 初始化调试配置
         return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
+    }
+
+    /**
+     * 同步运行配置
+     * @return void
+     */
+    public static function httpRun()
+    {
+        if (self::$evnHash !== '' && is_file($env = syspath('runtime/.env'))) {
+            md5_file($env) !== self::$evnHash && self::apply();
+        }
     }
 
     /**
@@ -187,6 +208,7 @@ class RuntimeService
     {
         return static::get('mode') === 'product';
     }
+
 
     /**
      * 初始化主程序
