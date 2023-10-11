@@ -176,8 +176,7 @@ class RuntimeService
      */
     public static function isDebug(): bool
     {
-        empty($envs) && static::get();
-        return $envs['mode'] !== 'product';
+        return static::get('mode') !== 'product';
     }
 
     /**
@@ -186,7 +185,7 @@ class RuntimeService
      */
     public static function isOnline(): bool
     {
-        return !static::isDebug();
+        return static::get('mode') === 'product';
     }
 
     /**
