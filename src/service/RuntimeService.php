@@ -154,7 +154,7 @@ class RuntimeService
         Library::$sapp->config->set(['app_map' => $appmap, 'domain_bind' => $domain], 'app');
 
         // 记录配置文件
-        self::$evnHash = md5_file(self::$envFile);
+        is_file(self::$envFile) && self::$evnHash = md5_file(self::$envFile);
 
         // 初始化调试配置
         return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
