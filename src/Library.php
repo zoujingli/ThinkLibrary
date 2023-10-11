@@ -71,7 +71,7 @@ class Library extends Service
         $this->app->event->listen('HttpRun', function (Request $request) {
 
             // 运行环境配置同步
-            RuntimeService::httpRun();
+            RuntimeService::sync();
 
             // 配置默认输入过滤
             $request->filter([function ($value) {

@@ -53,6 +53,12 @@ class RuntimeService
     public const MODE_LOCAL = 'local';
 
     /**
+     * 环境配置文件位置
+     * @var string
+     */
+    private static $envFile = './runtime/.env';
+
+    /**
      * 初始化文件哈希值
      * @var string
      */
@@ -65,10 +71,12 @@ class RuntimeService
      */
     public static function init(?App $app = null): App
     {
-        // 替换 ThinkPHP 地址，并初始化运行环境
+        // 初始化运行环境
         Library::$sapp = $app ?: Container::getInstance()->make(App::class);
         Library::$sapp->bind('think\Route', Route::class);
         Library::$sapp->bind('think\route\Url', Url::class);
+        // 初始化运行配置位置
+        self::$envFile = syspath('runtime/.env');
         return Library::$sapp->debug(static::isDebug());
     }
 
@@ -80,13 +88,9 @@ class RuntimeService
      */
     public static function get(?string $name = null, array $default = [])
     {
-        $envs = sysvar('think-library-runtime') ?: [];
-        if (empty($envs)) {
+        if (empty($envs = sysvar('think-library-runtime') ?: [])) {
             // 读取默认配置
-            if (is_file($file = syspath('runtime/.env'))) {
-                self::$evnHash = md5_file($file);
-                Library::$sapp->env->load($file);
-            }
+            is_file(self::$envFile) && Library::$sapp->env->load(self::$envFile);
             // 动态判断赋值
             $envs['mode'] = Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug';
             $envs['appmap'] = Library::$sapp->env->get('RUNTIME_APPMAP') ?: [];
@@ -116,14 +120,24 @@ class RuntimeService
         foreach ($envs['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
 
         // 写入并刷新文件希值
-        $env = syspath('runtime/.env');
-        @file_put_contents($env, "[RUNTIME]\n" . join("\n", $rows));
+        @file_put_contents(self::$envFile, "[RUNTIME]\n" . join("\n", $rows));
 
-        // 清理当前静态缓存数据
-        sysvar('think-library-runtime', []);
+        // 同步更新当前环境
+        sysvar('think-library-runtime', $envs);
 
         //  应用当前的配置文件
         return static::apply($envs);
+    }
+
+    /**
+     * 同步运行配置
+     * @return void
+     */
+    public static function sync()
+    {
+        if (is_file(self::$envFile) && md5_file(self::$envFile) !== self::$evnHash) {
+            self::apply();
+        }
     }
 
     /**
@@ -138,19 +152,12 @@ class RuntimeService
         $appmap = static::uniqueMergeArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']);
         $domain = static::uniqueMergeArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']);
         Library::$sapp->config->set(['app_map' => $appmap, 'domain_bind' => $domain], 'app');
+
+        // 记录配置文件
+        self::$evnHash = md5_file(self::$envFile);
+
         // 初始化调试配置
         return Library::$sapp->debug($data['mode'] !== 'product')->isDebug();
-    }
-
-    /**
-     * 同步运行配置
-     * @return void
-     */
-    public static function httpRun()
-    {
-        if (is_file($env = syspath('runtime/.env'))) {
-            md5_file($env) !== self::$evnHash && self::apply();
-        }
     }
 
     /**
