@@ -53,12 +53,6 @@ class RuntimeService
     public const MODE_LOCAL = 'local';
 
     /**
-     * 动态环境变量
-     * @var array
-     */
-    private static $env = [];
-
-    /**
      * 系统服务初始化
      * @param ?\think\App $app
      * @return App
@@ -80,19 +74,19 @@ class RuntimeService
      */
     public static function get(?string $name = null, array $default = [])
     {
-        if (empty(static::$env)) {
-
+        $envs = sysvar('think-library-runtime') ?: [];
+        if (empty($envs)) {
             // 读取默认配置
             if (is_file($file = syspath('runtime/.env'))) {
                 Library::$sapp->env->load($file);
             }
-
             // 动态判断赋值
-            static::$env['mode'] = Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug';
-            static::$env['appmap'] = Library::$sapp->env->get('RUNTIME_APPMAP') ?: [];
-            static::$env['domain'] = Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [];
+            $envs['mode'] = Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug';
+            $envs['appmap'] = Library::$sapp->env->get('RUNTIME_APPMAP') ?: [];
+            $envs['domain'] = Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [];
+            sysvar('think-library-runtime', $envs);
         }
-        return is_null($name) ? static::$env : (static::$env[$name] ?? $default);
+        return is_null($name) ? $envs : ($envs[$name] ?? $default);
     }
 
     /**
@@ -104,19 +98,19 @@ class RuntimeService
      */
     public static function set(?string $mode = null, ?array $appmap = [], ?array $domain = []): bool
     {
-        empty(static::$env) && static::get();
-        static::$env['mode'] = is_null($mode) ? static::$env['mode'] : $mode;
-        static::$env['appmap'] = static::uniqueMergeArray(static::$env['appmap'], $appmap);
-        static::$env['domain'] = static::uniqueMergeArray(static::$env['domain'], $domain);
+        $envs = self::get();
+        $envs['mode'] = is_null($mode) ? $envs['mode'] : $mode;
+        $envs['appmap'] = static::uniqueMergeArray($envs['appmap'], $appmap);
+        $envs['domain'] = static::uniqueMergeArray($envs['domain'], $domain);
 
         // 组装配置文件格式
-        $rows[] = "mode = " . static::$env['mode'];
-        foreach (static::$env['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
-        foreach (static::$env['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
+        $rows[] = "mode = " . $envs['mode'];
+        foreach ($envs['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
+        foreach ($envs['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
         @file_put_contents(syspath('runtime/.env'), "[RUNTIME]\n" . join("\n", $rows));
 
         //  应用当前的配置文件
-        return static::apply(static::$env);
+        return static::apply($envs);
     }
 
     /**
@@ -182,8 +176,8 @@ class RuntimeService
      */
     public static function isDebug(): bool
     {
-        empty(static::$env) && static::get();
-        return static::$env['mode'] !== 'product';
+        empty($envs) && static::get();
+        return $envs['mode'] !== 'product';
     }
 
     /**

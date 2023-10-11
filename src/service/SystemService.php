@@ -104,10 +104,9 @@ class SystemService extends Service
             }
             return $count;
         } else try {
-            Library::$sapp->cache->delete('SystemConfig');
             $map = ['type' => $type, 'name' => $field];
             $data = array_merge($map, ['value' => $value]);
-            $query = SystemConfig::mk()->master()->where($map);
+            $query = SystemConfig::mk()->master()->cache('SystemConfig')->where($map);
             return (clone $query)->count() > 0 ? $query->update($data) : $query->insert($data);
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
