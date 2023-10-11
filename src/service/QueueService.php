@@ -220,21 +220,15 @@ class QueueService extends Service
     }
 
     /**
-     * 销毁时调用
-     */
-    public function __destruct()
-    {
-        $this->_lazyWirteReal();
-    }
-
-    /**
      * 延时写入记录
      * @return array
      */
     private function _lazyWrite(): array
     {
         if (isset($this->msgs['status'])) {
-            if (empty($this->msgs['sctime']) || in_array($this->msgs['status'], [3, 4])) {
+            if (empty($this->msgs['sctime'])) {
+                $this->_lazyWirteReal();
+            } elseif (in_array($this->msgs['status'], [3, 4])) {
                 $this->_lazyWirteReal();
             } elseif (microtime(true) - $this->msgs['sctime'] > 0.6) {
                 $this->_lazyWirteReal();
