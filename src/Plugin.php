@@ -152,7 +152,7 @@ abstract class Plugin extends Service
     }
 
     /**
-     * 获取所有插件
+     * 获取所有插件及安装信息
      * @param string $name 指定插件名称
      * @param boolean $append 关联安装数据
      * @return ?array
@@ -162,18 +162,16 @@ abstract class Plugin extends Service
         $data = empty($name) ? self::$addons : (self::$addons[$name] ?? null);
         if (empty($data) || empty($append)) return $data;
         $versions = ModuleService::getLibrarys();
-        if (empty($name)) {
-            foreach ($data as &$item) {
-                $item['install'] = $versions[$item['package']] ?? [];
-            }
-            return $data;
+        if (!empty($name)) return $data + ['install' => $versions[$data['package']] ?? []];
+        foreach ($data as &$item) {
+            $item['install'] = $versions[$item['package']] ?? [];
+            if (empty($item['name'])) $item['name'] = $item['install']['name'] ?? '';
         }
-        $data['install'] = $versions[$data['package']] ?? [];
         return $data;
     }
 
     /**
-     * 获取内部参数
+     * 获取对象内部属性
      * @param string $name
      * @return null
      */
