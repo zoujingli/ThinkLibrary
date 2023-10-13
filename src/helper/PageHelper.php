@@ -170,18 +170,19 @@ class PageHelper extends Helper
     /**
      * 绑定排序并返回操作对象
      * @param BaseQuery|Model|string $dbQuery
+     * @param string $field 指定排序字段
      * @return \think\db\Query
      * @throws \think\db\exception\DbException
      */
-    public function autoSortQuery($dbQuery): Query
+    public function autoSortQuery($dbQuery, string $field = 'sort'): Query
     {
         $query = static::buildQuery($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
             AdminService::isLogin() or $this->class->error('登录授权无效，请重新登录！');
-            if (method_exists($query, 'getTableFields') && in_array('sort', $query->getTableFields())) {
+            if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields())) {
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
-                    $data = ['sort' => intval($this->app->request->post('sort', 0))];
+                    $data = [$field => intval($this->app->request->post($field, 0))];
                     $query->newQuery()->where($map)->update($data);
                     $this->class->success('列表排序成功！', '');
                 }
