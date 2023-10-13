@@ -153,21 +153,22 @@ abstract class Plugin extends Service
 
     /**
      * 获取所有插件及安装信息
-     * @param string $name 指定插件名称
+     * @param string $code 指定插件编号
      * @param boolean $append 关联安装数据
      * @return ?array
      */
-    public static function get(string $name = '', bool $append = false): ?array
+    public static function get(string $code = '', bool $append = false): ?array
     {
-        $data = empty($name) ? self::$addons : (self::$addons[$name] ?? null);
+        // 读取插件原始信息
+        $data = empty($code) ? self::$addons : (self::$addons[$code] ?? null);
         if (empty($data) || empty($append)) return $data;
+        // 关联插件安装信息
         $versions = ModuleService::getLibrarys();
-        if (!empty($name)) return $data + ['install' => $versions[$data['package']] ?? []];
-        foreach ($data as &$item) {
+        return empty($code) ? array_map(static function ($item) use ($versions) {
             $item['install'] = $versions[$item['package']] ?? [];
             if (empty($item['name'])) $item['name'] = $item['install']['name'] ?? '';
-        }
-        return $data;
+            return $item;
+        }, $data) : $data + ['install' => $versions[$data['package']] ?? []];
     }
 
     /**
