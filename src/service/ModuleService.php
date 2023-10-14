@@ -82,11 +82,11 @@ class ModuleService extends Service
 
     /**
      * 获取本地组件
-     * @param string $package 指定包名
+     * @param ?string $package 指定包名
      * @param boolean $force 强制刷新
      * @return array|string|null
      */
-    public static function getLibrarys(string $package = '', bool $force = false)
+    public static function getLibrarys(?string $package = null, bool $force = false)
     {
         $plugs = sysvar('think-library-version');
         if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
