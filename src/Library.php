@@ -74,7 +74,7 @@ class Library extends Service
             RuntimeService::sync();
 
             // 配置默认输入过滤
-            $request->filter([function ($value) {
+            $request->filter([static function ($value) {
                 return is_string($value) ? xss_safe($value) : $value;
             }]);
 
@@ -94,7 +94,7 @@ class Library extends Service
         });
 
         // 请求结束后处理
-        $this->app->event->listen('HttpEnd', function () {
+        $this->app->event->listen('HttpEnd', static function () {
             function_exists('sysvar') && sysvar('', '');
         });
     }

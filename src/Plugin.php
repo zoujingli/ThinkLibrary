@@ -152,12 +152,12 @@ abstract class Plugin extends Service
     }
 
     /**
-     * 获取所有插件及安装信息
-     * @param string $code 指定插件编号
+     * 获取插件及安装信息
+     * @param ?string $code 指定插件编号
      * @param boolean $append 关联安装数据
      * @return ?array
      */
-    public static function get(string $code = '', bool $append = false): ?array
+    public static function get(?string $code = null, bool $append = false): ?array
     {
         // 读取插件原始信息
         $data = empty($code) ? self::$addons : (self::$addons[$code] ?? null);

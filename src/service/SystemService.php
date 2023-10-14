@@ -124,7 +124,7 @@ class SystemService extends Service
     {
         try {
             if (empty($config = sysvar('think-library-config') ?: [])) {
-                SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) use (&$config) {
+                SystemConfig::mk()->cache('SystemConfig')->select()->map(static function ($item) use (&$config) {
                     $config[$item['type']][$item['name']] = $item['value'];
                 });
                 $config = sysvar('think-library-config', $config);
@@ -276,7 +276,7 @@ class SystemService extends Service
             // 尝试修复反序列解析
             $unit = 'i:\d+;|b:[01];|s:\d+:".*?";|O:\d+:".*?":\d+:\{';
             $preg = '/(?=^|' . $unit . ')s:(\d+):"(.*?)";(?=' . $unit . '|}+$)/';
-            return unserialize(preg_replace_callback($preg, function ($attr) {
+            return unserialize(preg_replace_callback($preg, static function ($attr) {
                 return sprintf('s:%d:"%s";', strlen($attr[2]), $attr[2]);
             }, $value));
         } catch (\Exception $exception) {

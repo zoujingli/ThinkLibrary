@@ -52,8 +52,8 @@ class TokenHelper extends Helper
      */
     public static function fetch(string $tpl = '', array $vars = [], ?string $node = null)
     {
-        throw new HttpResponseException(view($tpl, $vars, 200, function ($html) use ($node) {
-            return preg_replace_callback('/<\/form>/i', function () use ($node) {
+        throw new HttpResponseException(view($tpl, $vars, 200, static function ($html) use ($node) {
+            return preg_replace_callback('/<\/form>/i', static function () use ($node) {
                 return sprintf("<input type='hidden' name='_token_' value='%s'></form>", static::token());
             }, $html);
         }));

@@ -71,7 +71,7 @@ class MultAccess
     {
         [$this->appPath, $this->appSpace] = ['', ''];
         if (!$this->parseMultiApp()) return $next($request);
-        return $this->app->middleware->pipeline('app')->send($request)->then(function ($request) use ($next) {
+        return $this->app->middleware->pipeline('app')->send($request)->then(static function ($request) use ($next) {
             return $next($request);
         });
     }

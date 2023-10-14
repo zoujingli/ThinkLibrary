@@ -50,7 +50,7 @@ class DataExtend
      */
     public static function arr2table(array $its, string $cid = 'id', string $pid = 'pid', string $path = 'path'): array
     {
-        $call = function (array $its, callable $call, array &$data = [], string $parent = '') use ($cid, $pid, $path) {
+        $call = static function (array $its, callable $call, array &$data = [], string $parent = '') use ($cid, $pid, $path) {
             foreach ($its as $it) {
                 $ts = $it['sub'] ?? [];
                 unset($it['sub']);
@@ -59,7 +59,7 @@ class DataExtend
                 $it['spt'] = substr_count($parent, '-');
                 $it['spl'] = str_repeat('ㅤ├ㅤ', $it['spt']);
                 $it['sps'] = ",{$it[$cid]},";
-                array_walk_recursive($ts, function ($val, $key) use ($cid, &$it) {
+                array_walk_recursive($ts, static function ($val, $key) use ($cid, &$it) {
                     if ($key === $cid) $it['sps'] .= "{$val},";
                 });
                 $it['spp'] = arr2str(str2arr(strtr($parent . $it['sps'], '-', ',')));
