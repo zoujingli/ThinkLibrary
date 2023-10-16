@@ -104,8 +104,9 @@ class SystemService extends Service
             }
             return $count;
         } else try {
-            $data = array_merge($map = ['type' => $type, 'name' => $field], ['value' => $value]);
-            SystemConfig::mk()->master()->cache('SystemConfig')->where($map)->findOrEmpty()->save($data);
+            $map = ['type' => $type, 'name' => $field];
+            $data = array_merge($map, ['value' => $value]);
+            SystemConfig::mk()->master()->where($map)->findOrEmpty()->save($data);
             Library::$sapp->cache->delete('SystemConfig');
             return 1;
         } catch (\Exception $exception) {
