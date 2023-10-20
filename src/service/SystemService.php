@@ -159,7 +159,6 @@ class SystemService extends Service
     public static function save($query, array &$data, string $key = 'id', $map = [])
     {
         try {
-            sysvar('think-library-config', false);
             $query = Helper::buildQuery($query)->master()->strict(false);
             if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
             $model = $query->where($map)->findOrEmpty();
