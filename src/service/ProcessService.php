@@ -184,7 +184,7 @@ class ProcessService extends Service
      */
     public static function isWin(): bool
     {
-        return defined('PHP_WINDOWS_VERSION_BUILD');
+        return PATH_SEPARATOR === ';';
     }
 
     /**
@@ -193,7 +193,7 @@ class ProcessService extends Service
      */
     public static function isUnix(): bool
     {
-        return !defined('PHP_WINDOWS_VERSION_BUILD');
+        return PATH_SEPARATOR !== ';';
     }
 
     /**
