@@ -175,4 +175,30 @@ abstract class Storage
             throw new Exception("method not exists: " . get_class($storage) . "->{$method}()");
         }
     }
+
+    /**
+     * 图片数据存储
+     * @param string $base64 图片内容
+     * @param string $prefix 保存前缀
+     * @param boolean $safemode 安全模式
+     * @return array [ url => URL ]
+     * @throws \think\admin\Exception
+     */
+    public static function saveImage(string $base64, string $prefix = 'image', bool $safemode = false): array
+    {
+        if (preg_match('|^data:image/(.*?);base64,|i', $base64)) {
+            [$ext, $img] = explode('|||', preg_replace('|^data:image/(.*?);base64,|i', '$1|||', $base64));
+            if (empty($ext) || !in_array(strtolower($ext), ['png', 'jpg', 'jpeg'])) {
+                throw new Exception('内容格式异常！');
+            } elseif ($safemode) {
+                $name = Storage::name($img, $ext, "{$prefix}/");
+                return LocalStorage::instance()->set($name, base64_decode($img), true);
+            } else {
+                $name = Storage::name($img, $ext, "upload/{$prefix}/");
+                return Storage::instance()->set($name, base64_decode($img));
+            }
+        } else {
+            return ['url' => $base64];
+        }
+    }
 }
