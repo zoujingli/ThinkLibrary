@@ -39,10 +39,10 @@ class Exception extends \Exception
      */
     public function __construct($message = "", $code = 0, $data = [])
     {
+        parent::__construct($message);
         $this->code = $code;
         $this->data = $data;
         $this->message = $message;
-        parent::__construct($message);
     }
 
     /**
