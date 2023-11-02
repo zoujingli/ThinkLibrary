@@ -191,11 +191,11 @@ abstract class Storage
             if (empty($ext) || !in_array(strtolower($ext), ['png', 'jpg', 'jpeg'])) {
                 throw new Exception('内容格式异常！');
             } elseif ($safemode) {
-                $name = Storage::name($img, $ext, "{$prefix}/");
+                $name = static::name($img, $ext, "{$prefix}/");
                 return LocalStorage::instance()->set($name, base64_decode($img), true);
             } else {
-                $name = Storage::name($img, $ext, "upload/{$prefix}/");
-                return Storage::instance()->set($name, base64_decode($img));
+                $name = static::name($img, $ext, "upload/{$prefix}/");
+                return static::instance()->set($name, base64_decode($img));
             }
         } else {
             return ['url' => $base64];
