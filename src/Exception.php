@@ -42,7 +42,7 @@ class Exception extends \Exception
         $this->code = $code;
         $this->data = $data;
         $this->message = $message;
-        parent::__construct($message, $code);
+        parent::__construct($message);
     }
 
     /**
