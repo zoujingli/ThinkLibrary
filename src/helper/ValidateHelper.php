@@ -46,7 +46,7 @@ class ValidateHelper extends Helper
     public function init(array $rules, $input = '', ?callable $callable = null)
     {
         if (is_string($input)) {
-            $type = trim($input, '.') ?: 'request';
+            $type = trim($input, '.') ?: 'param';
             $input = $this->app->request->$type();
         }
         [$data, $rule, $info] = [[], [], []];
