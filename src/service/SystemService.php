@@ -348,7 +348,8 @@ class SystemService extends Service
                 $info = LocalStorage::instance()->info($vars[1]);
             }
             if (empty($info) || empty($info['file'])) {
-                $info = Storage::down($icon);
+                $name = Storage::name($icon, 'tmp', 'icon');
+                $info = LocalStorage::instance()->set($name, Storage::curlGet($icon), true);
             }
             if (empty($info) || empty($info['file'])) return false;
             $favicon = new FaviconExtend($info['file'], [48, 48]);
