@@ -228,24 +228,24 @@ class AdminService extends Service
             if ($uptoken === '') return [0, []];
             $session = Library::$sapp->session;
             if (is_null($uptoken)) {
-                $sessid = $session->get('UploadSessionId');
-                if (empty($sessid)) return [0, []];
-                if ($session->getId() !== $sessid) {
+                $sesskey = $session->get('UploadSessionKey');
+                if (empty($sesskey)) return [0, []];
+                if ($session->getId() !== $sesskey) {
                     $session = Library::$sapp->invokeClass(Session::class);
-                    $session->setId($sessid);
+                    $session->setId($sesskey);
                     $session->init();
                 }
                 $unid = intval($session->get('AdminUploadUnid') ?: 0);
             } else {
-                $sessid = CodeExtend::decrypt($uptoken, sysconf('data.jwtkey'));
-                if (empty($sessid)) return [0, []];
-                if ($session->getId() !== $sessid) {
+                $sesskey = CodeExtend::decrypt($uptoken, sysconf('data.jwtkey'));
+                if (empty($sesskey)) return [0, []];
+                if ($session->getId() !== $sesskey) {
                     $session = Library::$sapp->invokeClass(Session::class);
-                    $session->setId($sessid);
+                    $session->setId($sesskey);
                     $session->init();
                 }
                 if ($unid = intval($session->get('AdminUploadUnid') ?: 0)) {
-                    $session->set('UploadSessionId', $session->getId());
+                    $session->set('UploadSessionKey', $session->getId());
                 }
             }
             return [$unid, $session->get('AdminUploadExts', [])];
