@@ -235,7 +235,7 @@ class AdminService extends Service
                     $session->setId($sesskey);
                     $session->init();
                 }
-                $unid = intval($session->get('AdminUploadUnid') ?: 0);
+                $unid = intval($session->get('AdminUploadUnid', 0));
             } else {
                 $sesskey = CodeExtend::decrypt($uptoken, sysconf('data.jwtkey'));
                 if (empty($sesskey)) return [0, []];
@@ -244,7 +244,7 @@ class AdminService extends Service
                     $session->setId($sesskey);
                     $session->init();
                 }
-                if ($unid = intval($session->get('AdminUploadUnid') ?: 0)) {
+                if ($unid = intval($session->get('AdminUploadUnid', 0))) {
                     $session->set('UploadSessionKey', $session->getId());
                 }
             }
