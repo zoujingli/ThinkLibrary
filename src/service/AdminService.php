@@ -235,7 +235,7 @@ class AdminService extends Service
                     $session->setId($sessid);
                     $session->init();
                 }
-                $unid = intval($session->get('UploadUploadUnid') ?: 0);
+                $unid = intval($session->get('AdminUploadUnid') ?: 0);
             } else {
                 $sessid = CodeExtend::decrypt($uptoken, sysconf('data.jwtkey'));
                 if (empty($sessid)) return [0, []];
@@ -244,11 +244,11 @@ class AdminService extends Service
                     $session->setId($sessid);
                     $session->init();
                 }
-                if ($unid = intval($session->get('UploadUploadUnid') ?: 0)) {
+                if ($unid = intval($session->get('AdminUploadUnid') ?: 0)) {
                     $session->set('UploadSessionId', $session->getId());
                 }
             }
-            return [$unid, $session->get('UploadUploadExts', [])];
+            return [$unid, $session->get('AdminUploadExts', [])];
         } catch (\Error|\Exception $exception) {
             return [0, []];
         }
@@ -263,8 +263,8 @@ class AdminService extends Service
      */
     public static function withUploadToken(int $unid, string $exts = ''): string
     {
-        Library::$sapp->session->set('UploadUploadUnid', $unid);
-        Library::$sapp->session->set('UploadUploadExts', str2arr(strtolower($exts)));
+        Library::$sapp->session->set('AdminUploadUnid', $unid);
+        Library::$sapp->session->set('AdminUploadExts', str2arr(strtolower($exts)));
         return CodeExtend::encrypt(Library::$sapp->session->getId(), sysconf('data.jwtkey'));
     }
 
