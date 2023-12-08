@@ -116,10 +116,10 @@ return array_merge([
     // 存储引擎翻译
     '本地服务器存储'        => 'Local server storage',
     '自建Alist存储'         => 'Self built Alist storage',
-    '七牛云对象存储'        => 'Qiniu Cloud Object storage',
     '又拍云USS存储'         => 'Upyun Cloud USS storage',
     '阿里云OSS存储'         => 'Aliyun Cloud OSS storage',
     '腾讯云COS存储'         => 'Tencent Cloud COS Storage',
+    '七牛云对象存储'        => 'Qiniu Cloud Object storage',
     '未配置又拍云域名'      => 'Unconfigured Upyun Cloud domain',
     '未配置阿里云域名'      => 'Unconfigured Aliyun Cloud domain',
     '未配置七牛云域名'      => 'Unconfigured Qiniu Cloud domain',
