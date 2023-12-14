@@ -60,10 +60,13 @@ class ModuleService extends Service
     public static function getPhpExec(): string
     {
         if ($phpExec = sysvar('phpBinary')) return $phpExec;
-        if ($phpExec = self::getRunVar('php')) return $phpExec;
-        $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
-        $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
-        return sysvar('phpBinary', ProcessService::isFile($phpExec) ? $phpExec : 'php');
+        if (ProcessService::isFile($phpExec = self::getRunVar('php'))) {
+            return sysvar('phpBinary', $phpExec);
+        } else {
+            $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
+            $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
+            return sysvar('phpBinary', ProcessService::isFile($phpExec) ? $phpExec : 'php');
+        }
     }
 
     /**
