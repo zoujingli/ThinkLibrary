@@ -73,7 +73,7 @@ class JsonRpcClient
             ],
             'http' => [
                 'method'  => 'POST', "timeout" => 60,
-                'header'  => join("\r\n", array_merge(['Content-type:application/json'], $this->header)),
+                'header'  => join("\r\n", array_merge(['Content-type:application/json'], $this->header, [''])),
                 'content' => json_encode(['jsonrpc' => '2.0', 'method' => $method, 'params' => $params, 'id' => $this->id], JSON_UNESCAPED_UNICODE),
             ],
         ];
