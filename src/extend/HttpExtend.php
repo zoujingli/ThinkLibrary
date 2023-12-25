@@ -101,7 +101,7 @@ class HttpExtend
         }
         $curl = curl_init();
         // Agent 代理设置
-        curl_setopt($curl, CURLOPT_USERAGENT, static::getUserAgent());
+        curl_setopt($curl, CURLOPT_USERAGENT, $options['agent'] ?? static::getUserAgent());
         // Cookie 信息设置
         if (!empty($options['cookie'])) {
             curl_setopt($curl, CURLOPT_COOKIE, $options['cookie']);
