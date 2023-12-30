@@ -55,7 +55,7 @@ class HttpExtend
      * 以 FormData 模拟网络请求
      * @param string $url 模拟请求地址
      * @param array $data 模拟请求参数数据
-     * @param array $file 提交文件 [field,name,content]
+     * @param array $file 提交文件 [field,name,type,content]
      * @param array $header 请求头部信息，默认带 Content-type
      * @param string $method 模拟请求的方式 [GET,POST,PUT]
      * @param boolean $returnHeader 是否返回头部信息
@@ -73,6 +73,7 @@ class HttpExtend
         if (is_array($file) && isset($file['field']) && isset($file['name'])) {
             $line[] = "--{$boundary}";
             $line[] = "Content-Disposition: form-data; name=\"{$file['field']}\"; filename=\"{$file['name']}\"";
+            if (isset($file['type'])) $line[] = "Content-Type: \"{$file['type']}\"";
             $line[] = "";
             $line[] = $file['content'];
         }
