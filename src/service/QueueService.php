@@ -51,9 +51,9 @@ class QueueService extends Service
 
     /**
      * 当前任务数据
-     * @var array
+     * @var SystemQueue
      */
-    public $record = [];
+    public $record;
 
     /**
      * 运行消息记录
@@ -65,7 +65,7 @@ class QueueService extends Service
      * 运行消息写库
      * @var boolean
      */
-    private $messWriteDb = false;
+    private $msgsWriteDb = false;
 
     /**
      * 数据初始化
@@ -76,23 +76,24 @@ class QueueService extends Service
     public function initialize(string $code = ''): QueueService
     {
         // 重置消息内容
-        if ($this->code !== $code && !empty($this->code)) {
+        if ($this->code !== $code && !empty($this->record)) {
             $this->_lazyWirteReal();
             $this->msgs = [];
         }
         // 初始化新任务数据
         if (!empty($code)) {
-            $this->code = $code;
-            $this->record = SystemQueue::mk()->where(['code' => $code])->findOrEmpty()->toArray();
-            if (empty($this->record)) {
-                $this->app->log->error("Qeueu initialize failed, Queue {$code} not found.");
-                throw new Exception("Qeueu initialize failed, Queue {$code} not found.");
+            $this->record = SystemQueue::mk()->master()->where(['code' => $code])->findOrEmpty();
+            if ($this->record->isEmpty()) {
+                $message = "Qeueu initialize failed, Queue {$code} not found.";
+                $this->app->log->error($message);
+                throw new Exception($message);
             }
+            $this->code = $code;
             $this->data = json_decode($this->record['exec_data'], true) ?: [];
             $this->title = $this->record['title'];
         }
         // 消息写入数据库
-        $this->messWriteDb = in_array('message', SystemQueue::mk()->getTableFields());
+        $this->msgsWriteDb = in_array('message', SystemQueue::mk()->getTableFields());
         return $this;
     }
 
@@ -104,14 +105,13 @@ class QueueService extends Service
      */
     public function reset(int $wait = 0): QueueService
     {
-        if (empty($this->record)) {
-            $this->app->log->error("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
-            throw new Exception("Qeueu reset failed, Queue {$this->code} data cannot be empty!");
+        if ($this->record->isEmpty()) {
+            $message = "Qeueu reset failed, Queue {$this->code} data cannot be empty!";
+            $this->app->log->error($message);
+            throw new Exception($message);
         }
-        SystemQueue::mk()->where(['code' => $this->code])->strict(false)->failException()->update([
-            'exec_pid' => 0, 'exec_time' => time() + $wait, 'status' => 1,
-        ]);
-        return $this->initialize($this->code);
+        $this->record->save(['exec_pid' => 0, 'exec_time' => time() + $wait, 'status' => 1]);
+        return $this;
     }
 
     /**
@@ -140,14 +140,14 @@ class QueueService extends Service
     {
         try {
             $map = [['title', '=', $title], ['status', 'in', [1, 2]]];
-            if (empty($rscript) && ($queue = SystemQueue::mk()->where($map)->find())) {
+            if (empty($rscript) && ($queue = SystemQueue::mk()->master()->where($map)->findOrEmpty())->isExists()) {
                 throw new Exception(lang('已创建请等待处理完成！'), 0, $queue['code']);
             }
             // 生成唯一编号
-            do $code = CodeExtend::uniqidDate(16, 'Q');
-            while (SystemQueue::mk()->master()->where(['code' => $code])->findOrEmpty()->isExists());
+            do $data = ['code' => $code = CodeExtend::uniqidDate(16, 'Q')];
+            while (SystemQueue::mk()->master()->where($data)->findOrEmpty()->isExists());
             // 写入任务数据
-            SystemQueue::mk()->failException()->insert([
+            SystemQueue::mk()->master()->failException()->insert([
                 'code'       => $code,
                 'title'      => $title,
                 'command'    => $command,
@@ -245,9 +245,9 @@ class QueueService extends Service
         if (empty($this->msgs['swrite'])) {
             [$this->msgs['swrite'], $this->msgs['sctime']] = [1, microtime(true)];
             $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
-            if ($this->messWriteDb) SystemQueue::mk()->where(['code' => $this->code])->update([
-                'message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)
-            ]);
+            if ($this->msgsWriteDb && $this->record->isExists()) {
+                $this->record->save(['message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)]);
+            }
         }
     }
 
