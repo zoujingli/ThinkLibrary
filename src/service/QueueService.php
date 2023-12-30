@@ -144,10 +144,10 @@ class QueueService extends Service
                 throw new Exception(lang('已创建请等待处理完成！'), 0, $queue['code']);
             }
             // 生成唯一编号
-            do $data = ['code' => $code = CodeExtend::uniqidDate(16, 'Q')];
-            while (SystemQueue::mk()->master()->where($data)->findOrEmpty()->isExists());
+            do $map = ['code' => $code = CodeExtend::uniqidDate(16, 'Q')];
+            while (($queue = SystemQueue::mk()->master()->where($map)->findOrEmpty())->isExists());
             // 写入任务数据
-            SystemQueue::mk()->master()->failException()->insert([
+            $queue->save([
                 'code'       => $code,
                 'title'      => $title,
                 'command'    => $command,
