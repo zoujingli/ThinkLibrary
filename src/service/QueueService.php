@@ -76,7 +76,7 @@ class QueueService extends Service
     public function initialize(string $code = ''): QueueService
     {
         // 重置消息内容
-        if ($this->code !== $code && !empty($this->record)) {
+        if (!empty($this->code) && $this->code !== $code) {
             $this->_lazyWirteReal();
             $this->msgs = [];
         }
@@ -244,9 +244,11 @@ class QueueService extends Service
     {
         if (empty($this->msgs['swrite'])) {
             [$this->msgs['swrite'], $this->msgs['sctime']] = [1, microtime(true)];
-            $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
-            if ($this->msgsWriteDb && $this->record->isExists()) {
-                $this->record->save(['message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)]);
+            if ($this->record->isExists()) {
+                $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
+                if ($this->msgsWriteDb) $this->record->save([
+                    'message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)
+                ]);
             }
         }
     }
