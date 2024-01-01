@@ -68,6 +68,12 @@ class QueueService extends Service
     private $msgsWriteDb = false;
 
     /**
+     * 异常尝试次数
+     * @var integer
+     */
+    private $tryTimes = 0;
+
+    /**
      * 数据初始化
      * @param string $code
      * @return static
@@ -77,14 +83,14 @@ class QueueService extends Service
     {
         // 重置消息内容
         if (!empty($this->code) && $this->code !== $code) {
-            $this->_lazyWirteReal();
+            $this->_lazyWrite(true);
             $this->msgs = [];
         }
         // 初始化新任务数据
         if (!empty($code)) {
             $this->record = SystemQueue::mk()->master()->where(['code' => $code])->findOrEmpty();
             if ($this->record->isEmpty()) {
-                $message = "Qeueu initialize failed, Queue {$code} not found.";
+                $message = sprintf("Qeueu initialize failed, Queue %s not found.", $code);
                 $this->app->log->error($message);
                 throw new Exception($message);
             }
@@ -177,6 +183,7 @@ class QueueService extends Service
      * @param ?string $progress 进度数值
      * @param integer $backline 回退信息行
      * @return array
+     * @throws \think\admin\Exception
      */
     public function progress(?int $status = null, ?string $message = null, ?string $progress = null, int $backline = 0): array
     {
@@ -192,7 +199,9 @@ class QueueService extends Service
             if (empty($this->msgs)) $this->msgs = $this->app->cache->get("queue_{$this->code}_progress", [
                 'code' => $this->code, 'status' => $status, 'sctime' => 0, 'message' => $message, 'progress' => $progress, 'history' => []
             ]);
+            $this->tryTimes = 0;
         } catch (\Exception|\Error $exception) {
+            if ($this->tryTimes++ > 10) throw new Exception('读取进程缓存异常！');
             return $this->progress($status, $message, $progress, $backline);
         }
         while (--$backline > -1 && count($this->msgs['history']) > 0) array_pop($this->msgs['history']);
@@ -221,35 +230,28 @@ class QueueService extends Service
 
     /**
      * 延时写入记录
+     * @param boolean $force 强制更新
      * @return array
      */
-    private function _lazyWrite(): array
+    private function _lazyWrite(bool $force = false): array
     {
-        if (isset($this->msgs['status'])) {
-            if (empty($this->msgs['sctime'])) {
-                $this->_lazyWirteReal();
-            } elseif (in_array($this->msgs['status'], [3, 4])) {
-                $this->_lazyWirteReal();
-            } elseif (microtime(true) - $this->msgs['sctime'] > 0.6) {
-                $this->_lazyWirteReal();
+        // 无消息状态
+        if (!isset($this->msgs['status'])) return $this->msgs;
+        // 消息延时写数据库
+        if ($force || empty($this->msgs['sctime']) || in_array($this->msgs['status'], [3, 4]) || microtime(true) - $this->msgs['sctime'] > 1) {
+            if (empty($this->msgs['swrite']) && $this->msgsWriteDb && $this->record->isExists()) {
+                [$this->msgs['swrite'], $this->msgs['sctime']] = [1, microtime(true)];
+                $this->record->save(['message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)]);
             }
         }
-        return $this->msgs;
-    }
-
-    /**
-     * 延时写入记录
-     */
-    private function _lazyWirteReal()
-    {
-        if (empty($this->msgs['swrite'])) {
-            [$this->msgs['swrite'], $this->msgs['sctime']] = [1, microtime(true)];
-            if ($this->record->isExists()) {
-                $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
-                if ($this->msgsWriteDb) $this->record->save([
-                    'message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)
-                ]);
-            }
+        // 消息实时写入缓存
+        while (true) try {
+            $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
+            $this->tryTimes = 0;
+            return $this->msgs;
+        } catch (\Exception $exception) {
+            trace_file($exception);
+            if ($this->tryTimes++ > 10) return $this->msgs;
         }
     }
 
@@ -259,6 +261,7 @@ class QueueService extends Service
      * @param integer $count 当前记录
      * @param string $message 文字描述
      * @param integer $backline 回退行数
+     * @throws \think\admin\Exception
      */
     public function message(int $total, int $count, string $message = '', int $backline = 0): void
     {
