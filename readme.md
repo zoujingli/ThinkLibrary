@@ -8,9 +8,9 @@
 [![PHP Version](https://doc.thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://doc.thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
 
-**ThinkLibrary** 是针对 **ThinkPHP6** 封装的一套常用工具类库，方便快速构建 **Web** 应用。
+**ThinkLibrary** 是针对 **ThinkPHP6&8** 封装的一套`CURD`及常用工具库，包含 ThinkPHP 多应用支持组件。
 
-代码主仓库放在 **Gitee**，**Github** 仅为镜像仓库用于发布 **Composer** 包。
+前童代码主仓库放在 **Gitee**，**Github** 仅为镜像仓库用于发布 **Composer** 包。
 
 ## 包含组件
 
