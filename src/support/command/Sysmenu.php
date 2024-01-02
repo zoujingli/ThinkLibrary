@@ -41,6 +41,7 @@ class Sysmenu extends Command
     /**
      * 任务执行入口
      * @return void
+     * @throws \think\admin\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException

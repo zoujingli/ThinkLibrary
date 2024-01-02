@@ -119,6 +119,7 @@ class Package extends Command
     /**
      * 创建数据包
      * @return boolean
+     * @throws \think\admin\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException

@@ -103,6 +103,7 @@ abstract class Queue
      * @param string $message 文字描述
      * @param integer $backline 回退行数
      * @return static
+     * @throws \think\admin\Exception
      */
     protected function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Queue
     {
@@ -116,6 +117,7 @@ abstract class Queue
      * @param null|string $progress 进度数值
      * @param integer $backline 回退行数
      * @return Queue
+     * @throws \think\admin\Exception
      */
     protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): Queue
     {

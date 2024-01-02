@@ -95,6 +95,7 @@ abstract class Command extends \think\console\Command
      * @param null|string $progress 进度数值
      * @param integer $backline 回退行数
      * @return static
+     * @throws \think\admin\Exception
      */
     protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): Command
     {
@@ -113,6 +114,7 @@ abstract class Command extends \think\console\Command
      * @param string $message 文字描述
      * @param integer $backline 回退行数
      * @return static
+     * @throws \think\admin\Exception
      */
     public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Command
     {
