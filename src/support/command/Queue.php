@@ -107,7 +107,7 @@ class Queue extends Command
      */
     protected function webStopAction()
     {
-        $root = syspath('public' . DIRECTORY_SEPARATOR);
+        $root = syspath('public/');
         if (count($result = $this->process->query("{$root} {$root}router.php")) < 1) {
             $this->output->writeln("># There are no WebServer processes to stop");
         } else foreach ($result as $item) {
@@ -298,6 +298,7 @@ class Queue extends Command
     /**
      * 执行指定任务
      * @return void
+     * @throws \think\admin\Exception
      */
     protected function doRunAction()
     {
@@ -307,7 +308,7 @@ class Queue extends Command
         } else try {
             set_time_limit(0) && PHP_SAPI !== 'cli' && ignore_user_abort(true);
             $this->queue->initialize($this->code);
-            if (empty($this->queue->record) || intval($this->queue->record['status']) !== static::STATE_WAIT) {
+            if (empty($this->queue->record) || intval($this->queue->record->getAttr('status')) !== static::STATE_WAIT) {
                 // 这里不做任何处理（该任务可能在其它地方已经在执行）
                 $this->output->warning("The or status of task {$this->code} is abnormal");
             } else {
@@ -319,7 +320,7 @@ class Queue extends Command
                 // 执行任务内容
                 defined('WorkQueueCall') or define('WorkQueueCall', true);
                 defined('WorkQueueCode') or define('WorkQueueCode', $this->code);
-                if (class_exists($command = $this->queue->record['command'])) {
+                if (class_exists($command = $this->queue->record->getAttr('command'))) {
                     // 自定义任务，支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
                     /**@var \think\admin\Queue|QueueService $class */
                     $class = $this->app->make($command, [], true);
@@ -332,7 +333,7 @@ class Queue extends Command
                     }
                 } else {
                     // 自定义指令，不支持返回消息（支持异常结束，异常码可选择 3|4 设置任务状态）
-                    $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $this->queue->record['command'])));
+                    $attr = explode(' ', trim(preg_replace('|\s+|', ' ', $command)));
                     $this->updateQueue(static::STATE_DONE, $this->app->console->call(array_shift($attr), $attr)->fetch(), false);
                 }
             }
@@ -347,6 +348,7 @@ class Queue extends Command
      * @param integer $status 任务状态
      * @param string $message 消息内容
      * @param boolean $isSplit 是否分隔
+     * @throws \think\admin\Exception
      */
     private function updateQueue(int $status, string $message, bool $isSplit = true)
     {
@@ -367,10 +369,10 @@ class Queue extends Command
             $this->queue->progress($status, '>>> 任务处理失败 <<<');
         }
         // 注册循环任务
-        if ($this->queue->record['loops_time'] > 0) try {
-            $this->queue->initialize($this->code)->reset(intval($this->queue->record['loops_time']));
+        if (($time = intval($this->queue->record->getAttr('loops_time'))) > 0) try {
+            $this->queue->initialize($this->code)->reset($time);
         } catch (Exception|Throwable|Error $exception) {
-            $this->app->log->error("Queue {$this->queue->record['code']} Loops Failed. {$exception->getMessage()}");
+            $this->app->log->error("Queue {$this->queue->record->getAttr('code')} Loops Failed. {$exception->getMessage()}");
         }
     }
 }
