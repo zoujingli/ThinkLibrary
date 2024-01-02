@@ -241,18 +241,11 @@ class QueueService extends Service
         if ($force || empty($this->msgs['sctime']) || in_array($this->msgs['status'], [3, 4]) || microtime(true) - $this->msgs['sctime'] > 1) {
             if (empty($this->msgs['swrite']) && $this->msgsWriteDb && $this->record->isExists()) {
                 [$this->msgs['swrite'], $this->msgs['sctime']] = [1, microtime(true)];
+                $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
                 $this->record->save(['message' => json_encode($this->msgs, JSON_UNESCAPED_UNICODE)]);
             }
         }
-        // 消息实时写入缓存
-        while (true) try {
-            $this->app->cache->set("queue_{$this->code}_progress", $this->msgs, 864000);
-            $this->tryTimes = 0;
-            return $this->msgs;
-        } catch (\Exception $exception) {
-            trace_file($exception);
-            if ($this->tryTimes++ > 10) return $this->msgs;
-        }
+        return $this->msgs;
     }
 
     /**
