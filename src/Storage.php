@@ -136,8 +136,8 @@ abstract class Storage
             'alist'  => lang('自建Alist存储'),
             'qiniu'  => lang('七牛云对象存储'),
             'upyun'  => lang('又拍云USS存储'),
-            'alioss' => lang('阿里云OSS存储'),
             'txcos'  => lang('腾讯云COS存储'),
+            'alioss' => lang('阿里云OSS存储'),
         ];
     }
 
@@ -188,7 +188,7 @@ abstract class Storage
     {
         if (preg_match('|^data:image/(.*?);base64,|i', $base64)) {
             [$ext, $img] = explode('|||', preg_replace('|^data:image/(.*?);base64,|i', '$1|||', $base64));
-            if (empty($ext) || !in_array(strtolower($ext), ['png', 'jpg', 'jpeg'])) {
+            if (empty($ext) || !in_array(strtolower($ext), ['gif', 'png', 'jpg', 'jpeg'])) {
                 throw new Exception('内容格式异常！');
             } elseif ($safemode) {
                 $name = static::name($img, $ext, "{$prefix}/");

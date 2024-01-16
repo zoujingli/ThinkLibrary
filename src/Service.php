@@ -35,7 +35,7 @@ abstract class Service
     protected $app;
 
     /**
-     * constructor.
+     * Constructor.
      * @param App $app
      */
     public function __construct(App $app)

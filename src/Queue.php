@@ -48,7 +48,7 @@ abstract class Queue
     protected $process;
 
     /**
-     * Queue constructor.
+     * Constructor.
      * @param App $app
      * @param ProcessService $process
      */
@@ -113,8 +113,8 @@ abstract class Queue
 
     /**
      * 设置任务的进度
-     * @param null|string $message 进度消息
-     * @param null|string $progress 进度数值
+     * @param ?string $message 进度消息
+     * @param ?string $progress 进度数值
      * @param integer $backline 回退行数
      * @return Queue
      * @throws \think\admin\Exception
