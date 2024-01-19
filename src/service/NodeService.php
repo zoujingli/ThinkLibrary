@@ -91,7 +91,7 @@ class NodeService extends Service
     {
         if (empty($node)) return static::getCurrent();
         switch (count($attrs = explode('/', $node))) {
-            case 1: #  方法名
+            case 1: # 方法名
                 return static::getCurrent('controller') . '/' . strtolower($node);
             case 2: # 控制器/方法名
                 $suffix = static::nameTolower($attrs[0]) . '/' . $attrs[1];

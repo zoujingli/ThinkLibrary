@@ -37,6 +37,12 @@ use think\Session;
 class AdminService extends Service
 {
     /**
+     * 自定义回调处理
+     * @var array
+     */
+    private static $checkCallables = [];
+
+    /**
      * 是否已经登录
      * @return boolean
      */
@@ -129,6 +135,32 @@ class AdminService extends Service
     }
 
     /**
+     * 注册权限检查函数
+     * @param callable $callable
+     * @return integer
+     */
+    public static function registerCheckCallable(callable $callable): int
+    {
+        self::$checkCallables[] = $callable;
+        return count(self::$checkCallables) - 1;
+    }
+
+    /**
+     * 移除权限检查函数
+     * @param integer $index
+     * @return boolean
+     */
+    public static function removeCheckCallable(int $index): bool
+    {
+        if (isset(self::$checkCallables[$index])) {
+            unset(self::$checkCallables[$index]);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * 检查指定节点授权
      * --- 需要读取缓存或扫描所有节点
      * @param null|string $node
@@ -147,7 +179,17 @@ class AdminService extends Service
                 $methods[join('/', $attr)] = $rule;
             }
         }
-        // 自定义权限
+        // 自定义权限检查回调
+        if (count(self::$checkCallables) > 0) {
+            $nodes = Library::$sapp->session->get('user.nodes', []);
+            foreach (self::$checkCallables as $callable) {
+                if ($callable($current, $methods, $nodes) === false) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // 自定义权限检查方法
         if (function_exists('admin_check_filter')) {
             $nodes = Library::$sapp->session->get('user.nodes', []);
             return call_user_func('admin_check_filter', $current, $methods, $nodes);
