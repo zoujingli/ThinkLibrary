@@ -72,9 +72,11 @@ class NodeService extends Service
         // 获取应用节点
         $appname = strtolower(Library::$sapp->http->getName());
         if (in_array($type, ['app', 'module'])) return $appname;
+
         // 获取控制器节点
         $controller = static::nameTolower(Library::$sapp->request->controller());
         if ($type === 'controller') return "{$appname}/{$controller}";
+
         // 获取方法权限节点
         $method = strtolower(Library::$sapp->request->action());
         return "{$appname}/{$controller}/{$method}";
@@ -102,24 +104,24 @@ class NodeService extends Service
 
     /**
      * 获取所有控制器入口
-     * @param boolean $force
+     * @param boolean $force 强制更新
      * @return array
      * @throws ReflectionException
      */
     public static function getMethods(bool $force = false): array
     {
-        $data = sysvar('think-library-methods') ?: [];
         if (empty($force)) {
+            $data = sysvar('think-library-methods') ?: [];
             if (count($data) > 0) return $data;
             $data = Library::$sapp->cache->get('SystemAuthNode', []);
-            if (count($data) > 0) return $data;
+            if (count($data) > 0) return sysvar('think-library-methods', $data);
         } else {
             $data = [];
         }
-        /*! 排除内置方法，禁止访问内置方法 及 忽略的应用模块配置 */
+        // 排除内置方法，禁止访问内置方法及忽略的应用模块配置
         $ignoreMethods = get_class_methods('\think\admin\Controller');
         $ignoreAppNames = Library::$sapp->config->get('app.rbac_ignore', []);
-        /*! 扫描所有代码控制器节点，更新节点缓存 */
+        // 扫描所有代码控制器节点，更新节点缓存
         foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $name) {
             if (preg_match("|^(\w+)/controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                 [, $appName, $className] = $matches;
@@ -137,10 +139,11 @@ class NodeService extends Service
                 }
             }
         }
-        // 节点数据自定义处理
+        // 节点数据回调处理
         if (function_exists('admin_node_filter')) {
             $data = call_user_func('admin_node_filter', $data);
         }
+        // 缓存系统节点数据
         Library::$sapp->cache->set('SystemAuthNode', $data);
         return sysvar('think-library-methods', $data);
     }
