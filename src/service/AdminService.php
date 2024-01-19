@@ -147,12 +147,15 @@ class AdminService extends Service
 
     /**
      * 移除权限检查函数
-     * @param integer $index
+     * @param ?integer $index
      * @return boolean
      */
-    public static function removeCheckCallable(int $index): bool
+    public static function removeCheckCallable(?int $index): bool
     {
-        if (isset(self::$checkCallables[$index])) {
+        if (is_null($index)) {
+            self::$checkCallables = [];
+            return true;
+        } elseif (isset(self::$checkCallables[$index])) {
             unset(self::$checkCallables[$index]);
             return true;
         } else {
@@ -171,6 +174,7 @@ class AdminService extends Service
     {
         $methods = NodeService::getMethods();
         $current = NodeService::fullNode($node);
+        $userNodes = Library::$sapp->session->get('user.nodes', []);
         // 兼容 windows 控制器不区分大小写的验证问题
         foreach ($methods as $key => $rule) {
             if (preg_match('#.*?/.*?_.*?#', $key)) {
@@ -181,9 +185,8 @@ class AdminService extends Service
         }
         // 自定义权限检查回调
         if (count(self::$checkCallables) > 0) {
-            $nodes = Library::$sapp->session->get('user.nodes', []);
             foreach (self::$checkCallables as $callable) {
-                if ($callable($current, $methods, $nodes) === false) {
+                if ($callable($current, $methods, $userNodes) === false) {
                     return false;
                 }
             }
@@ -191,8 +194,7 @@ class AdminService extends Service
         }
         // 自定义权限检查方法
         if (function_exists('admin_check_filter')) {
-            $nodes = Library::$sapp->session->get('user.nodes', []);
-            return call_user_func('admin_check_filter', $current, $methods, $nodes);
+            return call_user_func('admin_check_filter', $current, $methods, $userNodes);
         }
         // 超级用户权限
         if (static::isSuper()) return true;
@@ -200,7 +202,7 @@ class AdminService extends Service
         if (empty($methods[$current]['isauth'])) {
             return !(!empty($methods[$current]['islogin']) && !static::isLogin());
         } else {
-            return in_array($current, Library::$sapp->session->get('user.nodes', []));
+            return in_array($current, $userNodes);
         }
     }
 
