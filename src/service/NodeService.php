@@ -69,15 +69,15 @@ class NodeService extends Service
      */
     public static function getCurrent(string $type = ''): string
     {
-        $prefix = strtolower(Library::$sapp->http->getName());
         // 获取应用节点
-        if (in_array($type, ['app', 'module'])) return $prefix;
+        $appname = strtolower(Library::$sapp->http->getName());
+        if (in_array($type, ['app', 'module'])) return $appname;
         // 获取控制器节点
-        $middle = static::nameTolower(Library::$sapp->request->controller());
-        if ($type === 'controller') return "{$prefix}/{$middle}";
+        $controller = static::nameTolower(Library::$sapp->request->controller());
+        if ($type === 'controller') return "{$appname}/{$controller}";
         // 获取方法权限节点
         $method = strtolower(Library::$sapp->request->action());
-        return "{$prefix}/{$middle}/{$method}";
+        return "{$appname}/{$controller}/{$method}";
     }
 
     /**
@@ -87,16 +87,14 @@ class NodeService extends Service
      */
     public static function fullNode(?string $node = ''): string
     {
-        if (empty($node)) {
-            return static::getCurrent();
-        }
+        if (empty($node)) return static::getCurrent();
         switch (count($attrs = explode('/', $node))) {
-            case 2:
+            case 1: #  方法名
+                return static::getCurrent('controller') . '/' . strtolower($node);
+            case 2: # 控制器/方法名
                 $suffix = static::nameTolower($attrs[0]) . '/' . $attrs[1];
                 return static::getCurrent('module') . '/' . strtolower($suffix);
-            case 1:
-                return static::getCurrent('controller') . '/' . strtolower($node);
-            default:
+            default: # 应用名/控制器/方法名?[其他参数]
                 $attrs[1] = static::nameTolower($attrs[1]);
                 return strtolower(join('/', $attrs));
         }
