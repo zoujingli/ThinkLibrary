@@ -119,7 +119,6 @@ abstract class Plugin extends Service
         if ($attr[0] === NodeService::space()) array_shift($attr);
 
         $this->appCode = $this->appCode ?: join('-', $attr);
-        $this->appAlias = $this->appAlias ?: join('-', $attr);
         if ($this->appCode === $this->appAlias) $this->appAlias = '';
 
         if (is_dir($this->appPath)) {
