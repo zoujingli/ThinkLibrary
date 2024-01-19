@@ -25,8 +25,15 @@ use think\Service;
 
 /**
  * 插件注册服务
+ *
  * @class Plugin
  * @package think\admin\service
+ *
+ * @method string getAppCode() static 获取插件编号
+ * @method string getAppName() static 获取插件名称
+ * @method string getAppPath() static 获取插件路径
+ * @method string getAppSpace() static 获取插件空间名
+ * @method string getAppPackage() static 获取插件安装包
  */
 abstract class Plugin extends Service
 {
@@ -184,16 +191,27 @@ abstract class Plugin extends Service
      * 静态调用方法兼容
      * @param string $method
      * @param array $arguments
-     * @return array|null
+     * @return array|string|null
      * @throws \think\admin\Exception
      */
     public static function __callStatic(string $method, array $arguments)
     {
-        if (strtolower($method) === 'all') {
-            return self::get(...$arguments);
-        } else {
-            $class = basename(str_replace('\\', '/', static::class));
-            throw new Exception("method not exists: {$class}::{$method}()");
+        switch (strtolower($method)) {
+            case 'all':
+                return self::get(...$arguments);
+            case 'getappcode':
+                return app(static::class)->appCode;
+            case 'getappname':
+                return app(static::class)->appName;
+            case 'getapppath':
+                return app(static::class)->appPath;
+            case 'getappspace':
+                return app(static::class)->appSpace;
+            case 'getapppackage';
+                return app(static::class)->package;
+            default:
+                $class = basename(str_replace('\\', '/', static::class));
+                throw new Exception("method not exists: {$class}::{$method}()");
         }
     }
 
