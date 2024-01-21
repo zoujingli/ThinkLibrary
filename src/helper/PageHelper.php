@@ -178,7 +178,7 @@ class PageHelper extends Helper
     {
         $query = static::buildQuery($dbQuery);
         if ($this->app->request->isPost() && $this->app->request->post('action') === 'sort') {
-            AdminService::isLogin() or $this->class->error('登录授权无效，请重新登录！');
+            AdminService::isLogin() or $this->class->error('请重新登录！');
             if (method_exists($query, 'getTableFields') && in_array($field, $query->getTableFields())) {
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
