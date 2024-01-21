@@ -63,7 +63,7 @@ $menus = [
 
 $extra = [];
 $extra['Y年m月d日 H:i:s'] = 'Y/m/d H:i:s';
-$extra['登录授权无效，请重新登录！'] = 'Invalid login authorization, Please login again.';
+$extra['请重新登录！'] = 'Invalid login authorization, Please login again.';
 $extra['共 %s 条记录，每页显示 %s 条，共 %s 页当前显示第 %s 页。'] = 'Total %s records, display %s per page, total %s page current display %s page.';
 
 return array_merge([
@@ -105,7 +105,7 @@ return array_merge([
     '接口账号验证失败！'     => 'Interface account verification failed.',
     '接口请求时差过大！'     => 'Interface request time difference too large.',
     '接口签名验证失败！'     => 'Interface signature verification failed.',
-    '请使用 JWT 方式访问！'  => 'Please use JWT to access.',
+    '非JWT访问！'            => 'Please use JWT to access.',
     '请求参数 %s 不能为空！' => 'Request parameter %s cannot be empty.',
     '接口请求响应格式异常！' => 'Abnormal format of interface request response.',
     '耗时 %.4f 秒'          => 'Time taken %.4f seconds',

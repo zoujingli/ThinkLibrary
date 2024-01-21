@@ -71,12 +71,10 @@ class JwtSession
                     $sessionId = CodeExtend::decrypt($data['sub'], JwtExtend::jwtkey());
                 }
             } else {
-                throw new Exception('访问 Jwt Token 格式错误！', 401);
+                throw new Exception('令牌格式错误！', 401);
             }
         } catch (\Exception $exception) {
-            throw new HttpResponseException(json([
-                'code' => $exception->getCode(), 'info' => lang($exception->getMessage()),
-            ]));
+            throw new HttpResponseException(json(['code' => $exception->getCode(), 'info' => lang($exception->getMessage())]));
         }
 
         if (empty($sessionId)) {
@@ -100,16 +98,14 @@ class JwtSession
             // 检查并验证 Jwt 会话
             if (!JwtExtend::isJwtMode()) {
                 $this->session->destroy();
-                throw new HttpResponseException(json([
-                    'code' => 401, 'info' => lang('会话无效或已失效！')
-                ]));
+                throw new HttpResponseException(json(['code' => 401, 'info' => lang('会话无效！')]));
             }
         } else {
-            // 非 Jwt 请求禁止使用 Jwt 会话
-            if (JwtExtend::isJwtMode()) throw new HttpResponseException(json([
-                'code' => 0, 'info' => lang('请使用 JWT 方式访问！')
-            ]));
-            // 非 Jwt 请求需写入 Cookie 记录 SessionID
+            // 非 Jwt 会话禁止使用 Jwt 访问
+            if (JwtExtend::isJwtMode()) {
+                throw new HttpResponseException(json(['code' => 0, 'info' => lang('非JWT访问！')]));
+            }
+            // 非 Jwt 会话需写入 Cookie 记录 SessionID
             $this->app->cookie->set($this->session->getName(), $this->session->getId());
         }
 

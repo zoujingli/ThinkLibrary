@@ -29,8 +29,10 @@ use think\admin\support\middleware\JwtSession;
 use think\admin\support\middleware\MultAccess;
 use think\admin\support\middleware\RbacAccess;
 use think\App;
+use think\exception\HttpResponseException;
 use think\middleware\LoadLangPack;
 use think\Request;
+use think\Response;
 use think\Service;
 
 /**
@@ -114,14 +116,37 @@ class Library extends Service
 
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->runningInConsole()) {
+            // 动态注释 CORS 跨域处理
+            $this->app->middleware->add(function (Request $request, \Closure $next): Response {
+                $request->id = microtime();
+                $header = ['X-Frame-Options' => $this->app->config->get('app.cors_frame') ?: 'sameorigin'];
+                // HTTP.CORS 跨域规则配置
+                if ($this->app->config->get('app.cors_on', true) && ($origin = $request->header('origin', '-')) !== '-') {
+                    if (is_string($hosts = $this->app->config->get('app.cors_host', []))) $hosts = str2arr($hosts);
+                    if (empty($hosts) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
+                        $headers = $this->app->config->get('app.cors_headers', 'Api-Name,Api-Type,Api-Token,Jwt-Token,User-Form-Token,User-Token,Token');
+                        $header['Access-Control-Allow-Origin'] = $origin;
+                        $header['Access-Control-Allow-Methods'] = $this->app->config->get('app.cors_methods', 'GET,PUT,POST,PATCH,DELETE');
+                        $header['Access-Control-Allow-Headers'] = "Authorization,Content-Type,If-Match,If-Modified-Since,If-None-Match,If-Unmodified-Since,X-Requested-With,{$headers}";
+                        $header['Access-Control-Allow-Credentials'] = 'true';
+                        $header['Access-Control-Expose-Headers'] = $headers;
+                    }
+                }
+                // 跨域预请求状态处理
+                if ($request->isOptions()) {
+                    throw new HttpResponseException(response()->code(204)->header($header));
+                } else {
+                    return $next($request)->header($header);
+                }
+            });
 
             // 初始化会话和语言包
             $isApiRequest = $this->app->request->header('api-token', '') !== '';
             $isYarRequest = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
             if (!($isApiRequest || $isYarRequest || $this->app->request->get('not_init_session', 0) > 0)) {
-                // 注册会话中间键
+                // 非接口模式，注册会话中间键
                 $this->app->middleware->add(JwtSession::class);
-                // 注册语言包中间键
+                // 启用会话后，注册语言包中间键
                 $this->app->middleware->add(LoadLangPack::class);
             }
 
