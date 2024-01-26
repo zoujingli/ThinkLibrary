@@ -19,7 +19,6 @@ declare (strict_types=1);
 namespace think\admin\service;
 
 use ReflectionClass;
-use ReflectionException;
 use ReflectionMethod;
 use think\admin\Exception;
 use think\admin\extend\ToolsExtend;
@@ -84,7 +83,7 @@ class NodeService extends Service
 
     /**
      * 检查并完整节点内容
-     * @param null|string $node
+     * @param ?string $node
      * @return string
      */
     public static function fullNode(?string $node = ''): string
@@ -106,15 +105,13 @@ class NodeService extends Service
      * 获取所有控制器入口
      * @param boolean $force 强制更新
      * @return array
-     * @throws ReflectionException
      */
     public static function getMethods(bool $force = false): array
     {
         if (empty($force)) {
-            $data = sysvar('think-library-methods') ?: [];
-            if (count($data) > 0) return $data;
-            $data = Library::$sapp->cache->get('SystemAuthNode', []);
-            if (count($data) > 0) return sysvar('think-library-methods', $data);
+            $skey = 'think-library-methods';
+            $data = sysvar($skey) ?: Library::$sapp->cache->get('SystemAuthNode', []);
+            if (count($data) > 0) return sysvar($skey, $data);
         } else {
             $data = [];
         }
@@ -218,5 +215,4 @@ class NodeService extends Service
             throw new Exception("method not exists: NodeService::{$name}()");
         }
     }
-
 }

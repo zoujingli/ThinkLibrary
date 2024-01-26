@@ -49,7 +49,6 @@ class MenuService extends Service
      * 获取可选菜单节点
      * @param boolean $force 强制刷新
      * @return array
-     * @throws \ReflectionException
      */
     public static function getList(bool $force = false): array
     {
@@ -64,7 +63,6 @@ class MenuService extends Service
     /**
      * 获取系统菜单树数据
      * @return array
-     * @throws \ReflectionException
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -81,7 +79,6 @@ class MenuService extends Service
      * 后台主菜单权限过滤
      * @param array $menus 当前菜单列表
      * @return array
-     * @throws \ReflectionException
      */
     private static function filter(array $menus): array
     {

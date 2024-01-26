@@ -50,6 +50,7 @@ class Library extends Service
 
     /**
      * 启动服务
+     * @return void
      */
     public function boot()
     {
@@ -103,6 +104,7 @@ class Library extends Service
 
     /**
      * 初始化服务
+     * @return void
      */
     public function register()
     {
@@ -118,7 +120,6 @@ class Library extends Service
         if (!$this->app->runningInConsole()) {
             // 动态注释 CORS 跨域处理
             $this->app->middleware->add(function (Request $request, \Closure $next): Response {
-                $request->id = microtime();
                 $header = ['X-Frame-Options' => $this->app->config->get('app.cors_frame') ?: 'sameorigin'];
                 // HTTP.CORS 跨域规则配置
                 if ($this->app->config->get('app.cors_on', true) && ($origin = $request->header('origin', '-')) !== '-') {
@@ -141,9 +142,10 @@ class Library extends Service
             });
 
             // 初始化会话和语言包
-            $isApiRequest = $this->app->request->header('api-token', '') !== '';
-            $isYarRequest = is_numeric(stripos($this->app->request->header('user_agent', ''), 'PHP Yar RPC-'));
-            if (!($isApiRequest || $isYarRequest || $this->app->request->get('not_init_session', 0) > 0)) {
+            $isapi = $this->app->request->header('api-token') !== null;
+            $agent = preg_replace('|\s+|', '', $this->app->request->header('user-agent', ''));
+            $isrpc = is_numeric(stripos($agent, 'think-admin-jsonrpc')) || is_numeric(stripos($agent, 'PHPYarRPC'));
+            if (empty($isapi) && empty($isrpc) && empty($this->app->request->get('not_init_session'))) {
                 // 非接口模式，注册会话中间键
                 $this->app->middleware->add(JwtSession::class);
                 // 启用会话后，注册语言包中间键

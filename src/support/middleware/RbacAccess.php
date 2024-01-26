@@ -51,7 +51,6 @@ class RbacAccess
      * @param \think\Request $request
      * @param \Closure $next
      * @return \think\Response
-     * @throws \ReflectionException
      */
     public function handle(Request $request, \Closure $next): Response
     {
