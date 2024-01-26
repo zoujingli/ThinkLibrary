@@ -129,7 +129,7 @@ class SystemService extends Service
                 SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) use (&$config) {
                     $config[$item['type']][$item['name']] = $item['value'];
                 });
-                $config = sysvar('think-library-config', $config);
+                sysvar('think-library-config', $config);
             }
             [$type, $field, $outer] = static::_parse($name);
             if (empty($name)) {
