@@ -168,25 +168,17 @@ class AdminService extends Service
      * --- 需要读取缓存或扫描所有节点
      * @param null|string $node
      * @return boolean
-     * @throws \ReflectionException
      */
     public static function check(?string $node = ''): bool
     {
-        $methods = NodeService::getMethods();
+        $skey1 = 'think-library-methods';
         $current = NodeService::fullNode($node);
-        $userNodes = Library::$sapp->session->get('user.nodes', []);
-        // 兼容 windows 控制器不区分大小写的验证问题
-        foreach ($methods as $key => $rule) {
-            if (preg_match('#.*?/.*?_.*?#', $key)) {
-                $attr = explode('/', $key);
-                $attr[1] = strtr($attr[1], ['_' => '']);
-                $methods[join('/', $attr)] = $rule;
-            }
-        }
+        $methods = sysvar($skey1) ?: sysvar($skey1, NodeService::getMethods());
+        $usernodes = Library::$sapp->session->get('user.nodes', []);
         // 自定义权限检查回调
         if (count(self::$checkCallables) > 0) {
             foreach (self::$checkCallables as $callable) {
-                if ($callable($current, $methods, $userNodes) === false) {
+                if ($callable($current, $methods, $usernodes) === false) {
                     return false;
                 }
             }
@@ -194,15 +186,19 @@ class AdminService extends Service
         }
         // 自定义权限检查方法
         if (function_exists('admin_check_filter')) {
-            return call_user_func('admin_check_filter', $current, $methods, $userNodes);
+            return call_user_func('admin_check_filter', $current, $methods, $usernodes);
         }
-        // 超级用户权限
+        // 超级用户不需要检查权限
         if (static::isSuper()) return true;
-        // 节点权限检查
-        if (empty($methods[$current]['isauth'])) {
-            return !(!empty($methods[$current]['islogin']) && !static::isLogin());
+        // 节点权限检查，需要兼容 windows 控制器不区分大小写，统一去除节点下划线再检查权限
+        if (empty($simples = sysvar($skey2 = 'think-library-method-simples') ?: [])) {
+            foreach ($methods as $k => $v) $simples[strtr($k, ['_' => ''])] = $v;
+            sysvar($skey2, $simples);
+        }
+        if (empty($simples[$simple = strtr($current, ['_' => ''])]['isauth'])) {
+            return !(!empty($simples[$simple]['islogin']) && !static::isLogin());
         } else {
-            return in_array($current, $userNodes);
+            return in_array($current, $usernodes);
         }
     }
 
@@ -210,7 +206,6 @@ class AdminService extends Service
      * 获取授权节点列表
      * @param array $checkeds
      * @return array
-     * @throws \ReflectionException
      */
     public static function getTree(array $checkeds = []): array
     {

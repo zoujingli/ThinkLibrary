@@ -62,7 +62,6 @@ if (!function_exists('auth')) {
      * 访问权限检查
      * @param ?string $node
      * @return boolean
-     * @throws ReflectionException
      */
     function auth(?string $node): bool
     {
