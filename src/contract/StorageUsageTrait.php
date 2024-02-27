@@ -84,7 +84,7 @@ trait StorageUsageTrait
      */
     protected function getSuffix(?string $attname = null, ?string $filename = null): string
     {
-        [$class, $suffix] = [basename(get_class($this)), ''];
+        [$class, $suffix] = [class_basename(get_class($this)), ''];
         if (is_string($filename) && stripos($this->link, 'compress') !== false) {
             $compress = [
                 'LocalStorage'  => '',
