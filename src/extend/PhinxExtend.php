@@ -249,12 +249,18 @@ CODE;
                 $content .= "{$br}\t\t->addColumn('{$field["name"]}','{$type}',{$params})";
             }
             // 读取数据表 - 自动生成索引
+            $idxs = [];
             $indexs = Library::$sapp->db->query("show index from {$table}");
             foreach ($indexs as $index) {
                 if ($index['Key_name'] === 'PRIMARY') continue;
-                $params = static::_arr2str(['name' => "idx_{$index['Table']}_{$index['Column_name']}"]);
-                $content .= "{$br}\t\t->addIndex('{$index['Column_name']}', {$params})";
+                $short = substr(md5($index['Table']), 0, 9);
+                $params = static::_arr2str(['name' => "i{$short}_{$index['Column_name']}"]);
+                $idxs[] = "{$br}\t\t->addIndex('{$index['Column_name']}', {$params})";
             }
+            usort($idxs, function ($a, $b) {
+                return strlen($a) <=> strlen($b);
+            });
+            $content .= join('', $idxs);
             $content .= "{$br}\t\t->create();{$br}{$br}\t\t// 修改主键长度";
             $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id', 'integer', ['limit' => 11, 'identity' => true]);";
             $content .= "{$br}\t}{$br}{$br}";
