@@ -18,12 +18,8 @@ declare (strict_types=1);
 
 namespace think\admin;
 
-use think\admin\helper\DeleteHelper;
-use think\admin\helper\FormHelper;
+use think\admin\helper\HookHelper;
 use think\admin\helper\QueryHelper;
-use think\admin\helper\SaveHelper;
-use think\admin\service\SystemService;
-use think\Container;
 
 /**
  * 基础模型类
@@ -31,17 +27,14 @@ use think\Container;
  * @mixin \think\db\Query
  * @package think\admin
  *
- * 模型日志记录
- * @method void onAdminSave(string $ids) 记录状态变更日志
- * @method void onAdminUpdate(string $ids) 记录更新数据日志
- * @method void onAdminInsert(string $ids) 记录新增数据日志
- * @method void onAdminDelete(string $ids) 记录删除数据日志
- *
- * 静态助手调用
+ * --- 静态助手调用
  * @method static bool mSave(array $data = [], string $field = '', mixed $where = []) 快捷更新
  * @method static bool mDelete(string $field = '', mixed $where = []) 快捷删除
  * @method static bool|array mForm(string $template = '', string $field = '', mixed $where = [], array $data = []) 快捷表单
  * @method static bool|integer mUpdate(array $data = [], string $field = '', mixed $where = []) 快捷保存
+ *
+ * --- 创建助手对象
+ * @method static HookHelper mMake(callable $callable = null) 快捷调用
  * @method static QueryHelper mQuery($input = null, callable $callable = null) 快捷查询
  */
 abstract class Model extends \think\Model
@@ -121,18 +114,8 @@ abstract class Model extends \think\Model
      */
     public static function __callStatic($method, $args)
     {
-        $helpers = [
-            'mForm'   => [FormHelper::class, 'init'],
-            'mSave'   => [SaveHelper::class, 'init'],
-            'mQuery'  => [QueryHelper::class, 'init'],
-            'mDelete' => [DeleteHelper::class, 'init'],
-            'mUpdate' => [SystemService::class, 'save'],
-        ];
-        if (isset($helpers[$method])) {
-            [$class, $method] = $helpers[$method];
-            return Container::getInstance()->invokeClass($class)->$method(static::class, ...$args);
-        } else {
+        return HookHelper::make(static::class, $method, $args, function ($method, $args) {
             return parent::__callStatic($method, $args);
-        }
+        });
     }
 }
