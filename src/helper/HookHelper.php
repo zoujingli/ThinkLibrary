@@ -54,7 +54,7 @@ class HookHelper extends Helper
     public function init($dbQuery, ?callable $callable = null): HookHelper
     {
         $this->query = static::buildQuery($dbQuery);
-        is_callable($callable) && $callable($this->query);
+        is_callable($callable) && $callable($this, $this->query);
         return $this;
     }
 

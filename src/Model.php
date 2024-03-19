@@ -34,7 +34,7 @@ use think\admin\helper\QueryHelper;
  * @method static bool|integer mUpdate(array $data = [], string $field = '', mixed $where = []) 快捷保存
  *
  * --- 创建助手对象
- * @method static HookHelper mMake(callable $callable = null) 快捷调用
+ * @method static HookHelper mHook(callable $callable = null) 快捷调用
  * @method static QueryHelper mQuery($input = null, callable $callable = null) 快捷查询
  */
 abstract class Model extends \think\Model
