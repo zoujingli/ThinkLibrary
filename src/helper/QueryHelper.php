@@ -19,16 +19,24 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\admin\service\SystemService;
+use think\Container;
 use think\db\BaseQuery;
 use think\db\Query;
 use think\Model;
 
 /**
  * 搜索条件处理器
+ * @see \think\db\Query
+ * @mixin \think\db\Query
  * @class QueryHelper
  * @package think\admin\helper
- * @see \think\db\Query
- * @mixin Query
+ *
+ * --- 动态方法调用声明
+ * @method bool mSave(array $data = [], string $field = '', mixed $where = []) 快捷更新
+ * @method bool mDelete(string $field = '', mixed $where = []) 快捷删除
+ * @method bool|array mForm(string $tpl = '', string $field = '', mixed $where = [], array $data = []) 快捷表单
+ * @method bool|integer mUpdate(array $data = [], string $field = '', mixed $where = []) 快捷保存
  */
 class QueryHelper extends Helper
 {
@@ -143,7 +151,6 @@ class QueryHelper extends Helper
         }
         return $this;
     }
-
 
     /**
      * 两字段范围查询
@@ -289,26 +296,6 @@ class QueryHelper extends Helper
     }
 
     /**
-     * QueryHelper call.
-     * @param string $name 调用方法名称
-     * @param array $args 调用参数内容
-     * @return $this|mixed
-     */
-    public function __call(string $name, array $args)
-    {
-        if (is_callable($callable = [$this->query, $name])) {
-            $value = call_user_func_array($callable, $args);
-            if ($name[0] === '_' || $value instanceof $this->query) {
-                return $this;
-            } else {
-                return $value;
-            }
-        } else {
-            return $this;
-        }
-    }
-
-    /**
      * 设置区域查询条件
      * @param string|array $fields 查询字段
      * @param string $split 输入分隔符
@@ -360,5 +347,52 @@ class QueryHelper extends Helper
     {
         $this->page = clone $this->page;
         $this->query = clone $this->query;
+    }
+
+    /**
+     * QueryHelper call.
+     * @param string $name 调用方法名称
+     * @param array $args 调用参数内容
+     * @return $this|mixed
+     */
+    public function __call(string $name, array $args)
+    {
+        return static::make($this->query, $name, $args, function ($name, $args) {
+            if (is_callable($callable = [$this->query, $name])) {
+                $value = call_user_func_array($callable, $args);
+                if ($name[0] === '_' || $value instanceof $this->query) {
+                    return $this;
+                } else {
+                    return $value;
+                }
+            } else {
+                return $this;
+            }
+        });
+    }
+
+    /**
+     * 快捷助手调用勾子
+     * @param string|Model|Query $model
+     * @param string $method
+     * @param array $args
+     * @param callable|null $nohook
+     * @return mixed|false|integer|QueryHelper
+     */
+    public static function make($model, string $method = 'init', array $args = [], ?callable $nohook = null)
+    {
+        $hooks = [
+            'mForm'   => [FormHelper::class, 'init'],
+            'mSave'   => [SaveHelper::class, 'init'],
+            'mQuery'  => [QueryHelper::class, 'init'],
+            'mDelete' => [DeleteHelper::class, 'init'],
+            'mUpdate' => [SystemService::class, 'save'],
+        ];
+        if (isset($hooks[$method])) {
+            [$class, $method] = $hooks[$method];
+            return Container::getInstance()->invokeClass($class)->$method($model, ...$args);
+        } else {
+            return is_callable($nohook) ? $nohook($method, $args) : false;
+        }
     }
 }
