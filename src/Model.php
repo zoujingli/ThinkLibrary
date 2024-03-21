@@ -18,7 +18,6 @@ declare (strict_types=1);
 
 namespace think\admin;
 
-use think\admin\helper\HookHelper;
 use think\admin\helper\QueryHelper;
 
 /**
@@ -32,9 +31,6 @@ use think\admin\helper\QueryHelper;
  * @method static bool mDelete(string $field = '', mixed $where = []) 快捷删除
  * @method static bool|array mForm(string $template = '', string $field = '', mixed $where = [], array $data = []) 快捷表单
  * @method static bool|integer mUpdate(array $data = [], string $field = '', mixed $where = []) 快捷保存
- *
- * --- 创建助手对象
- * @method static HookHelper mHook(callable $callable = null) 快捷调用
  * @method static QueryHelper mQuery($input = null, callable $callable = null) 快捷查询
  */
 abstract class Model extends \think\Model
@@ -114,7 +110,7 @@ abstract class Model extends \think\Model
      */
     public static function __callStatic($method, $args)
     {
-        return HookHelper::make(static::class, $method, $args, function ($method, $args) {
+        return QueryHelper::make(static::class, $method, $args, function ($method, $args) {
             return parent::__callStatic($method, $args);
         });
     }
