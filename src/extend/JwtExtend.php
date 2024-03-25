@@ -87,7 +87,7 @@ class JwtExtend
         if (is_bool($rejwt)) self::$rejwt = $rejwt;
 
         // JWT 载荷数据组装
-        [$fields, $payload] = [['iss', 'sub', 'aud', 'exp', 'iat', 'nbf'], []];
+        [$fields, $payload] = [['iss', 'sub', 'aud', 'exp', 'iat', 'nbf'], ['iat' => time()]];
         foreach ($data as $k => $v) if (in_array($k, $fields)) {
             $payload[$k] = $v;
             unset($data[$k]);
