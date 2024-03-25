@@ -67,9 +67,8 @@ class JwtSession
         // 处理 Jwt 请求，请求头存在 jwt-token 字段
         if (($token = $request->header('jwt-token', ''))) try {
             if (preg_match('#^\s*([\w\-]+\.[\w\-]+\.[\w\-]+)\s*$#', $token, $match)) {
-                if (($data = JwtExtend::verify($match[1])) && !empty($data['sub'])) {
-                    $sessionId = CodeExtend::decrypt($data['sub'], JwtExtend::jwtkey());
-                }
+                JwtExtend::verify($match[1]);
+                $sessionId = JwtExtend::$sessionId;
             } else {
                 throw new Exception('令牌格式错误！', 401);
             }
@@ -94,17 +93,7 @@ class JwtSession
         $this->session->init();
         $request->withSession($this->session);
 
-        if (JwtExtend::$isjwt) {
-            // 检查并验证 Jwt 会话
-            if (!JwtExtend::isJwtMode()) {
-                $this->session->destroy();
-                throw new HttpResponseException(json(['code' => 401, 'info' => lang('会话无效！')]));
-            }
-        } else {
-            // 非 Jwt 会话禁止使用 Jwt 访问
-            if (JwtExtend::isJwtMode()) {
-                throw new HttpResponseException(json(['code' => 0, 'info' => lang('非JWT访问！')]));
-            }
+        if (empty(JwtExtend::$sessionId)) {
             // 非 Jwt 会话需写入 Cookie 记录 SessionID
             $this->app->cookie->set($this->session->getName(), $this->session->getId());
         }
