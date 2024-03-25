@@ -54,12 +54,6 @@ class JwtExtend
     private static $input = [];
 
     /**
-     * 当前输出数据
-     * @var array
-     */
-    private static $output = [];
-
-    /**
      * 获取原会话标签
      * @var string
      */
@@ -67,7 +61,7 @@ class JwtExtend
 
     /**
      * 生成 jwt token
-     * @param ?array $data jwt 载荷 格式如下非必须
+     * @param array $data jwt 载荷 格式如下非必须
      * {
      * "iss": "http://example.org", // 签发者（Issuer），JWT的签发者
      * "sub": "1234567890", // 主题（Subject），JWT所面向的用户
@@ -75,15 +69,15 @@ class JwtExtend
      * "exp": 1625174400, // 过期时间（Expiration time），JWT的过期时间戳
      * "iat": 1625138400, // 签发时间（Issued at），JWT的签发时间戳
      * "nbf": 1625138400, // 生效时间（Not Before），JWT的生效时间戳
+     * ......  其他扩展内容
      * }
      * @param ?string $jwtkey 签名密钥
      * @param ?boolean $rejwt 输出令牌
      * @return string
      */
-    public static function token(?array $data = null, ?string $jwtkey = null, ?bool $rejwt = null): string
+    public static function token(array $data = [], ?string $jwtkey = null, ?bool $rejwt = null): string
     {
         $jwtkey = self::jwtkey($jwtkey);
-        if (is_null($data)) $data = self::$output;
         if (is_bool($rejwt)) self::$rejwt = $rejwt;
 
         // JWT 载荷数据组装
@@ -239,9 +233,7 @@ class JwtExtend
                 return self::$rejwt;
             case 'getInData':  // 获取请求数据
                 return self::$input;
-            case 'getOutData': // 获取输出数据
-                return self::$output;
-            case 'getToken': // 生成街道口令牌
+            case 'getToken': // 生成接口令牌
                 return self::token(...$arguments);
             case 'verifyToken': // 验证接口令牌
                 return self::verify(...$arguments);
