@@ -145,7 +145,7 @@ class Controller extends stdClass
      */
     public function fetch(string $tpl = '', array $vars = [], ?string $node = null): void
     {
-        if (JwtExtend::$isjwt) {
+        if (JwtExtend::$sessionId) {
             JwtExtend::fetch($this, $vars);
         } else {
             foreach ($this as $name => $value) {

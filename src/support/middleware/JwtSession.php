@@ -109,6 +109,6 @@ class JwtSession
     public function end()
     {
         $this->session->save();
-        JwtExtend::$isjwt = false;
+        JwtExtend::$sessionId = '';
     }
 }
