@@ -26,7 +26,7 @@ use think\admin\Library;
  * 接口 JWT 接口扩展
  * @class JwtExtend
  * @package think\admin\extend
- * @method static bool isRejwt() 获取输入数据
+ * @method static bool isRejwt() 是否输出令牌
  * @method static array getInData() 获取输入数据
  */
 class JwtExtend
@@ -69,7 +69,7 @@ class JwtExtend
      * "exp": 1625174400, // 过期时间（Expiration time），JWT的过期时间戳
      * "iat": 1625138400, // 签发时间（Issued at），JWT的签发时间戳
      * "nbf": 1625138400, // 生效时间（Not Before），JWT的生效时间戳
-     * ......  其他扩展内容
+     * "...": ... // 其他扩展内容
      * }
      * @param ?string $jwtkey 签名密钥
      * @param ?boolean $rejwt 输出令牌
