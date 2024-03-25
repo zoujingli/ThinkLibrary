@@ -94,8 +94,8 @@ class JwtExtend
         }
 
         // 自定义需要的数据
-        $payload['aud'] = $payload['aud'] ?? self::withSess($rejwt);
-        if ($payload['aud'] === '') unset($payload['aud']);
+        $data['.ssid'] = self::withSess();
+        if (empty($data['.ssid'])) unset($data['.ssid']);
         $payload['enc'] = CodeExtend::encrypt(json_encode($data, JSON_UNESCAPED_UNICODE), $jwtkey);
 
         // 组装 JWT 内容格式
@@ -146,17 +146,13 @@ class JwtExtend
             throw new Exception('不接收处理该TOKEN', 0, $payload);
         }
 
-        // 解析原会话编号
-        if (!empty($payload['aud'])) {
-            self::$sessionId = CodeExtend::decrypt($payload['aud'], $jwtkey);
-        }
-
         // 返回自定义数据字段
         if (isset($payload['enc'])) {
             $extra = json_decode(CodeExtend::decrypt($payload['enc'], $jwtkey), true);
+            if (!empty($extra['.ssid'])) self::$sessionId = $extra['.ssid'];
+            unset($payload['enc'], $extra['.ssid']);
         }
 
-        unset($payload['enc'], $payload['aud']);
         return self::$input = array_merge($payload, $extra ?? []);
     }
 
@@ -208,14 +204,12 @@ class JwtExtend
 
     /**
      * 获取原会话标识
-     * @param string|null $jwtkey
      * @return string
      */
-    private static function withSess(?string $jwtkey = null): string
+    private static function withSess(): string
     {
         if (!isset(Library::$sapp->session)) return self::$sessionId = '';
-        self::$sessionId = Library::$sapp->session->getId();
-        return CodeExtend::encrypt(self::$sessionId, self::jwtkey($jwtkey));
+        return self::$sessionId = Library::$sapp->session->getId();
     }
 
 
