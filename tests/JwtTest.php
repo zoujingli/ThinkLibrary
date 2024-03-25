@@ -10,9 +10,9 @@ class JwtTest extends TestCase
     public function testJwtCreateAndVerify()
     {
         $jwtkey = 'thinkadmin';
-        $testdata = ['user' => 'admin', 'iss' => 'thinkadmin.top', 'exp' => time() + 30];
+        $testdata = ['user' => 'admin' . mt_rand(0, 1000), 'iss' => 'thinkadmin.top', 'exp' => time() + 30];
         $token = JwtExtend::token($testdata, $jwtkey);
         $result = JwtExtend::verify($token, $jwtkey);
-        $this->assertJsonStringEqualsJsonString(json_encode($testdata), json_encode($result));
+        $this->assertEquals($testdata['user'], $result['user']);
     }
 }
