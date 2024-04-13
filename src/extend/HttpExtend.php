@@ -136,7 +136,8 @@ class HttpExtend
             curl_setopt($curl, CURLOPT_HEADER, true);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         }
-        // 自定义扩展参数配置
+        // 自定义扩展参数配置，二维数组内每个单元为一个设置语句，格式如下：
+        // $setopt = [ [CURLOPT_URL, $location], [CURLOPT_AUTOREFERER, true], ...];
         if (isset($options['setopt']) && is_array($options['setopt'])) {
             foreach ($options['setopt'] as $value) if (is_array($value)) {
                 curl_setopt($curl, ...$value);
