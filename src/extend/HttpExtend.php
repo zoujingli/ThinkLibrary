@@ -136,6 +136,12 @@ class HttpExtend
             curl_setopt($curl, CURLOPT_HEADER, true);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         }
+        // 自定义扩展参数配置
+        if (isset($options['setopt']) && is_array($options['setopt'])) {
+            foreach ($options['setopt'] as $value) if (is_array($value)) {
+                curl_setopt($curl, ...$value);
+            }
+        }
         curl_setopt($curl, CURLOPT_URL, $location);
         curl_setopt($curl, CURLOPT_AUTOREFERER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
