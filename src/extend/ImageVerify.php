@@ -154,10 +154,11 @@ class ImageVerify
         $srcX1 = mt_rand(150, $this->dstWidth - $this->picWidth); // 水印位于大图X坐标
         $srcY1 = mt_rand(0, $this->dstHeight - $this->picHeight); // 水印位于大图Y坐标
 
-        do { // 干扰位置
-            $srcX2 = mt_rand(100, $this->dstWidth - $this->picWidth);
-            $srcY2 = mt_rand(0, $this->dstHeight - $this->picHeight);
-        } while (abs($srcX1 - $srcX2) < $this->picWidth);
+        // 去除第二个干扰水印
+        // do { // 干扰位置
+        //     $srcX2 = mt_rand(100, $this->dstWidth - $this->picWidth);
+        //     $srcY2 = mt_rand(0, $this->dstHeight - $this->picHeight);
+        // } while (abs($srcX1 - $srcX2) < $this->picWidth);
 
         // 水印边框颜色
         $broders = [
@@ -179,10 +180,8 @@ class ImageVerify
             for ($j = 0; $j < $this->picWidth; $j++) {
                 if ($waters[$i][$j] === 1) {
                     if (
-                        empty($waters[$i - 1][$j - 1]) ||
-                        empty($waters[$i - 2][$j - 2]) ||
-                        empty($waters[$i + 1][$j + 1]) ||
-                        empty($waters[$i + 2][$j + 2])
+                        empty($waters[$i - 1][$j - 1]) || empty($waters[$i - 2][$j - 2]) ||
+                        empty($waters[$i + 1][$j + 1]) || empty($waters[$i + 2][$j + 2])
                     ) {
                         imagesetpixel($watim, $j, $srcY1 + $i, $blue);
                     } else {
@@ -203,10 +202,12 @@ class ImageVerify
                         empty($waters[$i + 2][$j + 2])
                     ) {
                         imagesetpixel($dstim, $srcX1 + $j, $srcY1 + $i, $c1);
-                        imagesetpixel($dstim, $srcX2 + $j, $srcY2 + $i, $c2);
+                        // 去除第二个干扰水印
+                        // imagesetpixel($dstim, $srcX2 + $j, $srcY2 + $i, $c2);
                     } else {
                         imagesetpixel($dstim, $srcX1 + $j, $srcY1 + $i, $gray);
-                        imagesetpixel($dstim, $srcX2 + $j, $srcY2 + $i, $gray);
+                        // 去除第二个干扰水印
+                        // imagesetpixel($dstim, $srcX2 + $j, $srcY2 + $i, $gray);
                     }
                 }
             }
