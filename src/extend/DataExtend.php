@@ -26,50 +26,50 @@ namespace think\admin\extend;
 class DataExtend
 {
     /**
-     * 一维数组转多维数据树
-     * @param array $its 待处理数据
-     * @param string $cid 自己的主键
-     * @param string $pid 上级的主键
-     * @param string $sub 子数组名称
+     * 二维数组转多维数据树
+     * @param array $list 待处理数据
+     * @param string $ckey 自己的主键
+     * @param string $pkey 上级的主键
+     * @param string $chil 子数组名称
      * @return array
      */
-    public static function arr2tree(array $its, string $cid = 'id', string $pid = 'pid', string $sub = 'sub'): array
+    public static function arr2tree(array $list, string $ckey = 'id', string $pkey = 'pid', string $chil = 'sub'): array
     {
-        [$tree, $its] = [[], array_column($its, null, $cid)];
-        foreach ($its as $it) isset($its[$it[$pid]]) ? $its[$it[$pid]][$sub][] = &$its[$it[$cid]] : $tree[] = &$its[$it[$cid]];
+        [$tree, $list] = [[], array_column($list, null, $ckey)];
+        foreach ($list as $it) isset($list[$it[$pkey]]) ? $list[$it[$pkey]][$chil][] = &$list[$it[$ckey]] : $tree[] = &$list[$it[$ckey]];
         return $tree;
     }
 
     /**
-     * 一维数组转数据树表
-     * @param array $its 待处理数据
-     * @param string $cid 自己的主键
-     * @param string $pid 上级的主键
+     * 二维数组转数据树表
+     * @param array $list 待处理数据
+     * @param string $ckey 自己的主键
+     * @param string $pkey 上级的主键
      * @param string $path 当前 PATH
      * @return array
      */
-    public static function arr2table(array $its, string $cid = 'id', string $pid = 'pid', string $path = 'path'): array
+    public static function arr2table(array $list, string $ckey = 'id', string $pkey = 'pid', string $path = 'path'): array
     {
-        $call = static function (array $its, callable $call, array &$data = [], string $parent = '') use ($cid, $pid, $path) {
-            foreach ($its as $it) {
-                $ts = $it['sub'] ?? [];
-                unset($it['sub']);
-                $it[$path] = "{$parent}-{$it[$cid]}";
-                $it['spc'] = count($ts);
-                $it['spt'] = substr_count($parent, '-');
-                $it['spl'] = str_repeat('ㅤ├ㅤ', $it['spt']);
-                $it['sps'] = ",{$it[$cid]},";
-                array_walk_recursive($ts, static function ($val, $key) use ($cid, &$it) {
-                    if ($key === $cid) $it['sps'] .= "{$val},";
+        $build = static function (array $nodes, callable $build, array &$data = [], string $parent = '') use ($ckey, $pkey, $path) {
+            foreach ($nodes as $node) {
+                $subs = $node['sub'] ?? [];
+                unset($node['sub']);
+                $node[$path] = "{$parent}-{$node[$ckey]}";
+                $node['spc'] = count($subs);
+                $node['spt'] = substr_count($parent, '-');
+                $node['spl'] = str_repeat('ㅤ├ㅤ', $node['spt']);
+                $node['sps'] = ",{$node[$ckey]},";
+                array_walk_recursive($subs, static function ($val, $key) use ($ckey, &$node) {
+                    if ($key === $ckey) $node['sps'] .= "{$val},";
                 });
-                $it['spp'] = arr2str(str2arr(strtr($parent . $it['sps'], '-', ',')));
-                $data[] = $it;
-                if (empty($ts)) continue;
-                $call($ts, $call, $data, $it[$path]);
+                $node['spp'] = arr2str(str2arr(strtr($parent . $node['sps'], '-', ',')));
+                $data[] = $node;
+                if (empty($subs)) continue;
+                $build($subs, $build, $data, $node[$path]);
             }
             return $data;
         };
-        return $call(static::arr2tree($its, $cid, $pid), $call);
+        return $build(static::arr2tree($list, $ckey, $pkey), $build);
     }
 
     /**
