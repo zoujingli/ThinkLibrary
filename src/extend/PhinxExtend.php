@@ -250,7 +250,7 @@ CODE;
             }
             // 读取数据表 - 自动生成索引
             $idxs = [];
-            $indexs = Library::$sapp->db->query("show index from {$table}");
+            $indexs = Library::$sapp->db->connect()->query("show index from {$table}");
             foreach ($indexs as $index) {
                 if ($index['Key_name'] === 'PRIMARY') continue;
                 $short = substr(md5($index['Table']), 0, 9);

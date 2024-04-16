@@ -220,10 +220,10 @@ class SystemService extends Service
                 throw new Exception("待复制的数据表 {$from} 不存在！");
             }
             if (!in_array($create, $tables)) {
-                Library::$sapp->db->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
+                Library::$sapp->db->connect()->query("CREATE TABLE IF NOT EXISTS {$create} (LIKE {$from})");
                 if ($copy) {
                     $sql1 = Library::$sapp->db->name($from)->where($where)->buildSql(false);
-                    Library::$sapp->db->query("INSERT INTO {$create} {$sql1}");
+                    Library::$sapp->db->connect()->query("INSERT INTO {$create} {$sql1}");
                 }
             }
         } catch (\Exception $exception) {
