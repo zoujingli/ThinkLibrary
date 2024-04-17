@@ -70,7 +70,7 @@ class __CLASS__ extends Migrator
             ['type' => 'base', 'name' => 'editor', 'value' => 'ckeditor5'],
             ['type' => 'base', 'name' => 'login_name', 'value' => '系统管理'],
             ['type' => 'base', 'name' => 'site_copy', 'value' => '©版权所有 2014-' . date('Y') . ' ThinkAdmin'],
-            ['type' => 'base', 'name' => 'site_icon', 'value' => 'https://doc.thinkadmin.top/static/img/logo.png'],
+            ['type' => 'base', 'name' => 'site_icon', 'value' => 'https://thinkadmin.top/static/img/logo.png'],
             ['type' => 'base', 'name' => 'site_name', 'value' => 'ThinkAdmin'],
             ['type' => 'base', 'name' => 'site_theme', 'value' => 'default'],
             ['type' => 'wechat', 'name' => 'type', 'value' => 'api'],
@@ -91,7 +91,7 @@ class __CLASS__ extends Migrator
             'username' => 'admin',
             'nickname' => '超级管理员',
             'password' => '21232f297a57a5a743894a0e4a801fc3',
-            'headimg'  => 'https://doc.thinkadmin.top/static/img/head.png',
+            'headimg'  => 'https://thinkadmin.top/static/img/head.png',
         ]);
     }
 
