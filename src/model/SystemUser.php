@@ -41,6 +41,18 @@ class SystemUser extends Model
     protected $oplogType = '系统用户管理';
 
     /**
+     * 创建字段
+     * @var string
+     */
+    protected $createTime = 'create_at';
+
+    /**
+     * 更新字段
+     * @var string
+     */
+    protected $updateTime = 'update_at';
+
+    /**
      * 获取用户数据
      * @param mixed $map 数据查询规则
      * @param array $data 用户数据集合

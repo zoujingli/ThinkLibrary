@@ -40,6 +40,18 @@ class SystemBase extends Model
     protected $oplogType = '数据字典管理';
 
     /**
+     * 创建字段
+     * @var string
+     */
+    protected $createTime = 'create_at';
+
+    /**
+     * 更新字段
+     * @var string
+     */
+    protected $updateTime = 'update_at';
+
+    /**
      * 获取指定数据列表
      * @param string $type 数据类型
      * @param array $data 外围数据
