@@ -161,7 +161,12 @@ class AlistStorage implements StorageInterface
     public function url(string $name, bool $safe = false, ?string $attname = null): string
     {
         $path = rtrim($this->userPath(), '\\/') . $this->real($name);
-        return "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
+        $url = "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
+        $sign = $this->_sign($name);
+        if ($sign) {
+            return $url . '?sign=' . $this->_sign($sign);
+        }
+        return $url;
     }
 
     /**
@@ -317,6 +322,27 @@ class AlistStorage implements StorageInterface
             throw new Exception($data['message'] ?? '接口请求失败！', intval($data['code'] ?? 0));
         } else {
             throw new Exception('接口请求失败！');
+        }
+    }
+
+    /**
+     * 获取文件sign
+     * @param string $name 文件名称
+     * @return false|mixed
+     */
+    private function _sign(string $name)
+    {
+        try {
+            $body = $this->httpPost('/api/fs/get', [
+                'path' => $this->real($name)
+            ]);
+            if (!empty($body['data']['sign'])) {
+                return $body['data']['sign'];
+            } else {
+                return false;
+            }
+        } catch (\Exception $exception) {
+            return false;
         }
     }
 }
