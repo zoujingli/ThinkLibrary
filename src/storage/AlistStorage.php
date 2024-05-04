@@ -164,7 +164,7 @@ class AlistStorage implements StorageInterface
         $url = "{$this->domain}/d{$this->delSuffix($path)}{$this->getSuffix($attname,$path)}";
         $sign = $this->_sign($name);
         if ($sign) {
-            return $url . '?sign=' . $this->_sign($sign);
+            return $url . '?sign=' . $sign;
         }
         return $url;
     }
