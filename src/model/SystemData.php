@@ -27,15 +27,4 @@ use think\admin\Model;
  */
 class SystemData extends Model
 {
-    /**
-     * 创建字段
-     * @var string
-     */
-    protected $createTime = 'create_at';
-
-    /**
-     * 更新字段
-     * @var string
-     */
-    protected $updateTime = 'update_at';
 }
