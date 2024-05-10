@@ -28,6 +28,9 @@ use think\model\relation\HasOne;
  */
 class SystemUser extends Model
 {
+    protected $createTime = 'create_at';
+    protected $updateTime = false;
+
     /**
      * 日志名称
      * @var string
@@ -39,12 +42,6 @@ class SystemUser extends Model
      * @var string
      */
     protected $oplogType = '系统用户管理';
-
-    /**
-     * 创建字段
-     * @var string
-     */
-    protected $createTime = 'create_at';
 
     /**
      * 获取用户数据

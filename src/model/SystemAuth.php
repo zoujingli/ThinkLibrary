@@ -27,6 +27,9 @@ use think\admin\Model;
  */
 class SystemAuth extends Model
 {
+    protected $createTime = 'create_at';
+    protected $updateTime = false;
+
     /**
      * 日志名称
      * @var string
@@ -38,12 +41,6 @@ class SystemAuth extends Model
      * @var string
      */
     protected $oplogType = '系统权限管理';
-
-    /**
-     * 创建字段
-     * @var string
-     */
-    protected $createTime = 'create_at';
 
     /**
      * 获取权限数据

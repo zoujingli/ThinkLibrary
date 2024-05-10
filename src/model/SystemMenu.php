@@ -27,6 +27,9 @@ use think\admin\Model;
  */
 class SystemMenu extends Model
 {
+    protected $createTime = 'create_at';
+    protected $updateTime = false;
+
     /**
      * 日志名称
      * @var string
@@ -38,12 +41,6 @@ class SystemMenu extends Model
      * @var string
      */
     protected $oplogType = '系统菜单管理';
-
-    /**
-     * 创建字段
-     * @var string
-     */
-    protected $createTime = 'create_at';
 
     /**
      * 格式化创建时间

@@ -27,11 +27,8 @@ use think\admin\Model;
  */
 class SystemOplog extends Model
 {
-    /**
-     * 创建字段
-     * @var string
-     */
     protected $createTime = 'create_at';
+    protected $updateTime = false;
 
     /**
      * 格式化创建时间
