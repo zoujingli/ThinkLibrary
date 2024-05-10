@@ -46,12 +46,6 @@ class SystemMenu extends Model
     protected $createTime = 'create_at';
 
     /**
-     * 更新字段
-     * @var string
-     */
-    protected $updateTime = 'update_at';
-
-    /**
      * 格式化创建时间
      * @param mixed $value
      * @return string

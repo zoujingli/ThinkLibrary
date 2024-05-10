@@ -33,14 +33,4 @@ class SystemNode extends Model
      * @var string
      */
     protected $name = 'SystemAuthNode';
-
-    /**
-     * 格式化创建时间
-     * @param mixed $value
-     * @return string
-     */
-    public function getCreateAtAttr($value): string
-    {
-        return format_datetime($value);
-    }
 }

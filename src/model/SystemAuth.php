@@ -46,12 +46,6 @@ class SystemAuth extends Model
     protected $createTime = 'create_at';
 
     /**
-     * 更新字段
-     * @var string
-     */
-    protected $updateTime = 'update_at';
-
-    /**
      * 获取权限数据
      * @return array
      * @throws \think\db\exception\DataNotFoundException
