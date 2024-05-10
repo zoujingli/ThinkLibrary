@@ -31,7 +31,7 @@ class SystemQueue extends Model
      * 创建字段
      * @var string
      */
-    protected $createTime = 'create_at';
+    // protected $createTime = 'create_at';
 
     /**
      * 格式化计划时间
