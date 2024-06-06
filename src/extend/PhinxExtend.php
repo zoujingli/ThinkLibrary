@@ -19,6 +19,7 @@ declare (strict_types=1);
 namespace think\admin\extend;
 
 use Exception;
+use Phinx\Db\Adapter\AdapterInterface;
 use think\admin\Library;
 use think\admin\model\SystemMenu;
 use think\admin\service\ProcessService;
@@ -185,12 +186,23 @@ class PhinxExtend
         // 字段默认长度
         $sizes = ['tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20];
 
-        // 字段类型转换
+        // 字段类型转换 ( 仅需定义与MySQL不同的配置 )
         $types = [
-            'varchar'  => 'string', 'enum' => 'string', 'char' => 'char', // 字符
-            'tinyint'  => 'integer', 'smallint' => 'integer', 'mediumint' => 'integer', 'int' => 'integer', 'bigint' => 'biginteger', // 整型
-            'tinytext' => 'text', 'mediumtext' => 'text', 'longtext' => 'text', // 文本
-            'tinyblob' => 'binary', 'blob' => 'binary', 'mediumblob' => 'binary', 'longblob' => 'binary', 'varbinary' => 'binary', 'bit' => 'binary', // 文件
+            // 整形数字
+            'tinyint'    => AdapterInterface::PHINX_TYPE_TINY_INTEGER,
+            'smallint'   => AdapterInterface::PHINX_TYPE_SMALL_INTEGER,
+            'int'        => AdapterInterface::PHINX_TYPE_INTEGER,
+            'bigint'     => AdapterInterface::PHINX_TYPE_BIG_INTEGER,
+            // 字符类型
+            'varchar'    => AdapterInterface::PHINX_TYPE_STRING,
+            'tinytext'   => AdapterInterface::PHINX_TYPE_TEXT,
+            'mediumtext' => AdapterInterface::PHINX_TYPE_TEXT,
+            'longtext'   => AdapterInterface::PHINX_TYPE_TEXT,
+            // 仅 mysql 有的字段需要单独处理
+            'set'        => AdapterInterface::PHINX_TYPE_STRING,
+            'enum'       => AdapterInterface::PHINX_TYPE_STRING,
+            'year'       => AdapterInterface::PHINX_TYPE_INTEGER,
+            'mediumint'  => AdapterInterface::PHINX_TYPE_INTEGER,
         ];
 
         foreach ($tables as $table) {
