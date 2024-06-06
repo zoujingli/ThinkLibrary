@@ -203,6 +203,9 @@ class PhinxExtend
             'enum'       => AdapterInterface::PHINX_TYPE_STRING,
             'year'       => AdapterInterface::PHINX_TYPE_INTEGER,
             'mediumint'  => AdapterInterface::PHINX_TYPE_INTEGER,
+            'tinyblob'   => AdapterInterface::PHINX_TYPE_BLOB,
+            'longblob'   => AdapterInterface::PHINX_TYPE_BLOB,
+            'mediumblob' => AdapterInterface::PHINX_TYPE_BLOB,
         ];
 
         foreach ($tables as $table) {
