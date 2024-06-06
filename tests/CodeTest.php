@@ -12,4 +12,11 @@ class CodeTest extends TestCase
         $uuid = CodeExtend::uuid();
         $this->assertNotEmpty(preg_match('|^[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}$|i', $uuid));
     }
+
+    public function testEncode()
+    {
+        $value = '235215321351235123dasfdasfasdfas';
+        $encode = CodeExtend::encrypt($value, 'thinkadmin');
+        $this->assertEquals($value, CodeExtend::decrypt($encode, 'thinkadmin'), '验证加密解密');
+    }
 }
