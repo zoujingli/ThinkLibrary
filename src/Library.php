@@ -28,7 +28,6 @@ use think\admin\support\command\Sysmenu;
 use think\admin\support\middleware\JwtSession;
 use think\admin\support\middleware\MultAccess;
 use think\admin\support\middleware\RbacAccess;
-use think\App;
 use think\exception\HttpResponseException;
 use think\middleware\LoadLangPack;
 use think\Request;
@@ -42,10 +41,7 @@ use think\Service;
  */
 class Library extends Service
 {
-    /**
-     * 静态应用实例
-     * @var App
-     */
+    /** @var \think\App */
     public static $sapp;
 
     /**

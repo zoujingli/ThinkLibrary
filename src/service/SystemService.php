@@ -105,9 +105,8 @@ class SystemService extends Service
             return $count;
         } else try {
             $map = ['type' => $type, 'name' => $field];
-            $data = array_merge($map, ['value' => $value]);
-            SystemConfig::mk()->master()->where($map)->findOrEmpty()->save($data);
-            sysvar('think-library-config', []);
+            SystemConfig::mk()->master()->where($map)->findOrEmpty()->save(array_merge($map, ['value' => $value]));
+            sysvar('think.admin.config', []);
             Library::$sapp->cache->delete('SystemConfig');
             return 1;
         } catch (\Exception $exception) {
@@ -125,11 +124,11 @@ class SystemService extends Service
     public static function get(string $name = '', string $default = '')
     {
         try {
-            if (empty($config = sysvar('think-library-config') ?: [])) {
+            if (empty($config = sysvar($keys = 'think.admin.config') ?: [])) {
                 SystemConfig::mk()->cache('SystemConfig')->select()->map(function ($item) use (&$config) {
                     $config[$item['type']][$item['name']] = $item['value'];
                 });
-                sysvar('think-library-config', $config);
+                sysvar($keys, $config);
             }
             [$type, $field, $outer] = static::_parse($name);
             if (empty($name)) {

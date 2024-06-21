@@ -108,8 +108,8 @@ class NodeService extends Service
      */
     public static function getMethods(bool $force = false): array
     {
+        $skey = 'think.admin.methods';
         if (empty($force)) {
-            $skey = 'think-library-methods';
             $data = sysvar($skey) ?: Library::$sapp->cache->get('SystemAuthNode', []);
             if (count($data) > 0) return sysvar($skey, $data);
         } else {
@@ -142,7 +142,7 @@ class NodeService extends Service
         }
         // 缓存系统节点数据
         Library::$sapp->cache->set('SystemAuthNode', $data);
-        return sysvar('think-library-methods', $data);
+        return sysvar($skey, $data);
     }
 
     /**

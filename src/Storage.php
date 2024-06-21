@@ -188,13 +188,12 @@ abstract class Storage
     {
         if (preg_match('|^data:image/(.*?);base64,|i', $base64)) {
             [$ext, $img] = explode('|||', preg_replace('|^data:image/(.*?);base64,|i', '$1|||', $base64));
+            $name = static::name($img, $ext, $prefix);
             if (empty($ext) || !in_array(strtolower($ext), ['gif', 'png', 'jpg', 'jpeg'])) {
                 throw new Exception('内容格式异常！');
             } elseif ($safemode) {
-                $name = static::name($img, $ext, "{$prefix}/");
                 return LocalStorage::instance()->set($name, base64_decode($img), true);
             } else {
-                $name = static::name($img, $ext, "upload/{$prefix}/");
                 return static::instance()->set($name, base64_decode($img));
             }
         } else {

@@ -18,6 +18,7 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
+use think\admin\Exception;
 use think\admin\Library;
 use think\admin\support\Route;
 use think\admin\support\Url;
@@ -88,14 +89,16 @@ class RuntimeService
      */
     public static function get(?string $name = null, array $default = [])
     {
-        if (empty($envs = sysvar('think-library-runtime') ?: [])) {
+        $keys = 'think.admin.runtime';
+        if (empty($envs = sysvar($keys) ?: [])) {
             // 读取默认配置
+            clearstatcache(true, self::$envFile);
             is_file(self::$envFile) && Library::$sapp->env->load(self::$envFile);
             // 动态判断赋值
             $envs['mode'] = Library::$sapp->env->get('RUNTIME_MODE') ?: 'debug';
             $envs['appmap'] = Library::$sapp->env->get('RUNTIME_APPMAP') ?: [];
             $envs['domain'] = Library::$sapp->env->get('RUNTIME_DOMAIN') ?: [];
-            sysvar('think-library-runtime', $envs);
+            sysvar($keys, $envs);
         }
         return is_null($name) ? $envs : ($envs[$name] ?? $default);
     }
@@ -115,7 +118,7 @@ class RuntimeService
         $envs['domain'] = static::uniqueMergeArray($envs['domain'], $domain);
 
         // 组装配置文件格式
-        $rows[] = "mode = " . $envs['mode'];
+        $rows[] = "mode = {$envs['mode']}";
         foreach ($envs['appmap'] as $key => $item) $rows[] = "appmap[{$key}] = {$item}";
         foreach ($envs['domain'] as $key => $item) $rows[] = "domain[{$key}] = {$item}";
 
@@ -123,7 +126,7 @@ class RuntimeService
         @file_put_contents(self::$envFile, "[RUNTIME]\n" . join("\n", $rows));
 
         // 同步更新当前环境
-        sysvar('think-library-runtime', $envs);
+        sysvar('think.admin.runtime', $envs);
 
         //  应用当前的配置文件
         return static::apply($envs);
@@ -135,9 +138,8 @@ class RuntimeService
      */
     public static function sync()
     {
-        if (is_file(self::$envFile) && md5_file(self::$envFile) !== self::$evnHash) {
-            self::apply();
-        }
+        clearstatcache(true, self::$envFile);
+        is_file(self::$envFile) && md5_file(self::$envFile) !== self::$evnHash && self::apply();
     }
 
     /**
@@ -148,7 +150,7 @@ class RuntimeService
     public static function apply(array $data = []): bool
     {
         // 设置模块绑定
-        $data = static::get() + $data;
+        $data = array_merge(static::get(), $data);
         $appmap = static::uniqueMergeArray(Library::$sapp->config->get('app.app_map', []), $data['appmap']);
         $domain = static::uniqueMergeArray(Library::$sapp->config->get('app.domain_bind', []), $data['domain']);
         Library::$sapp->config->set(['app_map' => $appmap, 'domain_bind' => $domain], 'app');
@@ -218,7 +220,6 @@ class RuntimeService
     {
         return static::get('mode') === 'product';
     }
-
 
     /**
      * 初始化主程序

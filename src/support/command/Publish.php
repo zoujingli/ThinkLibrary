@@ -14,6 +14,8 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
+declare (strict_types=1);
+
 namespace think\admin\support\command;
 
 use think\admin\extend\ToolsExtend;

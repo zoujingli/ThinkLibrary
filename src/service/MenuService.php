@@ -52,12 +52,12 @@ class MenuService extends Service
      */
     public static function getList(bool $force = false): array
     {
-        $nodes = sysvar('think-library-menus') ?: [];
+        $nodes = sysvar($keys = 'think.admin.menus') ?: [];
         if (empty($force) && count($nodes) > 0) return $nodes; else $nodes = [];
         foreach (NodeService::getMethods($force) as $node => $method) {
             if ($method['ismenu']) $nodes[] = ['node' => $node, 'title' => self::lang($method['title'])];
         }
-        return sysvar('think-library-menus', $nodes);
+        return sysvar($keys, $nodes);
     }
 
     /**

@@ -171,14 +171,14 @@ class AdminService extends Service
      */
     public static function check(?string $node = ''): bool
     {
-        $skey1 = 'think-library-methods';
+        $skey1 = 'think.admin.methods';
         $current = NodeService::fullNode($node);
         $methods = sysvar($skey1) ?: sysvar($skey1, NodeService::getMethods());
-        $usernodes = Library::$sapp->session->get('user.nodes', []);
+        $userNodes = Library::$sapp->session->get('user.nodes', []);
         // 自定义权限检查回调
         if (count(self::$checkCallables) > 0) {
             foreach (self::$checkCallables as $callable) {
-                if ($callable($current, $methods, $usernodes) === false) {
+                if ($callable($current, $methods, $userNodes) === false) {
                     return false;
                 }
             }
@@ -186,19 +186,19 @@ class AdminService extends Service
         }
         // 自定义权限检查方法
         if (function_exists('admin_check_filter')) {
-            return call_user_func('admin_check_filter', $current, $methods, $usernodes);
+            return call_user_func('admin_check_filter', $current, $methods, $userNodes);
         }
         // 超级用户不需要检查权限
         if (static::isSuper()) return true;
         // 节点权限检查，需要兼容 windows 控制器不区分大小写，统一去除节点下划线再检查权限
-        if (empty($simples = sysvar($skey2 = 'think-library-method-simples') ?: [])) {
+        if (empty($simples = sysvar($skey2 = 'think.admin.fulls') ?: [])) {
             foreach ($methods as $k => $v) $simples[strtr($k, ['_' => ''])] = $v;
             sysvar($skey2, $simples);
         }
         if (empty($simples[$simple = strtr($current, ['_' => ''])]['isauth'])) {
             return !(!empty($simples[$simple]['islogin']) && !static::isLogin());
         } else {
-            return in_array($current, $usernodes);
+            return in_array($current, $userNodes);
         }
     }
 

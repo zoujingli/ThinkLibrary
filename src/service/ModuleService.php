@@ -59,13 +59,13 @@ class ModuleService extends Service
      */
     public static function getPhpExec(): string
     {
-        if ($phpExec = sysvar('phpBinary')) return $phpExec;
+        if ($phpExec = sysvar($keys = 'phpBinary')) return $phpExec;
         if (ProcessService::isFile($phpExec = self::getRunVar('php'))) {
-            return sysvar('phpBinary', $phpExec);
+            return sysvar($keys, $phpExec);
         } else {
             $phpExec = str_replace('/sbin/php-fpm', '/bin/php', PHP_BINARY);
             $phpExec = preg_replace('#-(cgi|fpm)(\.exe)?$#', '$2', $phpExec);
-            return sysvar('phpBinary', ProcessService::isFile($phpExec) ? $phpExec : 'php');
+            return sysvar($keys, ProcessService::isFile($phpExec) ? $phpExec : 'php');
         }
     }
 
@@ -91,9 +91,9 @@ class ModuleService extends Service
      */
     public static function getLibrarys(?string $package = null, bool $force = false)
     {
-        $plugs = sysvar('think-library-version');
+        $plugs = sysvar($keys = 'think.admin.version');
         if ((empty($plugs) || $force) && is_file($file = syspath('vendor/versions.php'))) {
-            $plugs = sysvar('think-library-version', include syspath('vendor/versions.php'));
+            $plugs = sysvar($keys, include $file);
         }
         return empty($package) ? $plugs : ($plugs[$package] ?? null);
     }
