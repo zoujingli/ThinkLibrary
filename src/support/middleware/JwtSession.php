@@ -20,7 +20,6 @@ namespace think\admin\support\middleware;
 
 use Closure;
 use think\admin\Exception;
-use think\admin\extend\CodeExtend;
 use think\admin\extend\JwtExtend;
 use think\App;
 use think\exception\HttpResponseException;

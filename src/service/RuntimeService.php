@@ -18,7 +18,6 @@ declare (strict_types=1);
 
 namespace think\admin\service;
 
-use think\admin\Exception;
 use think\admin\Library;
 use think\admin\support\Route;
 use think\admin\support\Url;

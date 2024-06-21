@@ -16,7 +16,6 @@
 
 declare (strict_types=1);
 
-
 namespace think\admin\support;
 
 use think\Route as ThinkRoute;
