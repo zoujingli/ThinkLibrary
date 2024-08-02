@@ -1,0 +1,110 @@
+<?php
+
+use think\admin\extend\PhinxExtend;
+use think\admin\model\SystemConfig;
+use think\admin\model\SystemMenu;
+use think\admin\model\SystemUser;
+use think\admin\service\ProcessService;
+use think\helper\Str;
+use think\migration\Migrator;
+
+@set_time_limit(0);
+@ini_set('memory_limit', -1);
+
+/**
+ * 数据安装包
+ * @class __CLASS__
+ */
+class __CLASS__ extends Migrator
+{
+    /**
+     * 数据库初始化
+     * @return void
+     * @throws \think\db\exception\DbException
+     */
+    public function change()
+    {
+        $this->inserData();
+        $this->insertConf();
+        $this->insertUser();
+        $this->insertMenu();
+    }
+
+    /**
+     * 安装扩展数据
+     * @return void
+     * @throws \think\db\exception\DbException
+     */
+    private function inserData()
+    {
+        // 待解析处理数据
+        $json = '__DATA_JSON__';
+        // 解析并写入扩展数据
+        if (is_array($tables = json_decode($json, true)) && count($tables) > 0) {
+            foreach ($tables as $table => $path) if (($model = m($table))->count() < 1) {
+                $name = Str::studly($table);
+                ProcessService::message(" -- Starting write {$table} table ..." . PHP_EOL);
+                [$ls, $rs, $fp] = [0, [], fopen(__DIR__ . DIRECTORY_SEPARATOR . $path, 'r+')];
+                while (!feof($fp)) {
+                    if (empty($text = trim(fgets($fp)))) continue; else $ls++;
+                    if (is_array($rw = json_decode($text, true))) $rs[] = $rw;
+                    if (count($rs) > 100) [, $rs] = [$model->strict(false)->insertAll($rs), []];
+                    ProcessService::message(" -- -- {$name}:{$ls}", 1);
+                }
+                count($rs) > 0 && $model->strict(false)->insertAll($rs);
+                ProcessService::message(" -- Finished write {$table} table, Total {$ls} rows.", 2);
+            }
+        }
+    }
+
+    /**
+     * 初始化配置参数
+     * @return void
+     */
+    private function insertConf()
+    {
+        $modal = SystemConfig::mk()->whereRaw('1=1')->findOrEmpty();
+        $modal->isEmpty() && $modal->insertAll([
+            ['type' => 'base', 'name' => 'app_name', 'value' => 'ThinkAdmin'],
+            ['type' => 'base', 'name' => 'app_version', 'value' => 'v6'],
+            ['type' => 'base', 'name' => 'editor', 'value' => 'ckeditor5'],
+            ['type' => 'base', 'name' => 'login_name', 'value' => '系统管理'],
+            ['type' => 'base', 'name' => 'site_copy', 'value' => '©版权所有 2014-' . date('Y') . ' ThinkAdmin'],
+            ['type' => 'base', 'name' => 'site_icon', 'value' => 'https://thinkadmin.top/static/img/logo.png'],
+            ['type' => 'base', 'name' => 'site_name', 'value' => 'ThinkAdmin'],
+            ['type' => 'base', 'name' => 'site_theme', 'value' => 'default'],
+            ['type' => 'wechat', 'name' => 'type', 'value' => 'api'],
+            ['type' => 'storage', 'name' => 'type', 'value' => 'local'],
+            ['type' => 'storage', 'name' => 'allow_exts', 'value' => 'doc,gif,ico,jpg,mp3,mp4,p12,pem,png,zip,rar,xls,xlsx'],
+        ]);
+    }
+
+    /**
+     * 初始化用户数据
+     * @return void
+     */
+    private function insertUser()
+    {
+        $modal = SystemUser::mk()->whereRaw('1=1')->findOrEmpty();
+        $modal->isEmpty() && $modal->insert([
+            'id'       => '10000',
+            'username' => 'admin',
+            'nickname' => '超级管理员',
+            'password' => '21232f297a57a5a743894a0e4a801fc3',
+            'headimg'  => 'https://thinkadmin.top/static/img/head.png',
+        ]);
+    }
+
+    /**
+     * 初始化系统菜单
+     * @return void
+     */
+    private function insertMenu()
+    {
+        if (SystemMenu::mk()->whereRaw('1=1')->findOrEmpty()->isEmpty()) {
+            // 解析并初始化菜单数据
+            $json = '__MENU_JSON__';
+            PhinxExtend::write2menu(json_decode($json, true) ?: []);
+        }
+    }
+}

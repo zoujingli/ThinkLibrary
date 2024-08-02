@@ -1,0 +1,60 @@
+{
+  "name": "zoujingli/think-library",
+  "license": "MIT",
+  "homepage": "https://thinkadmin.top",
+  "description": "Basic Library for ThinkAdmin",
+  "authors": [
+    {
+      "name": "Anyon",
+      "email": "zoujingli@qq.com"
+    }
+  ],
+  "support": {
+    "email": "zoujingli@qq.com",
+    "wiki": "https://thinkadmin.top",
+    "forum": "https://thinkadmin.top",
+    "source": "https://gitee.com/zoujingli/ThinkLibrary",
+    "issues": "https://gitee.com/zoujingli/ThinkLibrary/issues"
+  },
+  "require": {
+    "php": ">=7.1",
+    "ext-gd": "*",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-zlib": "*",
+    "ext-iconv": "*",
+    "ext-openssl": "*",
+    "ext-mbstring": "*",
+    "symfony/process": "^5.4|^6.0|*",
+    "topthink/framework": "^6.0|^8.0|*",
+    "topthink/think-migration": "^3.0|*"
+  },
+  "autoload": {
+    "files": [
+      "src/common.php"
+    ],
+    "psr-4": {
+      "think\\admin\\": "src"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "think\\admin\\tests\\": "tests"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "think\\admin\\Library"
+      ]
+    }
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev",
+  "config": {
+    "sort-packages": true
+  }
+}
