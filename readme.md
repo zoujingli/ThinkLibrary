@@ -11,6 +11,10 @@
 **ThinkLibrary** 是一个针对 **ThinkPHP 6 & 8** 的封装库，它提供了完整的 **CRUD**（创建、读取、更新、删除）操作和一系列常用工具。
 该库特别注重多应用支持，为开发者提供便利。前端代码的主仓库位于 **Gitee**，而 **GitHub** 则作为镜像仓库用于发布 **Composer** 包，以方便开发者下载和使用。
 
+## 加入我们
+
+我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果基础仓库操作或提交问题不会也不能处理。
+
 ## 功能说明
 
 1. 数据列表展示组件
@@ -170,27 +174,28 @@ CREATE TABLE `system_config`
 * 系统任务列队支持需要的数据表
 
 ```sql
-CREATE TABLE `system_queue` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `code` varchar(20) DEFAULT '' COMMENT '任务编号',
-  `title` varchar(50) NOT NULL DEFAULT '' COMMENT '任务名称',
-  `command` varchar(500) DEFAULT '' COMMENT '执行指令',
-  `exec_data` longtext COMMENT '执行参数',
-  `exec_time` bigint(20) unsigned DEFAULT '0' COMMENT '执行时间',
-  `exec_desc` varchar(500) DEFAULT '' COMMENT '状态描述',
-  `enter_time` bigint(20) DEFAULT '0' COMMENT '开始时间',
-  `outer_time` bigint(20) DEFAULT '0' COMMENT '结束时间',
-  `attempts` bigint(20) DEFAULT '0' COMMENT '执行次数',
-  `rscript` tinyint(1) DEFAULT '1' COMMENT '单例模式',
-  `status` tinyint(1) DEFAULT '1' COMMENT '任务状态(1新任务,2处理中,3成功,4失败)',
-  `create_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `idx_system_queue_code` (`code`),
-  KEY `idx_system_queue_title` (`title`) USING BTREE,
-  KEY `idx_system_queue_status` (`status`) USING BTREE,
-  KEY `idx_system_queue_rscript` (`rscript`) USING BTREE,
-  KEY `idx_system_queue_create_at` (`create_at`) USING BTREE,
-  KEY `idx_system_queue_exec_time` (`exec_time`) USING BTREE
+CREATE TABLE `system_queue`
+(
+    `id`         bigint(20) NOT NULL AUTO_INCREMENT,
+    `code`       varchar(20)          DEFAULT '' COMMENT '任务编号',
+    `title`      varchar(50) NOT NULL DEFAULT '' COMMENT '任务名称',
+    `command`    varchar(500)         DEFAULT '' COMMENT '执行指令',
+    `exec_data`  longtext COMMENT '执行参数',
+    `exec_time`  bigint(20) unsigned DEFAULT '0' COMMENT '执行时间',
+    `exec_desc`  varchar(500)         DEFAULT '' COMMENT '状态描述',
+    `enter_time` bigint(20) DEFAULT '0' COMMENT '开始时间',
+    `outer_time` bigint(20) DEFAULT '0' COMMENT '结束时间',
+    `attempts`   bigint(20) DEFAULT '0' COMMENT '执行次数',
+    `rscript`    tinyint(1) DEFAULT '1' COMMENT '单例模式',
+    `status`     tinyint(1) DEFAULT '1' COMMENT '任务状态(1新任务,2处理中,3成功,4失败)',
+    `create_at`  timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY          `idx_system_queue_code` (`code`),
+    KEY          `idx_system_queue_title` (`title`) USING BTREE,
+    KEY          `idx_system_queue_status` (`status`) USING BTREE,
+    KEY          `idx_system_queue_rscript` (`rscript`) USING BTREE,
+    KEY          `idx_system_queue_create_at` (`create_at`) USING BTREE,
+    KEY          `idx_system_queue_exec_time` (`exec_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统-任务';
 ```
 
