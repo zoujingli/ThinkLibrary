@@ -19,6 +19,8 @@ declare (strict_types=1);
 namespace think\admin\support\middleware;
 
 use Closure;
+use SplFileInfo;
+use think\admin\extend\ToolsExtend;
 use think\admin\Plugin;
 use think\admin\service\NodeService;
 use think\admin\service\SystemService;
@@ -165,9 +167,11 @@ class MultAccess
     {
         [$ext, $fmaps] = [$this->app->getConfigExt(), []];
         if (is_file($file = "{$appPath}common{$ext}")) include_once $file;
-        foreach (glob($appPath . 'config' . DIRECTORY_SEPARATOR . '*' . $ext) as $file) {
-            $this->app->config->load($file, $fmaps[] = pathinfo($file, PATHINFO_FILENAME));
-        }
+        ToolsExtend::findFilesYield($appPath . 'config', static function (SplFileInfo $info) use ($ext) {
+            if (strtolower(".{$info->getExtension()}") === "{$ext}") {
+                $this->app->config->load($info->getPathname(), $info->getBasename($ext));
+            }
+        });
         if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();
         }

@@ -18,6 +18,8 @@ declare (strict_types=1);
 
 namespace think\admin;
 
+use SplFileInfo;
+use think\admin\extend\ToolsExtend;
 use think\admin\service\RuntimeService;
 use think\admin\support\command\Database;
 use think\admin\support\command\Package;
@@ -106,7 +108,9 @@ class Library extends Service
     {
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
-        foreach (glob("{$dir}*/sys{$ext}") as $file) include_once $file;
+        ToolsExtend::findFilesYield($dir, static function (SplFileInfo $info) use ($ext) {
+            $info->getBasename() === "sys{$ext}" && include_once $info->getPathname();
+        });
         if (is_file($file = "{$dir}common{$ext}")) include_once $file;
         if (is_file($file = "{$dir}provider{$ext}")) $this->app->bind(include $file);
         if (is_file($file = "{$dir}event{$ext}")) $this->app->loadEvent(include $file);

@@ -20,6 +20,7 @@ namespace think\admin\extend;
 
 use Exception;
 use Phinx\Db\Adapter\AdapterInterface;
+use SplFileInfo;
 use think\admin\Library;
 use think\admin\model\SystemMenu;
 use think\admin\service\ProcessService;
@@ -290,20 +291,22 @@ CODE;
      */
     private static function nextFile(string $class): string
     {
-        [$filename, $versions, $start] = [Str::snake($class), [], 20009999999999];
-        if (count($files = glob(syspath('database/migrations/*.php'))) > 0) {
-            foreach ($files as $file) {
-                $versions[] = $version = intval(substr($bname = pathinfo($file, 8), 0, 14));
-                if ($filename === substr($bname, 15) && unlink($file)) {
-                    echo " ** Notify: Class {$class} already exists and has been replaced." . PHP_EOL;
-                    if (is_dir($dataPath = dirname($file) . DIRECTORY_SEPARATOR . $version)) {
-                        ToolsExtend::removeEmptyDirectory($dataPath);
-                    }
+        [$filename, $versions, $startVersion] = [Str::snake($class), [], 20009999999999];
+        ToolsExtend::findFilesYield(syspath('database/migrations'), static function (SplFileInfo $info) use ($class, $filename, &$versions) {
+            $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
+            $versions[] = $version = intval(substr($bname, 0, 14));
+            if ($filename === substr($bname, 15) && unlink($info->getRealPath())) {
+                echo " ** Notify: Class {$class} already exists and has been replaced." . PHP_EOL;
+                if (is_dir($dataPath = dirname($info->getRealPath()) . DIRECTORY_SEPARATOR . $version)) {
+                    ToolsExtend::removeEmptyDirectory($dataPath);
                 }
             }
-            $version = min($versions) - 1;
-        }
-        if (!isset($version) || $version > $start) $version = $start;
+        });
+
+        // 计算下一个版本号
+        $version = !empty($versions) ? min($versions) - 1 : $startVersion;
+        $version = min($version, $startVersion);
+
         return "{$version}_{$filename}.php";
     }
 }
