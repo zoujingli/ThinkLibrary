@@ -78,7 +78,7 @@ class ModuleService extends Service
     {
         $path = Library::$sapp->getBasePath();
         foreach (scandir($path) as $item) if ($item[0] !== '.') {
-            if (is_dir(realpath($path . $item))) $data[] = $item;
+            if (is_dir($path . $item)) $data[] = $item;
         }
         return $data;
     }
