@@ -166,21 +166,27 @@ class MultAccess
     private function loadMultiApp(string $appPath): bool
     {
         [$ext, $fmaps] = [$this->app->getConfigExt(), []];
+        // 加载应用函数文件
         if (is_file($file = "{$appPath}common{$ext}")) include_once $file;
-        ToolsExtend::findFilesYield($appPath . 'config', static function (SplFileInfo $info) use ($ext) {
-            if (strtolower(".{$info->getExtension()}") === "{$ext}") {
+        // 加载应用配置文件
+        ToolsExtend::findFilesYield($appPath . 'config', function (SplFileInfo $info) use ($ext) {
+            if (strtolower(".{$info->getExtension()}") === $ext) {
                 $this->app->config->load($info->getPathname(), $info->getBasename($ext));
             }
         });
+        // 加载应用路由配置
         if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();
         }
+        // 加载应用映射配置
         if (is_file($file = "{$appPath}provider{$ext}")) {
             $this->app->bind(include $file);
         }
+        // 加载应用事件配置
         if (is_file($file = "{$appPath}event{$ext}")) {
             $this->app->loadEvent(include $file);
         }
+        // 加载应用中间键配置
         if (is_file($file = "{$appPath}middleware{$ext}")) {
             $this->app->middleware->import(include $file, 'app');
         }

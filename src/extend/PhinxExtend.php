@@ -292,7 +292,7 @@ CODE;
     private static function nextFile(string $class): string
     {
         [$filename, $versions, $startVersion] = [Str::snake($class), [], 20009999999999];
-        ToolsExtend::findFilesYield(syspath('database/migrations'), static function (SplFileInfo $info) use ($class, $filename, &$versions) {
+        ToolsExtend::findFilesYield(syspath('database/migrations'), function (SplFileInfo $info) use ($class, $filename, &$versions) {
             $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
             $versions[] = $version = intval(substr($bname, 0, 14));
             if ($filename === substr($bname, 15) && unlink($info->getRealPath())) {
