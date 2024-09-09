@@ -169,7 +169,7 @@ class MultAccess
         // 加载应用函数文件
         if (is_file($file = "{$appPath}common{$ext}")) include_once $file;
         // 加载应用配置文件
-        ToolsExtend::findFilesYield($appPath . 'config', function (SplFileInfo $info) use ($ext) {
+        ToolsExtend::findFilesArray($appPath . 'config', function (SplFileInfo $info) use ($ext) {
             if (strtolower(".{$info->getExtension()}") === $ext) {
                 $this->app->config->load($info->getPathname(), $info->getBasename($ext));
             }
