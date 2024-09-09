@@ -22,6 +22,7 @@ use Closure;
 use FilesystemIterator;
 use Generator;
 use SplFileInfo;
+use think\File;
 
 /**
  * 通用工具扩展
@@ -106,11 +107,16 @@ class ToolsExtend
      */
     public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $shortPath = true, ?int $depth = null): array
     {
-        if (!file_exists($path)) return [];
-        $pathLength = $shortPath ? strlen(realpath($path)) + 1 : 0;
-        return file_exists($path) ? array_map(function ($file) use ($shortPath, $pathLength) {
-            return $shortPath ? substr($file->getRealPath(), $pathLength) : $file->getRealPath();
-        }, iterator_to_array(static::findFilesYield($path, $filterFile, $filterPath, false, $depth))) : [];
+        if (is_dir($path)) {
+            $pathSize = $shortPath ? strlen(realpath($path)) + 1 : 0;
+            return file_exists($path) ? array_map(function ($file) use ($pathSize, $shortPath) {
+                return $shortPath ? substr($file->getRealPath(), $pathSize) : $file->getRealPath();
+            }, iterator_to_array(static::findFilesYield($path, $filterFile, $filterPath, false, $depth))) : [];
+        } elseif (is_file($path)) {
+            return $filterFile === null || $filterFile(new SplFileInfo($path)) ? [basename($path)] : [];
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -125,7 +131,7 @@ class ToolsExtend
     private static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $appendPath = false, ?int $depth = null): Generator
     {
         if (!file_exists($path)) return;
-        foreach (is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path) as $item) {
+        foreach (is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS) as $item) {
             $isDir = $item->isDir() && !$item->isLink();
             if ($isDir && ($filterPath === null || $filterPath($item))) {
                 if ($depth === null || $depth > 0) {
@@ -137,6 +143,4 @@ class ToolsExtend
             }
         }
     }
-
-
 }
