@@ -66,60 +66,6 @@ class ToolsExtend
     }
 
     /**
-     * 扫描目录列表
-     * @param string $path 扫描目录
-     * @param string $filterExt 筛选后缀
-     * @param boolean $shortPath 相对路径
-     * @return array
-     */
-    public static function scanDirectory(string $path, string $filterExt = '', bool $shortPath = true): array
-    {
-        return static::findFilesArray($path, static function (SplFileInfo $info) use ($filterExt) {
-            return !$filterExt || $info->getExtension() === $filterExt;
-        }, static function (SplFileInfo $info) {
-            return $info->getBasename()[0] !== '.';
-        }, $shortPath);
-    }
-
-    /**
-     * 扫描指定目录并返回文件路径数组
-     * @param string $path 要扫描的目录路径
-     * @param ?Closure $filterFile 用于过滤文件的闭包
-     * @param ?Closure $filterPath 用于过滤目录的闭包
-     * @param boolean $shortPath 是否返回相对于给定路径的短路径
-     * @return array 包含文件路径的数组
-     */
-    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $shortPath = true): array
-    {
-        $pathLength = $shortPath ? strlen(realpath($path)) + 1 : 0;
-        return file_exists($path) ? array_map(function ($file) use ($shortPath, $pathLength) {
-            return $shortPath ? substr($file->getRealPath(), $pathLength) : $file->getRealPath();
-        }, iterator_to_array(static::findFilesYield($path, $filterFile, $filterPath))) : [];
-    }
-
-    /**
-     * 递归扫描指定目录，返回文件或目录的 SplFileInfo 对象。
-     * @param string $path 目录路径。
-     * @param \Closure|null $filterFile 文件过滤器闭包，返回 true 表示文件被接受。
-     * @param \Closure|null $filterPath 目录过滤器闭包，返回 true 表示目录被接受。
-     * @param boolean $fullDirectory 是否包含目录本身在结果中。
-     * @return \Generator 返回 SplFileInfo 对象的生成器。
-     */
-    public static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $fullDirectory = false): Generator
-    {
-        if (!file_exists($path)) return;
-        foreach (is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path) as $item) {
-            $isDir = $item->isDir() && !$item->isLink();
-            if ($isDir && ($filterPath === null || $filterPath($item))) {
-                yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath, $fullDirectory);
-                if ($fullDirectory) yield $item;
-            } elseif (!$isDir && ($filterFile === null || $filterFile($item))) {
-                yield $item;
-            }
-        }
-    }
-
-    /**
      * 移除清空目录
      * @param string $path
      * @return boolean
@@ -131,4 +77,66 @@ class ToolsExtend
         }
         return is_file($path) ? unlink($path) : (!is_dir($path) || rmdir($path));
     }
+
+    /**
+     * 扫描目录列表
+     * @param string $path 扫描目录
+     * @param string $filterExt 筛选后缀
+     * @param boolean $shortPath 相对路径
+     * @param ?integer $depth 当前递归深度，null 表示无限制深度
+     * @return array
+     */
+    public static function scanDirectory(string $path, string $filterExt = '', bool $shortPath = true, ?int $depth = null): array
+    {
+        return static::findFilesArray($path, static function (SplFileInfo $info) use ($filterExt) {
+            return !$filterExt || $info->getExtension() === $filterExt;
+        }, static function (SplFileInfo $info) {
+            return $info->getBasename()[0] !== '.';
+        }, $shortPath, $depth);
+    }
+
+    /**
+     * 扫描指定目录并返回文件路径数组
+     * @param string $path 要扫描的目录路径
+     * @param ?Closure $filterFile 用于过滤文件的闭包
+     * @param ?Closure $filterPath 用于过滤目录的闭包
+     * @param boolean $shortPath 是否返回相对于给定路径的短路径
+     * @param ?integer $depth 当前递归深度，null 表示无限制深度
+     * @return array 包含文件路径的数组
+     */
+    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $shortPath = true, ?int $depth = null): array
+    {
+        if (!file_exists($path)) return [];
+        $pathLength = $shortPath ? strlen(realpath($path)) + 1 : 0;
+        return file_exists($path) ? array_map(function ($file) use ($shortPath, $pathLength) {
+            return $shortPath ? substr($file->getRealPath(), $pathLength) : $file->getRealPath();
+        }, iterator_to_array(static::findFilesYield($path, $filterFile, $filterPath, false, $depth))) : [];
+    }
+
+    /**
+     * 递归扫描指定目录，返回文件或目录的 SplFileInfo 对象。
+     * @param string $path 目录路径。
+     * @param \Closure|null $filterFile 文件过滤器闭包，返回 true 表示文件被接受。
+     * @param \Closure|null $filterPath 目录过滤器闭包，返回 true 表示目录被接受。
+     * @param boolean $appendPath 是否包含目录本身在结果中。
+     * @param ?integer $depth 当前递归深度，null 表示无限制深度
+     * @return \Generator 返回 SplFileInfo 对象的生成器。
+     */
+    private static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $appendPath = false, ?int $depth = null): Generator
+    {
+        if (!file_exists($path)) return;
+        foreach (is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path) as $item) {
+            $isDir = $item->isDir() && !$item->isLink();
+            if ($isDir && ($filterPath === null || $filterPath($item))) {
+                if ($depth === null || $depth > 0) {
+                    yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath, $appendPath, $depth !== null ? $depth - 1 : null);
+                }
+                if ($appendPath) yield $item;
+            } elseif (!$isDir && ($filterFile === null || $filterFile($item))) {
+                yield $item;
+            }
+        }
+    }
+
+
 }

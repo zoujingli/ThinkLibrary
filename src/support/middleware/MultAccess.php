@@ -173,7 +173,7 @@ class MultAccess
             if (strtolower(".{$info->getExtension()}") === $ext) {
                 $this->app->config->load($info->getPathname(), $info->getBasename($ext));
             }
-        });
+        }, null, true, 1);
         // 加载应用路由配置
         if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();

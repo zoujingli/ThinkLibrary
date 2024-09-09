@@ -301,7 +301,7 @@ CODE;
                     ToolsExtend::removeEmptyDirectory($dataPath);
                 }
             }
-        });
+        }, null, true, 1);
 
         // 计算下一个版本号
         $version = !empty($versions) ? min($versions) - 1 : $startVersion;
