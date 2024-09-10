@@ -73,7 +73,7 @@ class ToolsExtend
      */
     public static function removeEmptyDirectory(string $path): bool
     {
-        foreach (self::findFilesYield($path, null, null, true) as $item) {
+        foreach (self::findFilesYield($path, null, null, null, true) as $item) {
             ($item->isFile() || $item->isLink()) ? unlink($item->getRealPath()) : rmdir($item->getRealPath());
         }
         return is_file($path) ? unlink($path) : (!is_dir($path) || rmdir($path));
@@ -107,16 +107,17 @@ class ToolsExtend
      */
     public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $shortPath = true, ?int $depth = null): array
     {
-        if (is_dir($path)) {
-            $pathSize = $shortPath ? strlen(realpath($path)) + 1 : 0;
-            return file_exists($path) ? array_map(function ($file) use ($pathSize, $shortPath) {
-                return $shortPath ? substr($file->getRealPath(), $pathSize) : $file->getRealPath();
-            }, iterator_to_array(static::findFilesYield($path, $filterFile, $filterPath, false, $depth))) : [];
-        } elseif (is_file($path)) {
-            return $filterFile === null || $filterFile(new SplFileInfo($path)) ? [basename($path)] : [];
-        } else {
-            return [];
+        $files = [];
+        if (is_file($path)) {
+            if (($file = new SplFileInfo($path)) && ($filterFile === null || $filterFile($file))) {
+                $files[] = $shortPath ? $file->getBasename() : $file->getPathname();
+            }
+        } elseif (is_dir($path)) {
+            foreach (static::findFilesYield($path, $filterFile, $filterPath, $depth) as $file) {
+                $files[] = $shortPath ? substr($file->getRealPath(), strlen($path) + 1) : $file->getRealPath();
+            }
         }
+        return $files;
     }
 
     /**
@@ -124,22 +125,22 @@ class ToolsExtend
      * @param string $path 目录路径。
      * @param \Closure|null $filterFile 文件过滤器闭包，返回 true 表示文件被接受。
      * @param \Closure|null $filterPath 目录过滤器闭包，返回 true 表示目录被接受。
-     * @param boolean $appendPath 是否包含目录本身在结果中。
      * @param ?integer $depth 当前递归深度，null 表示无限制深度
+     * @param boolean $appendPath 是否包含目录本身在结果中。
      * @return \Generator 返回 SplFileInfo 对象的生成器。
      */
-    private static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $appendPath = false, ?int $depth = null): Generator
+    private static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, ?int $depth = null, bool $appendPath = false): Generator
     {
-        if (!file_exists($path)) return;
-        foreach (is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS) as $item) {
-            $isDir = $item->isDir() && !$item->isLink();
-            if ($isDir && ($filterPath === null || $filterPath($item))) {
-                if ($depth === null || $depth > 0) {
-                    yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath, $appendPath, $depth !== null ? $depth - 1 : null);
+        if (file_exists($path)) {
+            foreach (is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS) as $item) {
+                if (($isDir = $item->isDir() && !$item->isLink()) && ($filterPath === null || $filterPath($item))) {
+                    if ($depth === null || $depth > 0) {
+                        yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath, $depth !== null ? $depth - 1 : null, $appendPath);
+                    }
+                    if ($appendPath) yield $item;
+                } elseif (!$isDir && ($filterFile === null || $filterFile($item))) {
+                    yield $item;
                 }
-                if ($appendPath) yield $item;
-            } elseif (!$isDir && ($filterFile === null || $filterFile($item))) {
-                yield $item;
             }
         }
     }
