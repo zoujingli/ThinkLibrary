@@ -101,20 +101,20 @@ class ToolsExtend
      * @param string $path 要扫描的目录路径
      * @param ?Closure $filterFile 用于过滤文件的闭包
      * @param ?Closure $filterPath 用于过滤目录的闭包
-     * @param boolean $shortPath 是否返回相对于给定路径的短路径
+     * @param boolean $short 是否返回相对于给定路径的短路径
      * @param ?integer $depth 当前递归深度，null 表示无限制深度
      * @return array 包含文件路径的数组
      */
-    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $shortPath = true, ?int $depth = null): array
+    public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $short = true, ?int $depth = null): array
     {
         $files = [];
         if (is_file($path)) {
             if (($file = new SplFileInfo($path)) && ($filterFile === null || $filterFile($file))) {
-                $files[] = $shortPath ? $file->getBasename() : $file->getPathname();
+                $files[] = $short ? $file->getBasename() : $file->getPathname();
             }
         } elseif (is_dir($path)) {
             foreach (static::findFilesYield($path, $filterFile, $filterPath, $depth) as $file) {
-                $files[] = $shortPath ? substr($file->getRealPath(), strlen($path) + 1) : $file->getRealPath();
+                $files[] = $short ? substr($file->getRealPath(), strlen($path) + 1) : $file->getRealPath();
             }
         }
         return $files;
