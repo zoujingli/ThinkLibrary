@@ -107,14 +107,14 @@ class ToolsExtend
      */
     public static function findFilesArray(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, bool $short = true, ?int $depth = null): array
     {
-        $files = [];
-        if (is_file($path)) {
-            if (($file = new SplFileInfo($path)) && ($filterFile === null || $filterFile($file))) {
-                $files[] = $short ? $file->getBasename() : $file->getPathname();
+        [$info, $files] = [new SplFileInfo($path), []];
+        if ($info->isFile()) {
+            if ($filterFile === null || $filterFile($info)) {
+                $files[] = $short ? $info->getBasename() : $info->getPathname();
             }
-        } elseif (is_dir($path)) {
-            foreach (static::findFilesYield($path, $filterFile, $filterPath, $depth) as $file) {
-                $files[] = $short ? substr($file->getRealPath(), strlen($path) + 1) : $file->getRealPath();
+        } elseif ($info->isDir()) {
+            foreach (static::findFilesYield($info->getPathname(), $filterFile, $filterPath, $depth) as $file) {
+                $files[] = $short ? substr($file->getRealPath(), strlen($info->getPathname()) + 1) : $file->getRealPath();
             }
         }
         return $files;
