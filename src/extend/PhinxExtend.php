@@ -20,6 +20,7 @@ namespace think\admin\extend;
 
 use Exception;
 use Phinx\Db\Adapter\AdapterInterface;
+use Phinx\Db\Table;
 use SplFileInfo;
 use think\admin\Library;
 use think\admin\model\SystemMenu;
@@ -83,6 +84,47 @@ class PhinxExtend
     }
 
     /**
+     * 升级更新数据表
+     * @param \Phinx\Db\Table $table
+     * @param array $fields 字段配置
+     * @param array $indexs 索引配置
+     * @return \Phinx\Db\Table
+     */
+    public static function upgrade(Table $table, array $fields, array $indexs = []): Table
+    {
+        [$_exists, $_fields] = [[], array_column($fields, 0)];
+        if ($isExists = $table->exists()) {
+            foreach ($table->getColumns() as $column) {
+                $_exists[] = $name = $column->getName();
+                if (!in_array($name, $_fields)) {
+                    // @todo 暂时不删除字段
+                    // $table->removeColumn($name);
+                    // $table->hasIndex($name) || $table->removeIndex($name);
+                }
+            }
+        }
+        foreach ($fields as $field) {
+            if (in_array($field[0], $_exists)) {
+                $table->changeColumn($field[0], ...array_slice($field, 1));
+            } else {
+                $table->addColumn($field[0], ...array_slice($field, 1));
+            }
+        }
+        // 生成索引规则
+        $short = substr(md5($table->getName()), 0, 9);
+        foreach ($indexs as $field) {
+            if (!$table->hasIndex($field)) {
+                $table->addIndex($field, ['name' => "i{$short}_{$field}"]);
+            }
+        }
+        $isExists ? $table->update() : $table->create();
+        if ($table->hasColumn('id')) {
+            $table->changeColumn('id', 'integer', ['limit' => 11, 'identity' => true]);
+        }
+        return $table;
+    }
+
+    /**
      * 创建数据库安装脚本
      * @param array $tables
      * @param string $class
@@ -91,10 +133,13 @@ class PhinxExtend
      */
     public static function create2table(array $tables = [], string $class = 'InstallTable'): array
     {
+        if (Library::$sapp->db->connect()->getConfig('type') !== 'mysql') {
+            throw new Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
+        }
         $br = "\r\n";
         $content = static::_build2table($tables, true);
         $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use think\migration\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', -1);{$br}{$br}class {$class} extends Migrator {{$br}{$content}}{$br}";
+        $content = '<?php' . "{$br}{$br}use think\\admin\\extend\\PhinxExtend;{$br}use think\migration\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', -1);{$br}{$br}class {$class} extends Migrator{$br}{{$br}{$content}}{$br}";
         return ['file' => static::nextFile($class), 'text' => $content];
     }
 
@@ -104,12 +149,13 @@ class PhinxExtend
      * @param string $class
      * @param boolean $progress
      * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \Exception
      */
     public static function create2backup(array $tables = [], string $class = 'InstallPackage', bool $progress = true): array
     {
+        if (Library::$sapp->db->connect()->getConfig('type') !== 'mysql') {
+            throw new Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
+        }
         // 处理菜单数据
         [$menuData, $menuList] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
         foreach (DataExtend::arr2tree($menuList) as $sub1) {
@@ -180,9 +226,9 @@ class PhinxExtend
             throw new Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
         }
         $schema = $connect->getConfig('database');
-        $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\t public function change() {";
+        $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\tpublic function change()\n\t{";
         foreach ($tables as $table) $content .= "{$br}\t\t\$this->_create_{$table}();";
-        $content .= "{$br}{$br}\t}{$br}{$br}";
+        $content .= "{$br}\t}{$br}{$br}";
 
         // 字段默认长度
         $sizes = ['tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20];
@@ -225,19 +271,16 @@ class PhinxExtend
      * @table {$table}
      * @return void
      */
-    private function _create_{$table}() {
-
-        // 当前数据表
-        \$table = '{$table}';
-
-        // 存在则跳过
-        if (\$this->hasTable(\$table)) return;
-
-        // 创建数据表
-        \$this->table(\$table, [
+    private function _create_{$table}() 
+    {
+        // 创建更新数据表
+        PhinxExtend::upgrade(\$this->table('{$table}', [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
-        ])
+        ]), _FIELDS_, _INDEXS_);
+    }
 CODE;
+            // 生成字段内容
+            $_fieldString = '[' . PHP_EOL;
             foreach (Library::$sapp->db->getFields($table) as $field) {
                 if ($field['name'] === 'id') continue;
                 $type = $types[$field['type']] ?? $field['type'];
@@ -261,25 +304,23 @@ CODE;
                     $type = $types[$attr[1]] ?? 'decimal';
                     $data = array_merge(['precision' => intval($attr[2]), 'scale' => intval($attr[3])], $data);
                 }
-                $params = static::_arr2str($data);
-                $content .= "{$br}\t\t->addColumn('{$field["name"]}','{$type}',{$params})";
+                $_fieldString .= "\t\t\t['{$field['name']}', '{$type}', " . self::_arr2str($data) . "]," . PHP_EOL;
             }
-            // 读取数据表 - 自动生成索引
-            $idxs = [];
-            $indexs = Library::$sapp->db->connect()->query("show index from {$table}");
-            foreach ($indexs as $index) {
-                if ($index['Key_name'] === 'PRIMARY') continue;
-                $short = substr(md5($index['Table']), 0, 9);
-                $params = static::_arr2str(['name' => "i{$short}_{$index['Column_name']}"]);
-                $idxs[] = "{$br}\t\t->addIndex('{$index['Column_name']}', {$params})";
+            $_fieldString .= "\t\t]";
+            // 生成索引内容
+            $_indexs = [];
+            foreach (Library::$sapp->db->connect()->query("show index from {$table}") as $index) {
+                $index['Key_name'] !== 'PRIMARY' && $_indexs[] = $index['Column_name'];
             }
-            usort($idxs, function ($a, $b) {
+            usort($_indexs, function ($a, $b) {
                 return strlen($a) <=> strlen($b);
             });
-            $content .= join('', $idxs);
-            $content .= "{$br}\t\t->create();{$br}{$br}\t\t// 修改主键长度";
-            $content .= "{$br}\t\t\$this->table(\$table)->changeColumn('id', 'integer', ['limit' => 11, 'identity' => true]);";
-            $content .= "{$br}\t}{$br}{$br}";
+            $_indexString = '[' . PHP_EOL . "\t\t\t";
+            foreach ($_indexs as $index) {
+                $_indexString .= "'{$index}', ";
+            }
+            $_indexString .= PHP_EOL . "\t\t]";
+            $content = str_replace(['_FIELDS_', '_INDEXS_'], [$_fieldString, $_indexString], $content) . PHP_EOL . PHP_EOL;
         }
         return $rehtml ? $content : highlight_string($content, true);
     }
@@ -291,22 +332,19 @@ CODE;
      */
     private static function nextFile(string $class): string
     {
-        [$filename, $versions, $startVersion] = [Str::snake($class), [], 20009999999999];
-        ToolsExtend::findFilesArray(syspath('database/migrations'), function (SplFileInfo $info) use ($class, $filename, &$versions) {
+        [$fname, $versions, $startVersion] = [Str::snake($class), [], 20009999999999];
+        ToolsExtend::findFilesArray(syspath('database/migrations'), function (SplFileInfo $info) use ($class, $fname, &$versions) {
             $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
             $versions[] = $version = intval(substr($bname, 0, 14));
-            if ($filename === substr($bname, 15) && unlink($info->getRealPath())) {
-                echo " ** Notify: Class {$class} already exists and has been replaced." . PHP_EOL;
-                if (is_dir($dataPath = dirname($info->getRealPath()) . DIRECTORY_SEPARATOR . $version)) {
+            if ($fname === substr($bname, 15) && unlink($name = $info->getRealPath())) {
+                if (is_dir($dataPath = dirname($name) . DIRECTORY_SEPARATOR . $version)) {
                     ToolsExtend::removeEmptyDirectory($dataPath);
                 }
             }
         }, null, true, 1);
 
         // 计算下一个版本号
-        $version = !empty($versions) ? min($versions) - 1 : $startVersion;
-        $version = min($version, $startVersion);
-
-        return "{$version}_{$filename}.php";
+        $version = min(empty($versions) ? $startVersion : min($versions) - 1, $startVersion);
+        return "{$version}_{$fname}.php";
     }
 }
