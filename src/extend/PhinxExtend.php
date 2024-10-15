@@ -113,7 +113,7 @@ class PhinxExtend
         // 生成索引规则
         $short = substr(md5($table->getName()), 0, 9);
         foreach ($indexs as $field) {
-            if (!$table->hasIndex($field)) {
+            if (empty($isExists) || !$table->hasIndex($field)) {
                 $table->addIndex($field, ['name' => "i{$short}_{$field}"]);
             }
         }
@@ -332,19 +332,18 @@ CODE;
      */
     private static function nextFile(string $class): string
     {
-        [$fname, $versions, $startVersion] = [Str::snake($class), [], 20009999999999];
-        ToolsExtend::findFilesArray(syspath('database/migrations'), function (SplFileInfo $info) use ($class, $fname, &$versions) {
+        [$snake, $items] = [Str::snake($class), [20010000000000]];
+        ToolsExtend::findFilesArray(syspath('database/migrations'), function (SplFileInfo $info) use ($snake, &$items) {
             $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
-            $versions[] = $version = intval(substr($bname, 0, 14));
-            if ($fname === substr($bname, 15) && unlink($name = $info->getRealPath())) {
-                if (is_dir($dataPath = dirname($name) . DIRECTORY_SEPARATOR . $version)) {
+            $items[] = $version = intval(substr($bname, 0, 14));
+            if ($snake === substr($bname, 15) && unlink($info->getRealPath())) {
+                if (is_dir($dataPath = $info->getPath() . DIRECTORY_SEPARATOR . $version)) {
                     ToolsExtend::removeEmptyDirectory($dataPath);
                 }
             }
         }, null, true, 1);
 
         // 计算下一个版本号
-        $version = min(empty($versions) ? $startVersion : min($versions) - 1, $startVersion);
-        return "{$version}_{$fname}.php";
+        return sprintf("%s_{$snake}.php", min($items) - 1);
     }
 }
