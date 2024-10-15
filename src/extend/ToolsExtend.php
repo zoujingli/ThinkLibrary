@@ -22,7 +22,6 @@ use Closure;
 use FilesystemIterator;
 use Generator;
 use SplFileInfo;
-use think\File;
 
 /**
  * 通用工具扩展
@@ -134,7 +133,7 @@ class ToolsExtend
         if (file_exists($path)) {
             foreach (is_file($path) ? [new SplFileInfo($path)] : new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS) as $item) {
                 if (($isDir = $item->isDir() && !$item->isLink()) && ($filterPath === null || $filterPath($item))) {
-                    if ($depth === null || $depth > 0) {
+                    if ($depth === null || $depth > 1) {
                         yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath, $depth !== null ? $depth - 1 : null, $appendPath);
                     }
                     if ($appendPath) yield $item;
