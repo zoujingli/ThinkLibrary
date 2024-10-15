@@ -88,16 +88,19 @@ class PhinxExtend
      * @param \Phinx\Db\Table $table
      * @param array $fields 字段配置
      * @param array $indexs 索引配置
+     * @param boolean $force 强制更新
      * @return \Phinx\Db\Table
      */
-    public static function upgrade(Table $table, array $fields, array $indexs = []): Table
+    public static function upgrade(Table $table, array $fields, array $indexs = [], bool $force = false): Table
     {
         [$_exists, $_fields] = [[], array_column($fields, 0)];
         if ($isExists = $table->exists()) {
+            // 数据表存在且不强制时退出操作
+            if (empty($force)) return $table;
             foreach ($table->getColumns() as $column) {
                 $_exists[] = $name = $column->getName();
                 if (!in_array($name, $_fields)) {
-                    // @todo 暂时不删除字段
+                    // @todo 为保证数据安全暂不删字段
                     // $table->removeColumn($name);
                     // $table->hasIndex($name) || $table->removeIndex($name);
                 }
