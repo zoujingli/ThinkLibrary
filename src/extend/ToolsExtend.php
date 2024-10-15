@@ -21,8 +21,6 @@ namespace think\admin\extend;
 use Closure;
 use FilesystemIterator;
 use Generator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
@@ -122,22 +120,24 @@ class ToolsExtend
     }
 
     /**
-     * 非递归方式扫描指定目录，返回文件或目录的 SplFileInfo 对象。
+     * 递归扫描指定目录，返回文件或目录的 SplFileInfo 对象。
      * @param string $path 目录路径。
      * @param \Closure|null $filterFile 文件过滤器闭包，返回 true 表示文件被接受。
      * @param \Closure|null $filterPath 目录过滤器闭包，返回 true 表示目录被接受。
-     * @param ?integer $depth 当前深度限制，null 表示无限制深度。
-     * @param boolean $apath 是否包含目录本身在结果中。
+     * @param ?int $depth 当前递归深度限制，null 表示无限制深度。
+     * @param boolean $appendPath 是否包含目录本身在结果中。
+     * @param integer $currentDepth 当前递归深度，初始值为 0。
      * @return \Generator 返回 SplFileInfo 对象的生成器。
      */
-    private static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, ?int $depth = null, bool $apath = false): Generator
+    private static function findFilesYield(string $path, ?Closure $filterFile = null, ?Closure $filterPath = null, ?int $depth = null, bool $appendPath = false, int $currentDepth = 1): Generator
     {
-        if (file_exists($path)) {
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
-            foreach ($iterator as $item) {
-                if (is_numeric($depth) && $iterator->getDepth() >= $depth) continue;
+        if (file_exists($path) && is_dir($path) && !is_numeric($depth) || $currentDepth <= $depth) {
+            foreach (new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS) as $item) {
                 if ($item->isDir() && !$item->isLink()) {
-                    ($filterPath === null || $filterPath($item)) && $apath && yield $item;
+                    if ($filterPath === null || $filterPath($item)) {
+                        $appendPath && yield $item;
+                        yield from static::findFilesYield($item->getPathname(), $filterFile, $filterPath, $depth, $appendPath, $currentDepth + 1);
+                    }
                 } elseif ($filterFile === null || $filterFile($item)) {
                     yield $item;
                 }
