@@ -169,11 +169,11 @@ class MultAccess
         // 加载应用函数文件
         if (is_file($file = "{$appPath}common{$ext}")) include_once $file;
         // 加载应用配置文件
-        ToolsExtend::findFilesArray($appPath . 'config', function (SplFileInfo $info) use ($ext) {
-            if (strtolower(".{$info->getExtension()}") === $ext) {
+        ToolsExtend::findFilesArray($appPath . 'config', 1, function (SplFileInfo $info) use ($ext) {
+            if ($info->isFile() && strtolower(".{$info->getExtension()}") === $ext) {
                 $this->app->config->load($info->getPathname(), $info->getBasename($ext));
             }
-        }, null, true, 1);
+        });
         // 加载应用路由配置
         if (in_array('route', $fmaps) && method_exists($this->app->route, 'reload')) {
             $this->app->route->reload();

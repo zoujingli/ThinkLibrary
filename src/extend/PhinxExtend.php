@@ -338,15 +338,17 @@ CODE;
     private static function nextFile(string $class): string
     {
         [$snake, $items] = [Str::snake($class), [20010000000000]];
-        ToolsExtend::findFilesArray(syspath('database/migrations'), function (SplFileInfo $info) use ($snake, &$items) {
-            $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
-            $items[] = $version = intval(substr($bname, 0, 14));
-            if ($snake === substr($bname, 15) && unlink($info->getRealPath())) {
-                if (is_dir($dataPath = $info->getPath() . DIRECTORY_SEPARATOR . $version)) {
-                    ToolsExtend::removeEmptyDirectory($dataPath);
+        ToolsExtend::findFilesArray(syspath('database/migrations'), 1, function (SplFileInfo $info) use ($snake, &$items) {
+            if ($info->isFile()) {
+                $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
+                $items[] = $version = intval(substr($bname, 0, 14));
+                if ($snake === substr($bname, 15) && unlink($info->getRealPath())) {
+                    if (is_dir($dataPath = $info->getPath() . DIRECTORY_SEPARATOR . $version)) {
+                        ToolsExtend::removeEmptyDirectory($dataPath);
+                    }
                 }
             }
-        }, null, true, 1);
+        });
 
         // 计算下一个版本号
         return sprintf("%s_{$snake}.php", min($items) - 1);
