@@ -87,8 +87,8 @@ class ToolsExtend
      */
     public static function scanDirectory(string $path, ?int $depth = null, string $filterExt = '', bool $shortPath = true): array
     {
-        return static::findFilesArray($path, $depth, static function (SplFileInfo $info) use ($filterExt) {
-            return !$filterExt || $info->getExtension() === $filterExt;
+        return static::findFilesArray($path, $depth, function (SplFileInfo $info) use ($filterExt, &$files) {
+            return $info->isDir() || $filterExt === '' || strtolower($info->getExtension()) === strtolower($filterExt);
         }, $shortPath);
     }
 
@@ -120,7 +120,7 @@ class ToolsExtend
      * @param ?integer $depth 扫描深度
      * @param \Closure|null $filter 文件过滤，返回 false 表示放弃
      * @param boolean $appendPath 是否包含目录本身在结果中。
-     * @param integer $currDepth 当前递归深度，初始值为 0。
+     * @param integer $currDepth 当前深度，临时变量递归时使用。
      * @return \Generator 返回 SplFileInfo 对象的生成器。
      */
     private static function findFilesYield(string $path, ?int $depth = null, ?Closure $filter = null, bool $appendPath = false, int $currDepth = 1): Generator
