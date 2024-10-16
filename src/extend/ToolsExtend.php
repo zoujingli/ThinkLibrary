@@ -72,7 +72,7 @@ class ToolsExtend
     public static function removeEmptyDirectory(string $path): bool
     {
         foreach (self::findFilesYield($path, null, null, true) as $item) {
-            ($item->isFile() || $item->isLink()) ? unlink($item->getRealPath()) : rmdir($item->getRealPath());
+            ($item->isFile() || $item->isLink()) ? unlink($item->getPathname()) : rmdir($item->getPathname());
         }
         return is_file($path) ? unlink($path) : (!is_dir($path) || rmdir($path));
     }
@@ -107,8 +107,8 @@ class ToolsExtend
             if ($info->isFile() && ($filter === null || $filter($info) !== false)) {
                 $files[] = $short ? $info->getBasename() : $info->getPathname();
             }
-            if ($info->isDir()) foreach (static::findFilesYield($info->getRealPath(), $depth, $filter) as $file) {
-                $files[] = $short ? substr($file->getRealPath(), strlen($info->getRealPath()) + 1) : $file->getRealPath();
+            if ($info->isDir()) foreach (static::findFilesYield($info->getPathname(), $depth, $filter) as $file) {
+                $files[] = $short ? substr($file->getPathname(), strlen($info->getPathname()) + 1) : $file->getPathname();
             }
         }
         return $files;
