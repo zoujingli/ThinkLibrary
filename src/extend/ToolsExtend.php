@@ -71,10 +71,15 @@ class ToolsExtend
      */
     public static function removeEmptyDirectory(string $path): bool
     {
-        foreach (self::findFilesYield($path, null, null, true) as $item) {
-            ($item->isFile() || $item->isLink()) ? unlink($item->getPathname()) : rmdir($item->getPathname());
-        }
-        return is_file($path) ? unlink($path) : (!is_dir($path) || rmdir($path));
+        $dirs = [$path];
+        iterator_to_array(self::findFilesYield($path, null, function (SplFileInfo $file) use (&$dirs) {
+            $file->isDir() ? $dirs[] = $file->getPathname() : unlink($file->getPathname());
+        }));
+        usort($dirs, function ($a, $b) {
+            return strlen($b) <=> strlen($a);
+        });
+        foreach ($dirs as $dir) rmdir($dir);
+        return !file_exists($path);
     }
 
     /**
