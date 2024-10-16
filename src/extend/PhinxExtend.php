@@ -276,10 +276,12 @@ class PhinxExtend
      */
     private function _create_{$table}() 
     {
-        // 创建更新数据表
-        PhinxExtend::upgrade(\$this->table('{$table}', [
+        // 创建数据表对象
+        \$table = \$this->table('{$table}', [
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
-        ]), _FIELDS_, _INDEXS_);
+        ]);
+        // 创建或更新数据表
+        PhinxExtend::upgrade(\$table, _FIELDS_, _INDEXS_);
     }
 CODE;
             // 生成字段内容
