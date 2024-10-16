@@ -110,7 +110,7 @@ class Library extends Service
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
         ToolsExtend::findFilesArray($dir, function (SplFileInfo $info) use ($ext) {
             $info->getBasename() === "sys{$ext}" && include_once $info->getPathname();
-        }, null, true, 1);
+        }, null, true, 2);
         if (is_file($file = "{$dir}common{$ext}")) include_once $file;
         if (is_file($file = "{$dir}provider{$ext}")) $this->app->bind(include $file);
         if (is_file($file = "{$dir}event{$ext}")) $this->app->loadEvent(include $file);
