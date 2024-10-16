@@ -119,7 +119,7 @@ class NodeService extends Service
         $ignoreMethods = get_class_methods('\think\admin\Controller');
         $ignoreAppNames = Library::$sapp->config->get('app.rbac_ignore', []);
         // 扫描所有代码控制器节点，更新节点缓存
-        foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), 'php') as $name) {
+        foreach (ToolsExtend::scanDirectory(Library::$sapp->getBasePath(), null, 'php') as $name) {
             if (preg_match("|^(\w+)/controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                 [, $appName, $className] = $matches;
                 if (in_array($appName, $ignoreAppNames)) continue;
@@ -130,7 +130,7 @@ class NodeService extends Service
         foreach (Plugin::get() as $appName => $plugin) {
             if (in_array($appName, $ignoreAppNames)) continue;
             [$appPath, $appSpace] = [$plugin['path'], $plugin['space']];
-            foreach (ToolsExtend::scanDirectory($appPath, 'php') as $name) {
+            foreach (ToolsExtend::scanDirectory($appPath, null, 'php') as $name) {
                 if (preg_match("|^.*?controller/(.+)\.php$|i", strtr($name, '\\', '/'), $matches)) {
                     static::_parseClass($appName, $appSpace, $matches[1], $ignoreMethods, $data);
                 }
