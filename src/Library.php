@@ -108,7 +108,7 @@ class Library extends Service
     {
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
-        ToolsExtend::findFilesArray($dir, 2, function (SplFileInfo $info) use ($ext) {
+        ToolsExtend::find($dir, 2, function (SplFileInfo $info) use ($ext) {
             $info->isFile() && $info->getBasename() === "sys{$ext}" && include_once $info->getPathname();
         });
         if (is_file($file = "{$dir}common{$ext}")) include_once $file;

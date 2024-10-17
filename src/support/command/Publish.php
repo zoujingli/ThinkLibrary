@@ -87,15 +87,15 @@ class Publish extends Command
     {
         // 复制系统配置文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
-        ToolsExtend::copyfile($frdir, syspath('config'), [], $force, false);
+        ToolsExtend::copy($frdir, syspath('config'), [], $force, false);
 
         // 复制静态资料文件
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
-        ToolsExtend::copyfile($frdir, syspath('public'), [], true, false);
+        ToolsExtend::copy($frdir, syspath('public'), [], true, false);
 
         // 复制数据库脚本
         $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
-        ToolsExtend::copyfile($frdir, syspath('database/migrations'), [], $force, false);
+        ToolsExtend::copy($frdir, syspath('database/migrations'), [], $force, false);
     }
 
     /**

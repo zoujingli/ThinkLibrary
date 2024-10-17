@@ -338,13 +338,13 @@ CODE;
     private static function nextFile(string $class): string
     {
         [$snake, $items] = [Str::snake($class), [20010000000000]];
-        ToolsExtend::findFilesArray(syspath('database/migrations'), 1, function (SplFileInfo $info) use ($snake, &$items) {
+        ToolsExtend::find(syspath('database/migrations'), 1, function (SplFileInfo $info) use ($snake, &$items) {
             if ($info->isFile()) {
                 $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
                 $items[] = $version = intval(substr($bname, 0, 14));
                 if ($snake === substr($bname, 15) && unlink($info->getRealPath())) {
                     if (is_dir($dataPath = $info->getPath() . DIRECTORY_SEPARATOR . $version)) {
-                        ToolsExtend::removeEmptyDirectory($dataPath);
+                        ToolsExtend::remove($dataPath);
                     }
                 }
             }
