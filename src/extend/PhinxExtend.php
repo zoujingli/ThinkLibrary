@@ -131,16 +131,17 @@ class PhinxExtend
      * 创建数据库安装脚本
      * @param array $tables
      * @param string $class
+     * @param boolean $force
      * @return string[]
      * @throws \Exception
      */
-    public static function create2table(array $tables = [], string $class = 'InstallTable'): array
+    public static function create2table(array $tables = [], string $class = 'InstallTable', bool $force = false): array
     {
         if (Library::$sapp->db->connect()->getConfig('type') !== 'mysql') {
             throw new Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
         }
         $br = "\r\n";
-        $content = static::_build2table($tables, true);
+        $content = static::_build2table($tables, true, $force);
         $content = substr($content, strpos($content, "\n") + 1);
         $content = '<?php' . "{$br}{$br}use think\\admin\\extend\\PhinxExtend;{$br}use think\migration\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', -1);{$br}{$br}class {$class} extends Migrator{$br}{{$br}{$content}}{$br}";
         return ['file' => static::nextFile($class), 'text' => $content];
@@ -218,10 +219,11 @@ class PhinxExtend
      * 生成数据库表格创建模板
      * @param array $tables 指定数据表
      * @param boolean $rehtml 是否返回内容
+     * @param boolean $force 强制更新结构
      * @return string
      * @throws \Exception
      */
-    private static function _build2table(array $tables = [], bool $rehtml = false): string
+    private static function _build2table(array $tables = [], bool $rehtml = false, bool $force = false): string
     {
         $br = "\r\n";
         $connect = Library::$sapp->db->connect();
@@ -281,7 +283,7 @@ class PhinxExtend
             'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
         ]);
         // 创建或更新数据表
-        PhinxExtend::upgrade(\$table, _FIELDS_, _INDEXS_);
+        PhinxExtend::upgrade(\$table, _FIELDS_, _INDEXS_, __FORCE__);
     }
 CODE;
             // 生成字段内容
@@ -325,7 +327,7 @@ CODE;
                 $_indexString .= "'{$index}', ";
             }
             $_indexString .= PHP_EOL . "\t\t]";
-            $content = str_replace(['_FIELDS_', '_INDEXS_'], [$_fieldString, $_indexString], $content) . PHP_EOL . PHP_EOL;
+            $content = str_replace(['_FIELDS_', '_INDEXS_', '__FORCE__'], [$_fieldString, $_indexString, $force ? 'true' : 'false'], $content) . PHP_EOL . PHP_EOL;
         }
         return $rehtml ? $content : highlight_string($content, true);
     }

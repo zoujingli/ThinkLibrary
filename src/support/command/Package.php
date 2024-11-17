@@ -40,6 +40,7 @@ class Package extends Command
     {
         $this->setName('xadmin:package');
         $this->addOption('all', 'a', Option::VALUE_NONE, 'Backup All Tables');
+        $this->addOption('force', 'f', Option::VALUE_NONE, 'Force All Update');
         $this->addOption('table', 't', Option::VALUE_OPTIONAL, 'Package Tables Scheme', '');
         $this->addOption('backup', 'b', Option::VALUE_OPTIONAL, 'Package Tables Backup', '');
         $this->setDescription('Generate System Install Package for ThinkAdmin');
@@ -78,6 +79,7 @@ class Package extends Command
      */
     private function createScheme(): bool
     {
+        $force = $this->input->hasOption('force');
         // 接收指定打包数据表
         if ($this->input->hasOption('table')) {
             $tables = str2arr(strtr($this->input->getOption('table'), '|', ','));
@@ -106,7 +108,7 @@ class Package extends Command
         $this->setQueueMessage($total, 0, '开始创建数据表创建脚本！');
         foreach ($groups as $key => $tbs) {
             $name = 'Install' . ucfirst($key) . 'Table';
-            $phinx = PhinxExtend::create2table($tbs, $name);
+            $phinx = PhinxExtend::create2table($tbs, $name, $force);
             $target = syspath("database/migrations/{$phinx['file']}");
             if (file_put_contents($target, $phinx['text']) !== false) {
                 $this->setQueueMessage($total, ++$count, "创建数据库 {$name} 安装脚本成功！");
