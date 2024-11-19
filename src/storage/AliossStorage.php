@@ -192,8 +192,7 @@ class AliossStorage implements StorageInterface
      */
     public function upload(): string
     {
-        $proc = $this->app->request->isSsl() ? 'https' : 'http';
-        return "{$proc}://{$this->bucket}.{$this->point}";
+        return "https://{$this->bucket}.{$this->point}";
     }
 
     /**
