@@ -178,6 +178,26 @@ class SystemService extends Service
     }
 
     /**
+     * 批量更新保存数据
+     * @param Model|Query|string $query 数据查询对象
+     * @param array $data 需要保存的数据，成功返回对应模型
+     * @param string $key 更新条件查询主键
+     * @param mixed $map 额外更新查询条件
+     * @return boolean|integer 失败返回 false, 成功返回主键值或 true
+     * @throws \think\admin\Exception
+     */
+    public static function batchUpdate($query, array &$data, string $key = 'id', $map = [])
+    {
+        try {
+            $query = Helper::buildQuery($query)->master()->strict(false);
+            if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
+            return $query->where($map)->update($data);
+        } catch (\Exception $exception) {
+            throw new Exception($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
      * 解析缓存名称
      * @param string $rule 配置名称
      * @return array
