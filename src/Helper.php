@@ -90,15 +90,22 @@ abstract class Helper
     public static function buildQuery($query)
     {
         if (is_string($query)) {
-            return static::buildModel($query)->db();
+            if (self::isSubquery($query)) {
+                $query = Library::$sapp->db->table($query);
+            } else {
+                return static::buildModel($query)->db();
+            }
         }
         if ($query instanceof Model) return $query->db();
         if ($query instanceof BaseQuery && !$query->getModel()) {
-            $name = $query->getConfig('name') ?: '';
-            if (is_string($name) && strlen($name) > 0) {
-                $name = config("database.connections.{$name}") ? $name : '';
+            // 如果是子查询，不需要挂载模型对象
+            if (!self::isSubquery($query->getTable())) {
+                $name = $query->getConfig('name') ?: '';
+                if (is_string($name) && strlen($name) > 0) {
+                    $name = config("database.connections.{$name}") ? $name : '';
+                }
+                $query->model(static::buildModel($query->getName(), [], $name));
             }
-            $query->model(static::buildModel($query->getName(), [], $name));
         }
         return $query;
     }
@@ -120,5 +127,15 @@ abstract class Helper
             $name = basename(str_replace('\\', '/', $name));
         }
         return VirtualModel::mk($name, $data, $conn);
+    }
+
+    /**
+     * 判断是否为子查询
+     * @param string $sql
+     * @return bool
+     */
+    private static function isSubquery(string $sql): bool
+    {
+        return preg_match('/^\(?\s*select\s+/i', $sql) > 0;
     }
 }
