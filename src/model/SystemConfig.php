@@ -27,4 +27,6 @@ use think\admin\Model;
  */
 class SystemConfig extends Model
 {
+    protected $updateTime = false;
+    protected $createTime = false;
 }
