@@ -453,10 +453,10 @@ if (!function_exists('format_datetime')) {
             return '-';
         } elseif (is_numeric($datetime)) {
             return date(lang($format), intval($datetime));
-        } elseif ($timestamp = strtotime($datetime)) {
+        } elseif ($timestamp = strtotime((string)$datetime)) {
             return date(lang($format), $timestamp);
         } else {
-            return $datetime;
+            return (string)$datetime;
         }
     }
 }
