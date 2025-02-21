@@ -186,7 +186,7 @@ class SystemService extends Service
      * @return boolean|integer 失败返回 false, 成功返回主键值或 true
      * @throws \think\admin\Exception
      */
-    public static function batchUpdate($query, array $data, string $key = 'id', $map = [])
+    public static function update($query, array $data, string $key = 'id', $map = [])
     {
         try {
             $query = Helper::buildQuery($query)->master()->strict(false)->where($map);

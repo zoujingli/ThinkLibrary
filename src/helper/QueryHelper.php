@@ -386,7 +386,7 @@ class QueryHelper extends Helper
             'mSave'   => [SaveHelper::class, 'init'],
             'mQuery'  => [QueryHelper::class, 'init'],
             'mDelete' => [DeleteHelper::class, 'init'],
-            'mUpdate' => [SystemService::class, 'batchUpdate'],
+            'mUpdate' => [SystemService::class, 'update'],
         ];
         if (isset($hooks[$method])) {
             [$class, $method] = $hooks[$method];
