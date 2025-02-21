@@ -19,7 +19,6 @@ declare (strict_types=1);
 namespace think\admin;
 
 use think\admin\helper\QueryHelper;
-use think\db\Express;
 
 /**
  * 基础模型类
@@ -115,31 +114,5 @@ abstract class Model extends \think\Model
         return QueryHelper::make(static::class, $method, $args, function ($method, $args) {
             return parent::__callStatic($method, $args);
         });
-    }
-
-
-    /**
-     * 字段值增长
-     * @param string $field 字段名
-     * @param float $step 增长值
-     * @param int $lazyTime 延迟时间（秒）
-     * @return $this
-     */
-    public function inc(string $field, float $step = 1, int $lazyTime = 0)
-    {
-        return $this->set($field, new Express('+', $step, $lazyTime));
-    }
-
-    /**
-     * 字段值减少.
-     *
-     * @param string $field 字段名
-     * @param float $step 增长值
-     * @param int $lazyTime 延迟时间（秒）
-     * @return $this
-     */
-    public function dec(string $field, float $step = 1, int $lazyTime = 0)
-    {
-        return $this->set($field, new Express('-', $step, $lazyTime));
     }
 }
