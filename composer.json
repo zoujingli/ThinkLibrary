@@ -26,6 +26,7 @@
     "ext-openssl": "*",
     "ext-mbstring": "*",
     "symfony/process": "^5.4|^6.0|*",
+    "topthink/think-orm": "^3.0|^4.0",
     "topthink/framework": "^6.0|^8.0|*",
     "topthink/think-migration": "^3.0|*"
   },
