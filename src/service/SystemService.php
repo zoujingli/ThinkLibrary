@@ -186,12 +186,12 @@ class SystemService extends Service
      * @return boolean|integer 失败返回 false, 成功返回主键值或 true
      * @throws \think\admin\Exception
      */
-    public static function batchUpdate($query, array &$data, string $key = 'id', $map = [])
+    public static function batchUpdate($query, array $data, string $key = 'id', $map = [])
     {
         try {
-            $query = Helper::buildQuery($query)->master()->strict(false);
+            $query = Helper::buildQuery($query)->master()->strict(false)->where($map);
             if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
-            return $query->where($map)->update($data);
+            return (clone $query)->count() > 0 ? (clone $query)->update($data) : (clone $query)->save($data);
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
