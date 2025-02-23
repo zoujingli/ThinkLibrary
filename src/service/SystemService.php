@@ -189,10 +189,11 @@ class SystemService extends Service
     public static function update($query, array $data, string $key = 'id', $map = [])
     {
         try {
-            $query = Helper::buildQuery($query)->master()->strict(false)->where($map);
+            $query = Helper::buildQuery($query)->master()->where($map);
             if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
-            return (clone $query)->count() > 0 ? (clone $query)->update($data) : (clone $query)->findOrEmpty()->save($data);
-        } catch (\Exception $exception) {
+            $model = (clone $query)->findOrEmpty();
+            return $model->isExists() ? (clone $query)->strict(false)->update($data) : $model->save($data);
+        } catch (\Exception|\Throwable $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
     }
