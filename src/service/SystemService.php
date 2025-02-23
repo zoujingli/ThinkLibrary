@@ -191,7 +191,7 @@ class SystemService extends Service
         try {
             $query = Helper::buildQuery($query)->master()->strict(false)->where($map);
             if (empty($map[$key])) $query->where([$key => $data[$key] ?? null]);
-            return (clone $query)->count() > 0 ? (clone $query)->update($data) : (clone $query)->save($data);
+            return (clone $query)->count() > 0 ? (clone $query)->update($data) : (clone $query)->findOrEmpty()->save($data);
         } catch (\Exception $exception) {
             throw new Exception($exception->getMessage(), $exception->getCode());
         }
