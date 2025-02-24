@@ -1,8 +1,20 @@
+####### 可解析的提交前缀 ########
+#  ci: 持续集成
+#  fix: 修改
+#  feat: 新增
+#  refactor: 重构
+#  docs: 文档
+#  style: 样式
+#  chore: 其他
+#  build: 构建
+#  pref: 优化
+#  test: 测试
+###############################
+
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'v*' # 仅匹配 v* 版本标签，如 v1.0、v20.15.10
 
 name: Create Release
 permissions: write-all
@@ -27,30 +39,28 @@ jobs:
       - name: Find Last Tag
         id: last_tag
         run: |
+          # 获取所有标签，按版本号降序排序
+          all_tags=$(git tag --list --sort=-version:refname)
+
+          # 获取最新的标签
+          LATEST_TAG=$(echo "$all_tags" | head -n 1)
           
-          # 获取所有标签，按版本排序（降序）  
-          Tags=$(git tag --list --sort=-version:refname)  
-          
-          # 获取最新的标签（即列表中的第一个）  
-          LATEST_TAG=$(echo "$Tags" | awk 'NR==1 {print $1; exit}')  
-          
-          # 获取倒数第二个标签（如果存在）  
-          if [[ -n "$Tags" ]]; then  
-            # 使用 tail 获取除了最后一个标签之外的所有标签，然后用 head 获取第一个  
-            SECOND_LATEST_TAG=$(echo "$Tags" | tail -n +2 | head -n 1)  
-          else  
-            SECOND_LATEST_TAG=""  
-          fi
-          
-          # 设置输出变量  
-          echo "::set-output name=tag_last::${LATEST_TAG:-v1.0.0}"
-          echo "::set-output name=tag_second::${SECOND_LATEST_TAG:-v1.0.0}"
+          # 获取倒数第二个标签（如果有）
+          SECOND_LATEST_TAG=$(echo "$all_tags" | sed -n '2p')
+
+          # 如果没有任何标签，默认 v1.0.0
+          LATEST_TAG=${LATEST_TAG:-v1.0.0}
+          SECOND_LATEST_TAG=${SECOND_LATEST_TAG:-v1.0.0}
+
+          # 设置环境变量
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          echo "SECOND_LATEST_TAG=$SECOND_LATEST_TAG" >> $GITHUB_ENV
 
       - name: Generate Release Notes
         run: |
           rm -rf log
-          newTag=${{ steps.last_tag.outputs.tag_last }}
-          git-log -m tag -f -S ${{ steps.last_tag.outputs.tag_second }} -v ${newTag#v}
+          mkdir -p log
+          git-log -m tag -f -S $SECOND_LATEST_TAG -v ${LATEST_TAG#v}
 
       - name: Create Release
         id: create_release
@@ -58,8 +68,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.last_tag.outputs.tag_last }}
-          release_name: Release ${{ steps.last_tag.outputs.tag_last }}
-          body_path: log/${{steps.last_tag.outputs.tag_last}}.md
+          tag_name: ${{ env.LATEST_TAG }}
+          release_name: Release ${{ env.LATEST_TAG }}
+          body_path: log/${{ env.LATEST_TAG }}.md
           draft: false
           prerelease: false
