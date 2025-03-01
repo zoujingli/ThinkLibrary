@@ -23,6 +23,26 @@ use think\model\relation\HasOne;
 
 /**
  * 系统用户模型
+ *
+ * @property int $id
+ * @property int $is_deleted 删除(1删除,0未删)
+ * @property int $login_num 登录次数
+ * @property int $sort 排序权重
+ * @property int $status 状态(0禁用,1启用)
+ * @property string $authorize 权限授权
+ * @property string $contact_mail 联系邮箱
+ * @property string $contact_phone 联系手机
+ * @property string $contact_qq 联系QQ
+ * @property string $create_at 创建时间
+ * @property string $describe 备注说明
+ * @property string $headimg 头像地址
+ * @property string $login_at 登录时间
+ * @property string $login_ip 登录地址
+ * @property string $nickname 用户昵称
+ * @property string $password 用户密码
+ * @property string $username 用户账号
+ * @property string $usertype 用户类型
+ * @property-read \think\admin\model\SystemBase $userinfo
  * @class SystemUser
  * @package think\admin\model
  */

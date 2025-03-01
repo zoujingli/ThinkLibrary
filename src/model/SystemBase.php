@@ -22,6 +22,18 @@ use think\admin\Model;
 
 /**
  * 数据字典模型
+ *
+ * @property int $deleted 删除状态(0正常,1已删)
+ * @property int $deleted_by 删除用户
+ * @property int $id
+ * @property int $sort 排序权重
+ * @property int $status 数据状态(0禁用,1启动)
+ * @property string $code 数据代码
+ * @property string $content 数据内容
+ * @property string $create_at 创建时间
+ * @property string $deleted_at 删除时间
+ * @property string $name 数据名称
+ * @property string $type 数据类型
  * @class SystemBase
  * @package think\admin\model
  */

@@ -22,6 +22,18 @@ use think\admin\Model;
 
 /**
  * 系统菜单模型
+ *
+ * @property int $id
+ * @property int $pid 上级ID
+ * @property int $sort 排序权重
+ * @property int $status 状态(0:禁用,1:启用)
+ * @property string $create_at 创建时间
+ * @property string $icon 菜单图标
+ * @property string $node 节点代码
+ * @property string $params 链接参数
+ * @property string $target 打开方式
+ * @property string $title 菜单名称
+ * @property string $url 链接节点
  * @class SystemMenu
  * @package think\admin\model
  */

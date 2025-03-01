@@ -22,6 +22,11 @@ use think\admin\Model;
 
 /**
  * 系统配置模型
+ *
+ * @property int $id
+ * @property string $name 配置名称
+ * @property string $type 配置分类
+ * @property string $value 配置内容
  * @class SystemConfig
  * @package think\admin\model
  */

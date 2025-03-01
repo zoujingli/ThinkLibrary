@@ -22,6 +22,10 @@ use think\admin\Model;
 
 /**
  * 授权节点模型
+ *
+ * @property int $auth 角色
+ * @property int $id
+ * @property string $node 节点
  * @class SystemNode
  * @mixin \think\db\Query
  * @package think\admin\model

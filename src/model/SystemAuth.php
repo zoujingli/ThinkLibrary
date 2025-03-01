@@ -22,6 +22,14 @@ use think\admin\Model;
 
 /**
  * 用户权限模型
+ *
+ * @property int $id
+ * @property int $sort 排序权重
+ * @property int $status 权限状态(1使用,0禁用)
+ * @property string $create_at 创建时间
+ * @property string $desc 备注说明
+ * @property string $title 权限名称
+ * @property string $utype 身份权限
  * @class SystemAuth
  * @package think\admin\model
  */
