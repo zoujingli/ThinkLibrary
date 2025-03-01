@@ -154,7 +154,7 @@ class ToolsExtend
      * @param integer $currDepth 当前深度，临时变量递归时使用。
      * @return \Generator 返回 SplFileInfo 对象的生成器。
      */
-    private static function findFilesYield(string $path, ?int $depth = null, ?Closure $filter = null, bool $appendPath = false, int $currDepth = 1): Generator
+    public static function findFilesYield(string $path, ?int $depth = null, ?Closure $filter = null, bool $appendPath = false, int $currDepth = 1): Generator
     {
         if (file_exists($path) && is_dir($path) && (is_null($depth) || $currDepth <= $depth)) {
             foreach (new FilesystemIterator($path, FilesystemIterator::SKIP_DOTS) as $item) {
