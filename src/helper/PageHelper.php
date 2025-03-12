@@ -19,6 +19,7 @@ declare (strict_types=1);
 namespace think\admin\helper;
 
 use think\admin\Helper;
+use think\admin\Library;
 use think\admin\service\AdminService;
 use think\db\BaseQuery;
 use think\db\Query;
@@ -162,6 +163,7 @@ class PageHelper extends Helper
         if ($total === true || is_numeric($total)) return $total;
         [$query, $options] = [clone $query, $query->getOptions()];
         if (isset($options['order'])) $query->removeOption('order');
+        Library::$sapp->db->trigger('before_page_count', $query);
         if (empty($options['union'])) return $query->count();
         $table = [$query->buildSql() => '_union_count_'];
         return $query->newQuery()->table($table)->count();
