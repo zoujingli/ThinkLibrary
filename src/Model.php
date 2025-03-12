@@ -71,7 +71,7 @@ abstract class Model extends \think\Model
      */
     public static function mq(array $data = [])
     {
-        return static::mk($data)->newQuery();
+        return Helper::buildQuery(static::mk($data)->newQuery());
     }
 
     /**
