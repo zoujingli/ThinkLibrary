@@ -93,10 +93,10 @@ abstract class Helper
             if (self::isSubquery($query)) {
                 $query = Library::$sapp->db->table($query);
             } else {
-                return static::buildModel($query)->db();
+                return self::triggerBeforeEvent(static::buildModel($query)->db());
             }
         }
-        if ($query instanceof Model) return $query->db();
+        if ($query instanceof Model) return self::triggerBeforeEvent($query->db());
         if ($query instanceof BaseQuery && !$query->getModel()) {
             // 如果是子查询，不需要挂载模型对象
             if (!self::isSubquery($query->getTable())) {
@@ -107,6 +107,17 @@ abstract class Helper
                 $query->model(static::buildModel($query->getName(), [], $name));
             }
         }
+        return self::triggerBeforeEvent($query);
+    }
+
+    /**
+     * 触发查询对象执行前事件
+     * @param BaseQuery|Model|mixed $query
+     * @return BaseQuery|Model|mixed
+     */
+    private static function triggerBeforeEvent($query)
+    {
+        Library::$sapp->db->trigger('think_before_event', $query);
         return $query;
     }
 
