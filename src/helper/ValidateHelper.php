@@ -50,21 +50,21 @@ class ValidateHelper extends Helper
             $input = $this->app->request->$type();
         }
         [$data, $rule, $info] = [[], [], []];
-        foreach ($rules as $name => $message) {
-            if (is_numeric($name)) {
-                [$name, $alias] = explode('#', $message . '#');
-                $data[$name] = $input[$alias ?: $name] ?? null;
-            } elseif (strpos($name, '.') === false) {
-                $data[$name] = $message;
-            } elseif (preg_match('|^(.*?)\.(.*?)#(.*?)#?$|', $name . '#', $matches)) {
+        foreach ($rules as $key => $value) {
+            if (is_numeric($key)) {
+                [$key, $alias] = explode('#', "{$value}#");
+                $data[$key] = $input[$alias ?: $key] ?? null;
+            } elseif (strpos($key, '.') === false) {
+                $data[$key] = $value;
+            } elseif (preg_match('|^(.*?)\.(.*?)#(.*?)#?$|', "{$key}#", $matches)) {
                 [, $_key, $_rule, $alias] = $matches;
                 if (in_array($_rule, ['value', 'default'])) {
-                    if ($_rule === 'value') $data[$_key] = $message;
-                    elseif ($_rule === 'default') $data[$_key] = $input[$alias ?: $_key] ?? $message;
+                    if ($_rule === 'value') $data[$_key] = $value;
+                    if ($_rule === 'default') $data[$_key] = $input[$alias ?: $_key] ?? $value;
                 } else {
-                    $info[explode(':', $_key . '.' . $_rule)[0]] = $message;
+                    $info[explode(':', "{$_key}.{$_rule}")[0]] = $value;
                     $data[$_key] = $data[$_key] ?? ($input[$alias ?: $_key] ?? null);
-                    $rule[$_key] = isset($rule[$_key]) ? $rule[$_key] . '|' . $_rule : $_rule;
+                    $rule[$_key] = isset($rule[$_key]) ? "{$rule[$_key]}|{$_rule}" : $_rule;
                 }
             }
         }
