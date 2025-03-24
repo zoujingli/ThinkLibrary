@@ -143,7 +143,7 @@ class CodeExtend
      */
     public static function deSafe64(string $text): string
     {
-        return base64_decode(str_pad(strtr($text, '-_', '+/'), strlen($text) % 4, '='));
+        return base64_decode(str_pad(strtr($text, '-_', '+/'), (int) (ceil(strlen($text) / 4) * 4), '='));
     }
 
     /**
