@@ -143,6 +143,7 @@ class MultAccess
      */
     private function setMultiApp(string $appName, bool $appBind): bool
     {
+        sysvar('CurrentPluginCode', $appName);
         if (is_dir($this->appPath = $this->appPath ?: syspath("app/{$appName}/"))) {
             // 设置多应用模式
             $this->app->setNamespace($this->appSpace ?: NodeService::space($appName))->setAppPath($this->appPath);
