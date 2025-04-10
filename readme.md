@@ -89,7 +89,8 @@
 
 * Gitee 仓库 https://gitee.com/zoujingli/ThinkAdmin
 * Github 仓库 https://github.com/zoujingli/ThinkAdmin
-* 体验地址（账号密码都是admin）https://v6.thinkadmin.top
+* Gitcode 仓库 https://gitcode.com/ThinkAdmin/ThinkAdmin
+* 体验地址 ( 账号密码都是 admin ) https://v6.thinkadmin.top
 
 ## 代码仓库
 
@@ -97,9 +98,10 @@
 
 部分代码来自互联网，若有异议可以联系作者进行删除。
 
-* 在线体验地址：https://v6.thinkadmin.top （账号和密码都是 `admin` ）
+* 在线体验地址：https://v6.thinkadmin.top ( 账号和密码都是 `admin` )
 * **Gitee** 仓库地址：https://gitee.com/zoujingli/ThinkLibrary
 * **Github** 仓库地址：https://github.com/zoujingli/ThinkLibrary
+* **Gitcode** 仓库地址： https://gitcode.com/ThinkAdmin/ThinkLibrary
 
 ## 使用说明
 
