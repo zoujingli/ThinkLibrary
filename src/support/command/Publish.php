@@ -116,6 +116,7 @@ class Publish extends Command
                     'name'        => $config['name'] ?? ($package['name'] ?? ''),
                     'icon'        => $config['icon'] ?? '',
                     'cover'       => $config['cover'] ?? '',
+                    'super'       => $config['super'] ?? false,
                     'license'     => (array)($config['license'] ?? ($package['license'] ?? [])),
                     'version'     => $config['version'] ?? ($package['version'] ?? ''),
                     'homepage'    => $config['homepage'] ?? ($package['homepage'] ?? ''),
