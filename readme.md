@@ -9,11 +9,6 @@
 [![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
 
 **ThinkLibrary** 是一个针对 **ThinkPHP 6 & 8** 的封装库，它提供了完整的 **CRUD**（创建、读取、更新、删除）操作和一系列常用工具。
-该库特别注重多应用支持，为开发者提供便利。前端代码的主仓库位于 **Gitee**，而 **GitHub** 则作为镜像仓库用于发布 **Composer** 包，以方便开发者下载和使用。
-
-## 加入我们
-
-我们的代码仓库已移至 **Github**，而 **Gitee** 则仅作为国内镜像仓库，方便广大开发者获取和使用。若想提交 **PR** 或 **ISSUE** 请在 [ThinkAdminDeveloper](https://github.com/zoujingli/ThinkAdminDeveloper) 仓库进行操作，如果在其他仓库操作或提交问题将无法处理！。
 
 ## 功能说明
 
