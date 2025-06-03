@@ -138,6 +138,7 @@ abstract class Storage
             'upyun'  => lang('又拍云USS存储'),
             'txcos'  => lang('腾讯云COS存储'),
             'alioss' => lang('阿里云OSS存储'),
+            'minio'  => lang('自建Minio存储'),
         ];
     }
 

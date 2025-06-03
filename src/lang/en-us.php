@@ -120,6 +120,7 @@ return array_merge([
     '阿里云OSS存储'         => 'Aliyun Cloud OSS storage',
     '腾讯云COS存储'         => 'Tencent Cloud COS Storage',
     '七牛云对象存储'        => 'Qiniu Cloud Object storage',
+    '自建Minio存储'         => 'Self built Minio storage',
     '未配置又拍云域名'      => 'Unconfigured Upyun Cloud domain',
     '未配置阿里云域名'      => 'Unconfigured Aliyun Cloud domain',
     '未配置七牛云域名'      => 'Unconfigured Qiniu Cloud domain',
