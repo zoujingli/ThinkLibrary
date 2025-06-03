@@ -92,6 +92,7 @@ trait StorageUsageTrait
                 'UpyunStorage'  => '!/format/webp',
                 'TxcosStorage'  => '?imageMogr2/format/webp',
                 'AliossStorage' => '?x-oss-process=image/format,webp',
+                'MinioStorage' => '',  // Minio默认不支持图片处理,需要配置第三方服务
             ];
             $extens = strtolower(pathinfo($this->delSuffix($filename), PATHINFO_EXTENSION));
             $suffix = in_array($extens, ['png', 'jpg', 'jpeg']) ? ($compress[$class] ?? '') : '';
