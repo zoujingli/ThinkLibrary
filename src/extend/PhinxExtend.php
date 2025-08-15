@@ -144,7 +144,7 @@ class PhinxExtend
                 return $part[0] ?? '';
             }, explode('_', $str)));
         };
-        return sprintf('idx_%s_%s_%s', substr(md5($table), -4), $getInitials($table), $getInitials($name));
+        return sprintf('idx_%s_%s_%s', substr(md5($table), -4), $getInitials($table), $name);
     }
 
 
