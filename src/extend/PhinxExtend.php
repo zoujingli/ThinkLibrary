@@ -115,10 +115,9 @@ class PhinxExtend
             }
         }
         // 生成索引规则
-        $short = substr(md5($table->getName()), 0, 9);
         foreach ($indexs as $field) {
             if (empty($isExists) || !$table->hasIndex($field)) {
-                $table->addIndex($field, ['name' => "i{$short}_{$field}"]);
+                $table->addIndex($field, ['name' => self::genIndexName($table->getName(), $field)]);
             }
         }
         $isExists ? $table->update() : $table->create();
@@ -127,6 +126,27 @@ class PhinxExtend
         }
         return $table;
     }
+
+    /**
+     * 生成索引名称.
+     *
+     * 生成规则: idx_[表名hash后4位]_[表名缩写]_[字段缩写]
+     * 缩写规则: 取每个下划线分隔部分的第一个字母
+     *
+     * @param string $table 表名
+     * @param string $name 字段名
+     * @return string 生成的索引名称
+     */
+    private static function genIndexName(string $table, string $name): string
+    {
+        $getInitials = function (string $str): string {
+            return implode('', array_map(function ($part) {
+                return $part[0] ?? '';
+            }, explode('_', $str)));
+        };
+        return sprintf('idx_%s_%s_%s', substr(md5($table), -4), $getInitials($table), $getInitials($name));
+    }
+
 
     /**
      * 创建数据库安装脚本
