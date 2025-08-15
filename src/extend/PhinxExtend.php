@@ -20,6 +20,7 @@ namespace think\admin\extend;
 
 use Exception;
 use Phinx\Db\Adapter\AdapterInterface;
+use Phinx\Db\Adapter\MysqlAdapter;
 use Phinx\Db\Table;
 use SplFileInfo;
 use think\admin\Library;
@@ -292,7 +293,9 @@ CODE;
                 if ($field['name'] === 'id') continue;
                 $type = $types[$field['type']] ?? $field['type'];
                 $data = ['default' => $field['default'], 'null' => empty($field['notnull']), 'comment' => $field['comment'] ?? ''];
-                if ($field['type'] === 'enum') {
+                if ($field['type'] === 'longtext') {
+                    $data = array_merge(['limit' => MysqlAdapter::TEXT_LONG], $data);
+                } elseif ($field['type'] === 'enum') {
                     $type = $types[$field['type']] ?? 'string';
                     $data = array_merge(['limit' => 10], $data);
                 } elseif (preg_match('/(tinyblob|blob|mediumblob|longblob|varbinary|bit|binary|varchar|char)\((\d+)\)/', $field['type'], $attr)) {
