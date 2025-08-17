@@ -73,7 +73,6 @@ class QueryHelper extends Helper
      * @param string|array|null $input 输入数据
      * @param callable|null $callable 初始回调
      * @return $this
-     * @throws \think\db\exception\DbException
      */
     public function init($dbQuery, $input = null, ?callable $callable = null): QueryHelper
     {
@@ -244,7 +243,6 @@ class QueryHelper extends Helper
     /**
      * 清空数据并保留表结构
      * @return $this
-     * @throws \think\db\exception\DbException
      */
     public function empty(): QueryHelper
     {
@@ -254,8 +252,10 @@ class QueryHelper extends Helper
             $this->query->getConnection()->execute("truncate table `{$table}`");
         } elseif (in_array($ctype, ['sqlsrv', 'oracle', 'pgsql'])) {
             $this->query->getConnection()->execute("truncate table {$table}");
-        } else {
+        } else try {
             $this->query->newQuery()->whereRaw('1=1')->delete();
+        } catch (\Throwable $exception) {
+            trace_file($exception);
         }
         return $this;
     }

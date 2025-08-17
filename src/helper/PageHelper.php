@@ -174,7 +174,6 @@ class PageHelper extends Helper
      * @param BaseQuery|Model|string $dbQuery
      * @param string $field 指定排序字段
      * @return \think\db\Query
-     * @throws \think\db\exception\DbException
      */
     public function autoSortQuery($dbQuery, string $field = 'sort'): Query
     {
@@ -185,7 +184,11 @@ class PageHelper extends Helper
                 if ($this->app->request->has($pk = $query->getPk() ?: 'id', 'post')) {
                     $map = [$pk => $this->app->request->post($pk, 0)];
                     $data = [$field => intval($this->app->request->post($field, 0))];
-                    $query->newQuery()->where($map)->update($data);
+                    try {
+                        $query->newQuery()->where($map)->update($data);
+                    } catch (\Throwable $exception) {
+                        $this->class->error('列表排序失败！');
+                    }
                     $this->class->success('列表排序成功！', '');
                 }
             }
