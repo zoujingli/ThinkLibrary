@@ -19,13 +19,16 @@ declare (strict_types=1);
 use think\admin\extend\CodeExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\Helper;
+use think\admin\helper\QueryHelper;
 use think\admin\helper\TokenHelper;
+use think\admin\helper\ValidateHelper;
 use think\admin\Library;
 use think\admin\service\AdminService;
 use think\admin\service\QueueService;
 use think\admin\service\RuntimeService;
 use think\admin\service\SystemService;
 use think\admin\Storage;
+use think\db\BaseQuery;
 use think\db\Query;
 use think\helper\Str;
 use think\Model;
@@ -80,6 +83,31 @@ if (!function_exists('admuri')) {
     function admuri(string $url = '', array $vars = [], $suffix = true, $domain = false): string
     {
         return sysuri('admin/index/index', [], $suffix, $domain) . '#' . url($url, $vars)->build();
+    }
+}
+if (!function_exists('_vali')) {
+    /**
+     * 快捷输入并验证（ 支持 规则 # 别名 ）
+     * @param array $rules 验证规则（ 验证信息数组 ）
+     * @param string|array $type 输入方式 ( post. 或 get. )
+     * @param callable|null $callable 异常处理操作
+     * @return array
+     */
+    function _vali(array $rules, $type = '', ?callable $callable = null): array
+    {
+        return ValidateHelper::instance()->init($rules, $type, $callable);
+    }
+}
+if (!function_exists('_query')) {
+    /**
+     * 快捷查询逻辑器
+     * @param BaseQuery|Model|string $dbQuery
+     * @param array|string|null $input
+     * @return QueryHelper
+     */
+    function _query($dbQuery, $input = null): QueryHelper
+    {
+        return QueryHelper::instance()->init($dbQuery, $input);
     }
 }
 if (!function_exists('sysvar')) {
