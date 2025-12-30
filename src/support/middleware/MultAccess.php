@@ -21,6 +21,7 @@ namespace think\admin\support\middleware;
 use Closure;
 use SplFileInfo;
 use think\admin\extend\ToolsExtend;
+use think\admin\Library;
 use think\admin\Plugin;
 use think\admin\service\NodeService;
 use think\admin\service\SystemService;
@@ -168,7 +169,7 @@ class MultAccess
     {
         [$ext, $fmaps] = [$this->app->getConfigExt(), []];
         // 加载应用函数文件
-        if (is_file($file = "{$appPath}common{$ext}")) include_once $file;
+        if (is_file($file = "{$appPath}common{$ext}")) Library::load($file);
         // 加载应用配置文件
         ToolsExtend::find($appPath . 'config', 1, function (SplFileInfo $info) use ($ext) {
             if ($info->isFile() && strtolower(".{$info->getExtension()}") === $ext) {

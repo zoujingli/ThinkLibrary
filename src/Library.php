@@ -30,6 +30,7 @@ use think\admin\support\command\Sysmenu;
 use think\admin\support\middleware\JwtSession;
 use think\admin\support\middleware\MultAccess;
 use think\admin\support\middleware\RbacAccess;
+use think\exception\HttpException;
 use think\exception\HttpResponseException;
 use think\middleware\LoadLangPack;
 use think\Request;
@@ -101,6 +102,21 @@ class Library extends Service
     }
 
     /**
+     * 动态加载文件
+     * @param string $file
+     * @return mixed
+     */
+    public static function load(string $file)
+    {
+        try {
+            return include $file;
+        } catch (\Throwable|\Error $error) {
+            trace_file($error);
+            throw new HttpException(500, $error->getMessage());
+        }
+    }
+
+    /**
      * 初始化服务
      * @return void
      */
@@ -109,9 +125,9 @@ class Library extends Service
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
         ToolsExtend::find($dir, 2, function (SplFileInfo $info) use ($ext) {
-            $info->isFile() && $info->getBasename() === "sys{$ext}" && include_once $info->getPathname();
+            $info->isFile() && $info->getBasename() === "sys{$ext}" && Library::load($info->getPathname());
         });
-        if (is_file($file = "{$dir}common{$ext}")) include_once $file;
+        if (is_file($file = "{$dir}common{$ext}")) Library::load($file);
         if (is_file($file = "{$dir}provider{$ext}")) $this->app->bind(include $file);
         if (is_file($file = "{$dir}event{$ext}")) $this->app->loadEvent(include $file);
         if (is_file($file = "{$dir}middleware{$ext}")) $this->app->middleware->import(include $file, 'app');
