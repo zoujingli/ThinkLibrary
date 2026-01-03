@@ -207,7 +207,7 @@ abstract class Plugin extends Service
                 return app(static::class)->appPath;
             case 'getappspace':
                 return app(static::class)->appSpace;
-            case 'getapppackage';
+            case 'getapppackage':
                 return app(static::class)->package;
             default:
                 $class = basename(str_replace('\\', '/', static::class));

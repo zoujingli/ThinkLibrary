@@ -152,7 +152,9 @@ class CaptchaService extends Service
         imagepng($img);
         $data = ob_get_contents();
         ob_end_clean();
-        imagedestroy($img);
+        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
+            imagedestroy($img);
+        }
         return base64_encode($data);
     }
 
