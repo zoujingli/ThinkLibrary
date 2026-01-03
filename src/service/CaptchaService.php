@@ -14,7 +14,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace think\admin\service;
 
@@ -152,7 +152,9 @@ class CaptchaService extends Service
         imagepng($img);
         $data = ob_get_contents();
         ob_end_clean();
-        imagedestroy($img);
+        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
+            imagedestroy($img);
+        }
         return base64_encode($data);
     }
 
