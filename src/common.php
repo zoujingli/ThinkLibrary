@@ -14,7 +14,7 @@
 // | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
 // +----------------------------------------------------------------------
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 use think\admin\extend\CodeExtend;
 use think\admin\extend\HttpExtend;
@@ -150,7 +150,8 @@ if (!function_exists('sysuri')) {
         $attr[1] = Str::snake($attr[1]);
         [$rcf, $tmp] = [Library::$sapp->config->get('route', []), uniqid('think_admin_replace_temp_vars_')];
         $map = [Str::lower($rcf['default_app'] ?? ''), Str::snake($rcf['default_controller'] ?? ''), Str::lower($rcf['default_action'] ?? '')];
-        for ($idx = count($attr) - 1; $idx >= 0; $idx--) if ($attr[$idx] == ($map[$idx] ?: 'index')) $attr[$idx] = $tmp; else break;
+        for ($idx = count($attr) - 1; $idx >= 0; $idx--) if ($attr[$idx] == ($map[$idx] ?: 'index')) $attr[$idx] = $tmp;
+        else break;
         $url = Library::$sapp->route->buildUrl(join('/', $attr), $vars)->suffix($suffix)->domain($domain)->build();
         $ext = is_string($suffix) ? $suffix : ($rcf['url_html_suffix'] ?? 'html');
         $new = preg_replace("#/{$tmp}(\.{$ext})?#", '', $old = parse_url($url, PHP_URL_PATH) ?: '', -1, $count);
@@ -398,6 +399,17 @@ if (!function_exists('http_post')) {
         return HttpExtend::post($url, $data, $options);
     }
 }
+if (!function_exists('http_multi')) {
+    /**
+     * 并发执行多个HTTP请求（类似JavaScript的Promise.all）
+     * @param array $requests 请求配置数组，每个元素格式: ['method' => 'GET', 'url' => '...', 'options' => [...]]
+     * @return array 返回结果数组，保持与输入数组相同的顺序，每个元素为对应请求的响应内容或false
+     */
+    function http_multi(array $requests): array
+    {
+        return HttpExtend::multiRequest($requests);
+    }
+}
 if (!function_exists('data_save')) {
     /**
      * 数据增量保存
@@ -441,14 +453,15 @@ if (!function_exists('trace_file')) {
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
         $json = json_encode($exception instanceof \think\admin\Exception ? $exception->getData() : [], 64 | 128 | 256);
         $class = get_class($exception);
-        return false !== file_put_contents($file,
-                "[CODE] {$exception->getCode()}" . PHP_EOL .
+        return false !== file_put_contents(
+            $file,
+            "[CODE] {$exception->getCode()}" . PHP_EOL .
                 "[INFO] {$exception->getMessage()}" . PHP_EOL .
                 ($exception instanceof \think\admin\Exception ? "[DATA] {$json}" . PHP_EOL : '') .
                 "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL .
                 "[TIME] " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL .
                 '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
-            );
+        );
     }
 }
 if (!function_exists('format_bytes')) {
