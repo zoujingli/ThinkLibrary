@@ -1,53 +1,53 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\support\middleware;
 
-use Closure;
 use think\admin\Exception;
 use think\admin\extend\JwtExtend;
 use think\App;
 use think\exception\HttpResponseException;
 use think\Request;
 use think\Response;
+use think\Session;
 
 /**
- * 兼容会话中间键
+ * 兼容会话中间键.
  * @class JwtSession
- * @package think\admin\support\middleware
  */
 class JwtSession
 {
     /**
      * 当前 App 对象
-     * @var \think\App
+     * @var App
      */
     protected $app;
 
     /**
      * 当前 Session 对象
-     * @var \think\Session
+     * @var Session
      */
     protected $session;
 
     /**
-     * Construct
-     * @param \think\App $app
+     * Construct.
      */
     public function __construct(App $app)
     {
@@ -56,23 +56,22 @@ class JwtSession
     }
 
     /**
-     * 中间键处理
-     * @param \think\Request $request
-     * @param \Closure $next
-     * @return \think\Response
+     * 中间键处理.
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, \Closure $next): Response
     {
         // 处理 Jwt 请求，请求头存在 jwt-token 字段
-        if (($token = $request->header('jwt-token', ''))) try {
-            if (preg_match('#^\s*([\w\-]+\.[\w\-]+\.[\w\-]+)\s*$#', $token, $match)) {
-                JwtExtend::verify($match[1]);
-                $sessionId = JwtExtend::$sessionId;
-            } else {
-                throw new Exception('令牌格式错误！', 401);
+        if ($token = $request->header('jwt-token', '')) {
+            try {
+                if (preg_match('#^\s*([\w\-]+\.[\w\-]+\.[\w\-]+)\s*$#', $token, $match)) {
+                    JwtExtend::verify($match[1]);
+                    $sessionId = JwtExtend::$sessionId;
+                } else {
+                    throw new Exception('令牌格式错误！', 401);
+                }
+            } catch (\Exception $exception) {
+                throw new HttpResponseException(json(['code' => $exception->getCode(), 'info' => lang($exception->getMessage())]));
             }
-        } catch (\Exception $exception) {
-            throw new HttpResponseException(json(['code' => $exception->getCode(), 'info' => lang($exception->getMessage())]));
         }
 
         if (empty($sessionId)) {
@@ -102,8 +101,7 @@ class JwtSession
     }
 
     /**
-     * 保存会话数据
-     * @return void
+     * 保存会话数据.
      */
     public function end()
     {

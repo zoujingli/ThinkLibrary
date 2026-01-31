@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin;
 
@@ -22,21 +24,19 @@ use think\App;
 use think\Container;
 
 /**
- * 自定义服务基类
+ * 自定义服务基类.
  * @class Service
- * @package think\admin
  */
 abstract class Service
 {
     /**
-     * 应用实例
+     * 应用实例.
      * @var App
      */
     protected $app;
 
     /**
      * Constructor.
-     * @param App $app
      */
     public function __construct(App $app)
     {
@@ -45,20 +45,18 @@ abstract class Service
     }
 
     /**
-     * 初始化服务
-     */
-    protected function initialize()
-    {
-    }
-
-    /**
      * 静态实例对象
      * @param array $var 实例参数
-     * @param boolean $new 创建新实例
-     * @return static|mixed
+     * @param bool $new 创建新实例
+     * @return mixed|static
      */
     public static function instance(array $var = [], bool $new = false)
     {
         return Container::getInstance()->make(static::class, $var, $new);
     }
+
+    /**
+     * 初始化服务
+     */
+    protected function initialize() {}
 }

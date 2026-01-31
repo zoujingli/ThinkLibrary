@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
@@ -32,19 +34,40 @@ use think\Session;
 /**
  * 系统权限管理服务
  * @class AdminService
- * @package think\admin\service
  */
 class AdminService extends Service
 {
     /**
-     * 自定义回调处理
+     * 自定义回调处理.
      * @var array
      */
     private static $checkCallables = [];
 
     /**
-     * 是否已经登录
-     * @return boolean
+     * 静态方法兼容(临时).
+     * @return bool
+     * @throws Exception
+     */
+    public static function __callStatic(string $method, array $arguments)
+    {
+        if (strtolower($method) === 'clearcache') {
+            return static::clear();
+        }
+        throw new Exception("method not exists: AdminService::{$method}()");
+    }
+
+    /**
+     * 对象方法兼容(临时).
+     * @return bool
+     * @throws Exception
+     */
+    public function __call(string $method, array $arguments)
+    {
+        return static::__callStatic($method, $arguments);
+    }
+
+    /**
+     * 是否已经登录.
      */
     public static function isLogin(): bool
     {
@@ -52,8 +75,7 @@ class AdminService extends Service
     }
 
     /**
-     * 是否为超级用户
-     * @return boolean
+     * 是否为超级用户.
      */
     public static function isSuper(): bool
     {
@@ -61,8 +83,7 @@ class AdminService extends Service
     }
 
     /**
-     * 获取超级用户账号
-     * @return string
+     * 获取超级用户账号.
      */
     public static function getSuperName(): string
     {
@@ -70,8 +91,7 @@ class AdminService extends Service
     }
 
     /**
-     * 获取后台用户ID
-     * @return integer
+     * 获取后台用户ID.
      */
     public static function getUserId(): int
     {
@@ -79,8 +99,7 @@ class AdminService extends Service
     }
 
     /**
-     * 获取后台用户名称
-     * @return string
+     * 获取后台用户名称.
      */
     public static function getUserName(): string
     {
@@ -88,8 +107,7 @@ class AdminService extends Service
     }
 
     /**
-     * 获取用户扩展数据
-     * @param null|string $field
+     * 获取用户扩展数据.
      * @param null|mixed $default
      * @return array|mixed
      */
@@ -100,11 +118,8 @@ class AdminService extends Service
     }
 
     /**
-     * 设置用户扩展数据
-     * @param array $data
-     * @param boolean $replace
-     * @return boolean
-     * @throws \think\admin\Exception
+     * 设置用户扩展数据.
+     * @throws Exception
      */
     public static function setUserData(array $data, bool $replace = false): bool
     {
@@ -113,9 +128,8 @@ class AdminService extends Service
     }
 
     /**
-     * 获取用户主题名称
-     * @return string
-     * @throws \think\admin\Exception
+     * 获取用户主题名称.
+     * @throws Exception
      */
     public static function getUserTheme(): string
     {
@@ -124,10 +138,9 @@ class AdminService extends Service
     }
 
     /**
-     * 设置用户主题名称
+     * 设置用户主题名称.
      * @param string $theme 主题名称
-     * @return boolean
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function setUserTheme(string $theme): bool
     {
@@ -135,9 +148,7 @@ class AdminService extends Service
     }
 
     /**
-     * 注册权限检查函数
-     * @param callable $callable
-     * @return integer
+     * 注册权限检查函数.
      */
     public static function registerCheckCallable(callable $callable): int
     {
@@ -146,28 +157,24 @@ class AdminService extends Service
     }
 
     /**
-     * 移除权限检查函数
-     * @param ?integer $index
-     * @return boolean
+     * 移除权限检查函数.
      */
     public static function removeCheckCallable(?int $index): bool
     {
         if (is_null($index)) {
             self::$checkCallables = [];
             return true;
-        } elseif (isset(self::$checkCallables[$index])) {
+        }
+        if (isset(self::$checkCallables[$index])) {
             unset(self::$checkCallables[$index]);
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * 检查指定节点授权
-     * --- 需要读取缓存或扫描所有节点
-     * @param null|string $node
-     * @return boolean
+     * --- 需要读取缓存或扫描所有节点.
      */
     public static function check(?string $node = ''): bool
     {
@@ -189,23 +196,24 @@ class AdminService extends Service
             return call_user_func('admin_check_filter', $current, $methods, $userNodes);
         }
         // 超级用户不需要检查权限
-        if (static::isSuper()) return true;
+        if (static::isSuper()) {
+            return true;
+        }
         // 节点权限检查，需要兼容 windows 控制器不区分大小写，统一去除节点下划线再检查权限
         if (empty($simples = sysvar($skey2 = 'think.admin.fulls') ?: [])) {
-            foreach ($methods as $k => $v) $simples[strtr($k, ['_' => ''])] = $v;
+            foreach ($methods as $k => $v) {
+                $simples[strtr($k, ['_' => ''])] = $v;
+            }
             sysvar($skey2, $simples);
         }
         if (empty($simples[$simple = strtr($current, ['_' => ''])]['isauth'])) {
             return !(!empty($simples[$simple]['islogin']) && !static::isLogin());
-        } else {
-            return in_array($current, $userNodes);
         }
+        return in_array($current, $userNodes);
     }
 
     /**
-     * 获取授权节点列表
-     * @param array $checkeds
-     * @return array
+     * 获取授权节点列表.
      */
     public static function getTree(array $checkeds = []): array
     {
@@ -219,27 +227,36 @@ class AdminService extends Service
                 $nodes[$node] = ['node' => $node, 'title' => lang($method['title']), 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
             }
         }
-        foreach (array_keys($nodes) as $key) foreach ($methods as $node => $method) if (stripos($key, $node . '/') !== false) {
-            $pnode = substr($node, 0, strripos($node, '/'));
-            $nodes[$node] = ['node' => $node, 'title' => lang($method['title']), 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
-            $nodes[$pnode] = ['node' => $pnode, 'title' => Str::studly($pnode), 'pnode' => '', 'checked' => in_array($pnode, $checkeds)];
+        foreach (array_keys($nodes) as $key) {
+            foreach ($methods as $node => $method) {
+                if (stripos($key, $node . '/') !== false) {
+                    $pnode = substr($node, 0, strripos($node, '/'));
+                    $nodes[$node] = ['node' => $node, 'title' => lang($method['title']), 'pnode' => $pnode, 'checked' => in_array($node, $checkeds)];
+                    $nodes[$pnode] = ['node' => $pnode, 'title' => Str::studly($pnode), 'pnode' => '', 'checked' => in_array($pnode, $checkeds)];
+                }
+            }
         }
         return DataExtend::arr2tree(array_reverse($nodes), 'node', 'pnode', '_sub_');
     }
 
     /**
-     * 初始化用户权限
-     * @param boolean $force 强刷权限
-     * @return array
+     * 初始化用户权限.
+     * @param bool $force 强刷权限
      */
     public static function apply(bool $force = false): array
     {
-        if ($force) static::clear();
-        if (($uuid = static::getUserId()) <= 0) return [];
+        if ($force) {
+            static::clear();
+        }
+        if (($uuid = static::getUserId()) <= 0) {
+            return [];
+        }
         $user = SystemUser::mk()->where(['id' => $uuid])->findOrEmpty()->toArray();
         if (!static::isSuper() && count($aids = str2arr($user['authorize'])) > 0) {
             $aids = SystemAuth::mk()->where(['status' => 1])->whereIn('id', $aids)->column('id');
-            if (!empty($aids)) $nodes = SystemNode::mk()->distinct()->whereIn('auth', $aids)->column('node');
+            if (!empty($aids)) {
+                $nodes = SystemNode::mk()->distinct()->whereIn('auth', $aids)->column('node');
+            }
         }
         $user['nodes'] = $nodes ?? [];
         Library::$sapp->session->set('user', $user);
@@ -247,8 +264,7 @@ class AdminService extends Service
     }
 
     /**
-     * 清理节点缓存
-     * @return bool
+     * 清理节点缓存.
      */
     public static function clear(): bool
     {
@@ -257,18 +273,21 @@ class AdminService extends Service
     }
 
     /**
-     * 获取会员上传配置
-     * @param ?string $uptoken
+     * 获取会员上传配置.
      * @return array [unid,exts]
      */
     public static function withUploadUnid(?string $uptoken = null): array
     {
         try {
-            if ($uptoken === '') return [0, []];
+            if ($uptoken === '') {
+                return [0, []];
+            }
             $session = Library::$sapp->session;
             if (is_null($uptoken)) {
                 $sesskey = $session->get('UploadSessionKey');
-                if (empty($sesskey)) return [0, []];
+                if (empty($sesskey)) {
+                    return [0, []];
+                }
                 if ($session->getId() !== $sesskey) {
                     $session = Library::$sapp->invokeClass(Session::class);
                     $session->setId($sesskey);
@@ -277,7 +296,9 @@ class AdminService extends Service
                 $unid = intval($session->get('AdminUploadUnid', 0));
             } else {
                 $sesskey = CodeExtend::decrypt($uptoken, sysconf('data.jwtkey'));
-                if (empty($sesskey)) return [0, []];
+                if (empty($sesskey)) {
+                    return [0, []];
+                }
                 if ($session->getId() !== $sesskey) {
                     $session = Library::$sapp->invokeClass(Session::class);
                     $session->setId($sesskey);
@@ -294,41 +315,15 @@ class AdminService extends Service
     }
 
     /**
-     * 生成上传入口令牌
-     * @param integer $unid 会员编号
+     * 生成上传入口令牌.
+     * @param int $unid 会员编号
      * @param string $exts 允许后缀(多个以英文逗号隔开)
-     * @return string
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public static function withUploadToken(int $unid, string $exts = ''): string
     {
         Library::$sapp->session->set('AdminUploadUnid', $unid);
         Library::$sapp->session->set('AdminUploadExts', str2arr(strtolower($exts)));
         return CodeExtend::encrypt(Library::$sapp->session->getId(), sysconf('data.jwtkey'));
-    }
-
-    /**
-     * 静态方法兼容(临时)
-     * @param string $method
-     * @param array $arguments
-     * @return bool
-     * @throws \think\admin\Exception
-     */
-    public static function __callStatic(string $method, array $arguments)
-    {
-        if (strtolower($method) === 'clearcache') return static::clear();
-        throw new Exception("method not exists: AdminService::{$method}()");
-    }
-
-    /**
-     * 对象方法兼容(临时)
-     * @param string $method
-     * @param array $arguments
-     * @return bool
-     * @throws \think\admin\Exception
-     */
-    public function __call(string $method, array $arguments)
-    {
-        return static::__callStatic($method, $arguments);
     }
 }

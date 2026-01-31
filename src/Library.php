@@ -1,24 +1,25 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin;
 
-use SplFileInfo;
 use think\admin\extend\ToolsExtend;
 use think\admin\service\RuntimeService;
 use think\admin\support\command\Database;
@@ -30,6 +31,7 @@ use think\admin\support\command\Sysmenu;
 use think\admin\support\middleware\JwtSession;
 use think\admin\support\middleware\MultAccess;
 use think\admin\support\middleware\RbacAccess;
+use think\App;
 use think\exception\HttpException;
 use think\exception\HttpResponseException;
 use think\middleware\LoadLangPack;
@@ -40,16 +42,14 @@ use think\Service;
 /**
  * 模块注册服务
  * @class Library
- * @package think\admin
  */
 class Library extends Service
 {
-    /** @var \think\App */
+    /** @var App */
     public static $sapp;
 
     /**
      * 启动服务
-     * @return void
      */
     public function boot()
     {
@@ -71,7 +71,6 @@ class Library extends Service
 
         // 请求初始化处理
         $this->app->event->listen('HttpRun', function (Request $request) {
-
             // 运行环境配置同步
             RuntimeService::sync();
 
@@ -102,15 +101,14 @@ class Library extends Service
     }
 
     /**
-     * 动态加载文件
-     * @param string $file
+     * 动态加载文件.
      * @return mixed
      */
     public static function load(string $file)
     {
         try {
             return include $file;
-        } catch (\Throwable|\Error $error) {
+        } catch (\Error|\Throwable $error) {
             trace_file($error);
             throw new HttpException(500, $error->getMessage());
         }
@@ -118,19 +116,26 @@ class Library extends Service
 
     /**
      * 初始化服务
-     * @return void
      */
     public function register()
     {
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
-        ToolsExtend::find($dir, 2, function (SplFileInfo $info) use ($ext) {
+        ToolsExtend::find($dir, 2, function (\SplFileInfo $info) use ($ext) {
             $info->isFile() && $info->getBasename() === "sys{$ext}" && Library::load($info->getPathname());
         });
-        if (is_file($file = "{$dir}common{$ext}")) Library::load($file);
-        if (is_file($file = "{$dir}provider{$ext}")) $this->app->bind(include $file);
-        if (is_file($file = "{$dir}event{$ext}")) $this->app->loadEvent(include $file);
-        if (is_file($file = "{$dir}middleware{$ext}")) $this->app->middleware->import(include $file, 'app');
+        if (is_file($file = "{$dir}common{$ext}")) {
+            Library::load($file);
+        }
+        if (is_file($file = "{$dir}provider{$ext}")) {
+            $this->app->bind(include $file);
+        }
+        if (is_file($file = "{$dir}event{$ext}")) {
+            $this->app->loadEvent(include $file);
+        }
+        if (is_file($file = "{$dir}middleware{$ext}")) {
+            $this->app->middleware->import(include $file, 'app');
+        }
 
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->runningInConsole()) {
@@ -139,7 +144,9 @@ class Library extends Service
                 $header = ['X-Frame-Options' => $this->app->config->get('app.cors_frame') ?: 'sameorigin'];
                 // HTTP.CORS 跨域规则配置
                 if ($this->app->config->get('app.cors_on', true) && ($origin = $request->header('origin', '-')) !== '-') {
-                    if (is_string($hosts = $this->app->config->get('app.cors_host', []))) $hosts = str2arr($hosts);
+                    if (is_string($hosts = $this->app->config->get('app.cors_host', []))) {
+                        $hosts = str2arr($hosts);
+                    }
                     if (empty($hosts) || in_array(parse_url(strtolower($origin), PHP_URL_HOST), $hosts)) {
                         $headers = $this->app->config->get('app.cors_headers', 'Api-Name,Api-Type,Api-Token,Jwt-Token,User-Form-Token,User-Token,Token');
                         $header['Access-Control-Allow-Origin'] = $origin;
@@ -152,9 +159,8 @@ class Library extends Service
                 // 跨域预请求状态处理
                 if ($request->isOptions()) {
                     throw new HttpResponseException(response()->code(204)->header($header));
-                } else {
-                    return $next($request)->header($header);
                 }
+                return $next($request)->header($header);
             });
 
             // 初始化会话和语言包

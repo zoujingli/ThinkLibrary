@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin;
 
@@ -24,9 +26,8 @@ use think\console\Input;
 use think\console\Output;
 
 /**
- * 自定义指令基类
+ * 自定义指令基类.
  * @class Command
- * @package think\admin
  */
 abstract class Command extends \think\console\Command
 {
@@ -43,11 +44,24 @@ abstract class Command extends \think\console\Command
     protected $process;
 
     /**
-     * 初始化指令变量
-     * @param \think\console\Input $input
-     * @param \think\console\Output $output
+     * 更新任务进度.
+     * @param int $total 记录总和
+     * @param int $count 当前记录
+     * @param string $message 文字描述
+     * @param int $backline 回退行数
+     * @return static
+     * @throws Exception
+     */
+    public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Command
+    {
+        $this->queue->message($total, $count, $message, $backline);
+        return $this;
+    }
+
+    /**
+     * 初始化指令变量.
      * @return $this
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function initialize(Input $input, Output $output): Command
     {
@@ -60,9 +74,9 @@ abstract class Command extends \think\console\Command
     }
 
     /**
-     * 设置失败消息并结束进程
+     * 设置失败消息并结束进程.
      * @param string $message 消息内容
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function setQueueError(string $message)
     {
@@ -75,9 +89,9 @@ abstract class Command extends \think\console\Command
     }
 
     /**
-     * 设置成功消息并结束进程
+     * 设置成功消息并结束进程.
      * @param string $message 消息内容
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function setQueueSuccess(string $message)
     {
@@ -90,12 +104,12 @@ abstract class Command extends \think\console\Command
     }
 
     /**
-     * 设置进度消息并继续执行
+     * 设置进度消息并继续执行.
      * @param null|string $message 进度消息
      * @param null|string $progress 进度数值
-     * @param integer $backline 回退行数
+     * @param int $backline 回退行数
      * @return static
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     protected function setQueueProgress(?string $message = null, ?string $progress = null, int $backline = 0): Command
     {
@@ -104,21 +118,6 @@ abstract class Command extends \think\console\Command
         } elseif (is_string($message)) {
             $this->process->message($message, $backline);
         }
-        return $this;
-    }
-
-    /**
-     * 更新任务进度
-     * @param integer $total 记录总和
-     * @param integer $count 当前记录
-     * @param string $message 文字描述
-     * @param integer $backline 回退行数
-     * @return static
-     * @throws \think\admin\Exception
-     */
-    public function setQueueMessage(int $total, int $count, string $message = '', int $backline = 0): Command
-    {
-        $this->queue->message($total, $count, $message, $backline);
         return $this;
     }
 }

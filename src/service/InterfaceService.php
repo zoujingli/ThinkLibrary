@@ -1,24 +1,25 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
-use stdClass;
 use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\helper\ValidateHelper;
@@ -29,24 +30,23 @@ use think\exception\HttpResponseException;
 /**
  * 通用接口基础服务
  * @class InterfaceService
- * @package think\admin\service
  */
 class InterfaceService extends Service
 {
     /**
-     * 输出格式
+     * 输出格式.
      * @var string
      */
     private $type = 'json';
 
     /**
-     * 接口认证账号
+     * 接口认证账号.
      * @var string
      */
     private $appid;
 
     /**
-     * 接口认证密钥
+     * 接口认证密钥.
      * @var string
      */
     private $appkey;
@@ -60,8 +60,7 @@ class InterfaceService extends Service
     /**
      * 接口服务初始化
      * InterfaceService constructor.
-     * @param App $app
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function __construct(App $app)
     {
@@ -72,7 +71,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 设置接口网关
+     * 设置接口网关.
      * @param string $getway 接口网关
      * @return $this
      */
@@ -83,7 +82,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 设置授权账号
+     * 设置授权账号.
      * @param string $appid 接口账号
      * @param string $appkey 接口密钥
      * @return $this
@@ -96,7 +95,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 设置输出类型为 JSON
+     * 设置输出类型为 JSON.
      * @return $this
      */
     public function setOutTypeJson(): InterfaceService
@@ -106,7 +105,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 设置输出类型为 Array
+     * 设置输出类型为 Array.
      * @return $this
      */
     public function setOutTypeArray(): InterfaceService
@@ -116,8 +115,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 获取当前APPID
-     * @return string
+     * 获取当前APPID.
      */
     public function getAppid(): string
     {
@@ -125,16 +123,15 @@ class InterfaceService extends Service
     }
 
     /**
-     * 获取请求参数
-     * @return array
+     * 获取请求参数.
      */
     public function getData(): array
     {
         // 基础参数获取
         $input = ValidateHelper::instance()->init([
-            'time.require'  => lang('请求参数 %s 不能为空！', ['time']),
-            'sign.require'  => lang('请求参数 %s 不能为空！', ['sign']),
-            'data.require'  => lang('请求参数 %s 不能为空！', ['data']),
+            'time.require' => lang('请求参数 %s 不能为空！', ['time']),
+            'sign.require' => lang('请求参数 %s 不能为空！', ['sign']),
+            'data.require' => lang('请求参数 %s 不能为空！', ['data']),
             'appid.require' => lang('请求参数 %s 不能为空！', ['appid']),
             'nostr.require' => lang('请求参数 %s 不能为空！', ['nostr']),
         ], 'post', [$this, 'baseError']);
@@ -155,35 +152,39 @@ class InterfaceService extends Service
     }
 
     /**
-     * 回复业务处理失败的消息
+     * 回复业务处理失败的消息.
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
      * @param mixed $code 返回状态码
      */
     public function error($info, $data = '{-null-}', $code = 0): void
     {
-        if ($data === '{-null-}') $data = new stdClass();
+        if ($data === '{-null-}') {
+            $data = new \stdClass();
+        }
         $this->baseResponse(lang('请求响应异常！'), [
             'code' => $code, 'info' => $info, 'data' => $data,
         ]);
     }
 
     /**
-     * 回复业务处理成功的消息
+     * 回复业务处理成功的消息.
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
      * @param mixed $code 返回状态码
      */
     public function success($info, $data = '{-null-}', $code = 1): void
     {
-        if ($data === '{-null-}') $data = new stdClass();
+        if ($data === '{-null-}') {
+            $data = new \stdClass();
+        }
         $this->baseResponse(lang('请求响应成功！'), [
             'code' => $code, 'info' => is_string($info) ? lang($info) : $info, 'data' => $data,
         ]);
     }
 
     /**
-     * 回复根失败消息
+     * 回复根失败消息.
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
      * @param mixed $code 根状态码
@@ -194,7 +195,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 回复根成功消息
+     * 回复根成功消息.
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
      * @param mixed $code 根状态码
@@ -205,7 +206,7 @@ class InterfaceService extends Service
     }
 
     /**
-     * 回复根签名消息
+     * 回复根签名消息.
      * @param mixed $info 消息内容
      * @param mixed $data 返回数据
      * @param mixed $code 根状态码
@@ -224,8 +225,7 @@ class InterfaceService extends Service
      * 接口数据模拟请求
      * @param string $uri 接口地址
      * @param array $data 请求数据
-     * @param boolean $check 验证结果
-     * @return array
+     * @param bool $check 验证结果
      * @throws Exception
      */
     public function doRequest(string $uri, array $data = [], bool $check = true): array
@@ -237,21 +237,26 @@ class InterfaceService extends Service
             throw new Exception(lang('接口请求响应格式异常！'));
         }
         // 返回业务异常结果
-        if (empty($result['code'])) throw new Exception($result['info']);
+        if (empty($result['code'])) {
+            throw new Exception($result['info']);
+        }
         $array = is_array($result['data']) ? $result['data'] : json_decode($result['data'], true);
         // 无需验证直接返回
-        if (empty($check)) return $array;
+        if (empty($check)) {
+            return $array;
+        }
         // 返回结果签名验证
         $json = is_string($result['data']) ? $result['data'] : json_encode($result['data'], JSON_UNESCAPED_UNICODE);
         $build = $this->signString($json, $result['time'], $result['nostr']);
-        if ($build['sign'] === $result['sign']) return $array ?: [];
+        if ($build['sign'] === $result['sign']) {
+            return $array ?: [];
+        }
         throw new Exception(lang('返回结果签名验证失败！'));
     }
 
     /**
-     * 接口响应数据签名
+     * 接口响应数据签名.
      * @param array $data ['appid','nostr','time','sign','data']
-     * @return array
      */
     private function signData(array $data): array
     {
@@ -259,11 +264,10 @@ class InterfaceService extends Service
     }
 
     /**
-     * 数据字符串数据签名
+     * 数据字符串数据签名.
      * @param string $json 待签名的数据
      * @param mixed $time 签名的时间戳
      * @param mixed $rand 签名随机字符
-     * @return array
      */
     private function signString(string $json, $time = null, $rand = null): array
     {

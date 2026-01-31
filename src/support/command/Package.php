@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\support\command;
 
@@ -24,17 +26,18 @@ use think\admin\extend\PhinxExtend;
 use think\admin\Library;
 use think\admin\service\SystemService;
 use think\console\input\Option;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 
 /**
- * 生成数据安装包
+ * 生成数据安装包.
  * @class Package
- * @package think\admin\support\command
  */
 class Package extends Command
 {
     /**
-     * 系统指定配置
-     * @return void
+     * 系统指定配置.
      */
     public function configure()
     {
@@ -47,9 +50,8 @@ class Package extends Command
     }
 
     /**
-     * 生成系统安装数据包
-     * @return void
-     * @throws \think\admin\Exception
+     * 生成系统安装数据包.
+     * @throws Exception
      */
     public function handle()
     {
@@ -73,8 +75,7 @@ class Package extends Command
     }
 
     /**
-     * 创建数据表
-     * @return boolean
+     * 创建数据表.
      * @throws \Exception
      */
     private function createScheme(): bool
@@ -87,7 +88,9 @@ class Package extends Command
             [$tables] = SystemService::getTables();
         } else {
             $tables = Library::$sapp->config->get('phinx.tables', []);
-            if (empty($tables)) [$tables] = SystemService::getTables();
+            if (empty($tables)) {
+                [$tables] = SystemService::getTables();
+            }
         }
 
         // 去除忽略的数据表
@@ -98,7 +101,9 @@ class Package extends Command
         [$prefix, $groups] = ['', []];
         foreach ($tables as $table) {
             $attr = explode('_', $table);
-            if ($attr[0] === 'plugin') array_shift($attr);
+            if ($attr[0] === 'plugin') {
+                array_shift($attr);
+            }
             if (empty($prefix) || $prefix !== $attr[0]) {
                 $prefix = $attr[0];
             }
@@ -121,12 +126,11 @@ class Package extends Command
     }
 
     /**
-     * 创建数据包
-     * @return boolean
-     * @throws \think\admin\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * 创建数据包.
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     private function createBackup(): bool
     {
@@ -142,7 +146,9 @@ class Package extends Command
 
         // 去除忽略的数据表
         $ignore = Library::$sapp->config->get('phinx.ignore', []);
-        if (empty($ignore)) $ignore = ['system_queue', 'system_oplog'];
+        if (empty($ignore)) {
+            $ignore = ['system_queue', 'system_oplog'];
+        }
         $tables = array_unique(array_diff($tables, $ignore, ['migrations']));
 
         // 创建数据库记录安装脚本
@@ -152,9 +158,8 @@ class Package extends Command
         if (file_put_contents($target, $phinx['text']) !== false) {
             $this->setQueueMessage(4, 2, '成功创建数据包安装脚本！');
             return true;
-        } else {
-            $this->setQueueMessage(4, 2, '创建数据包安装脚本失败！');
-            return false;
         }
+        $this->setQueueMessage(4, 2, '创建数据包安装脚本失败！');
+        return false;
     }
 }

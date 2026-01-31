@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
@@ -23,40 +25,79 @@ use think\admin\extend\HttpExtend;
 use think\admin\Service;
 
 /**
- * 百度快递100物流查询
+ * 百度快递100物流查询.
  * @class ExpressService
  * @deprecated 独立封装为插件
- * @package think\admin\service
  */
 class ExpressService extends Service
 {
-
     /**
-     * 网络请求参数
+     * 网络请求参数.
      * @var array
      */
     protected $options = [];
 
     /**
-     * 公司编码别名
+     * 公司编码别名.
      * @var array
      */
     protected $codes = [
-        'YD'   => 'yunda',
-        'SF'   => 'shunfeng',
-        'UC'   => 'youshuwuliu',
-        'YTO'  => 'yuantong',
-        'STO'  => 'shentong',
-        'ZTO'  => 'zhongtong',
-        'ZJS'  => 'zhaijisong',
-        'DBL'  => 'debangwuliu',
+        'YD' => 'yunda',
+        'SF' => 'shunfeng',
+        'UC' => 'youshuwuliu',
+        'YTO' => 'yuantong',
+        'STO' => 'shentong',
+        'ZTO' => 'zhongtong',
+        'ZJS' => 'zhaijisong',
+        'DBL' => 'debangwuliu',
         'HHTT' => 'tiantian',
         'HTKY' => 'huitongkuaidi',
         'YZPY' => 'youzhengguonei',
     ];
 
     /**
-     * 快递服务初始化
+     * 通过百度快递100应用查询物流信息.
+     * @param string $code 快递公司编辑
+     * @param string $number 快递物流编号
+     * @param array $list 快递路径列表
+     */
+    public function express(string $code, string $number, array $list = []): array
+    {
+        // 新状态：1-新订单,2-在途中,3-签收,4-问题件
+        // 原状态：0-在途，1-揽收，2-疑难，3-签收，4-退签，5-派件，6-退回，7-转投，8-清关，14-拒签
+        $ckey = md5("{$code}{$number}");
+        $cache = $this->app->cache->get($ckey, []);
+        $message = [1 => '新订单', 2 => '在途中', 3 => '签收', 4 => '问题件'];
+        if (!empty($cache)) {
+            return $cache;
+        }
+        for ($i = 0; $i < 6; ++$i) {
+            if (is_array($result = $this->doExpress($code, $number))) {
+                if (isset($result['data']['info']['context'], $result['data']['info']['state'])) {
+                    $state = intval($result['data']['info']['state']);
+                    $status = in_array($state, [0, 1, 5, 7, 8]) ? 2 : ($state === 3 ? 3 : 4);
+                    foreach ($result['data']['info']['context'] as $vo) {
+                        $list[] = ['time' => date('Y-m-d H:i:s', intval($vo['time'])), 'context' => $vo['desc']];
+                    }
+                    $result = ['message' => lang($message[$status] ?? $result['msg']), 'status' => $status, 'express' => $code, 'number' => $number, 'data' => $list];
+                    $this->app->cache->set($ckey, $result, 30);
+                    return $result;
+                }
+            }
+        }
+        return ['message' => lang('暂无轨迹信息~'), 'status' => 1, 'express' => $code, 'number' => $number, 'data' => $list];
+    }
+
+    /**
+     * 获取快递公司列表.
+     */
+    public function getExpressList(): array
+    {
+        return $this->getQueryData(2);
+    }
+
+    /**
+     * 快递服务初始化.
      * @return $this
      */
     protected function initialize(): ExpressService
@@ -70,43 +111,6 @@ class ExpressService extends Service
         $this->options['cookie_file'] = syspath('runtime/.cok');
         $this->options['headers'] = ['Host:express.baidu.com', "CLIENT-IP:{$clentip}", "X-FORWARDED-FOR:{$clentip}"];
         return $this;
-    }
-
-    /**
-     * 通过百度快递100应用查询物流信息
-     * @param string $code 快递公司编辑
-     * @param string $number 快递物流编号
-     * @param array $list 快递路径列表
-     * @return array
-     */
-    public function express(string $code, string $number, array $list = []): array
-    {
-        // 新状态：1-新订单,2-在途中,3-签收,4-问题件
-        // 原状态：0-在途，1-揽收，2-疑难，3-签收，4-退签，5-派件，6-退回，7-转投，8-清关，14-拒签
-        $ckey = md5("{$code}{$number}");
-        $cache = $this->app->cache->get($ckey, []);
-        $message = [1 => '新订单', 2 => '在途中', 3 => '签收', 4 => '问题件'];
-        if (!empty($cache)) return $cache;
-        for ($i = 0; $i < 6; $i++) if (is_array($result = $this->doExpress($code, $number))) {
-            if (isset($result['data']['info']['context']) && isset($result['data']['info']['state'])) {
-                $state = intval($result['data']['info']['state']);
-                $status = in_array($state, [0, 1, 5, 7, 8]) ? 2 : ($state === 3 ? 3 : 4);
-                foreach ($result['data']['info']['context'] as $vo) $list[] = ['time' => date('Y-m-d H:i:s', intval($vo['time'])), 'context' => $vo['desc']];
-                $result = ['message' => lang($message[$status] ?? $result['msg']), 'status' => $status, 'express' => $code, 'number' => $number, 'data' => $list];
-                $this->app->cache->set($ckey, $result, 30);
-                return $result;
-            }
-        }
-        return ['message' => lang('暂无轨迹信息~'), 'status' => 1, 'express' => $code, 'number' => $number, 'data' => $list];
-    }
-
-    /**
-     * 获取快递公司列表
-     * @return array
-     */
-    public function getExpressList(): array
-    {
-        return $this->getQueryData(2);
     }
 
     /**
@@ -129,17 +133,21 @@ class ExpressService extends Service
     }
 
     /**
-     * 获取快递查询接口
-     * @param integer $type 类型数据
-     * @return string|array
+     * 获取快递查询接口.
+     * @param int $type 类型数据
+     * @return array|string
      */
     private function getQueryData(int $type)
     {
         $times = 0;
         $expressUri = $this->app->cache->get('express_kuaidi_uri', '');
-        if ($type == 1 && !empty($expressUri)) return $expressUri;
+        if ($type == 1 && !empty($expressUri)) {
+            return $expressUri;
+        }
         $expressCom = $this->app->cache->get('express_kuaidi_com', []);
-        if ($type === 2 && !empty($expressCom)) return $expressCom;
+        if ($type === 2 && !empty($expressCom)) {
+            return $expressCom;
+        }
         while (true) {
             if ($times++ >= 10) {
                 $times = 0;
@@ -153,10 +161,16 @@ class ExpressService extends Service
                     $attr = json_decode($items[1], true);
                     $expressCom = array_combine(array_column($attr, 'value'), array_column($attr, 'text'));
                     $this->app->cache->set('express_kuaidi_com', $expressCom, 3600);
-                    if ($type === 2) return $expressCom;
+                    if ($type === 2) {
+                        return $expressCom;
+                    }
                 }
-                if ($type === 1) return $expressUri;
-            } else usleep(100000);
+                if ($type === 1) {
+                    return $expressUri;
+                }
+            } else {
+                usleep(100000);
+            }
         }
     }
 }

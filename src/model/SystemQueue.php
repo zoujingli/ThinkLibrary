@@ -1,27 +1,29 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\model;
 
 use think\admin\Model;
 
 /**
- * 系统任务模型
+ * 系统任务模型.
  *
  * @property int $attempts 执行次数
  * @property int $exec_pid 执行进程
@@ -40,17 +42,16 @@ use think\admin\Model;
  * @property string $outer_time 结束时间
  * @property string $title 任务名称
  * @class SystemQueue
- * @package think\admin\model
  */
 class SystemQueue extends Model
 {
     protected $createTime = 'create_at';
+
     protected $updateTime = false;
 
     /**
-     * 格式化计划时间
+     * 格式化计划时间.
      * @param mixed $value
-     * @return string
      */
     public function getExecTimeAttr($value): string
     {
@@ -58,9 +59,8 @@ class SystemQueue extends Model
     }
 
     /**
-     * 执行开始时间处理
+     * 执行开始时间处理.
      * @param mixed $value
-     * @return string
      */
     public function getEnterTimeAttr($value): string
     {
@@ -68,24 +68,20 @@ class SystemQueue extends Model
     }
 
     /**
-     * 执行结束时间处理
+     * 执行结束时间处理.
      * @param mixed $value
-     * @param array $data
-     * @return string
      */
     public function getOuterTimeAttr($value, array $data): string
     {
         if ($value > 0 && $value > $data['enter_time']) {
-            return lang("耗时 %.4f 秒", [$data['outer_time'] - $data['enter_time']]);
-        } else {
-            return ' - ';
+            return lang('耗时 %.4f 秒', [$data['outer_time'] - $data['enter_time']]);
         }
+        return ' - ';
     }
 
     /**
-     * 格式化创建时间
+     * 格式化创建时间.
      * @param mixed $value
-     * @return string
      */
     public function getCreateAtAttr($value): string
     {

@@ -1,27 +1,28 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\extend;
 
 /**
- * CURL模拟请求扩展
+ * CURL模拟请求扩展.
  * @class HttpExtend
- * @package think\admin\extend
  */
 class HttpExtend
 {
@@ -30,7 +31,7 @@ class HttpExtend
      * @param string $location HTTP请求地址
      * @param array|string $data GET请求参数
      * @param array $options CURL请求参数
-     * @return boolean|string
+     * @return bool|string
      */
     public static function get(string $location, $data = [], array $options = [])
     {
@@ -43,7 +44,7 @@ class HttpExtend
      * @param string $location HTTP请求地址
      * @param array|string $data POST请求数据
      * @param array $options CURL请求参数
-     * @return boolean|string
+     * @return bool|string
      */
     public static function post(string $location, $data = [], array $options = [])
     {
@@ -58,8 +59,8 @@ class HttpExtend
      * @param array $file 提交文件 [field,name,type,content]
      * @param array $header 请求头部信息，默认带 Content-type
      * @param string $method 模拟请求的方式 [GET,POST,PUT]
-     * @param boolean $returnHeader 是否返回头部信息
-     * @return boolean|string
+     * @param bool $returnHeader 是否返回头部信息
+     * @return bool|string
      */
     public static function submit(string $url, array $data = [], array $file = [], array $header = [], string $method = 'POST', bool $returnHeader = true)
     {
@@ -67,14 +68,16 @@ class HttpExtend
         foreach ($data as $key => $value) {
             $line[] = "--{$boundary}";
             $line[] = "Content-Disposition: form-data; name=\"{$key}\"";
-            $line[] = "";
+            $line[] = '';
             $line[] = $value;
         }
-        if (is_array($file) && isset($file['field']) && isset($file['name'])) {
+        if (is_array($file) && isset($file['field'], $file['name'])) {
             $line[] = "--{$boundary}";
             $line[] = "Content-Disposition: form-data; name=\"{$file['field']}\"; filename=\"{$file['name']}\"";
-            if (isset($file['type'])) $line[] = "Content-Type: \"{$file['type']}\"";
-            $line[] = "";
+            if (isset($file['type'])) {
+                $line[] = "Content-Type: \"{$file['type']}\"";
+            }
+            $line[] = '';
             $line[] = $file['content'];
         }
         $line[] = "--{$boundary}--";
@@ -87,7 +90,7 @@ class HttpExtend
      * @param string $method 模拟请求方式
      * @param string $location 模拟请求地址
      * @param array $options 请求参数[headers,query,data,cookie,cookie_file,timeout,returnHeader]
-     * @return boolean|string
+     * @return bool|string
      */
     public static function request(string $method, string $location, array $options = [])
     {
@@ -139,8 +142,10 @@ class HttpExtend
         // 自定义扩展参数配置，二维数组内每个单元为一个设置语句，格式如下：
         // $setopt = [ [CURLOPT_URL, $location], [CURLOPT_AUTOREFERER, true], ...];
         if (isset($options['setopt']) && is_array($options['setopt'])) {
-            foreach ($options['setopt'] as $value) if (is_array($value)) {
-                curl_setopt($curl, ...$value);
+            foreach ($options['setopt'] as $value) {
+                if (is_array($value)) {
+                    curl_setopt($curl, ...$value);
+                }
             }
         }
         curl_setopt($curl, CURLOPT_URL, $location);
@@ -155,21 +160,20 @@ class HttpExtend
     }
 
     /**
-     * 获取浏览器代理信息
-     * @return string
+     * 获取浏览器代理信息.
      */
     private static function getUserAgent(): string
     {
         $agents = [
-            "Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1",
-            "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
-            "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0",
-            "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; InfoPath.3; rv:11.0) like Gecko",
-            "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50",
-            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)",
-            "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11",
+            'Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20100101 Firefox/4.0.1',
+            'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11',
+            'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0',
+            'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; InfoPath.3; rv:11.0) like Gecko',
+            'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
+            'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)',
+            'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:2.0.1) Gecko/20100101 Firefox/4.0.1',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11',
         ];
         return $agents[array_rand($agents)];
     }

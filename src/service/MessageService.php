@@ -1,30 +1,32 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
+use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Service;
 
 /**
  * 旧助通短信接口服务
  * @class MessageService
- * @package app\store\service
  * @deprecated 建议使用云平台服务
  * =================================
  *
@@ -55,28 +57,31 @@ use think\admin\Service;
  */
 class MessageService extends Service
 {
-
     private $table;
 
     private $chinaUsername;
+
     private $chinaPassword;
 
     private $globeUsername;
+
     private $globePassword;
 
     /**
-     * @return $this
-     * @throws \think\admin\Exception
+     * 错误消息处理.
+     * @var array
      */
-    protected function initialize(): MessageService
-    {
-        $this->table = 'SystemMessageHistory';
-        $this->chinaUsername = sysconf('sms_zt.china_username|raw');
-        $this->chinaPassword = sysconf('sms_zt.china_password|raw');
-        $this->globeUsername = sysconf('sms_zt.globe_username|raw');
-        $this->globePassword = sysconf('sms_zt.globe_password|raw');
-        return $this;
-    }
+    private $globeMessageMap = [
+        2 => '用户账号为空',
+        3 => '用户账号错误',
+        4 => '授权密码为空',
+        5 => '授权密码错误',
+        6 => '当前时间为空',
+        7 => '当前时间错误',
+        8 => '用户类型错误',
+        9 => '用户鉴权错误',
+        10 => '请求IP已被列入黑名单',
+    ];
 
     /**
      * 配置内陆短信认证
@@ -105,8 +110,7 @@ class MessageService extends Service
     }
 
     /**
-     * 设置存储数据表
-     * @param string $table
+     * 设置存储数据表.
      * @return $this
      */
     public function setSaveTable(string $table): MessageService
@@ -116,10 +120,7 @@ class MessageService extends Service
     }
 
     /**
-     * 生成短信内容
-     * @param string $content
-     * @param array $params
-     * @return string
+     * 生成短信内容.
      */
     public function buildContent(string $content, array $params = []): string
     {
@@ -131,25 +132,24 @@ class MessageService extends Service
 
     /**
      * 发送国内短信验证码
-     * @param integer|string $phone 手机号
-     * @param integer|string $content 短信内容
-     * @param integer|string $productid 短信通道
-     * @return boolean
+     * @param int|string $phone 手机号
+     * @param int|string $content 短信内容
+     * @param int|string $productid 短信通道
      */
     public function sendChinaSms($phone, $content, $productid = '676767'): bool
     {
-        $tkey = date("YmdHis");
-        $result = HttpExtend::get('http' . '://www.ztsms.cn/sendNSms.do', [
-            'tkey'      => $tkey,
-            'mobile'    => $phone,
-            'content'   => $content,
-            'username'  => $this->chinaUsername,
+        $tkey = date('YmdHis');
+        $result = HttpExtend::get('http://www.ztsms.cn/sendNSms.do', [
+            'tkey' => $tkey,
+            'mobile' => $phone,
+            'content' => $content,
+            'username' => $this->chinaUsername,
             'productid' => $productid,
-            'password'  => md5(md5($this->chinaPassword) . $tkey),
+            'password' => md5(md5($this->chinaPassword) . $tkey),
         ]);
         [$code] = explode(',', $result . ',');
         $this->app->db->name($this->table)->insert([
-            'phone'   => $phone, 'region' => '860',
+            'phone' => $phone, 'region' => '860',
             'content' => $content, 'result' => $result,
         ]);
         return intval($code) === 1;
@@ -157,11 +157,10 @@ class MessageService extends Service
 
     /**
      * 发送国内短信验证码
-     * @param integer|string $phone 目标手机
-     * @param integer $wait 等待时间
+     * @param int|string $phone 目标手机
+     * @param int $wait 等待时间
      * @param string $type 短信模板
-     * @return array
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function sendChinaSmsByCode($phone, int $wait = 120, string $type = 'sms_reg_template'): array
     {
@@ -178,17 +177,15 @@ class MessageService extends Service
         if ($this->sendChinaSms($phone, str_replace('{code}', $code, $content))) {
             $dtime = ($cache['time'] + $wait < time()) ? 0 : ($wait - time() + $cache['time']);
             return [1, lang('短信验证码发送成功！'), ['time' => $dtime]];
-        } else {
-            return [0, lang('短信发送失败，请稍候再试！'), []];
         }
+        return [0, lang('短信发送失败，请稍候再试！'), []];
     }
 
     /**
      * 验证手机短信验证码
-     * @param integer|string $phone 目标手机
-     * @param integer|string $code 短信验证码
+     * @param int|string $phone 目标手机
+     * @param int|string $code 短信验证码
      * @param string $type 短信模板
-     * @return boolean
      */
     public function check($phone, $code, string $type = 'sms_reg_template'): bool
     {
@@ -197,59 +194,43 @@ class MessageService extends Service
     }
 
     /**
-     * 查询国内短信余额
-     * @return array
+     * 查询国内短信余额.
      */
     public function queryChinaSmsBalance(): array
     {
-        $tkey = date("YmdHis");
-        $result = HttpExtend::get('http' . '://www.ztsms.cn/balanceN.do', [
+        $tkey = date('YmdHis');
+        $result = HttpExtend::get('http://www.ztsms.cn/balanceN.do', [
             'username' => $this->chinaUsername, 'tkey' => $tkey,
             'password' => md5(md5($this->chinaPassword) . $tkey),
         ]);
         if ($result > -1) {
             return ['code' => 1, 'num' => $result, 'msg' => lang('获取短信剩余条数成功！')];
-        } elseif ($result > -2) {
-            return ['code' => 0, 'num' => '0', 'msg' => lang('用户名或者密码不正确！')];
-        } elseif ($result > -3) {
-            return ['code' => 0, 'num' => '0', 'msg' => lang('tkey不正确！')];
-        } elseif ($result > -4) {
-            return ['code' => 0, 'num' => '0', 'msg' => lang('用户不存在或用户停用！')];
-        } else {
-            return ['code' => 0, 'num' => '0', 'msg' => lang('未知错误原因！')];
         }
+        if ($result > -2) {
+            return ['code' => 0, 'num' => '0', 'msg' => lang('用户名或者密码不正确！')];
+        }
+        if ($result > -3) {
+            return ['code' => 0, 'num' => '0', 'msg' => lang('tkey不正确！')];
+        }
+        if ($result > -4) {
+            return ['code' => 0, 'num' => '0', 'msg' => lang('用户不存在或用户停用！')];
+        }
+        return ['code' => 0, 'num' => '0', 'msg' => lang('未知错误原因！')];
     }
 
     /**
-     * 错误消息处理
-     * @var array
-     */
-    private $globeMessageMap = [
-        2  => '用户账号为空',
-        3  => '用户账号错误',
-        4  => '授权密码为空',
-        5  => '授权密码错误',
-        6  => '当前时间为空',
-        7  => '当前时间错误',
-        8  => '用户类型错误',
-        9  => '用户鉴权错误',
-        10 => '请求IP已被列入黑名单',
-    ];
-
-    /**
-     * 发送国际短信内容
-     * @param integer|string $code 国家代码
-     * @param integer|string $mobile 手机号码
+     * 发送国际短信内容.
+     * @param int|string $code 国家代码
+     * @param int|string $mobile 手机号码
      * @param string $content 发送内容
-     * @return boolean
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function sendGlobeSms($code, $mobile, string $content): bool
     {
-        $tkey = date("YmdHis");
-        $result = HttpExtend::get('http' . '://intl.zthysms.com/intSendSms.do', [
-            'tkey'     => $tkey, 'code' => $code, 'mobile' => $mobile,
-            'content'  => $content, 'username' => sysconf('sms_zt_username2|raw'),
+        $tkey = date('YmdHis');
+        $result = HttpExtend::get('http://intl.zthysms.com/intSendSms.do', [
+            'tkey' => $tkey, 'code' => $code, 'mobile' => $mobile,
+            'content' => $content, 'username' => sysconf('sms_zt_username2|raw'),
             'password' => md5(md5(sysconf('sms_zt_password2|raw')) . $tkey),
         ]);
         $this->app->db->name($this->table)->insert([
@@ -259,25 +240,22 @@ class MessageService extends Service
     }
 
     /**
-     * 查询国际短信余额
-     * @return array
+     * 查询国际短信余额.
      */
     public function queryGlobeSmsBalance(): array
     {
-        $tkey = date("YmdHis");
-        $result = HttpExtend::get('http' . '://intl.zthysms.com/intBalance.do', [
+        $tkey = date('YmdHis');
+        $result = HttpExtend::get('http://intl.zthysms.com/intBalance.do', [
             'username' => $this->globeUsername, 'tkey' => $tkey, 'password' => md5(md5($this->globePassword) . $tkey),
         ]);
         if (!is_numeric($result) && ($state = intval($result)) && isset($this->globeMessageMap[$state])) {
             return ['code' => 0, 'num' => 0, 'msg' => lang($this->globeMessageMap[$state])];
-        } else {
-            return ['code' => 1, 'num' => $result, 'msg' => lang('查询成功')];
         }
+        return ['code' => 1, 'num' => $result, 'msg' => lang('查询成功')];
     }
 
     /**
-     * 获取国际地域编号
-     * @return array
+     * 获取国际地域编号.
      */
     public function getGlobeRegionMap(): array
     {
@@ -501,5 +479,19 @@ class MessageService extends Service
             ['title' => '黎巴嫩', 'english' => 'Lebanon', 'code' => 961],
             ['title' => '黑山共和国', 'english' => 'The Republic of Montenegro', 'code' => 382],
         ];
+    }
+
+    /**
+     * @return $this
+     * @throws Exception
+     */
+    protected function initialize(): MessageService
+    {
+        $this->table = 'SystemMessageHistory';
+        $this->chinaUsername = sysconf('sms_zt.china_username|raw');
+        $this->chinaPassword = sysconf('sms_zt.china_password|raw');
+        $this->globeUsername = sysconf('sms_zt.globe_username|raw');
+        $this->globePassword = sysconf('sms_zt.globe_password|raw');
+        return $this;
     }
 }

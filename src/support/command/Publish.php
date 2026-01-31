@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\support\command;
 
@@ -27,16 +29,13 @@ use think\console\input\Option;
 use think\console\Output;
 
 /**
- * 组件安装指令
+ * 组件安装指令.
  * @class Publish
- * @package think\admin\support\command
  */
 class Publish extends Command
 {
-
     /**
-     * 任务参数配置
-     * @return void
+     * 任务参数配置.
      */
     public function configure()
     {
@@ -47,9 +46,7 @@ class Publish extends Command
     }
 
     /**
-     * 任务合并执行
-     * @param \think\console\Input $input
-     * @param \think\console\Output $output
+     * 任务合并执行.
      * @return null|void
      */
     public function execute(Input $input, Output $output)
@@ -59,7 +56,7 @@ class Publish extends Command
     }
 
     /**
-     * 安装数据库
+     * 安装数据库.
      * @return $this
      */
     private function plugin(): Publish
@@ -78,28 +75,27 @@ class Publish extends Command
     }
 
     /**
-     * 初始化组件文件
+     * 初始化组件文件.
      * @param string $copy 应用资源目录
-     * @param boolean $force 是否强制替换
-     * @return void
+     * @param bool $force 是否强制替换
      */
     private function copy(string $copy, bool $force = false)
     {
         // 复制系统配置文件
-        $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'config';
+        $frdir = rtrim($copy, '\/') . DIRECTORY_SEPARATOR . 'config';
         ToolsExtend::copy($frdir, syspath('config'), [], $force, false);
 
         // 复制静态资料文件
-        $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'public';
+        $frdir = rtrim($copy, '\/') . DIRECTORY_SEPARATOR . 'public';
         ToolsExtend::copy($frdir, syspath('public'), [], true, false);
 
         // 复制数据库脚本
-        $frdir = rtrim($copy, '\\/') . DIRECTORY_SEPARATOR . 'database';
+        $frdir = rtrim($copy, '\/') . DIRECTORY_SEPARATOR . 'database';
         ToolsExtend::copy($frdir, syspath('database/migrations'), [], $force, false);
     }
 
     /**
-     * 解析 json 包
+     * 解析 json 包.
      * @return $this
      */
     private function parse(): Publish
@@ -112,16 +108,16 @@ class Publish extends Command
                 $type = $package['type'] ?? '';
                 $config = $package['extra']['config'] ?? [];
                 $versions[$package['name']] = [
-                    'type'        => $config['type'] ?? ($type === 'think-admin-plugin' ? 'plugin' : 'library'),
-                    'name'        => $config['name'] ?? ($package['name'] ?? ''),
-                    'icon'        => $config['icon'] ?? '',
-                    'cover'       => $config['cover'] ?? '',
-                    'super'       => $config['super'] ?? false,
-                    'license'     => (array)($config['license'] ?? ($package['license'] ?? [])),
-                    'version'     => $config['version'] ?? ($package['version'] ?? ''),
-                    'homepage'    => $config['homepage'] ?? ($package['homepage'] ?? ''),
-                    'document'    => $config['document'] ?? ($package['document'] ?? ''),
-                    'platforms'   => $config['platforms'] ?? [],
+                    'type' => $config['type'] ?? ($type === 'think-admin-plugin' ? 'plugin' : 'library'),
+                    'name' => $config['name'] ?? ($package['name'] ?? ''),
+                    'icon' => $config['icon'] ?? '',
+                    'cover' => $config['cover'] ?? '',
+                    'super' => $config['super'] ?? false,
+                    'license' => (array)($config['license'] ?? ($package['license'] ?? [])),
+                    'version' => $config['version'] ?? ($package['version'] ?? ''),
+                    'homepage' => $config['homepage'] ?? ($package['homepage'] ?? ''),
+                    'document' => $config['document'] ?? ($package['document'] ?? ''),
+                    'platforms' => $config['platforms'] ?? [],
                     'description' => $config['description'] ?? ($package['description'] ?? ''),
                 ];
                 // 生成服务配置
@@ -148,7 +144,7 @@ class Publish extends Command
         }
 
         // 写入服务配置
-        $header = "// Automatically Generated At: " . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
+        $header = '// Automatically Generated At: ' . date('Y-m-d H:i:s') . PHP_EOL . 'declare(strict_types=1);';
         $content = '<?php' . PHP_EOL . $header . PHP_EOL . 'return ' . var_export($services, true) . ';';
         @file_put_contents(syspath('vendor/services.php'), $content);
 

@@ -1,43 +1,44 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\helper;
 
 use think\admin\Helper;
 use think\db\BaseQuery;
+use think\db\exception\DbException;
 use think\Model;
 
 /**
- * 数据更新管理器
+ * 数据更新管理器.
  * @class SaveHelper
- * @package think\admin\helper
  */
 class SaveHelper extends Helper
 {
-
     /**
-     * 逻辑器初始化
+     * 逻辑器初始化.
      * @param BaseQuery|Model|string $dbQuery
      * @param array $edata 表单扩展数据
      * @param string $field 数据对象主键
      * @param mixed $where 额外更新条件
-     * @return boolean|void
-     * @throws \think\db\exception\DbException
+     * @return bool|void
+     * @throws DbException
      */
     public function init($dbQuery, array $edata = [], string $field = '', $where = [])
     {
@@ -49,11 +50,13 @@ class SaveHelper extends Helper
         // 主键限制处理
         if (!isset($where[$field]) && !is_null($value)) {
             $query->whereIn($field, str2arr(strval($value)));
-            if (isset($edata)) unset($edata[$field]);
+            if (isset($edata)) {
+                unset($edata[$field]);
+            }
         }
 
         // 前置回调处理
-        if (false === $this->class->callback('_save_filter', $query, $edata)) {
+        if ($this->class->callback('_save_filter', $query, $edata) === false) {
             return false;
         }
 
@@ -68,7 +71,7 @@ class SaveHelper extends Helper
 
         // 结果回调处理
         $result = true;
-        if (false === $this->class->callback('_save_result', $result, $model)) {
+        if ($this->class->callback('_save_result', $result, $model) === false) {
             return $result;
         }
 

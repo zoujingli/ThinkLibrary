@@ -1,45 +1,46 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\extend;
 
 use think\admin\Exception;
 
 /**
- * 网站 ICO 文件生成工具
+ * 网站 ICO 文件生成工具.
  * @class FaviconExtend
- * @package think\admin\extend
  */
 class FaviconExtend
 {
     /**
-     * 转换后的 BMP 图像
+     * 转换后的 BMP 图像.
      * @var array
      */
     private $images = [];
 
     /**
-     * Constructor - 创建一个新的 ICO 生成器
+     * Constructor - 创建一个新的 ICO 生成器.
      * @param ?string $file 源图像文件的路径
      * @param array $size 图片文件尺寸 [W1,H1]
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
-    function __construct(?string $file = null, array $size = [])
+    public function __construct(?string $file = null, array $size = [])
     {
         $functions = [
             'imagesx',
@@ -54,8 +55,10 @@ class FaviconExtend
             'imagealphablending',
         ];
 
-        foreach ($functions as $function) if (!function_exists($function)) {
-            throw new Exception(lang('Required %s function not found.', [$function]));
+        foreach ($functions as $function) {
+            if (!function_exists($function)) {
+                throw new Exception(lang('Required %s function not found.', [$function]));
+            }
         }
 
         if (is_string($file)) {
@@ -64,11 +67,11 @@ class FaviconExtend
     }
 
     /**
-     * 添加图像到生成器中
+     * 添加图像到生成器中.
      *
      * @param string $file 图像文件路径
      * @param array $size 图像文件尺寸
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function addImage(string $file, array $size = []): FaviconExtend
     {
@@ -86,7 +89,7 @@ class FaviconExtend
         imagesavealpha($image, true);
 
         [$sourceWidth, $sourceHeight] = [imagesx($im), imagesy($im)];
-        if (false === imagecopyresampled($image, $im, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight)) {
+        if (imagecopyresampled($image, $im, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight) === false) {
             throw new Exception(lang('Parse and process picture Failed.'));
         }
         $this->addImageData($image);
@@ -94,10 +97,9 @@ class FaviconExtend
     }
 
     /**
-     * 将 ICO 内容写入到文件
+     * 将 ICO 内容写入到文件.
      *
      * @param string $file 写入文件路径
-     * @return boolean
      */
     public function saveIco(string $file): bool
     {
@@ -107,7 +109,7 @@ class FaviconExtend
         if (false === ($fh = fopen($file, 'w'))) {
             return false;
         }
-        if (false === (fwrite($fh, $data))) {
+        if (fwrite($fh, $data) === false) {
             fclose($fh);
             return false;
         }
@@ -116,7 +118,7 @@ class FaviconExtend
     }
 
     /**
-     * 生成并获取 ICO 图像数据
+     * 生成并获取 ICO 图像数据.
      */
     private function getIcoData()
     {
@@ -137,14 +139,15 @@ class FaviconExtend
     }
 
     /**
-     * 将 GD 图像转为 BMP 格式
+     * 将 GD 图像转为 BMP 格式.
+     * @param mixed $im
      */
     private function addImageData($im)
     {
         [$width, $height] = [imagesx($im), imagesy($im)];
         [$pixelData, $opacityData, $opacityValue] = [[], [], 0];
-        for ($y = $height - 1; $y >= 0; $y--) {
-            for ($x = 0; $x < $width; $x++) {
+        for ($y = $height - 1; $y >= 0; --$y) {
+            for ($x = 0; $x < $width; ++$x) {
                 $color = imagecolorat($im, $x, $y);
                 $alpha = ($color & 0x7F000000) >> 24;
                 $alpha = (1 - ($alpha / 127)) * 255;
@@ -170,26 +173,30 @@ class FaviconExtend
         $imageHeaderSize = 40;
         $colorMaskSize = $width * $height * 4;
         $opacityMaskSize = (ceil($width / 32) * 4) * $height;
-        $data = pack('VVVvvVVVVVV', 40, $width, ($height * 2), 1, 32, 0, 0, 0, 0, 0, 0);
-        foreach ($pixelData as $color) $data .= pack('V', $color);
-        foreach ($opacityData as $opacity) $data .= pack('N', $opacity);
+        $data = pack('VVVvvVVVVVV', 40, $width, $height * 2, 1, 32, 0, 0, 0, 0, 0, 0);
+        foreach ($pixelData as $color) {
+            $data .= pack('V', $color);
+        }
+        foreach ($opacityData as $opacity) {
+            $data .= pack('N', $opacity);
+        }
 
         $this->images[] = [
-            'data'  => $data,
-            'size'  => $imageHeaderSize + $colorMaskSize + $opacityMaskSize,
+            'data' => $data,
+            'size' => $imageHeaderSize + $colorMaskSize + $opacityMaskSize,
             'width' => $width, 'height' => $height,
             'pixel' => 32, 'colors' => 0,
         ];
     }
 
     /**
-     * 读取图片资源
+     * 读取图片资源.
      * @param string $file 文件路径
-     * @return false|resource|\GdImage
+     * @return false|\GdImage|resource
      */
     private function loadImageFile(string $file)
     {
-        if (false === getimagesize($file)) {
+        if (getimagesize($file) === false) {
             return false;
         }
         if (false === ($data = file_get_contents($file))) {

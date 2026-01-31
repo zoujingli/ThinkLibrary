@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\extend;
 
@@ -23,9 +25,8 @@ use think\admin\Storage;
 use think\admin\storage\LocalStorage;
 
 /**
- * 拼图拖拽验证器
+ * 拼图拖拽验证器.
  * @class ImageVerify
- * @package think\admin\extend
  */
 class ImageVerify
 {
@@ -37,14 +38,16 @@ class ImageVerify
 
     // 浮层图宽高
     private $picWidth = 100;
+
     private $picHeight = 100;
 
     // 目标图宽高
     private $dstWidth = 600;
+
     private $dstHeight = 300;
 
     /**
-     * 验证器构造方法
+     * 验证器构造方法.
      * @param string $image 原始图片
      * @param array $options 配置参数
      */
@@ -52,18 +55,20 @@ class ImageVerify
     {
         if (!empty($options)) {
             foreach ($options as $k => $v) {
-                if (isset($this->$k)) $this->$k = $v;
+                if (isset($this->{$k})) {
+                    $this->{$k} = $v;
+                }
             }
         }
         $this->srcImage = $image;
     }
 
     /**
-     * 生成图片拼图
+     * 生成图片拼图.
      * @param string $image 原始图片
-     * @param integer $time 缓存时间
-     * @param integer $diff 容错数值
-     * @param integer $retry 容错次数
+     * @param int $time 缓存时间
+     * @param int $diff 容错数值
+     * @param int $retry 容错次数
      * @return array [code, bgimg, water]
      */
     public static function render(string $image, int $time = 1800, int $diff = 10, int $retry = 3): array
@@ -76,16 +81,18 @@ class ImageVerify
     }
 
     /**
-     * 在线验证是否通过
+     * 在线验证是否通过.
      * @param string $code 验证码编码
      * @param string $value 待验证数值
-     * @param boolean $clear 验证成功清理
-     * @return integer [ -1:需要刷新, 0:验证失败, 1:验证成功 ]
+     * @param bool $clear 验证成功清理
+     * @return int [ -1:需要刷新, 0:验证失败, 1:验证成功 ]
      */
     public static function verify(string $code, string $value, bool $clear = false): int
     {
         $cache = Library::$sapp->cache->get($code);
-        if (empty($cache['range']) || empty($cache['retry'])) return -1;
+        if (empty($cache['range']) || empty($cache['retry'])) {
+            return -1;
+        }
         if ($cache['range'][0] <= $value && $value <= $cache['range'][1]) {
             $clear && Library::$sapp->cache->delete($code);
             return 1;
@@ -103,10 +110,10 @@ class ImageVerify
     }
 
     /**
-     * 剧中裁剪图片
+     * 剧中裁剪图片.
      * @param string $image 图片资源
-     * @param integer $width 目标宽度
-     * @param integer $height 目标高度
+     * @param int $width 目标宽度
+     * @param int $height 目标高度
      * @return \GdImage|resource
      */
     public static function cover(string $image, int $width, int $height)
@@ -114,7 +121,9 @@ class ImageVerify
         // 读取缓存返回图片资源
         $local = LocalStorage::instance();
         $name = Storage::name(join('#', func_get_args()), 'png', 'cache');
-        if ($local->has($name, true)) return imageCreateFromString($local->get($name, true));
+        if ($local->has($name, true)) {
+            return imagecreatefromstring($local->get($name, true));
+        }
         // 计算图片尺寸裁剪坐标
         [$w, $h] = getimagesize($image);
         if ($w > $h) {
@@ -124,8 +133,8 @@ class ImageVerify
         } else {
             [$_sw, $_sh, $_sx, $_sy] = [$w, $h, 0, 0];
         }
-        $newim = imageCreateTrueColor($width, $height);
-        $srcim = imageCreateFromString(file_get_contents($image));
+        $newim = imagecreatetruecolor($width, $height);
+        $srcim = imagecreatefromstring(file_get_contents($image));
         imagecopyresampled($newim, $srcim, 0, 0, $_sx, $_sy, $width, $height, $_sw, $_sh);
         imagedestroy($srcim);
         // 缓存图片内容
@@ -137,7 +146,7 @@ class ImageVerify
     }
 
     /**
-     * 创建背景图和浮层图、浮层图X坐标
+     * 创建背景图和浮层图、浮层图X坐标.
      * @return array [point, bgimg, water]
      */
     public function create(): array
@@ -146,9 +155,9 @@ class ImageVerify
         $dstim = $this->cover($this->srcImage, $this->dstWidth, $this->dstHeight);
 
         // 生成透明底浮层图画布
-        $watim = imageCreateTrueColor($this->picWidth, $this->dstHeight);
-        imageSaveAlpha($watim, true) && imageAlphaBlending($watim, false);
-        imageFill($watim, 0, 0, imageColorAllocateAlpha($watim, 255, 255, 255, 127));
+        $watim = imagecreatetruecolor($this->picWidth, $this->dstHeight);
+        imagesavealpha($watim, true) && imagealphablending($watim, false);
+        imagefill($watim, 0, 0, imagecolorallocatealpha($watim, 255, 255, 255, 127));
 
         // 随机位置
         $srcX1 = mt_rand(150, $this->dstWidth - $this->picWidth); // 水印位于大图X坐标
@@ -162,48 +171,48 @@ class ImageVerify
 
         // 水印边框颜色
         $broders = [
-            imageColorAllocateAlpha($dstim, 250, 100, 0, 50),
-            imageColorAllocateAlpha($dstim, 250, 0, 100, 50),
-            imageColorAllocateAlpha($dstim, 100, 0, 250, 50),
-            imageColorAllocateAlpha($dstim, 100, 250, 0, 50),
-            imageColorAllocateAlpha($dstim, 0, 250, 100, 50),
+            imagecolorallocatealpha($dstim, 250, 100, 0, 50),
+            imagecolorallocatealpha($dstim, 250, 0, 100, 50),
+            imagecolorallocatealpha($dstim, 100, 0, 250, 50),
+            imagecolorallocatealpha($dstim, 100, 250, 0, 50),
+            imagecolorallocatealpha($dstim, 0, 250, 100, 50),
         ];
         shuffle($broders);
         $c1 = array_pop($broders);
         $c2 = array_pop($broders);
-        $gray = imageColorAllocateAlpha($dstim, 0, 0, 0, 80);
-        $blue = imageColorAllocateAlpha($watim, 0, 100, 250, 50);
+        $gray = imagecolorallocatealpha($dstim, 0, 0, 0, 80);
+        $blue = imagecolorallocatealpha($watim, 0, 100, 250, 50);
 
         // 取原图像素颜色，生成浮层图
         $waters = $this->withWaterPoint();
-        for ($i = 0; $i < $this->picHeight; $i++) {
-            for ($j = 0; $j < $this->picWidth; $j++) {
+        for ($i = 0; $i < $this->picHeight; ++$i) {
+            for ($j = 0; $j < $this->picWidth; ++$j) {
                 if ($waters[$i][$j] === 1) {
                     if (
-                        empty($waters[$i - 1][$j - 1]) || empty($waters[$i - 2][$j - 2]) ||
-                        empty($waters[$i + 1][$j + 1]) || empty($waters[$i + 2][$j + 2])
+                        empty($waters[$i - 1][$j - 1]) || empty($waters[$i - 2][$j - 2])
+                        || empty($waters[$i + 1][$j + 1]) || empty($waters[$i + 2][$j + 2])
                     ) {
                         imagesetpixel($watim, $j, $srcY1 + $i, $blue);
                     } else {
-                        imagesetpixel($watim, $j, $srcY1 + $i, ImageColorAt($dstim, $srcX1 + $j, $srcY1 + $i));
+                        imagesetpixel($watim, $j, $srcY1 + $i, imagecolorat($dstim, $srcX1 + $j, $srcY1 + $i));
                     }
                 }
             }
         }
 
         // 在原图挖坑，打上灰色水印
-        for ($i = 0; $i < $this->picHeight; $i++) {
-            for ($j = 0; $j < $this->picWidth; $j++) {
+        for ($i = 0; $i < $this->picHeight; ++$i) {
+            for ($j = 0; $j < $this->picWidth; ++$j) {
                 if ($waters[$i][$j] === 1) {
                     if (
-                        empty($waters[$i - 1][$j - 1]) ||
-                        empty($waters[$i - 2][$j - 2]) ||
-                        empty($waters[$i + 1][$j + 1]) ||
-                        empty($waters[$i + 2][$j + 2])
+                        empty($waters[$i - 1][$j - 1])
+                        || empty($waters[$i - 2][$j - 2])
+                        || empty($waters[$i + 1][$j + 1])
+                        || empty($waters[$i + 2][$j + 2])
                     ) {
                         imagesetpixel($dstim, $srcX1 + $j, $srcY1 + $i, $c1);
-                        // 去除第二个干扰水印
-                        // imagesetpixel($dstim, $srcX2 + $j, $srcY2 + $i, $c2);
+                    // 去除第二个干扰水印
+                    // imagesetpixel($dstim, $srcX2 + $j, $srcY2 + $i, $c2);
                     } else {
                         imagesetpixel($dstim, $srcX1 + $j, $srcY1 + $i, $gray);
                         // 去除第二个干扰水印
@@ -220,13 +229,12 @@ class ImageVerify
         return [
             'point' => $srcX1,
             'bgimg' => 'data:image/png;base64,' . base64_encode($bgimg),
-            'water' => 'data:image/png;base64,' . base64_encode($water)
+            'water' => 'data:image/png;base64,' . base64_encode($water),
         ];
     }
 
     /**
-     * 计算水印矩阵坐标
-     * @return void
+     * 计算水印矩阵坐标.
      */
     private function withWaterPoint(): array
     {
@@ -241,10 +249,10 @@ class ImageVerify
 
         // 第二个圆中心点
         $c_2_x = $this->picHeight - $this->r;
-        $c_2_y = $lw + ($this->picHeight - ($lw) * 2) / 2;
+        $c_2_y = $lw + ($this->picHeight - $lw * 2) / 2;
 
-        for ($i = 0; $i < $this->picHeight; $i++) {
-            for ($j = 0; $j < $this->picWidth; $j++) {
+        for ($i = 0; $i < $this->picHeight; ++$i) {
+            for ($j = 0; $j < $this->picWidth; ++$j) {
                 // 根据公式（x-a)² + (y-b)² = r² 算出像素是否在圆内
                 $d1 = pow($j - $c_1_x, 2) + pow($i - $c_1_y, 2);
                 $d2 = pow($j - $c_2_x, 2) + pow($i - $c_2_y, 2);

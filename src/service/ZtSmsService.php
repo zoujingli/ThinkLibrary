@@ -1,23 +1,26 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\service;
 
+use think\admin\Exception;
 use think\admin\extend\HttpExtend;
 use think\admin\Service;
 
@@ -25,18 +28,11 @@ use think\admin\Service;
  * 新助通短信接口服务
  * @class ZtSmsService
  * @deprecated 独立封装为插件
- * @package think\admin\service
  */
 class ZtSmsService extends Service
 {
     /**
-     * 接口地址
-     * @var string
-     */
-    private $api = 'https://api.mix2.zthysms.com';
-
-    /**
-     * 子账号名称
+     * 子账号名称.
      * @var string
      */
     protected $username;
@@ -48,17 +44,13 @@ class ZtSmsService extends Service
     protected $password;
 
     /**
-     * 短信服务初始化
-     * @throws \think\admin\Exception
+     * 接口地址
+     * @var string
      */
-    protected function initialize()
-    {
-        $this->username = sysconf('ztsms.username|raw') ?: '';
-        $this->password = sysconf('ztsms.password|raw') ?: '';
-    }
+    private $api = 'https://api.mix2.zthysms.com';
 
     /**
-     * 短信服务初始化
+     * 短信服务初始化.
      * @param string $username 账号名称
      * @param string $password 账号密码
      * @return static
@@ -75,7 +67,6 @@ class ZtSmsService extends Service
      * @param string $code 验证码
      * @param string $phone 手机号验证
      * @param string $template 模板编码
-     * @return boolean
      */
     public function checkVerifyCode(string $code, string $phone, string $template = 'ztsms.register_verify'): bool
     {
@@ -83,18 +74,16 @@ class ZtSmsService extends Service
         if (is_array($cache) && isset($cache['code']) && $cache['code'] == $code) {
             $this->app->cache->delete($ckey);
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
      * 验证手机短信验证码
      * @param string $phone 手机号码
-     * @param integer $wait 等待时间
+     * @param int $wait 等待时间
      * @param string $template 模板编码
-     * @return array
-     * @throws \think\admin\Exception
+     * @throws Exception
      */
     public function sendVerifyCode(string $phone, int $wait = 120, string $template = 'ztsms.register_verify'): array
     {
@@ -113,28 +102,27 @@ class ZtSmsService extends Service
         [$state] = $this->timeSend($phone, str_replace('{code}', $code, $content));
         if ($state) {
             return [1, lang('短信验证码发送成功！'), ['time' => $wait]];
-        } else {
-            $this->app->cache->delete($ckey);
-            return [0, lang('短信发送失败，请稍候再试！'), ['time' => 0]];
         }
+        $this->app->cache->delete($ckey);
+        return [0, lang('短信发送失败，请稍候再试！'), ['time' => 0]];
     }
 
     /**
-     * 创建短信签名
+     * 创建短信签名.
      * @param array $signs 签名列表
      * @param string $remark 签名备注
-     * @return array
      */
     public function signAdd(array $signs = [], string $remark = ''): array
     {
-        foreach ($signs as $key => $name) $signs[$key] = $this->_singName($name);
+        foreach ($signs as $key => $name) {
+            $signs[$key] = $this->_singName($name);
+        }
         return $this->doRequest('/sms/v1/sign', ['sign' => $signs, 'remark' => $remark]);
     }
 
     /**
-     * 查询短信签名
+     * 查询短信签名.
      * @param string $name 短信签名
-     * @return array
      */
     public function signGet(string $name): array
     {
@@ -146,11 +134,10 @@ class ZtSmsService extends Service
     /**
      * 报备短信模板
      * @param string $name 模板名称
-     * @param integer $type 模板类型（1验证码, 2行业通知, 3营销推广）
+     * @param int $type 模板类型（1验证码, 2行业通知, 3营销推广）
      * @param string $content 模板内容
      * @param array $params 模板变量
      * @param string $remark 模板备注
-     * @return array
      */
     public function tplAdd(string $name, int $type, string $content, array $params = [], string $remark = ''): array
     {
@@ -162,7 +149,6 @@ class ZtSmsService extends Service
     /**
      * 查询模板状态
      * @param string $temId 短信模板
-     * @return array
      */
     public function tplGet(string $temId): array
     {
@@ -174,7 +160,6 @@ class ZtSmsService extends Service
      * @param string $tpId 短信模板
      * @param string $sign 短信签名
      * @param array $records 发送记录
-     * @return array
      */
     public function tplSend(string $tpId, string $sign, array $records): array
     {
@@ -187,20 +172,19 @@ class ZtSmsService extends Service
      * 发送定时短信
      * @param string $mobile 发送手机号码
      * @param string $content 发送短信内容
-     * @param integer $time 定时发送时间（为 0 立即发送）
-     * @return array
+     * @param int $time 定时发送时间（为 0 立即发送）
      */
     public function timeSend(string $mobile, string $content, int $time = 0): array
     {
         $data = ['mobile' => $mobile, 'content' => $content];
-        if ($time > 0) $data['time'] = $time;
+        if ($time > 0) {
+            $data['time'] = $time;
+        }
         return $this->doRequest('/v2/sendSms', $data);
     }
 
     /**
      * 批量发送短信
-     * @param array $records
-     * @return array
      */
     public function batchSend(array $records): array
     {
@@ -208,7 +192,7 @@ class ZtSmsService extends Service
     }
 
     /**
-     * 短信条数查询
+     * 短信条数查询.
      */
     public function balance(): array
     {
@@ -217,14 +201,26 @@ class ZtSmsService extends Service
     }
 
     /**
-     * 短信签名内容处理
-     * @param string $name
-     * @return string
+     * 短信服务初始化.
+     * @throws Exception
+     */
+    protected function initialize()
+    {
+        $this->username = sysconf('ztsms.username|raw') ?: '';
+        $this->password = sysconf('ztsms.password|raw') ?: '';
+    }
+
+    /**
+     * 短信签名内容处理.
      */
     private function _singName(string $name): string
     {
-        if (strpos($name, '】') === false) $name = $name . '】';
-        if (strpos($name, '【') === false) $name = '【' . $name;
+        if (strpos($name, '】') === false) {
+            $name = $name . '】';
+        }
+        if (strpos($name, '【') === false) {
+            $name = '【' . $name;
+        }
         return $name;
     }
 
@@ -232,7 +228,6 @@ class ZtSmsService extends Service
      * 执行网络请求
      * @param string $uri 接口请求地址
      * @param array $data 接口请求参数
-     * @return array
      */
     private function doRequest(string $uri, array $data): array
     {
@@ -242,22 +237,21 @@ class ZtSmsService extends Service
         $result = json_decode(HttpExtend::post($this->api . $uri, json_encode(array_merge($data, $extends)), $options), true);
         if (empty($result['code'])) {
             return [0, [], lang('接口请求网络异常')];
-        } elseif (intval($result['code']) === 200) {
-            return [1, $result, lang($this->error($result['code']))];
-        } else {
-            return [0, $result, lang($this->error($result['code']))];
         }
+        if (intval($result['code']) === 200) {
+            return [1, $result, lang($this->error($result['code']))];
+        }
+        return [0, $result, lang($this->error($result['code']))];
     }
 
     /**
-     * 获取状态描述
-     * @param integer $code 异常编号
-     * @return string
+     * 获取状态描述.
+     * @param int $code 异常编号
      */
     private function error(int $code): string
     {
         $arrs = [
-            200  => '提交成功',
+            200 => '提交成功',
             4001 => '用户名错误',
             4002 => '密码不能为空',
             4003 => '短信内容不能为空',

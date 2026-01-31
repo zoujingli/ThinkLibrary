@@ -1,38 +1,40 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\support\command;
 
 use think\admin\Command;
+use think\admin\Exception;
 use think\admin\service\SystemService;
 use think\console\Input;
 use think\console\input\Argument;
 use think\console\Output;
 
 /**
- * 数据库修复优化指令
+ * 数据库修复优化指令.
  * @class Database
- * @package think\admin\support\command
  */
 class Database extends Command
 {
     /**
-     * 指令任务配置
+     * 指令任务配置.
      */
     public function configure()
     {
@@ -42,30 +44,29 @@ class Database extends Command
     }
 
     /**
-     * 任务执行入口
-     * @param \think\console\Input $input
-     * @param \think\console\Output $output
-     * @return void
-     * @throws \think\admin\Exception
+     * 任务执行入口.
+     * @throws Exception
      */
     protected function execute(Input $input, Output $output): void
     {
         if ($this->app->db->connect()->getConfig('type') === 'sqlite') {
-            $this->setQueueError("Sqlite 数据库不支持 REPAIR 和 OPTIMIZE 操作！");
+            $this->setQueueError('Sqlite 数据库不支持 REPAIR 和 OPTIMIZE 操作！');
         }
         $action = $input->getArgument('action');
-        if (method_exists($this, $method = "_{$action}")) $this->$method();
-        else $this->output->error('Wrong operation, currently allow repair|optimize');
+        if (method_exists($this, $method = "_{$action}")) {
+            $this->{$method}();
+        } else {
+            $this->output->error('Wrong operation, currently allow repair|optimize');
+        }
     }
 
     /**
-     * 修复所有数据表
-     * @return void
-     * @throws \think\admin\Exception
+     * 修复所有数据表.
+     * @throws Exception
      */
     protected function _repair(): void
     {
-        $this->setQueueProgress("正在获取需要修复的数据表", '0');
+        $this->setQueueProgress('正在获取需要修复的数据表', '0');
         [$tables, $total, $count] = SystemService::getTables();
         $this->setQueueProgress("总共需要修复 {$total} 张数据表", '0');
         foreach ($tables as $table) {
@@ -77,13 +78,12 @@ class Database extends Command
     }
 
     /**
-     * 优化所有数据表
-     * @return void
-     * @throws \think\admin\Exception
+     * 优化所有数据表.
+     * @throws Exception
      */
     protected function _optimize(): void
     {
-        $this->setQueueProgress("正在获取需要优化的数据表", '0');
+        $this->setQueueProgress('正在获取需要优化的数据表', '0');
         [$tables, $total, $count] = SystemService::getTables();
         $this->setQueueProgress("总共需要优化 {$total} 张数据表", '0');
         foreach ($tables as $table) {

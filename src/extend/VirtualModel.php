@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\extend;
 
@@ -22,9 +24,8 @@ use think\admin\contract\StreamInterface;
 use think\Model;
 
 /**
- * 虚拟模型构建协议
+ * 虚拟模型构建协议.
  * @class VirtualModel
- * @package think\admin\extend
  */
 class VirtualModel extends \stdClass implements StreamInterface
 {
@@ -35,8 +36,8 @@ class VirtualModel extends \stdClass implements StreamInterface
     private $template;
 
     /**
-     * 读取进度标量
-     * @var integer
+     * 读取进度标量.
+     * @var int
      */
     private $position;
 
@@ -44,7 +45,9 @@ class VirtualModel extends \stdClass implements StreamInterface
     {
         // 解析链接参数
         $attr = parse_url($path);
-        if (empty($attr['fragment'])) $attr['fragment'] = '';
+        if (empty($attr['fragment'])) {
+            $attr['fragment'] = '';
+        }
         $type = strtolower($attr['fragment'] ?: 'default');
 
         // 生成模型代码
@@ -71,13 +74,9 @@ class VirtualModel extends \stdClass implements StreamInterface
         return $this->position >= strlen($this->template);
     }
 
-    public function stream_cast(int $cast_as)
-    {
-    }
+    public function stream_cast(int $cast_as) {}
 
-    public function stream_close(): void
-    {
-    }
+    public function stream_close(): void {}
 
     public function stream_flush(): bool
     {
@@ -170,11 +169,10 @@ class VirtualModel extends \stdClass implements StreamInterface
     }
 
     /**
-     * 创建虚拟模型
+     * 创建虚拟模型.
      * @param mixed $name 模型名称
      * @param array $data 模型数据
      * @param mixed $conn 默认链接
-     * @return \think\Model
      */
     public static function mk(string $name, array $data = [], string $conn = ''): Model
     {

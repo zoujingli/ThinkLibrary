@@ -1,27 +1,28 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin;
 
 /**
- * 自定义数据异常
+ * 自定义数据异常.
  * @class Exception
- * @package think\admin
  */
 class Exception extends \Exception
 {
@@ -34,10 +35,10 @@ class Exception extends \Exception
     /**
      * Exception constructor.
      * @param string $message
-     * @param integer $code
+     * @param int $code
      * @param mixed $data
      */
-    public function __construct($message = "", $code = 0, $data = [])
+    public function __construct($message = '', $code = 0, $data = [])
     {
         parent::__construct($message);
         $this->code = $code;
@@ -46,7 +47,7 @@ class Exception extends \Exception
     }
 
     /**
-     * 获取异常停止数据
+     * 获取异常停止数据.
      * @return mixed
      */
     public function getData()
@@ -55,7 +56,7 @@ class Exception extends \Exception
     }
 
     /**
-     * 设置异常停止数据
+     * 设置异常停止数据.
      * @param mixed $data
      */
     public function setData($data)

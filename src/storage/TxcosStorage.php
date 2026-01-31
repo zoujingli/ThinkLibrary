@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\storage;
 
@@ -27,40 +29,196 @@ use think\admin\Storage;
 /**
  * 腾讯云COS存储支持
  * @class TxcosStorage
- * @package think\admin\storage
  */
 class TxcosStorage implements StorageInterface
 {
-
     use StorageUsageTrait;
 
     /**
-     * 数据中心
+     * 数据中心.
      * @var string
      */
     private $point;
 
     /**
-     * 存储空间名称
+     * 存储空间名称.
      * @var string
      */
     private $bucket;
 
     /**
-     * $secretId
+     * $secretId.
      * @var string
      */
     private $secretId;
 
     /**
-     * secretKey
+     * secretKey.
      * @var string
      */
     private $secretKey;
 
     /**
-     * 初始化入口
-     * @throws \think\admin\Exception
+     * 上传文件内容.
+     * @param string $name 文件名称
+     * @param string $file 文件内容
+     * @param bool $safe 安全模式
+     * @param ?string $attname 下载名称
+     */
+    public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
+    {
+        $data = $this->token($name) + ['key' => $name];
+        if (is_string($attname) && strlen($attname) > 0) {
+            $data['Content-Disposition'] = urlencode($attname);
+        }
+        $data['success_action_status'] = '200';
+        $file = ['field' => 'file', 'name' => $name, 'content' => $file];
+        if (is_numeric(stripos(HttpExtend::submit($this->upload(), $data, $file), '200 OK'))) {
+            return ['file' => $this->path($name, $safe), 'url' => $this->url($name, $safe, $attname), 'key' => $name];
+        }
+        return [];
+    }
+
+    /**
+     * 读取文件内容.
+     * @param string $name 文件名称
+     * @param bool $safe 安全模式
+     */
+    public function get(string $name, bool $safe = false): string
+    {
+        return Storage::curlGet($this->url($name, $safe));
+    }
+
+    /**
+     * 删除存储文件.
+     * @param string $name 文件名称
+     * @param bool $safe 安全模式
+     */
+    public function del(string $name, bool $safe = false): bool
+    {
+        [$file] = explode('?', $name);
+        $result = HttpExtend::request('DELETE', "https://{$this->bucket}.{$this->point}/{$file}", [
+            'returnHeader' => true, 'headers' => $this->_sign('DELETE', $file),
+        ]);
+        return is_numeric(stripos($result, '204 No Content'));
+    }
+
+    /**
+     * 判断是否存在.
+     * @param string $name 文件名称
+     * @param bool $safe 安全模式
+     */
+    public function has(string $name, bool $safe = false): bool
+    {
+        $file = $this->delSuffix($name);
+        $result = HttpExtend::request('HEAD', "https://{$this->bucket}.{$this->point}/{$file}", [
+            'returnHeader' => true, 'headers' => $this->_sign('HEAD', $name),
+        ]);
+        return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
+    }
+
+    /**
+     * 获取访问地址
+     * @param string $name 文件名称
+     * @param bool $safe 安全模式
+     * @param ?string $attname 下载名称
+     */
+    public function url(string $name, bool $safe = false, ?string $attname = null): string
+    {
+        return "{$this->domain}/{$this->delSuffix($name)}{$this->getSuffix($attname, $name)}";
+    }
+
+    /**
+     * 获取存储路径.
+     * @param string $name 文件名称
+     * @param bool $safe 安全模式
+     */
+    public function path(string $name, bool $safe = false): string
+    {
+        return $this->url($name, $safe);
+    }
+
+    /**
+     * 获取文件信息.
+     * @param string $name 文件名称
+     * @param bool $safe 安全模式
+     * @param ?string $attname 下载名称
+     */
+    public function info(string $name, bool $safe = false, ?string $attname = null): array
+    {
+        return $this->has($name, $safe) ? [
+            'url' => $this->url($name, $safe, $attname),
+            'key' => $name, 'file' => $this->path($name, $safe),
+        ] : [];
+    }
+
+    /**
+     * 获取上传地址
+     */
+    public function upload(): string
+    {
+        $proc = $this->app->request->isSsl() ? 'https' : 'http';
+        return "{$proc}://{$this->bucket}.{$this->point}";
+    }
+
+    /**
+     * 生成上传令牌.
+     * @param string $name 文件名称
+     * @param int $expires 有效时间
+     * @param ?string $attname 下载名称
+     */
+    public function token(string $name, int $expires = 3600, ?string $attname = null): array
+    {
+        $startTimestamp = time();
+        $endTimestamp = $startTimestamp + $expires;
+        $keyTime = "{$startTimestamp};{$endTimestamp}";
+        $siteurl = $this->url($name, false, $attname);
+        $policy = json_encode([
+            'expiration' => date('Y-m-d\TH:i:s.000\Z', $endTimestamp),
+            'conditions' => [['q-ak' => $this->secretId], ['q-sign-time' => $keyTime], ['q-sign-algorithm' => 'sha1']],
+        ]);
+        return [
+            'policy' => base64_encode($policy), 'q-ak' => $this->secretId,
+            'siteurl' => $siteurl, 'q-key-time' => $keyTime, 'q-sign-algorithm' => 'sha1',
+            'q-signature' => hash_hmac('sha1', sha1($policy), hash_hmac('sha1', $keyTime, $this->secretKey)),
+        ];
+    }
+
+    /**
+     * 获取存储区域
+     */
+    public static function region(): array
+    {
+        return [
+            'cos.ap-beijing-1.myqcloud.com' => lang('中国大陆 公有云地域 北京一区'),
+            'cos.ap-beijing.myqcloud.com' => lang('中国大陆 公有云地域 北京'),
+            'cos.ap-nanjing.myqcloud.com' => lang('中国大陆 公有云地域 南京'),
+            'cos.ap-shanghai.myqcloud.com' => lang('中国大陆 公有云地域 上海'),
+            'cos.ap-guangzhou.myqcloud.com' => lang('中国大陆 公有云地域 广州'),
+            'cos.ap-chengdu.myqcloud.com' => lang('中国大陆 公有云地域 成都'),
+            'cos.ap-chongqing.myqcloud.com' => lang('中国大陆 公有云地域 重庆'),
+            'cos.ap-shenzhen-fsi.myqcloud.com' => lang('中国大陆 金融云地域 深圳金融'),
+            'cos.ap-shanghai-fsi.myqcloud.com' => lang('中国大陆 金融云地域 上海金融'),
+            'cos.ap-beijing-fsi.myqcloud.com' => lang('中国大陆 金融云地域 北京金融'),
+            'cos.ap-hongkong.myqcloud.com' => lang('亚太地区 公有云地域 中国香港'),
+            'cos.ap-singapore.myqcloud.com' => lang('亚太地区 公有云地域 新加坡'),
+            'cos.ap-mumbai.myqcloud.com' => lang('亚太地区 公有云地域 孟买'),
+            'cos.ap-jakarta.myqcloud.com' => lang('亚太地区 公有云地域 雅加达'),
+            'cos.ap-seoul.myqcloud.com' => lang('亚太地区 公有云地域 首尔'),
+            'cos.ap-bangkok.myqcloud.com' => lang('亚太地区 公有云地域 曼谷'),
+            'cos.ap-tokyo.myqcloud.com' => lang('亚太地区 公有云地域 东京'),
+            'cos.na-siliconvalley.myqcloud.com' => lang('北美地区 公有云地域 硅谷'),
+            'cos.na-ashburn.myqcloud.com' => lang('北美地区 公有云地域 弗吉尼亚'),
+            'cos.na-toronto.myqcloud.com' => lang('北美地区 公有云地域 多伦多'),
+            'cos.sa-saopaulo.myqcloud.com' => lang('北美地区 公有云地域 圣保罗'),
+            'cos.eu-frankfurt.myqcloud.com' => lang('欧洲地区 公有云地域 法兰克福'),
+            'cos.eu-moscow.myqcloud.com' => lang('欧洲地区 公有云地域 莫斯科'),
+        ];
+    }
+
+    /**
+     * 初始化入口.
+     * @throws Exception
      */
     protected function init()
     {
@@ -82,146 +240,9 @@ class TxcosStorage implements StorageInterface
     }
 
     /**
-     * 上传文件内容
-     * @param string $name 文件名称
-     * @param string $file 文件内容
-     * @param boolean $safe 安全模式
-     * @param ?string $attname 下载名称
-     * @return array
-     */
-    public function set(string $name, string $file, bool $safe = false, ?string $attname = null): array
-    {
-        $data = $this->token($name) + ['key' => $name];
-        if (is_string($attname) && strlen($attname) > 0) {
-            $data['Content-Disposition'] = urlencode($attname);
-        }
-        $data['success_action_status'] = '200';
-        $file = ['field' => 'file', 'name' => $name, 'content' => $file];
-        if (is_numeric(stripos(HttpExtend::submit($this->upload(), $data, $file), '200 OK'))) {
-            return ['file' => $this->path($name, $safe), 'url' => $this->url($name, $safe, $attname), 'key' => $name];
-        } else {
-            return [];
-        }
-    }
-
-    /**
-     * 读取文件内容
-     * @param string $name 文件名称
-     * @param boolean $safe 安全模式
-     * @return string
-     */
-    public function get(string $name, bool $safe = false): string
-    {
-        return Storage::curlGet($this->url($name, $safe));
-    }
-
-    /**
-     * 删除存储文件
-     * @param string $name 文件名称
-     * @param boolean $safe 安全模式
-     * @return boolean
-     */
-    public function del(string $name, bool $safe = false): bool
-    {
-        [$file] = explode('?', $name);
-        $result = HttpExtend::request('DELETE', "https://{$this->bucket}.{$this->point}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->_sign('DELETE', $file),
-        ]);
-        return is_numeric(stripos($result, '204 No Content'));
-    }
-
-    /**
-     * 判断是否存在
-     * @param string $name 文件名称
-     * @param boolean $safe 安全模式
-     * @return boolean
-     */
-    public function has(string $name, bool $safe = false): bool
-    {
-        $file = $this->delSuffix($name);
-        $result = HttpExtend::request('HEAD', "https://{$this->bucket}.{$this->point}/{$file}", [
-            'returnHeader' => true, 'headers' => $this->_sign('HEAD', $name),
-        ]);
-        return is_numeric(stripos($result, 'HTTP/1.1 200 OK'));
-    }
-
-    /**
-     * 获取访问地址
-     * @param string $name 文件名称
-     * @param boolean $safe 安全模式
-     * @param ?string $attname 下载名称
-     * @return string
-     */
-    public function url(string $name, bool $safe = false, ?string $attname = null): string
-    {
-        return "{$this->domain}/{$this->delSuffix($name)}{$this->getSuffix($attname,$name)}";
-    }
-
-    /**
-     * 获取存储路径
-     * @param string $name 文件名称
-     * @param boolean $safe 安全模式
-     * @return string
-     */
-    public function path(string $name, bool $safe = false): string
-    {
-        return $this->url($name, $safe);
-    }
-
-    /**
-     * 获取文件信息
-     * @param string $name 文件名称
-     * @param boolean $safe 安全模式
-     * @param ?string $attname 下载名称
-     * @return array
-     */
-    public function info(string $name, bool $safe = false, ?string $attname = null): array
-    {
-        return $this->has($name, $safe) ? [
-            'url' => $this->url($name, $safe, $attname),
-            'key' => $name, 'file' => $this->path($name, $safe),
-        ] : [];
-    }
-
-    /**
-     * 获取上传地址
-     * @return string
-     */
-    public function upload(): string
-    {
-        $proc = $this->app->request->isSsl() ? 'https' : 'http';
-        return "{$proc}://{$this->bucket}.{$this->point}";
-    }
-
-    /**
-     * 生成上传令牌
-     * @param string $name 文件名称
-     * @param integer $expires 有效时间
-     * @param ?string $attname 下载名称
-     * @return array
-     */
-    public function token(string $name, int $expires = 3600, ?string $attname = null): array
-    {
-        $startTimestamp = time();
-        $endTimestamp = $startTimestamp + $expires;
-        $keyTime = "{$startTimestamp};{$endTimestamp}";
-        $siteurl = $this->url($name, false, $attname);
-        $policy = json_encode([
-            'expiration' => date('Y-m-d\TH:i:s.000\Z', $endTimestamp),
-            'conditions' => [['q-ak' => $this->secretId], ['q-sign-time' => $keyTime], ['q-sign-algorithm' => 'sha1']],
-        ]);
-        return [
-            'policy'      => base64_encode($policy), 'q-ak' => $this->secretId,
-            'siteurl'     => $siteurl, 'q-key-time' => $keyTime, 'q-sign-algorithm' => 'sha1',
-            'q-signature' => hash_hmac('sha1', sha1($policy), hash_hmac('sha1', $keyTime, $this->secretKey)),
-        ];
-    }
-
-    /**
-     * 生成请求签名
+     * 生成请求签名.
      * @param string $method 请求方式
      * @param string $soruce 资源名称
-     * @return array
      */
     private function _sign(string $method, string $soruce): array
     {
@@ -257,48 +278,17 @@ class TxcosStorage implements StorageInterface
         // 8.生成签名
         $signArray = [
             'q-sign-algorithm' => 'sha1',
-            'q-ak'             => $this->secretId,
-            'q-sign-time'      => $keyTime,
-            'q-key-time'       => $keyTime,
-            'q-header-list'    => $headerList,
+            'q-ak' => $this->secretId,
+            'q-sign-time' => $keyTime,
+            'q-key-time' => $keyTime,
+            'q-header-list' => $headerList,
             'q-url-param-list' => $urlParamList,
-            'q-signature'      => $signature,
+            'q-signature' => $signature,
         ];
         $header['Authorization'] = urldecode(http_build_query($signArray));
-        foreach ($header as $key => $value) $header[$key] = ucfirst($key) . ": {$value}";
+        foreach ($header as $key => $value) {
+            $header[$key] = ucfirst($key) . ": {$value}";
+        }
         return array_values($header);
-    }
-
-    /**
-     * 获取存储区域
-     * @return array
-     */
-    public static function region(): array
-    {
-        return [
-            'cos.ap-beijing-1.myqcloud.com'     => lang('中国大陆 公有云地域 北京一区'),
-            'cos.ap-beijing.myqcloud.com'       => lang('中国大陆 公有云地域 北京'),
-            'cos.ap-nanjing.myqcloud.com'       => lang('中国大陆 公有云地域 南京'),
-            'cos.ap-shanghai.myqcloud.com'      => lang('中国大陆 公有云地域 上海'),
-            'cos.ap-guangzhou.myqcloud.com'     => lang('中国大陆 公有云地域 广州'),
-            'cos.ap-chengdu.myqcloud.com'       => lang('中国大陆 公有云地域 成都'),
-            'cos.ap-chongqing.myqcloud.com'     => lang('中国大陆 公有云地域 重庆'),
-            'cos.ap-shenzhen-fsi.myqcloud.com'  => lang('中国大陆 金融云地域 深圳金融'),
-            'cos.ap-shanghai-fsi.myqcloud.com'  => lang('中国大陆 金融云地域 上海金融'),
-            'cos.ap-beijing-fsi.myqcloud.com'   => lang('中国大陆 金融云地域 北京金融'),
-            'cos.ap-hongkong.myqcloud.com'      => lang('亚太地区 公有云地域 中国香港'),
-            'cos.ap-singapore.myqcloud.com'     => lang('亚太地区 公有云地域 新加坡'),
-            'cos.ap-mumbai.myqcloud.com'        => lang('亚太地区 公有云地域 孟买'),
-            'cos.ap-jakarta.myqcloud.com'       => lang('亚太地区 公有云地域 雅加达'),
-            'cos.ap-seoul.myqcloud.com'         => lang('亚太地区 公有云地域 首尔'),
-            'cos.ap-bangkok.myqcloud.com'       => lang('亚太地区 公有云地域 曼谷'),
-            'cos.ap-tokyo.myqcloud.com'         => lang('亚太地区 公有云地域 东京'),
-            'cos.na-siliconvalley.myqcloud.com' => lang('北美地区 公有云地域 硅谷'),
-            'cos.na-ashburn.myqcloud.com'       => lang('北美地区 公有云地域 弗吉尼亚'),
-            'cos.na-toronto.myqcloud.com'       => lang('北美地区 公有云地域 多伦多'),
-            'cos.sa-saopaulo.myqcloud.com'      => lang('北美地区 公有云地域 圣保罗'),
-            'cos.eu-frankfurt.myqcloud.com'     => lang('欧洲地区 公有云地域 法兰克福'),
-            'cos.eu-moscow.myqcloud.com'        => lang('欧洲地区 公有云地域 莫斯科'),
-        ];
     }
 }

@@ -1,41 +1,43 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\helper;
 
 use think\admin\Helper;
 use think\db\BaseQuery;
+use think\db\exception\DbException;
 use think\Model;
 
 /**
- * 通用删除管理器
+ * 通用删除管理器.
  * @class DeleteHelper
- * @package think\admin\helper
  */
 class DeleteHelper extends Helper
 {
     /**
-     * 逻辑器初始化
+     * 逻辑器初始化.
      * @param BaseQuery|Model|string $dbQuery
      * @param string $field 操作数据主键
      * @param mixed $where 额外更新条件
-     * @return boolean|void
-     * @throws \think\db\exception\DbException
+     * @return bool|void
+     * @throws DbException
      */
     public function init($dbQuery, string $field = '', $where = [])
     {
@@ -44,13 +46,15 @@ class DeleteHelper extends Helper
         $value = $this->app->request->post($field);
 
         // 查询限制处理
-        if (!empty($where)) $query->where($where);
+        if (!empty($where)) {
+            $query->where($where);
+        }
         if (!isset($where[$field]) && is_string($value)) {
             $query->whereIn($field, str2arr($value));
         }
 
         // 前置回调处理
-        if (false === $this->class->callback('_delete_filter', $query, $where)) {
+        if ($this->class->callback('_delete_filter', $query, $where) === false) {
             return false;
         }
 
@@ -63,11 +67,19 @@ class DeleteHelper extends Helper
         $data = [];
         if (method_exists($query, 'getTableFields')) {
             $fields = $query->getTableFields();
-            if (in_array('deleted', $fields)) $data['deleted'] = 1;
-            if (in_array('is_deleted', $fields)) $data['is_deleted'] = 1;
+            if (in_array('deleted', $fields)) {
+                $data['deleted'] = 1;
+            }
+            if (in_array('is_deleted', $fields)) {
+                $data['is_deleted'] = 1;
+            }
             if (isset($data['deleted']) || isset($data['is_deleted'])) {
-                if (in_array('deleted_at', $fields)) $data['deleted_at'] = date('Y-m-d H:i:s');
-                if (in_array('deleted_time', $fields)) $data['deleted_time'] = time();
+                if (in_array('deleted_at', $fields)) {
+                    $data['deleted_at'] = date('Y-m-d H:i:s');
+                }
+                if (in_array('deleted_time', $fields)) {
+                    $data['deleted_time'] = time();
+                }
             }
         }
 
@@ -81,7 +93,7 @@ class DeleteHelper extends Helper
         }
 
         // 结果回调处理
-        if (false === $this->class->callback('_delete_result', $result)) {
+        if ($this->class->callback('_delete_result', $result) === false) {
             return $result;
         }
 

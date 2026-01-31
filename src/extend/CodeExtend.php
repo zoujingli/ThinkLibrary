@@ -1,34 +1,33 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\extend;
 
 /**
- * 随机数码管理扩展
+ * 随机数码管理扩展.
  * @class CodeExtend
- * @package think\admin\extend
  */
 class CodeExtend
 {
-
     /**
      * 生成 UUID 编码
-     * @return string
      */
     public static function uuid(): string
     {
@@ -40,48 +39,59 @@ class CodeExtend
 
     /**
      * 生成随机编码
-     * @param integer $size 编码长度
-     * @param integer $type 编码类型(1纯数字,2纯字母,3数字字母)
+     * @param int $size 编码长度
+     * @param int $type 编码类型(1纯数字,2纯字母,3数字字母)
      * @param string $prefix 编码前缀
-     * @return string
      */
     public static function random(int $size = 10, int $type = 1, string $prefix = ''): string
     {
         $numbs = '0123456789';
         $chars = 'abcdefghijklmnopqrstuvwxyz';
-        if ($type === 1) $chars = $numbs;
-        if ($type === 3) $chars = "{$numbs}{$chars}";
+        if ($type === 1) {
+            $chars = $numbs;
+        }
+        if ($type === 3) {
+            $chars = "{$numbs}{$chars}";
+        }
         $code = $prefix . $chars[rand(1, strlen($chars) - 1)];
-        while (strlen($code) < $size) $code .= $chars[rand(0, strlen($chars) - 1)];
+        while (strlen($code) < $size) {
+            $code .= $chars[rand(0, strlen($chars) - 1)];
+        }
         return $code;
     }
 
     /**
      * 生成日期编码
-     * @param integer $size 编码长度
+     * @param int $size 编码长度
      * @param string $prefix 编码前缀
-     * @return string
      */
     public static function uniqidDate(int $size = 16, string $prefix = ''): string
     {
-        if ($size < 14) $size = 14;
+        if ($size < 14) {
+            $size = 14;
+        }
         $code = $prefix . date('Ymd') . (date('H') + date('i')) . date('s');
-        while (strlen($code) < $size) $code .= rand(0, 9);
+        while (strlen($code) < $size) {
+            $code .= rand(0, 9);
+        }
         return $code;
     }
 
     /**
      * 生成数字编码
-     * @param integer $size 编码长度
+     * @param int $size 编码长度
      * @param string $prefix 编码前缀
-     * @return string
      */
     public static function uniqidNumber(int $size = 12, string $prefix = ''): string
     {
         $time = strval(time());
-        if ($size < 10) $size = 10;
+        if ($size < 10) {
+            $size = 10;
+        }
         $code = $prefix . (intval($time[0]) + intval($time[1])) . substr($time, 2) . rand(0, 9);
-        while (strlen($code) < $size) $code .= rand(0, 9);
+        while (strlen($code) < $size) {
+            $code .= rand(0, 9);
+        }
         return $code;
     }
 
@@ -89,23 +99,26 @@ class CodeExtend
      * 文本转码
      * @param string $text 文本内容
      * @param string $target 目标编码
-     * @return string
      */
     public static function text2utf8(string $text, string $target = 'UTF-8'): string
     {
         [$first2, $first4] = [substr($text, 0, 2), substr($text, 0, 4)];
-        if ($first4 === chr(0x00) . chr(0x00) . chr(0xFE) . chr(0xFF)) $ft = 'UTF-32BE';
-        elseif ($first4 === chr(0xFF) . chr(0xFE) . chr(0x00) . chr(0x00)) $ft = 'UTF-32LE';
-        elseif ($first2 === chr(0xFE) . chr(0xFF)) $ft = 'UTF-16BE';
-        elseif ($first2 === chr(0xFF) . chr(0xFE)) $ft = 'UTF-16LE';
+        if ($first4 === chr(0x00) . chr(0x00) . chr(0xFE) . chr(0xFF)) {
+            $ft = 'UTF-32BE';
+        } elseif ($first4 === chr(0xFF) . chr(0xFE) . chr(0x00) . chr(0x00)) {
+            $ft = 'UTF-32LE';
+        } elseif ($first2 === chr(0xFE) . chr(0xFF)) {
+            $ft = 'UTF-16BE';
+        } elseif ($first2 === chr(0xFF) . chr(0xFE)) {
+            $ft = 'UTF-16LE';
+        }
         return mb_convert_encoding($text, $target, $ft ?? mb_detect_encoding($text));
     }
 
     /**
-     * 数据加密处理
+     * 数据加密处理.
      * @param mixed $data 加密数据
      * @param string $skey 安全密钥
-     * @return string
      */
     public static function encrypt($data, string $skey): string
     {
@@ -115,7 +128,7 @@ class CodeExtend
     }
 
     /**
-     * 数据解密处理
+     * 数据解密处理.
      * @param string $data 解密数据
      * @param string $skey 安全密钥
      * @return mixed
@@ -129,7 +142,6 @@ class CodeExtend
     /**
      * Base64Url 安全编码
      * @param string $text 待加密文本
-     * @return string
      */
     public static function enSafe64(string $text): string
     {
@@ -139,17 +151,15 @@ class CodeExtend
     /**
      * Base64Url 安全解码
      * @param string $text 待解密文本
-     * @return string
      */
     public static function deSafe64(string $text): string
     {
-        return base64_decode(str_pad(strtr($text, '-_', '+/'), (int) (ceil(strlen($text) / 4) * 4), '='));
+        return base64_decode(str_pad(strtr($text, '-_', '+/'), (int)(ceil(strlen($text) / 4) * 4), '='));
     }
 
     /**
      * 压缩数据对象
      * @param mixed $data
-     * @return string
      */
     public static function enzip($data): string
     {
@@ -158,7 +168,6 @@ class CodeExtend
 
     /**
      * 解压数据对象
-     * @param string $string
      * @return mixed
      */
     public static function dezip(string $string)

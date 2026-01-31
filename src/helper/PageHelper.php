@@ -1,20 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | Library for ThinkAdmin
-// +----------------------------------------------------------------------
-// | 版权所有 2014~2025 ThinkAdmin [ thinkadmin.top ]
-// +----------------------------------------------------------------------
-// | 官方网站: https://thinkadmin.top
-// +----------------------------------------------------------------------
-// | 开源协议 ( https://mit-license.org )
-// | 免费声明 ( https://thinkadmin.top/disclaimer )
-// +----------------------------------------------------------------------
-// | gitee 仓库地址 ：https://gitee.com/zoujingli/ThinkLibrary
-// | github 仓库地址 ：https://github.com/zoujingli/ThinkLibrary
-// +----------------------------------------------------------------------
-
-declare (strict_types=1);
+declare(strict_types=1);
+/**
+ * +----------------------------------------------------------------------
+ * | Payment Plugin for ThinkAdmin
+ * +----------------------------------------------------------------------
+ * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
+ * +----------------------------------------------------------------------
+ * | 官方网站: https://thinkadmin.top
+ * +----------------------------------------------------------------------
+ * | 开源协议 ( https://mit-license.org )
+ * | 免责声明 ( https://thinkadmin.top/disclaimer )
+ * | 会员特权 ( https://thinkadmin.top/vip-introduce )
+ * +----------------------------------------------------------------------
+ * | gitee 代码仓库：https://gitee.com/zoujingli/ThinkAdmin
+ * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
+ * +----------------------------------------------------------------------
+ */
 
 namespace think\admin\helper;
 
@@ -22,29 +24,30 @@ use think\admin\Helper;
 use think\admin\Library;
 use think\admin\service\AdminService;
 use think\db\BaseQuery;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\DbException;
+use think\db\exception\ModelNotFoundException;
 use think\db\Query;
 use think\exception\HttpResponseException;
 use think\Model;
 
 /**
- * 列表处理管理器
+ * 列表处理管理器.
  * @class PageHelper
- * @package think\admin\helper
  */
 class PageHelper extends Helper
 {
     /**
-     * 逻辑器初始化
+     * 逻辑器初始化.
      * @param BaseQuery|Model|string $dbQuery
-     * @param boolean|integer $page 是否分页或指定分页
-     * @param boolean $display 是否渲染模板
-     * @param boolean|integer $total 集合分页记录数
-     * @param integer $limit 集合每页记录数
+     * @param bool|int $page 是否分页或指定分页
+     * @param bool $display 是否渲染模板
+     * @param bool|int $total 集合分页记录数
+     * @param int $limit 集合每页记录数
      * @param string $template 模板文件名称
-     * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function init($dbQuery, $page = true, bool $display = true, $total = false, int $limit = 0, string $template = ''): array
     {
@@ -62,15 +65,19 @@ class PageHelper extends Helper
             $prefix = $inner ? (sysuri('admin/index/index') . '#') : '';
             // 生成分页数据
             $config = ['list_rows' => $limit, 'query' => $get];
-            if (is_numeric($page)) $config['page'] = $page;
+            if (is_numeric($page)) {
+                $config['page'] = $page;
+            }
             $data = ($paginate = $query->paginate($config, $this->getCount($query, $total)))->toArray();
             $result = ['page' => ['limit' => $data['per_page'], 'total' => $data['total'], 'pages' => $data['last_page'], 'current' => $data['current_page']], 'list' => $data['data']];
             // 分页跳转参数
             $select = "<select onchange='location.href=this.options[this.selectedIndex].value'>";
-            if (in_array($limit, $limits)) foreach ($limits as $num) {
-                $get = array_merge($get, ['limit' => $num, 'page' => 1]);
-                $url = $this->app->request->baseUrl() . '?' . http_build_query($get, '', '&', PHP_QUERY_RFC3986);
-                $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
+            if (in_array($limit, $limits)) {
+                foreach ($limits as $num) {
+                    $get = array_merge($get, ['limit' => $num, 'page' => 1]);
+                    $url = $this->app->request->baseUrl() . '?' . http_build_query($get, '', '&', PHP_QUERY_RFC3986);
+                    $select .= sprintf('<option data-num="%d" value="%s" %s>%d</option>', $num, $prefix . $url, $limit === $num ? 'selected' : '', $num);
+                }
             } else {
                 $select .= "<option selected>{$limit}</option>";
             }
@@ -80,7 +87,7 @@ class PageHelper extends Helper
         } else {
             $result = ['list' => $query->select()->toArray()];
         }
-        if (false !== $this->class->callback('_page_filter', $result['list'], $result) && $display) {
+        if ($this->class->callback('_page_filter', $result['list'], $result) !== false && $display) {
             if ($this->output === 'get.json') {
                 $this->class->success('JSON-DATA', $result);
             } else {
@@ -91,13 +98,11 @@ class PageHelper extends Helper
     }
 
     /**
-     * 组件 Layui.Table 处理
+     * 组件 Layui.Table 处理.
      * @param BaseQuery|Model|string $dbQuery
-     * @param string $template
-     * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\DbException
-     * @throws \think\db\exception\ModelNotFoundException
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function layTable($dbQuery, string $template = ''): array
     {
@@ -105,7 +110,7 @@ class PageHelper extends Helper
             $get = $this->app->request->get();
             $query = static::buildQuery($dbQuery);
             // 根据参数排序
-            if (isset($get['_field_']) && isset($get['_order_'])) {
+            if (isset($get['_field_'], $get['_order_'])) {
                 $dbQuery->order("{$get['_field_']} {$get['_order_']}");
             }
             return PageHelper::instance()->init($query);
@@ -114,7 +119,7 @@ class PageHelper extends Helper
             $get = $this->app->request->get();
             $query = $this->autoSortQuery($dbQuery);
             // 根据参数排序
-            if (isset($get['_field_']) && isset($get['_order_'])) {
+            if (isset($get['_field_'], $get['_order_'])) {
                 $query->order("{$get['_field_']} {$get['_order_']}");
             }
             // 数据分页处理
@@ -126,54 +131,20 @@ class PageHelper extends Helper
                 $data = $query->paginate($cfg, static::getCount($query))->toArray();
                 $result = ['msg' => '', 'code' => 0, 'count' => $data['total'], 'data' => $data['data']];
             }
-            if (false !== $this->class->callback('_page_filter', $result['data'], $result)) {
+            if ($this->class->callback('_page_filter', $result['data'], $result) !== false) {
                 static::xssFilter($result['data']);
                 throw new HttpResponseException(json($result));
-            } else {
-                return $result;
             }
-        } else {
-            $this->class->fetch($template);
-            return [];
+            return $result;
         }
-    }
-
-    /**
-     * 输出 XSS 过滤处理
-     * @param array $items
-     */
-    private static function xssFilter(array &$items)
-    {
-        foreach ($items as &$item) if (is_array($item)) {
-            static::xssFilter($item);
-        } elseif (is_string($item)) {
-            $item = htmlspecialchars($item, ENT_QUOTES);
-        }
-    }
-
-    /**
-     * 查询对象数量统计
-     * @param BaseQuery|Query $query
-     * @param boolean|integer $total
-     * @return integer|boolean|string
-     * @throws \think\db\exception\DbException
-     */
-    private static function getCount($query, $total = false)
-    {
-        if ($total === true || is_numeric($total)) return $total;
-        [$query, $options] = [clone $query, $query->getOptions()];
-        if (isset($options['order'])) $query->removeOption('order');
-        Library::$sapp->db->trigger('think_before_page_count', $query);
-        if (empty($options['union'])) return $query->count();
-        $table = [$query->buildSql() => '_union_count_'];
-        return $query->newQuery()->table($table)->count();
+        $this->class->fetch($template);
+        return [];
     }
 
     /**
      * 绑定排序并返回操作对象
      * @param BaseQuery|Model|string $dbQuery
      * @param string $field 指定排序字段
-     * @return \think\db\Query
      */
     public function autoSortQuery($dbQuery, string $field = 'sort'): Query
     {
@@ -195,5 +166,43 @@ class PageHelper extends Helper
             $this->class->error('列表排序失败！');
         }
         return $query;
+    }
+
+    /**
+     * 输出 XSS 过滤处理.
+     */
+    private static function xssFilter(array &$items)
+    {
+        foreach ($items as &$item) {
+            if (is_array($item)) {
+                static::xssFilter($item);
+            } elseif (is_string($item)) {
+                $item = htmlspecialchars($item, ENT_QUOTES);
+            }
+        }
+    }
+
+    /**
+     * 查询对象数量统计
+     * @param BaseQuery|Query $query
+     * @param bool|int $total
+     * @return bool|int|string
+     * @throws DbException
+     */
+    private static function getCount($query, $total = false)
+    {
+        if ($total === true || is_numeric($total)) {
+            return $total;
+        }
+        [$query, $options] = [clone $query, $query->getOptions()];
+        if (isset($options['order'])) {
+            $query->removeOption('order');
+        }
+        Library::$sapp->db->trigger('think_before_page_count', $query);
+        if (empty($options['union'])) {
+            return $query->count();
+        }
+        $table = [$query->buildSql() => '_union_count_'];
+        return $query->newQuery()->table($table)->count();
     }
 }
