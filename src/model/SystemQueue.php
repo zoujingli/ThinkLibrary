@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -25,8 +25,11 @@ use think\admin\Model;
 /**
  * 系统任务模型.
  *
+ * @property float $enter_time 开始时间
+ * @property float $outer_time 结束时间
  * @property int $attempts 执行次数
  * @property int $exec_pid 执行进程
+ * @property int $exec_time 执行时间
  * @property int $id
  * @property int $loops_time 循环时间
  * @property int $rscript 任务类型(0单例,1多例)
@@ -34,12 +37,9 @@ use think\admin\Model;
  * @property string $code 任务编号
  * @property string $command 执行指令
  * @property string $create_at 创建时间
- * @property string $enter_time 开始时间
  * @property string $exec_data 执行参数
  * @property string $exec_desc 执行描述
- * @property string $exec_time 执行时间
  * @property string $message 最新消息
- * @property string $outer_time 结束时间
  * @property string $title 任务名称
  * @class SystemQueue
  */

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * +----------------------------------------------------------------------
- * | Payment Plugin for ThinkAdmin
+ * | ThinkAdmin Plugin for ThinkAdmin
  * +----------------------------------------------------------------------
  * | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
  * +----------------------------------------------------------------------
@@ -23,7 +23,7 @@ use PhpCsFixer\Runner\Parallel\ParallelConfig;
 
 $header = <<<'EOF'
 +----------------------------------------------------------------------
-| Payment Plugin for ThinkAdmin
+| ThinkAdmin Plugin for ThinkAdmin
 +----------------------------------------------------------------------
 | 版权所有 2014~2026 ThinkAdmin [ thinkadmin.top ]
 +----------------------------------------------------------------------
