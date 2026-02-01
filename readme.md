@@ -21,6 +21,7 @@
 - **表单验证机制**: 支持规则别名和自定义验证，确保数据输入安全
 - **异步任务队列**: 支持延时执行和循环任务，提升系统响应性能
 - **CSRF 令牌验证**: 内置表单安全验证，防止跨站请求伪造攻击
+- **高精度计算支持**: 集成 BC Math 高精度数学函数，确保金融计算的准确性
 
 **技术特性：**
 - **PSR-12 标准**: 严格遵循 PHP-FIG 编码规范，确保代码质量和可维护性
@@ -28,6 +29,7 @@
 - **高性能优化**: 针对高并发场景进行专门优化，支持缓存和数据库连接池
 - **异常处理完善**: 完善的异常捕获和日志记录机制，便于问题排查
 - **向后兼容**: 保持 API 稳定性，确保平滑升级
+- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
 
 ## 功能说明
 
@@ -116,6 +118,8 @@
 * **Gitee** 仓库地址：https://gitee.com/zoujingli/ThinkLibrary
 * **Github** 仓库地址：https://github.com/zoujingli/ThinkLibrary
 * **Gitcode** 仓库地址： https://gitcode.com/ThinkAdmin/ThinkLibrary
+
+版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
 
 ## 使用说明
 
