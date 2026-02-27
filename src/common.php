@@ -415,8 +415,9 @@ if (!function_exists('down_file')) {
 if (!function_exists('trace_file')) {
     /**
      * 输出异常数据到文件.
+     * @param \Throwable $exception 支持 Exception 与 Error（PHP 7+）
      */
-    function trace_file(Exception $exception): bool
+    function trace_file(\Throwable $exception): bool
     {
         $path = Library::$sapp->getRuntimePath() . 'trace';
         if (!is_dir($path)) {
