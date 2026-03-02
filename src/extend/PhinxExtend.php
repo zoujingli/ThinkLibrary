@@ -122,7 +122,7 @@ class PhinxExtend
         $br = "\r\n";
         $content = static::_build2table($tables, true, $force);
         $content = substr($content, strpos($content, "\n") + 1);
-        $content = '<?php' . "{$br}{$br}use think\\admin\\extend\\PhinxExtend;{$br}use think\\migration\\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', -1);{$br}{$br}class {$class} extends Migrator{$br}{{$br}{$content}}{$br}";
+        $content = '<?php' . "{$br}{$br}use think\\admin\\extend\\PhinxExtend;{$br}use think\\migration\\Migrator;{$br}{$br}@set_time_limit(0);{$br}@ini_set('memory_limit', '-1');{$br}{$br}class {$class} extends Migrator{$br}{{$br}{$content}}{$br}";
         return ['file' => static::nextFile($class), 'text' => $content];
     }
 
