@@ -17,6 +17,7 @@ declare(strict_types=1);
  * | github 代码仓库：https://github.com/zoujingli/ThinkAdmin
  * +----------------------------------------------------------------------
  */
+use think\admin\Exception;
 use think\admin\extend\CodeExtend;
 use think\admin\extend\HttpExtend;
 use think\admin\Helper;
@@ -250,7 +251,7 @@ if (!function_exists('sysconf')) {
      * @param string $name 参数名称
      * @param mixed $value 参数内容
      * @return mixed
-     * @throws think\admin\Exception
+     * @throws Exception
      */
     function sysconf(string $name = '', $value = null)
     {
@@ -266,7 +267,7 @@ if (!function_exists('sysdata')) {
      * @param string $name 数据名称
      * @param mixed $value 数据内容
      * @return mixed
-     * @throws think\admin\Exception
+     * @throws Exception
      */
     function sysdata(string $name, $value = null)
     {
@@ -320,7 +321,7 @@ if (!function_exists('sysqueue')) {
      * @param array $data 任务附加数据
      * @param int $rscript 任务类型(0单例,1多例)
      * @param int $loops 循环等待时间
-     * @throws think\admin\Exception
+     * @throws Exception
      */
     function sysqueue(string $title, string $command, int $later = 0, array $data = [], int $rscript = 1, int $loops = 0): string
     {
@@ -392,7 +393,7 @@ if (!function_exists('data_save')) {
      * @param string $key 条件主键限制
      * @param mixed $where 其它的where条件
      * @return bool|int
-     * @throws think\admin\Exception
+     * @throws Exception
      */
     function data_save($dbQuery, array $data, string $key = 'id', $where = [])
     {
@@ -415,9 +416,9 @@ if (!function_exists('down_file')) {
 if (!function_exists('trace_file')) {
     /**
      * 输出异常数据到文件.
-     * @param \Throwable $exception 支持 Exception 与 Error（PHP 7+）
+     * @param Throwable $exception 支持 Exception 与 Error（PHP 7+）
      */
-    function trace_file(\Throwable $exception): bool
+    function trace_file(Throwable $exception): bool
     {
         $path = Library::$sapp->getRuntimePath() . 'trace';
         if (!is_dir($path)) {
@@ -425,13 +426,13 @@ if (!function_exists('trace_file')) {
         }
         $name = substr($exception->getFile(), strlen(syspath()));
         $file = $path . DIRECTORY_SEPARATOR . date('Ymd_His_') . strtr($name, ['/' => '.', '\\' => '.']);
-        $json = json_encode($exception instanceof think\admin\Exception ? $exception->getData() : [], 64 | 128 | 256);
+        $json = json_encode($exception instanceof Exception ? $exception->getData() : [], 64 | 128 | 256);
         $class = get_class($exception);
         return file_put_contents(
             $file,
             "[CODE] {$exception->getCode()}" . PHP_EOL
                 . "[INFO] {$exception->getMessage()}" . PHP_EOL
-                . ($exception instanceof think\admin\Exception ? "[DATA] {$json}" . PHP_EOL : '')
+                . ($exception instanceof Exception ? "[DATA] {$json}" . PHP_EOL : '')
                 . "[FILE] {$class} in {$name} line {$exception->getLine()}" . PHP_EOL
                 . '[TIME] ' . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL
                 . '[TRACE]' . PHP_EOL . $exception->getTraceAsString()
