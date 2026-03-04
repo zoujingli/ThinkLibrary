@@ -201,8 +201,9 @@ if (!function_exists('str2arr')) {
     {
         $items = [];
         foreach (explode($separ, trim($text, $separ)) as $item) {
-            if ($item !== '' && (!is_array($allow) || in_array($item, $allow))) {
-                $items[] = trim($item);
+            $item = trim($item);
+            if ($item !== '' && (!is_array($allow) || in_array($item, $allow, true))) {
+                $items[] = $item;
             }
         }
         return $items;
@@ -218,8 +219,11 @@ if (!function_exists('arr2str')) {
     function arr2str(array $data, string $separ = ',', ?array $allow = null): string
     {
         foreach ($data as $key => $item) {
-            if ($item === '' || (is_array($allow) && !in_array($item, $allow))) {
+            $item = is_string($item) ? trim($item) : $item;
+            if ($item === '' || (is_array($allow) && !in_array($item, $allow, true))) {
                 unset($data[$key]);
+            } else {
+                $data[$key] = $item;
             }
         }
         return $separ . join($separ, $data) . $separ;
