@@ -96,15 +96,20 @@ class PhinxExtend
                 $table->addColumn($field[0], ...array_slice($field, 1));
             }
         }
-        // 生成索引规则
-        foreach ($indexs as $spec) {
-            [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
-            if (empty($columns) || (!empty($isExists) && $table->hasIndex($columns))) {
-                continue;
+        if ($isExists) {
+            $table->update();
+            self::syncTableIndexes($table->getName(), $indexs);
+        } else {
+            // 新表创建时直接挂载索引定义
+            foreach ($indexs as $spec) {
+                [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
+                if (empty($columns)) {
+                    continue;
+                }
+                $table->addIndex($columns, $options);
             }
-            $table->addIndex($columns, $options);
+            $table->create();
         }
-        $isExists ? $table->update() : $table->create();
         if ($table->hasColumn('id')) {
             $table->changeColumn('id', 'integer', ['limit' => 11, 'identity' => true]);
         }
@@ -250,6 +255,221 @@ class PhinxExtend
         }
 
         return [[], []];
+    }
+
+    /**
+     * 同步已存在数据表的索引结构，避免同列索引配置变更时被跳过。
+     */
+    private static function syncTableIndexes(string $table, array $indexs): void
+    {
+        $desired = [];
+        foreach ($indexs as $spec) {
+            [$columns, $options] = self::parseIndexSpec($table, $spec);
+            if (empty($columns)) {
+                continue;
+            }
+            $index = self::normalizeIndex($table, $columns, $options);
+            $desired[self::indexCacheKey($index)] = $index;
+        }
+        if (empty($desired)) {
+            return;
+        }
+
+        $existing = array_values(self::loadTableIndexes($table));
+        $used = [];
+        $drops = [];
+        $creates = [];
+
+        foreach ($desired as $expect) {
+            [$exact, $conflicts] = [[], []];
+            foreach ($existing as $idx => $current) {
+                if (isset($used[$idx])) {
+                    continue;
+                }
+                $sameDefinition = self::indexDefinitionKey($current) === self::indexDefinitionKey($expect);
+                $sameColumns = $current['columns'] === $expect['columns'];
+                $sameName = $current['name'] === $expect['name'];
+                if ($sameDefinition) {
+                    $exact[] = $idx;
+                    continue;
+                }
+                if ($sameColumns || $sameName) {
+                    $conflicts[] = $idx;
+                }
+            }
+
+            if (!empty($exact)) {
+                $primary = array_shift($exact);
+                $used[$primary] = true;
+
+                foreach ($conflicts as $idx) {
+                    $drops[$existing[$idx]['name']] = $existing[$idx]['name'];
+                    $used[$idx] = true;
+                }
+                foreach ($exact as $idx) {
+                    $drops[$existing[$idx]['name']] = $existing[$idx]['name'];
+                    $used[$idx] = true;
+                }
+
+                if ($existing[$primary]['name'] !== $expect['name']) {
+                    $drops[$existing[$primary]['name']] = $existing[$primary]['name'];
+                    $creates[$expect['name']] = $expect;
+                }
+                continue;
+            }
+
+            foreach ($conflicts as $idx) {
+                $drops[$existing[$idx]['name']] = $existing[$idx]['name'];
+                $used[$idx] = true;
+            }
+            $creates[$expect['name']] = $expect;
+        }
+
+        $connect = Library::$sapp->db->connect();
+        foreach ($drops as $name) {
+            $connect->execute(self::buildDropIndexSql($table, $name));
+        }
+        foreach ($creates as $index) {
+            $connect->execute(self::buildAddIndexSql($table, $index));
+        }
+    }
+
+    /**
+     * 读取当前数据表索引定义.
+     * @return array<string, array<string, mixed>>
+     */
+    private static function loadTableIndexes(string $table): array
+    {
+        $indexes = [];
+        foreach (Library::$sapp->db->connect()->query('SHOW INDEX FROM ' . self::quoteIdentifier($table)) as $index) {
+            $keyName = strval($index['Key_name'] ?? '');
+            if ($keyName === '' || $keyName === 'PRIMARY') {
+                continue;
+            }
+            $column = strval($index['Column_name'] ?? '');
+            $indexes[$keyName]['name'] = $keyName;
+            $indexes[$keyName]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
+            $indexes[$keyName]['columns'][intval($index['Seq_in_index'] ?? 0)] = $column;
+            if (is_numeric($index['Sub_part'] ?? null) && intval($index['Sub_part']) > 0) {
+                $indexes[$keyName]['limits'][$column] = intval($index['Sub_part']);
+            }
+        }
+        foreach ($indexes as $name => $index) {
+            $columns = $index['columns'] ?? [];
+            ksort($columns);
+            $columns = array_values(array_filter($columns, 'strlen'));
+            $indexes[$name] = [
+                'name' => $name,
+                'unique' => !empty($index['unique']),
+                'columns' => $columns,
+                'limits' => self::normalizeIndexLimits($columns, $index['limits'] ?? []),
+            ];
+        }
+        return $indexes;
+    }
+
+    /**
+     * 规范化索引配置.
+     * @param array<int, string> $columns
+     * @param array<string, mixed> $options
+     * @return array{name:string,unique:bool,columns:array<int, string>,limits:array<string, int>}
+     */
+    private static function normalizeIndex(string $table, array $columns, array $options): array
+    {
+        $columns = array_values(array_filter(array_map('strval', $columns), 'strlen'));
+        $unique = !empty($options['unique']);
+        $name = strval($options['name'] ?? self::genIndexName($table, $columns, $unique));
+        return [
+            'name' => $name,
+            'unique' => $unique,
+            'columns' => $columns,
+            'limits' => self::normalizeIndexLimits($columns, $options['limit'] ?? []),
+        ];
+    }
+
+    /**
+     * 规范化索引前缀长度配置.
+     * @param array<int, string> $columns
+     * @return array<string, int>
+     */
+    private static function normalizeIndexLimits(array $columns, mixed $limits): array
+    {
+        $result = [];
+        if (is_numeric($limits) && count($columns) === 1) {
+            $result[$columns[0]] = intval($limits);
+            return $result;
+        }
+        if (!is_array($limits)) {
+            return $result;
+        }
+        foreach ($columns as $column) {
+            if (isset($limits[$column]) && is_numeric($limits[$column])) {
+                $result[$column] = intval($limits[$column]);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * 生成索引缓存键，避免重复定义.
+     * @param array<string, mixed> $index
+     */
+    private static function indexCacheKey(array $index): string
+    {
+        return $index['name'] . '|' . self::indexDefinitionKey($index);
+    }
+
+    /**
+     * 生成索引定义键，用于比较结构是否一致.
+     * @param array<string, mixed> $index
+     */
+    private static function indexDefinitionKey(array $index): string
+    {
+        return json_encode([
+            'columns' => array_values($index['columns'] ?? []),
+            'unique' => !empty($index['unique']),
+            'limits' => $index['limits'] ?? [],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * 生成删除索引 SQL.
+     */
+    private static function buildDropIndexSql(string $table, string $name): string
+    {
+        return sprintf('ALTER TABLE %s DROP INDEX %s', self::quoteIdentifier($table), self::quoteIdentifier($name));
+    }
+
+    /**
+     * 生成新增索引 SQL.
+     * @param array{name:string,unique:bool,columns:array<int, string>,limits:array<string, int>} $index
+     */
+    private static function buildAddIndexSql(string $table, array $index): string
+    {
+        $segments = [];
+        foreach ($index['columns'] as $column) {
+            $segment = self::quoteIdentifier($column);
+            if (!empty($index['limits'][$column])) {
+                $segment .= '(' . intval($index['limits'][$column]) . ')';
+            }
+            $segments[] = $segment;
+        }
+        $prefix = !empty($index['unique']) ? 'ADD UNIQUE INDEX' : 'ADD INDEX';
+        return sprintf(
+            'ALTER TABLE %s %s %s (%s)',
+            self::quoteIdentifier($table),
+            $prefix,
+            self::quoteIdentifier($index['name']),
+            implode(', ', $segments)
+        );
+    }
+
+    /**
+     * 简单的 MySQL 标识符转义.
+     */
+    private static function quoteIdentifier(string $name): string
+    {
+        return '`' . str_replace('`', '``', $name) . '`';
     }
 
     /**
