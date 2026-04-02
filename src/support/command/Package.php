@@ -80,11 +80,13 @@ class Package extends Command
      */
     private function createScheme(): bool
     {
-        $force = $this->input->hasOption('force');
+        $force = boolval($this->input->getOption('force'));
+        $table = trim((string)$this->input->getOption('table'));
+        $all = boolval($this->input->getOption('all'));
         // 接收指定打包数据表
-        if ($this->input->hasOption('table')) {
-            $tables = str2arr(strtr($this->input->getOption('table'), '|', ','));
-        } elseif ($this->input->hasOption('all')) {
+        if ($table !== '') {
+            $tables = str2arr(strtr($table, '|', ','));
+        } elseif ($all) {
             [$tables] = SystemService::getTables();
         } else {
             $tables = Library::$sapp->config->get('phinx.tables', []);
@@ -134,10 +136,12 @@ class Package extends Command
      */
     private function createBackup(): bool
     {
+        $backup = trim((string)$this->input->getOption('backup'));
+        $all = boolval($this->input->getOption('all'));
         // 接收指定打包数据表
-        if ($this->input->hasOption('backup')) {
-            $tables = str2arr(strtr($this->input->getOption('backup'), '|', ','));
-        } elseif ($this->input->hasOption('all')) {
+        if ($backup !== '') {
+            $tables = str2arr(strtr($backup, '|', ','));
+        } elseif ($all) {
             [$tables] = SystemService::getTables();
         } else {
             [$tables] = SystemService::getTables();

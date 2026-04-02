@@ -91,7 +91,48 @@ class Publish extends Command
 
         // 复制数据库脚本
         $frdir = rtrim($copy, '\/') . DIRECTORY_SEPARATOR . 'database';
+        $this->cleanupPublishedMigrations($frdir, syspath('database/migrations'));
         ToolsExtend::copy($frdir, syspath('database/migrations'), [], $force, false);
+    }
+
+    /**
+     * 清理已改名但仍残留在根目录的旧迁移脚本.
+     */
+    private function cleanupPublishedMigrations(string $source, string $target): void
+    {
+        if (!is_dir($source) || !is_dir($target)) {
+            return;
+        }
+
+        $sourceMigrations = [];
+        foreach (ToolsExtend::find($source, 1, function (\SplFileInfo $info) {
+            return $info->isFile() && strtolower($info->getExtension()) === 'php';
+        }) as $file) {
+            $name = basename($file);
+            if (preg_match('/^\d{14}_(.+\.php)$/', $name, $match)) {
+                $sourceMigrations[$match[1]] = $name;
+            }
+        }
+        if (empty($sourceMigrations)) {
+            return;
+        }
+
+        foreach (ToolsExtend::find($target, 1, function (\SplFileInfo $info) {
+            return $info->isFile() && strtolower($info->getExtension()) === 'php';
+        }) as $file) {
+            $name = basename($file);
+            if (!preg_match('/^(\d{14})_(.+\.php)$/', $name, $match)) {
+                continue;
+            }
+            [$version, $suffix] = [$match[1], $match[2]];
+            if (($sourceMigrations[$suffix] ?? $name) === $name) {
+                continue;
+            }
+            @unlink(rtrim($target, '\/') . DIRECTORY_SEPARATOR . $name);
+            if (is_dir($dataPath = rtrim($target, '\/') . DIRECTORY_SEPARATOR . $version)) {
+                ToolsExtend::remove($dataPath);
+            }
+        }
     }
 
     /**
