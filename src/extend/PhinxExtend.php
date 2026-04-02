@@ -97,10 +97,12 @@ class PhinxExtend
             }
         }
         // 生成索引规则
-        foreach ($indexs as $field) {
-            if (empty($isExists) || !$table->hasIndex($field)) {
-                $table->addIndex($field, ['name' => self::genIndexName($table->getName(), $field)]);
+        foreach ($indexs as $spec) {
+            [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
+            if (empty($columns) || (!empty($isExists) && $table->hasIndex($columns))) {
+                continue;
             }
+            $table->addIndex($columns, $options);
         }
         $isExists ? $table->update() : $table->create();
         if ($table->hasColumn('id')) {
@@ -216,17 +218,38 @@ class PhinxExtend
      * 缩写规则: 取每个下划线分隔部分的第一个字母
      *
      * @param string $table 表名
-     * @param string $name 字段名
+     * @param array<int, string>|string $name 字段名
      * @return string 生成的索引名称
      */
-    private static function genIndexName(string $table, string $name): string
+    private static function genIndexName(string $table, array|string $name, bool $unique = false): string
     {
-        $getInitials = function (string $str): string {
-            return implode('', array_map(function ($part) {
-                return $part[0] ?? '';
-            }, explode('_', $str)));
-        };
-        return sprintf('idx_%s_%s_%s', substr(md5($table), -4), $getInitials($table), $name);
+        return IndexNameService::generate($table, $name, $unique);
+    }
+
+    /**
+     * @return array{0:array<int, string>,1:array<string, mixed>}
+     */
+    private static function parseIndexSpec(string $table, mixed $spec): array
+    {
+        if (is_string($spec)) {
+            $columns = [$spec];
+            return [$columns, ['name' => self::genIndexName($table, $columns)]];
+        }
+
+        if (is_array($spec) && array_is_list($spec)) {
+            $columns = array_values(array_filter($spec, 'is_string'));
+            return [$columns, ['name' => self::genIndexName($table, $columns)]];
+        }
+
+        if (is_array($spec)) {
+            $columns = array_values(array_filter((array)($spec['columns'] ?? []), 'is_string'));
+            $unique = !empty($spec['unique']);
+            $options = array_diff_key($spec, ['columns' => true]);
+            $options['name'] = $options['name'] ?? self::genIndexName($table, $columns, $unique);
+            return [$columns, $options];
+        }
+
+        return [[], []];
     }
 
     /**
@@ -343,16 +366,50 @@ CODE;
             // 生成索引内容
             $_indexs = [];
             foreach (Library::$sapp->db->connect()->query("show index from {$table}") as $index) {
-                $index['Key_name'] !== 'PRIMARY' && $_indexs[] = $index['Column_name'];
+                $keyName = strval($index['Key_name'] ?? '');
+                if ($keyName === '' || $keyName === 'PRIMARY') {
+                    continue;
+                }
+                $_indexs[$keyName]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
+                $column = strval($index['Column_name'] ?? '');
+                $_indexs[$keyName]['columns'][intval($index['Seq_in_index'] ?? 0)] = $column;
+                if (is_numeric($index['Sub_part'] ?? null) && intval($index['Sub_part']) > 0) {
+                    $_indexs[$keyName]['limits'][$column] = intval($index['Sub_part']);
+                }
             }
-            usort($_indexs, function ($a, $b) {
-                return strlen($a) <=> strlen($b);
-            });
-            $_indexString = '[' . PHP_EOL . "\t\t\t";
+            ksort($_indexs);
+            $_indexSpecs = [];
             foreach ($_indexs as $index) {
-                $_indexString .= "'{$index}', ";
+                $columns = $index['columns'] ?? [];
+                ksort($columns);
+                $columns = array_values(array_filter($columns, 'strlen'));
+                if (empty($columns)) {
+                    continue;
+                }
+                $options = [];
+                if (!empty($index['limits'])) {
+                    $limits = [];
+                    foreach ($columns as $column) {
+                        if (isset($index['limits'][$column])) {
+                            $limits[$column] = intval($index['limits'][$column]);
+                        }
+                    }
+                    if (!empty($limits)) {
+                        $options['limit'] = $limits;
+                    }
+                }
+                if (!empty($index['unique'])) {
+                    $options['unique'] = true;
+                }
+                if (count($columns) === 1 && empty($options)) {
+                    $_indexSpecs[] = $columns[0];
+                } elseif (count($columns) > 1 && empty($options)) {
+                    $_indexSpecs[] = $columns;
+                } else {
+                    $_indexSpecs[] = array_merge(['columns' => $columns], $options);
+                }
             }
-            $_indexString .= PHP_EOL . "\t\t]";
+            $_indexString = self::_arr2str($_indexSpecs);
             $content = str_replace(['_FIELDS_', '_INDEXS_', '__FORCE__'], [$_fieldString, $_indexString, $force ? 'true' : 'false'], $content) . PHP_EOL . PHP_EOL;
         }
         return $rehtml ? $content : highlight_string($content, true);
