@@ -8,7 +8,7 @@
 [![PHP Version](https://thinkadmin.top/static/icon/php-7.1.svg)](https://thinkadmin.top)
 [![License](https://thinkadmin.top/static/icon/license-mit.svg)](https://mit-license.org)
 
-**ThinkLibrary** 是一个针对 **ThinkPHP 6 & 8** 的封装库，它提供了完整的 **CRUD**（创建、读取、更新、删除）操作和一系列常用工具。
+**ThinkLibrary** 是 **ThinkAdmin** 面向 **ThinkPHP 6 & 8** 的核心封装库，提供控制器、模型、服务、队列、存储、配置、HTTP、JWT 和常用数据处理能力。
 
 ## 业务功能特性
 
@@ -26,10 +26,8 @@
 **技术特性：**
 - **PSR-12 标准**: 严格遵循 PHP-FIG 编码规范，确保代码质量和可维护性
 - **模块化设计**: 各功能模块独立封装，便于扩展和维护
-- **高性能优化**: 针对高并发场景进行专门优化，支持缓存和数据库连接池
 - **异常处理完善**: 完善的异常捕获和日志记录机制，便于问题排查
 - **向后兼容**: 保持 API 稳定性，确保平滑升级
-- **数据完整性保障**: 通过数据库约束确保业务数据的一致性和有效性
 
 ## 功能说明
 

@@ -2,7 +2,7 @@
   "name": "zoujingli/think-library",
   "license": "MIT",
   "homepage": "https://thinkadmin.top",
-  "description": "Library for ThinkAdmin",
+  "description": "Core library and common services for ThinkAdmin",
   "authors": [
     {
       "name": "Anyon",
