@@ -168,7 +168,7 @@ class MultAccess
         [$ext, $fmaps] = [$this->app->getConfigExt(), []];
         // 加载应用函数文件
         if (is_file($file = "{$appPath}common{$ext}")) {
-            Library::load($file);
+            Library::load($file, true);
         }
         // 加载应用配置文件
         ToolsExtend::find($appPath . 'config', 1, function (\SplFileInfo $info) use ($ext) {

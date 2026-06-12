@@ -104,10 +104,10 @@ class Library extends Service
      * 动态加载文件.
      * @return mixed
      */
-    public static function load(string $file)
+    public static function load(string $file, bool $once = false)
     {
         try {
-            return include $file;
+            return $once ? include_once $file : include $file;
         } catch (\Error|\Throwable $error) {
             trace_file($error);
             throw new HttpException(500, $error->getMessage());
@@ -122,10 +122,10 @@ class Library extends Service
         // 动态加载全局配置
         [$dir, $ext] = [$this->app->getBasePath(), $this->app->getConfigExt()];
         ToolsExtend::find($dir, 2, function (\SplFileInfo $info) use ($ext) {
-            $info->isFile() && $info->getBasename() === "sys{$ext}" && Library::load($info->getPathname());
+            $info->isFile() && $info->getBasename() === "sys{$ext}" && Library::load($info->getPathname(), true);
         });
         if (is_file($file = "{$dir}common{$ext}")) {
-            Library::load($file);
+            Library::load($file, true);
         }
         if (is_file($file = "{$dir}provider{$ext}")) {
             $this->app->bind(include $file);
