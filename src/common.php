@@ -389,6 +389,17 @@ if (!function_exists('http_post')) {
         return HttpExtend::post($url, $data, $options);
     }
 }
+if (!function_exists('http_multi')) {
+    /**
+     * 并发执行多个HTTP请求.
+     * @param array $requests 请求配置 [['method' => 'GET', 'url' => '...', 'options' => [...]]]
+     * @return array
+     */
+    function http_multi(array $requests): array
+    {
+        return HttpExtend::multiRequest($requests);
+    }
+}
 if (!function_exists('data_save')) {
     /**
      * 数据增量保存.
