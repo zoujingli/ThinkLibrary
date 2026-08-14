@@ -104,6 +104,79 @@ class HttpExtend
             }
         }
         $curl = curl_init();
+        static::configureCurl($curl, $method, $location, $options);
+        $content = curl_exec($curl);
+        curl_close($curl);
+        return $content;
+    }
+
+    /**
+     * 并发执行多个HTTP请求.
+     * @param array $requests 请求配置 [['method' => 'GET', 'url' => '...', 'options' => [...]]]
+     * @return array
+     */
+    public static function multiRequest(array $requests): array
+    {
+        if (empty($requests)) {
+            return [];
+        }
+
+        $multiHandle = curl_multi_init();
+        $curlHandles = [];
+        $results = [];
+
+        // 初始化所有curl句柄
+        foreach ($requests as $index => $request) {
+            $method = $request['method'] ?? 'GET';
+            $location = $request['url'] ?? '';
+            $options = $request['options'] ?? [];
+
+            // GET 参数设置
+            if (!empty($options['query'])) {
+                $location .= strpos($location, '?') !== false ? '&' : '?';
+                if (is_array($options['query'])) {
+                    $location .= http_build_query($options['query']);
+                } elseif (is_string($options['query'])) {
+                    $location .= $options['query'];
+                }
+            }
+
+            $curl = curl_init();
+            static::configureCurl($curl, $method, $location, $options);
+            curl_multi_add_handle($multiHandle, $curl);
+            $curlHandles[$index] = $curl;
+            $results[$index] = false;
+        }
+
+        // 执行所有请求
+        $running = null;
+        do {
+            curl_multi_exec($multiHandle, $running);
+            curl_multi_select($multiHandle);
+        } while ($running > 0);
+
+        // 获取所有请求的结果
+        foreach ($curlHandles as $index => $curl) {
+            $results[$index] = curl_multi_getcontent($curl);
+            curl_multi_remove_handle($multiHandle, $curl);
+            curl_close($curl);
+        }
+
+        curl_multi_close($multiHandle);
+
+        // 保持原始顺序返回结果
+        return array_values($results);
+    }
+
+    /**
+     * 配置CURL句柄.
+     * @param mixed $curl CURL句柄
+     * @param string $method 请求方式
+     * @param string $location 请求地址
+     * @param array $options 请求参数
+     */
+    private static function configureCurl($curl, string $method, string $location, array $options): void
+    {
         // Agent 代理设置
         curl_setopt($curl, CURLOPT_USERAGENT, $options['agent'] ?? static::getUserAgent());
         // Cookie 信息设置
@@ -154,9 +227,6 @@ class HttpExtend
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-        $content = curl_exec($curl);
-        curl_close($curl);
-        return $content;
     }
 
     /**
