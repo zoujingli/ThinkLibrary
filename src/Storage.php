@@ -32,6 +32,7 @@ use think\Container;
  * @method static string url($name, $safe = false, $attname = null) 获取文件链接
  * @method static string get($name, $safe = false) 读取文件内容
  * @method static string path($name, $safe = false) 文件存储路径
+ * @method static boolean isPathSafe($name) 检查文件路径
  * @method static boolean del($name, $safe = false) 删除存储文件
  * @method static boolean has($name, $safe = false) 检查是否存在
  * @method static string upload() 获取上传地址
@@ -86,9 +87,25 @@ abstract class Storage
      */
     public static function name(string $url, string $ext = '', string $pre = '', string $fun = 'md5'): string
     {
-        [$hah, $ext] = [$fun($url), trim($ext ?: pathinfo($url, 4), '.\/')];
+        $path = parse_url($url, PHP_URL_PATH);
+        $path = is_string($path) && $path !== '' ? $path : $url;
+        [$hah, $ext] = [$fun($url), trim($ext ?: pathinfo($path, 4), '.\/')];
         $attr = [trim($pre, '.\/'), substr($hah, 0, 2), substr($hah, 2, 30)];
         return trim(join('/', $attr), '/') . '.' . strtolower($ext ?: 'tmp');
+    }
+
+    /**
+     * 检查文件相对名称是否安全.
+     */
+    public static function isPathSafe(string $name): bool
+    {
+        if ($name === '' || strlen($name) > 1024) {
+            return false;
+        }
+        if (preg_match('/[\x00-\x1F\x7F%?#\\\]/', $name)) {
+            return false;
+        }
+        return preg_match('#^(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\.[A-Za-z0-9]+$#D', $name) === 1;
     }
 
     /**

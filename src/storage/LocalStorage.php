@@ -22,6 +22,7 @@ namespace think\admin\storage;
 
 use think\admin\contract\StorageInterface;
 use think\admin\contract\StorageUsageTrait;
+use think\admin\Storage;
 
 /**
  * 本地存储支持
@@ -105,8 +106,12 @@ class LocalStorage implements StorageInterface
      */
     public function path(string $name, bool $safe = false): string
     {
+        $pathName = $this->delSuffix($name);
+        if (!Storage::isPathSafe($pathName)) {
+            throw new \InvalidArgumentException('文件路径异常！');
+        }
         $path = $safe ? 'safefile' : 'public/upload';
-        return strtr(syspath("{$path}/{$this->delSuffix($name)}"), '\\', '/');
+        return strtr(syspath("{$path}/{$pathName}"), '\\', '/');
     }
 
     /**
