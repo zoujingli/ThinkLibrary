@@ -19,20 +19,28 @@ declare(strict_types=1);
  */
 use think\facade\Db;
 
-include_once dirname(__DIR__) . '/vendor/autoload.php';
-include_once dirname(__DIR__) . '/vendor/topthink/framework/src/helper.php';
+$packageRoot = dirname(__DIR__);
+$autoload = null;
+foreach ([$packageRoot . '/vendor/autoload.php', dirname($packageRoot, 2) . '/vendor/autoload.php'] as $candidate) {
+    if (is_file($candidate)) {
+        $autoload = $candidate;
+        break;
+    }
+}
+if ($autoload === null) {
+    throw new RuntimeException('Composer autoload was not found. Run Composer install for the package or aggregate project.');
+}
+
+require_once $autoload;
+require_once dirname($autoload) . '/topthink/framework/src/helper.php';
 
 Db::setConfig([
-    'default' => 'mysql',
+    'default' => 'sqlite',
     'connections' => [
-        'mysql' => [
-            'type' => 'mysql',
-            'hostname' => '127.0.0.1',
-            'database' => 'admin_v6',
-            'username' => 'admin_v6',
-            'password' => 'FbYBHcWKr2',
-            'hostport' => '3306',
-            'charset' => 'utf8mb4',
+        'sqlite' => [
+            'type' => 'sqlite',
+            'database' => ':memory:',
+            'charset' => 'utf8',
             'debug' => true,
         ],
     ],
