@@ -42,7 +42,7 @@
     }
   },
   "require-dev": {
-    "phpunit/phpunit": "*"
+    "phpunit/phpunit": "^8.5.52 || ^9.6.33 || ^10.5.62 || ^11.5.50 || ^12.5.8 || ^13.3"
   },
   "autoload-dev": {
     "psr-4": {
