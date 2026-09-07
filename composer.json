@@ -30,6 +30,9 @@
     "topthink/framework": "^6.0|^8.0|*",
     "topthink/think-migration": "^3.0|*"
   },
+  "conflict": {
+    "topthink/think-helper": "3.1.12"
+  },
   "autoload": {
     "files": [
       "src/common.php"
