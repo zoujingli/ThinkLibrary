@@ -226,22 +226,23 @@ class PhinxExtend
      * @param array<int, string>|string $name 字段名
      * @return string 生成的索引名称
      */
-    private static function genIndexName(string $table, array|string $name, bool $unique = false): string
+    private static function genIndexName(string $table, $name, bool $unique = false): string
     {
         return IndexNameService::generate($table, $name, $unique);
     }
 
     /**
+     * @param mixed $spec
      * @return array{0:array<int, string>,1:array<string, mixed>}
      */
-    private static function parseIndexSpec(string $table, mixed $spec): array
+    private static function parseIndexSpec(string $table, $spec): array
     {
         if (is_string($spec)) {
             $columns = [$spec];
             return [$columns, ['name' => self::genIndexName($table, $columns)]];
         }
 
-        if (is_array($spec) && array_is_list($spec)) {
+        if (is_array($spec) && array_values($spec) === $spec) {
             $columns = array_values(array_filter($spec, 'is_string'));
             return [$columns, ['name' => self::genIndexName($table, $columns)]];
         }
@@ -390,9 +391,10 @@ class PhinxExtend
     /**
      * 规范化索引前缀长度配置.
      * @param array<int, string> $columns
+     * @param mixed $limits
      * @return array<string, int>
      */
-    private static function normalizeIndexLimits(array $columns, mixed $limits): array
+    private static function normalizeIndexLimits(array $columns, $limits): array
     {
         $result = [];
         if (is_numeric($limits) && count($columns) === 1) {

@@ -26,7 +26,7 @@ final class IndexNameService
      * 生成符合长度限制的索引名称，支持单列与复合索引。
      * @param array<int, string>|string $columns
      */
-    public static function generate(string $table, array|string $columns, bool $unique = false): string
+    public static function generate(string $table, $columns, bool $unique = false): string
     {
         $columns = is_array($columns) ? $columns : [$columns];
         $columns = array_values(array_filter(array_map(static function ($column): string {
