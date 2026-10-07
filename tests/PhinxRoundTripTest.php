@@ -591,6 +591,50 @@ class PhinxRoundTripTest extends TestCase
         }
     }
 
+    public function testMysqlTextDefaultsCanBeExportedAgain(): void
+    {
+        $port = getenv('PHINX_TEST_MYSQL_PORT');
+        if (!$port) {
+            self::markTestSkipped('Set PHINX_TEST_MYSQL_PORT to run against a disposable phinx_fixture MySQL database.');
+        }
+        $source = new DbManager();
+        $source->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'mysql', 'hostname' => '127.0.0.1', 'hostport' => $port, 'database' => 'phinx_fixture', 'username' => 'root', 'password' => '', 'charset' => 'utf8mb4']]]);
+        $adapter = new MysqlAdapter(['host' => '127.0.0.1', 'port' => (int)$port, 'name' => 'phinx_fixture', 'user' => 'root', 'pass' => '', 'charset' => 'utf8mb4']);
+        $values = ['hello', "Bob's \\path\\n\n中文", 'CURRENT_TIMESTAMP'];
+        $columns = ['created TEXT DEFAULT CURRENT_TIMESTAMP'];
+        foreach ($values as $i => $value) {
+            $columns[] = 'note' . $i . ' TEXT DEFAULT ' . $source->connect()->connect()->quote($value);
+        }
+        $source->execute('CREATE TABLE text_defaults(' . implode(', ', $columns) . ')');
+        try {
+            $this->runMigration($this->generateFrom($source, ['text_defaults']), $adapter);
+            foreach (['', 'NO_BACKSLASH_ESCAPES'] as $i => $mode) {
+                $database->execute("SET SESSION sql_mode = '{$mode}'");
+                $prefix = new TablePrefixAdapter($adapter);
+                $prefix->setOptions(array_merge($adapter->getOptions(), ['table_prefix' => 'copy' . $i . '_']));
+                $this->runMigration($this->generateFrom($database, ['text_defaults']), $prefix);
+                self::assertSame($adapter->fetchAll('SHOW FULL COLUMNS FROM text_defaults'), $adapter->fetchAll('SHOW FULL COLUMNS FROM copy' . $i . '_text_defaults'));
+                $adapter->execute('INSERT INTO copy' . $i . '_text_defaults () VALUES ()');
+                $row = $adapter->fetchRow('SELECT * FROM copy' . $i . '_text_defaults');
+                foreach ($values as $i => $value) {
+                    self::assertSame($value, $row['note' . $i]);
+                }
+                self::assertSame(1, preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $row['created']));
+            }
+            $adapter->execute("CREATE TABLE nonliteral_defaults(note TEXT DEFAULT (concat('hello', ' world')), other TEXT DEFAULT ('allowed'))");
+            try {
+                $this->generateFrom($database, ['nonliteral_defaults']);
+                self::fail('Arbitrary expressions must still be rejected');
+            } catch (\RuntimeException $exception) {
+                self::assertStringContainsString('字段 note 的默认表达式', $exception->getMessage());
+            }
+        } finally {
+            $adapter->execute('DROP TABLE IF EXISTS text_defaults, copy0_text_defaults, copy1_text_defaults, nonliteral_defaults');
+        }
+    }
+
     public function testSqliteTimestampDefaultsCanBeMigratedToMysql(): void
     {
         $port = getenv('PHINX_TEST_MYSQL_PORT');

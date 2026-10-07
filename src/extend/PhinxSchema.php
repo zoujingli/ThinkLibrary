@@ -130,7 +130,7 @@ class PhinxSchema
         $options = ['id' => false, 'engine' => $metadata['ENGINE'], 'collation' => $metadata['TABLE_COLLATION'], 'comment' => $metadata['TABLE_COMMENT']];
         $fields = [];
         foreach ($connect->query('SHOW FULL COLUMNS FROM ' . self::quote($table)) as $field) {
-            $fields[] = self::mysqlField($field);
+            $fields[] = self::mysqlField($field, $connect, $table);
         }
         $indexes = self::mysqlIndexes($connect->query('SHOW INDEX FROM ' . self::quote($table)));
         if (isset($indexes['PRIMARY'])) {
@@ -296,7 +296,7 @@ class PhinxSchema
         return method_exists(Column::class, 'getCollation') && class_exists(Literal::class);
     }
 
-    private static function mysqlField(array $field): array
+    private static function mysqlField(array $field, $connect = null, string $table = ''): array
     {
         $source = $field['Type'];
         $extra = $field['Extra'] ?? '';
@@ -370,15 +370,46 @@ class PhinxSchema
             $options['collation'] = $field['Collation'];
         }
         $temporal = in_array($base, ['timestamp', 'datetime'], true);
-        if ($temporal && is_string($options['default']) && preg_match('/^current_timestamp(?:\(([0-6]?)\))?$/i', $options['default'], $match)) {
+        $generatedDefault = stripos($extra, 'DEFAULT_GENERATED') !== false;
+        if (($temporal || $generatedDefault) && is_string($options['default']) && preg_match('/^(?:current_timestamp|now)(?:\(([0-6]?)\))?$/i', $options['default'], $match)) {
             $options['default'] = 'CURRENT_TIMESTAMP' . (isset($match[1]) && $match[1] !== '' ? '(' . $match[1] . ')' : '');
-        } elseif (stripos($extra, 'DEFAULT_GENERATED') !== false && $options['default'] !== null) {
-            throw new \RuntimeException("暂不支持字段 {$field['Field']} 的默认表达式");
+            if (!$temporal) {
+                $options['default_expression'] = true;
+            }
+        } elseif ($generatedDefault && $options['default'] !== null) {
+            $options['default'] = self::mysqlLiteralDefault($connect, $table, $field['Field']);
+            $options['default_literal'] = true;
         }
         if (preg_match('/on update (current_timestamp(?:\([0-6]?\))?)/i', $extra, $match)) {
             $options['update'] = strtoupper($match[1]);
         }
         return [$field['Field'], $type, $options];
+    }
+
+    private static function mysqlLiteralDefault($connect, string $table, string $column): string
+    {
+        // MySQL 8 的 COLUMN_DEFAULT 会额外转义，甚至重编码非 ASCII 字符。
+        // 从建表语句读取完整字面量，仅允许一个字符串常量，拒绝任意表达式。
+        if ($connect !== null) {
+            $definition = $connect->query('SHOW CREATE TABLE ' . self::quote($table));
+            $sql = $definition[0]['Create Table'] ?? '';
+            $literal = "(?:_(?:utf8mb4|utf8mb3|utf8|ascii|binary)\\s*)?'(?:[^'\\\\]|\\\\.|'')*'";
+            $pattern = '/(?:^|\n)[ \t]*' . preg_quote(self::quote($column), '/')
+                . '[ \t]+[a-z]+(?:\(\d+(?:,\d+)?\))?'
+                . '(?:[ \t]+(?:CHARACTER SET [a-z0-9_]+|COLLATE [a-z0-9_]+|NOT NULL|NULL))*'
+                . '[ \t]+DEFAULT[ \t]*\([ \t]*(' . $literal . ')[ \t]*\)/is';
+            if (preg_match($pattern, $sql, $match)) {
+                $value = substr($match[1], strpos($match[1], "'") + 1, -1);
+                // SHOW CREATE 的表达式字面量始终使用反斜线转义，不受读取会话 SQL mode 影响。
+                return preg_replace_callback("/''|\\\\(.)/s", function ($part) {
+                    if ($part[0] === "''") {
+                        return "'";
+                    }
+                    return ['0' => "\0", 'b' => "\x08", 'n' => "\n", 'r' => "\r", 't' => "\t", 'Z' => "\x1a"][$part[1]] ?? $part[1];
+                }, $value);
+            }
+        }
+        throw new \RuntimeException("暂不支持字段 {$column} 的默认表达式");
     }
 
     private static function readSqlite($connect, string $table): array
