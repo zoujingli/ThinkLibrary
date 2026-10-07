@@ -47,7 +47,7 @@ class StorageTest extends TestCase
         return [
             'parent traversal' => ['down/../secret.php'],
             'absolute path' => ['/secret.php'],
-            'fragment' => ['12/hash.jpg#/public/shell.php'],
+            'fragment' => ['12/hash.jpg#/public/example.php'],
             'query' => ['12/hash.jpg?x=1'],
             'encoded separator' => ['12/hash.jpg%2fsecret.php'],
             'backslash' => ['12\secret.php'],
