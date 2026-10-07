@@ -209,7 +209,7 @@ class PhinxExtend
                     $dataFilePath = syspath("database/migrations/{$dataFileName}");
                     is_dir($dataDirectory = dirname($dataFilePath)) || mkdir($dataDirectory, 0777, true);
                     $progress && ProcessService::message(" -- Starting write {$table}.data ..." . PHP_EOL);
-                    $used = PhinxBackup::write($db->cursor(), $dataFilePath, function ($used) use ($progress, $table, $count) {
+                    $used = PhinxBackup::writeTable($connect, $table, $dataFilePath, function ($used) use ($progress, $table, $count) {
                         if ($progress && ($number = sprintf('%.4f', ($used / $count) * 100) . '%')) {
                             ProcessService::message(" -- -- write {$table}.data: {$used}/{$count} {$number}", 1);
                         }

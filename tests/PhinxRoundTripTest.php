@@ -31,6 +31,7 @@ use think\admin\extend\PhinxExtend;
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\DbManager;
+use think\Model;
 
 /**
  * @internal
@@ -454,6 +455,41 @@ class PhinxRoundTripTest extends TestCase
         }
     }
 
+    public function testSqliteBackupPreservesEachValuesStorageClass(): void
+    {
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $schema = 'CREATE TABLE mixed_values(id INTEGER PRIMARY KEY, text_value TEXT, blob_value BLOB, numeric_value NUMERIC, real_value REAL, `quoted``column` BLOB)';
+        $database->execute($schema);
+        $database->execute("INSERT INTO mixed_values VALUES
+            (1, X'616263', 'abc', X'FF00', 1.0, 9223372036854775807),
+            (2, 'abc', X'616263', 2.5, NULL, '123'),
+            (3, NULL, 3.141592653589793, 9223372036854775807, 1.2345678901234567, X'FF00'),
+            (4, 'ON CONFLICT', 42, 'plain text', 2.5, NULL)");
+        $target = $this->sqlite();
+        $target->execute($schema);
+        $directory = sys_get_temp_dir() . '/phinx-storage-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        try {
+            $path = $this->backupFrom($database, ['mixed_values'], $directory)['mixed_values'];
+            self::assertSame(4, PhinxBackup::restore(new Table('mixed_values', [], $target), $path));
+            $select = "SELECT *, typeof(text_value), typeof(blob_value), typeof(numeric_value), typeof(real_value), typeof(`quoted``column`), printf('%!.26g', blob_value), printf('%!.26g', real_value) FROM mixed_values ORDER BY id";
+            self::assertSame($database->query($select), $target->fetchAll($select));
+            self::assertSame(1, (int)$target->fetchRow("SELECT COUNT(*) AS n FROM mixed_values WHERE text_value = X'616263' AND blob_value = 'abc'")['n']);
+            $target->execute('DELETE FROM mixed_values');
+            file_put_contents($path, 'ThinkAdminBackup:2:[["aWQ=",5,"unknown"]]' . "\n", FILE_APPEND);
+            try {
+                PhinxBackup::restore(new Table('mixed_values', [], $target), $path);
+                self::fail('A damaged storage type must roll back the restore');
+            } catch (\RuntimeException $exception) {
+                self::assertStringContainsString('存储类型损坏', $exception->getMessage());
+                self::assertSame(0, (int)$target->fetchRow('SELECT COUNT(*) AS n FROM mixed_values')['n']);
+            }
+        } finally {
+            ToolsExtend::remove($directory);
+        }
+    }
+
     public function testSqliteIntegerBackupRejectsOverflowAndRollsBackEarlierBatches(): void
     {
         $adapter = $this->sqlite();
@@ -526,8 +562,8 @@ class PhinxRoundTripTest extends TestCase
             $this->runMigration($migration, $prefix);
             $before = $adapter->fetchAll('SHOW FULL COLUMNS FROM original');
             self::assertSame($before, $adapter->fetchAll('SHOW FULL COLUMNS FROM copy_original'));
-            $adapter->execute("INSERT INTO original (id, code, payload, body) VALUES (4294967296, 'one', X'FF000A', 'two  spaces')");
-            self::assertSame(1, PhinxBackup::write($database->table('original')->cursor(), $path));
+            $adapter->execute("INSERT INTO original (id, code, payload, body, created, clock) VALUES (4294967296, 'one', X'FF000A', 'two  spaces', '2026-10-07 08:19:10.885', '12:34:56.123')");
+            $path = $this->backupFrom($database, ['original'], $directory)['original'];
             self::assertSame(1, PhinxBackup::restore(new Table('original', [], $prefix), $path));
             self::assertSame($adapter->fetchAll('SELECT * FROM original'), $adapter->fetchAll('SELECT * FROM copy_original'));
             $adapter->execute("ALTER TABLE copy_original DEFAULT COLLATE utf8mb4_general_ci, COMMENT = 'changed'");
@@ -550,11 +586,8 @@ class PhinxRoundTripTest extends TestCase
             $adapter->execute('INSERT INTO copy_secondary(tenant) VALUES (1)');
             self::assertSame(1, (int)$adapter->fetchRow('SELECT id FROM copy_secondary')['id']);
         } finally {
-            $adapter->execute('DROP TABLE IF EXISTS copy_original, original, copy_secondary, secondary');
-            if (is_file($path)) {
-                unlink($path);
-            }
-            rmdir($directory);
+            $adapter->execute('DROP TABLE IF EXISTS copy_original, original, copy_secondary, secondary, system_menu');
+            ToolsExtend::remove($directory);
         }
     }
 
@@ -718,6 +751,45 @@ class PhinxRoundTripTest extends TestCase
     private function field(string $name, string $type, $default = null, array $extra = []): array
     {
         return array_merge(['Field' => $name, 'Type' => $type, 'Null' => 'YES', 'Default' => $default, 'Extra' => '', 'Comment' => '', 'Collation' => null], $extra);
+    }
+
+    private function backupFrom(DbManager $database, array $tables, string $directory): array
+    {
+        $database->execute('CREATE TABLE IF NOT EXISTS system_menu(id INTEGER, status INTEGER, sort INTEGER)');
+        $app = Library::$sapp;
+        $property = new \ReflectionProperty(Model::class, 'db');
+        $property->setAccessible(true);
+        $modelDatabase = $property->getValue();
+        try {
+            Model::setDb($database);
+            Library::$sapp = new class($database, $directory) {
+                public $db;
+
+                private $directory;
+
+                public function __construct($database, $directory)
+                {
+                    $this->db = $database;
+                    $this->directory = $directory;
+                }
+
+                public function getRootPath()
+                {
+                    return $this->directory;
+                }
+            };
+            $migration = PhinxExtend::create2backup($tables, 'BackupStorageFixture', false);
+            $version = strstr($migration['file'], '_', true);
+            $paths = [];
+            foreach ($tables as $table) {
+                $paths[$table] = $directory . '/database/migrations/' . $version . '/' . sha1($table) . '.data';
+                self::assertFileExists($paths[$table]);
+            }
+            return $paths;
+        } finally {
+            Library::$sapp = $app;
+            $property->setValue(null, $modelDatabase);
+        }
     }
 
     private function index(string $name, string $column, array $extra = []): array
