@@ -35,6 +35,16 @@ use think\db\Query;
 use think\helper\Str;
 use think\Model;
 
+if (!function_exists('session_create_id')) {
+    /**
+     * 兼容未启用 Session 扩展的运行环境，生成安全随机会话 ID.
+     */
+    function session_create_id(string $prefix = ''): string
+    {
+        return $prefix . bin2hex(random_bytes(16));
+    }
+}
+
 if (!function_exists('p')) {
     /**
      * 打印输出数据到文件.
