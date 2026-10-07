@@ -136,8 +136,9 @@ class PhinxBackup
             return 0;
         }
         $connection = $adapter->getConnection();
-        $bitColumns = $binaryColumns = [];
-        if ($adapter->getAdapterType() === 'mysql') {
+        $bitColumns = $binaryColumns = $integerColumns = [];
+        $driver = PhinxSchema::driver($adapter);
+        if ($driver === 'mysql') {
             foreach ($adapter->fetchAll('SHOW FULL COLUMNS FROM ' . PhinxSchema::quote($name)) as $column) {
                 if (stripos($column['Type'], 'bit(') === 0) {
                     $bitColumns[] = $column['Field'];
@@ -146,8 +147,11 @@ class PhinxBackup
                     $binaryColumns[] = $column['Field'];
                 }
             }
-        } elseif ($adapter->getAdapterType() === 'sqlite') {
+        } elseif ($driver === 'sqlite') {
             foreach ($adapter->fetchAll('PRAGMA table_info(' . PhinxSchema::quote($name) . ')') as $column) {
+                if (stripos($column['type'], 'int') !== false) {
+                    $integerColumns[] = $column['name'];
+                }
                 if (preg_match('/blob|binary/i', $column['type'])) {
                     $binaryColumns[] = $column['name'];
                 }
@@ -157,7 +161,7 @@ class PhinxBackup
         if ($stream === false) {
             throw new \RuntimeException("无法读取备份文件 {$path}");
         }
-        $ownsTransaction = $adapter->getAdapterType() !== 'sqlite' && !$connection->inTransaction();
+        $ownsTransaction = $driver !== 'sqlite' && !$connection->inTransaction();
         $count = $lineNumber = 0;
         try {
             if ($ownsTransaction) {
@@ -171,7 +175,13 @@ class PhinxBackup
                     if (trim($line) === '') {
                         continue;
                     }
-                    $batch[] = self::decodeRow(rtrim($line, "\r\n"));
+                    $row = self::decodeRow(rtrim($line, "\r\n"));
+                    foreach ($integerColumns as $column) {
+                        if (isset($row[$column]) && is_string($row[$column]) && self::integerOverflows($row[$column])) {
+                            throw new \RuntimeException("sqlite 无法精确保存字段 {$column} 的整数：超出 64 位有符号整数范围");
+                        }
+                    }
+                    $batch[] = $row;
                     ++$count;
                     if (count($batch) >= 100) {
                         self::insertRows($adapter, $name, $batch, $bitColumns, $binaryColumns);
@@ -204,6 +214,18 @@ class PhinxBackup
             fclose($stream);
         }
         return $count;
+    }
+
+    private static function integerOverflows(string $value): bool
+    {
+        $value = trim($value);
+        if (!preg_match('/^[+-]?\d+$/D', $value)) {
+            return false;
+        }
+        // 先转成 float 或 int 会在范围检查前丢失精度。
+        $limit = $value[0] === '-' ? '9223372036854775808' : '9223372036854775807';
+        $digits = ltrim($value, '+-0');
+        return strlen($digits) > 19 || (strlen($digits) === 19 && strcmp($digits, $limit) > 0);
     }
 
     private static function insertRows($adapter, string $table, array $rows, array $bitColumns, array $binaryColumns): void

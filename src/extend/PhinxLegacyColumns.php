@@ -35,9 +35,10 @@ trait PhinxLegacyColumns
 
     public function __construct(AdapterInterface $adapter, array $fields)
     {
-        parent::__construct($adapter->getOptions(), $adapter->getInput(), $adapter->getOutput());
         $this->wrappedAdapter = $adapter;
         $this->connection = $adapter->getConnection();
+        // Phinx 3.0 的父构造器会检查迁移表，并回调 fetchAll / execute。
+        parent::__construct($adapter->getOptions(), $adapter->getInput(), $adapter->getOutput());
         foreach ($fields as $field) {
             $this->definitions[$field[0]] = $this->compileColumn($field);
         }
@@ -55,7 +56,7 @@ trait PhinxLegacyColumns
 
     public function hasTable($tableName): bool
     {
-        if ($this->getAdapterType() === 'sqlite') {
+        if (PhinxSchema::driver($this) === 'sqlite') {
             return $this->connection->query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = " . $this->connection->quote($tableName))->fetchColumn() !== false;
         }
         return $this->wrappedAdapter->hasTable($tableName);
@@ -75,7 +76,7 @@ trait PhinxLegacyColumns
     {
         [$name, $type] = $field;
         $options = $field[2] ?? [];
-        $mysql = $this->getAdapterType() === 'mysql';
+        $mysql = PhinxSchema::driver($this) === 'mysql';
         if (!$mysql && (!empty($options['mysql_only']) || !empty($options['update']))) {
             throw new \RuntimeException("sqlite 不支持字段 {$name} 的 MySQL 专有定义");
         }
@@ -106,11 +107,14 @@ trait PhinxLegacyColumns
         }
         $default = $options['default'] ?? null;
         if ($default !== null) {
-            if (empty($options['default_literal']) && in_array($type, ['timestamp', 'datetime'], true) && is_string($default) && preg_match('/^CURRENT_TIMESTAMP(?:\([0-6]\))?$/', $default)) {
+            if (empty($options['default_literal']) && (!empty($options['default_expression']) || in_array($type, ['timestamp', 'datetime'], true)) && is_string($default) && preg_match('/^CURRENT_TIMESTAMP(?:\([0-6]\))?$/', $default)) {
                 if (!$mysql && preg_match('/\([1-6]\)/', $default)) {
                     throw new \RuntimeException("sqlite 不支持字段 {$name} 的小数秒时间默认表达式");
                 }
                 $default = $mysql ? $default : 'CURRENT_TIMESTAMP';
+                if ($mysql && !in_array($type, ['timestamp', 'datetime'], true)) {
+                    $default = '(' . $default . ')';
+                }
             } elseif ($mysql && strpos($options['mysql_type'] ?? '', 'bit(') === 0 && is_string($default) && preg_match("/^b'[01]+'$/i", $default)) {
                 // MySQL 的位字面量保持原样。
             } else {

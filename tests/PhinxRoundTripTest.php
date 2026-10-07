@@ -316,7 +316,11 @@ class PhinxRoundTripTest extends TestCase
             }
             self::assertSame(105, PhinxBackup::write($rows, $path));
             self::assertSame(105, PhinxBackup::restore($table, $path));
-            self::assertSame($rows, $adapter->fetchAll('SELECT * FROM tenant_data ORDER BY id'));
+            $restored = array_map(function ($row) {
+                $row['id'] = (int)$row['id'];
+                return $row;
+            }, $adapter->fetchAll('SELECT * FROM tenant_data ORDER BY id'));
+            self::assertSame($rows, $restored);
             self::assertSame('blob', $adapter->fetchRow('SELECT typeof(value) AS kind FROM tenant_data')['kind']);
             self::assertSame(1, (int)$adapter->fetchRow("SELECT COUNT(*) AS total FROM tenant_data WHERE value = X'FF00426F6227735C706174680A31'")['total']);
             self::assertSame(0, PhinxBackup::restore($table, $path));
@@ -341,7 +345,7 @@ class PhinxRoundTripTest extends TestCase
     public function testSqliteSourceCanBeGeneratedAndExecuted(): void
     {
         $source = $this->sqlite();
-        $source->execute("CREATE TABLE original (id INTEGER PRIMARY KEY AUTOINCREMENT, code VARCHAR(20) NOT NULL UNIQUE, note TEXT DEFAULT 'CURRENT_TIMESTAMP', stamp DATETIME DEFAULT 'CURRENT_TIMESTAMP', amount DECIMAL(20,0), fraction REAL DEFAULT 1.25, payload BLOB)");
+        $source->execute("CREATE TABLE original (id INTEGER PRIMARY KEY AUTOINCREMENT, code VARCHAR(20) NOT NULL UNIQUE, note TEXT DEFAULT 'CURRENT_TIMESTAMP', stamp DATETIME DEFAULT 'CURRENT_TIMESTAMP', created TEXT DEFAULT current_timestamp, amount DECIMAL(20,0), fraction REAL DEFAULT 1.25, payload BLOB)");
         $source->execute('CREATE INDEX by_code ON original(code DESC)');
         $database = new class($source) {
             private $adapter;
@@ -374,10 +378,96 @@ class PhinxRoundTripTest extends TestCase
         self::assertSame(1, (int)$row['id']);
         self::assertSame('CURRENT_TIMESTAMP', $row['note']);
         self::assertSame('CURRENT_TIMESTAMP', $row['stamp']);
+        self::assertSame(1, preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $row['created']));
         self::assertSame(1.25, (float)$row['fraction']);
         self::assertSame(1, (int)$target->fetchAll('PRAGMA index_xinfo(by_code)')[0]['desc']);
         $this->expectException(\PDOException::class);
         $target->execute("INSERT INTO original(code) VALUES ('one')");
+    }
+
+    public function testSqliteAdapterWithoutDriverOptionCanUpgradeAndRestore(): void
+    {
+        $adapter = new SQLiteAdapter(['connection' => new \PDO('sqlite::memory:'), 'name' => ':memory:']);
+        $table = new Table('records', ['id' => false], $adapter);
+        PhinxExtend::upgrade($table, [['value', 'integer', ['null' => true]]]);
+        PhinxExtend::upgrade($table, [['label', 'string', ['default' => 'new']]], [], true);
+        $directory = sys_get_temp_dir() . '/phinx-driver-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        $path = $directory . '/rows.data';
+        try {
+            self::assertTrue(PhinxBackup::isEmpty($table));
+            PhinxBackup::write([['value' => 7, 'label' => 'preserved']], $path);
+            self::assertSame(1, PhinxBackup::restore($table, $path));
+            self::assertSame('preserved', $adapter->fetchRow('SELECT label FROM records')['label']);
+            self::assertFalse(PhinxBackup::isEmpty($table));
+        } finally {
+            if (is_file($path)) {
+                unlink($path);
+            }
+            rmdir($directory);
+        }
+    }
+
+    public function testSqliteNullablePrimaryKeysSurviveExportAndRestore(): void
+    {
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $database->execute('CREATE TABLE natural(code TEXT PRIMARY KEY, note TEXT)');
+        $database->execute('CREATE TABLE compound(code TEXT, note TEXT, PRIMARY KEY(code, note))');
+        $directory = sys_get_temp_dir() . '/phinx-nullable-key-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        try {
+            foreach (['natural', 'compound'] as $name) {
+                $database->execute("INSERT INTO {$name} VALUES (NULL, 'existing')");
+                $target = $this->sqlite();
+                $this->runMigration($this->generateFrom($database, [$name]), $target);
+                $path = $directory . '/' . $name . '.data';
+                PhinxBackup::write($database->query('SELECT * FROM ' . $name), $path);
+                self::assertSame(1, PhinxBackup::restore(new Table($name, [], $target), $path));
+                self::assertSame(['code' => null, 'note' => 'existing'], $target->fetchRow('SELECT * FROM ' . $name));
+            }
+        } finally {
+            ToolsExtend::remove($directory);
+        }
+    }
+
+    public function testSqliteIntegerBackupRejectsOverflowAndRollsBackEarlierBatches(): void
+    {
+        $adapter = $this->sqlite();
+        $adapter->execute('CREATE TABLE records(value BIGINT, label TEXT)');
+        $table = new Table('records', [], $adapter);
+        $directory = sys_get_temp_dir() . '/phinx-integer-range-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        try {
+            foreach (['18446744073709551615', '9223372036854775808', '-9223372036854775809', '+00018446744073709551615'] as $i => $value) {
+                $rows = array_fill(0, 100, ['value' => 7, 'label' => 'valid']);
+                $rows[] = ['value' => $value, 'label' => 'overflow'];
+                $path = $directory . '/' . $i . '.data';
+                PhinxBackup::write($rows, $path);
+                try {
+                    PhinxBackup::restore($table, $path);
+                    self::fail('SQLite must reject integer overflow instead of storing an approximate REAL');
+                } catch (\RuntimeException $exception) {
+                    self::assertStringContainsString('value', $exception->getMessage());
+                    self::assertStringContainsString('101', $exception->getMessage());
+                    self::assertSame(0, (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM records')['total']);
+                }
+            }
+            $path = $directory . '/valid.data';
+            PhinxBackup::write([
+                ['value' => '9223372036854775807', 'label' => '18446744073709551615'],
+                ['value' => '-9223372036854775808', 'label' => null],
+                ['value' => '+00042', 'label' => 'leading zeroes'],
+            ], $path);
+            self::assertSame(3, PhinxBackup::restore($table, $path));
+            $rows = $adapter->fetchAll('SELECT CAST(value AS TEXT) AS value, typeof(value) AS storage, label FROM records ORDER BY rowid');
+            self::assertSame(['9223372036854775807', '-9223372036854775808', '42'], array_column($rows, 'value'));
+            self::assertSame(['integer', 'integer', 'integer'], array_column($rows, 'storage'));
+            self::assertSame('18446744073709551615', $rows[0]['label']);
+            self::assertNull($rows[1]['label']);
+        } finally {
+            ToolsExtend::remove($directory);
+        }
     }
 
     public function testMysqlSchemaAndBackupRoundTripOnAnIsolatedDatabase(): void
@@ -386,7 +476,7 @@ class PhinxRoundTripTest extends TestCase
         if (!$port) {
             self::markTestSkipped('Set PHINX_TEST_MYSQL_PORT to run against a disposable phinx_fixture MySQL database.');
         }
-        $adapter = new MysqlAdapter(['adapter' => 'mysql', 'host' => '127.0.0.1', 'port' => (int)$port, 'name' => 'phinx_fixture', 'user' => 'root', 'pass' => '', 'charset' => 'utf8mb4']);
+        $adapter = new MysqlAdapter(['host' => '127.0.0.1', 'port' => (int)$port, 'name' => 'phinx_fixture', 'user' => 'root', 'pass' => '', 'charset' => 'utf8mb4']);
         $adapter->connect();
         $database = new DbManager();
         $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'mysql', 'hostname' => '127.0.0.1', 'hostport' => $port, 'database' => 'phinx_fixture', 'username' => 'root', 'password' => '', 'charset' => 'utf8mb4']]]);
@@ -442,6 +532,28 @@ class PhinxRoundTripTest extends TestCase
                 unlink($path);
             }
             rmdir($directory);
+        }
+    }
+
+    public function testSqliteTimestampDefaultsCanBeMigratedToMysql(): void
+    {
+        $port = getenv('PHINX_TEST_MYSQL_PORT');
+        if (!$port) {
+            self::markTestSkipped('Set PHINX_TEST_MYSQL_PORT to run against a disposable phinx_fixture MySQL database.');
+        }
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $database->execute("CREATE TABLE timestamp_defaults(created TEXT DEFAULT current_timestamp, note TEXT DEFAULT 'CURRENT_TIMESTAMP', stamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
+        $adapter = new MysqlAdapter(['host' => '127.0.0.1', 'port' => (int)$port, 'name' => 'phinx_fixture', 'user' => 'root', 'pass' => '', 'charset' => 'utf8mb4']);
+        try {
+            $this->runMigration($this->generateFrom($database, ['timestamp_defaults']), $adapter);
+            $adapter->execute('INSERT INTO timestamp_defaults () VALUES ()');
+            $row = $adapter->fetchRow('SELECT * FROM timestamp_defaults');
+            self::assertSame('CURRENT_TIMESTAMP', $row['note']);
+            self::assertSame(1, preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $row['created']));
+            self::assertSame($row['created'], $row['stamp']);
+        } finally {
+            $adapter->execute('DROP TABLE IF EXISTS timestamp_defaults');
         }
     }
 
@@ -593,7 +705,7 @@ class PhinxRoundTripTest extends TestCase
     private function sqlite(): SQLiteAdapter
     {
         $adapter = new SQLiteAdapter(['adapter' => 'sqlite', 'memory' => true]);
-        $adapter->setConnection(new \PDO('sqlite::memory:', null, null, [\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC]));
+        $adapter->setConnection(new \PDO('sqlite::memory:', null, null, [\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC, \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]));
         return $adapter;
     }
 
@@ -618,11 +730,14 @@ class PhinxRoundTripTest extends TestCase
     private function runMigration(string $source, AdapterInterface $adapter): void
     {
         $body = substr($source, 5);
-        $migration = eval('use think\admin\extend\PhinxExtend; return new class($adapter) {
+        // PHP 7.2 可能复用 eval 中的匿名类；每份迁移使用独立类名。
+        $class = 'GeneratedMigrationFixture' . bin2hex(random_bytes(8));
+        eval('use think\admin\extend\PhinxExtend; class ' . $class . ' {
             private $adapter;
             public function __construct($adapter) { $this->adapter = $adapter; }
             public function table($name, $options) { return new \Phinx\Db\Table($name, $options, $this->adapter); }
-            ' . $body . '};');
+            ' . $body . '}');
+        $migration = new $class($adapter);
         $migration->change();
     }
 }

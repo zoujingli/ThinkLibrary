@@ -84,21 +84,22 @@ class PhinxExtend
         $sourceFields = $fields;
         $fields = PhinxSchema::prepareFields($table->getAdapter(), $fields);
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+        $driver = PhinxSchema::driver($adapter);
         // 先检查所有索引，避免因不支持的定义留下半张表。
         self::prepareIndexes($table, $indexs);
         self::validatePrimaryKey($table, $isExists, $fields);
         $existing = [];
         if ($isExists && $fields) {
-            if ($adapter->getAdapterType() === 'mysql') {
+            if ($driver === 'mysql') {
                 $existing = array_column($adapter->fetchAll('SHOW FULL COLUMNS FROM ' . PhinxSchema::quote($name)), 'Field');
-            } elseif ($adapter->getAdapterType() === 'sqlite') {
+            } elseif ($driver === 'sqlite') {
                 $existing = array_column($adapter->fetchAll('PRAGMA table_info(' . PhinxSchema::quote($name) . ')'), 'name');
                 PhinxSchema::validateSqliteReferences($adapter, $name);
             } else {
                 $existing = array_map(function ($column) { return $column->getName(); }, $table->getColumns());
             }
         }
-        $sqlite = $adapter->getAdapterType() === 'sqlite' && !PhinxSchema::isDryRun($adapter);
+        $sqlite = $driver === 'sqlite' && !PhinxSchema::isDryRun($adapter);
         $sequence = $sqlite && $isExists && $adapter->hasTable('sqlite_sequence')
             ? ($adapter->fetchRow('SELECT seq FROM sqlite_sequence WHERE name = ' . $adapter->getConnection()->quote($name))['seq'] ?? null) : null;
         if ($sqlite) {
@@ -122,7 +123,7 @@ class PhinxExtend
                 self::syncTableOptions($table);
             } else {
                 // MySQL 自增列在建表时就必须有索引；非主键自增列使用临时索引过渡。
-                if ($adapter->getAdapterType() === 'mysql') {
+                if ($driver === 'mysql') {
                     foreach ($fields as $field) {
                         if (!empty($field[2]['identity']) && $field[0] !== (((array)($table->getOptions()['primary_key'] ?? []))[0] ?? null)) {
                             $temporaryIndex = 'phinx_identity_' . substr(sha1($table->getName()), 0, 12);
@@ -353,7 +354,7 @@ class PhinxExtend
     private static function prepareIndexes(Table $table, array $specs): array
     {
         [$adapter] = PhinxSchema::connection($table->getAdapter(), $table->getName());
-        $driver = $adapter->getAdapterType();
+        $driver = PhinxSchema::driver($adapter);
         $indexes = [];
         foreach ($specs as $spec) {
             [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
@@ -390,7 +391,8 @@ class PhinxExtend
         }
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
         $primary = (array)($options['primary_key'] ?? []);
-        if ($adapter->getAdapterType() === 'sqlite') {
+        $driver = PhinxSchema::driver($adapter);
+        if ($driver === 'sqlite') {
             foreach ($fields as $field) {
                 if (!empty($field[2]['identity']) && $primary !== [$field[0]]) {
                     throw new \RuntimeException("sqlite 不支持 {$name} 的非单列主键自增字段");
@@ -401,13 +403,13 @@ class PhinxExtend
             return;
         }
         $current = [];
-        if ($adapter->getAdapterType() === 'mysql') {
+        if ($driver === 'mysql') {
             foreach ($adapter->fetchAll('SHOW INDEX FROM ' . PhinxSchema::quote($name)) as $row) {
                 if ($row['Key_name'] === 'PRIMARY') {
                     $current[(int)$row['Seq_in_index']] = $row['Column_name'];
                 }
             }
-        } elseif ($adapter->getAdapterType() === 'sqlite') {
+        } elseif ($driver === 'sqlite') {
             foreach ($adapter->fetchAll('PRAGMA table_info(' . PhinxSchema::quote($name) . ')') as $row) {
                 if ($row['pk']) {
                     $current[(int)$row['pk']] = $row['name'];
@@ -426,7 +428,7 @@ class PhinxExtend
     {
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
         $options = $table->getOptions();
-        if ($adapter->getAdapterType() !== 'mysql' || !array_intersect_key($options, array_flip(['engine', 'collation', 'comment']))) {
+        if (PhinxSchema::driver($adapter) !== 'mysql' || !array_intersect_key($options, array_flip(['engine', 'collation', 'comment']))) {
             return;
         }
         $current = $adapter->fetchRow('SHOW TABLE STATUS WHERE Name = ' . $adapter->getConnection()->quote($name));
@@ -457,7 +459,7 @@ class PhinxExtend
             return;
         }
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
-        $driver = $adapter->getAdapterType();
+        $driver = PhinxSchema::driver($adapter);
         if ($driver === 'mysql') {
             $rows = PhinxSchema::isDryRun($adapter) && !$adapter->hasTable($name) ? [] : PhinxSchema::mysqlIndexes($adapter->fetchAll('SHOW INDEX FROM ' . PhinxSchema::quote($name)));
             unset($rows['PRIMARY']);

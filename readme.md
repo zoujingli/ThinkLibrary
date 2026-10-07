@@ -125,9 +125,9 @@
 
 MySQL 的 `ENUM` / `SET`、`BIT`、`YEAR`、`ZEROFILL`、`ON UPDATE` 及全文/前缀等专有索引不能直接转换到 SQLite，迁移会在操作对应表之前报错。SQLite 的部分索引、表达式索引、生成列及 `CHECK`、外键、`STRICT`、`WITHOUT ROWID` 等尚不支持导出的结构也会明确报错。`--force` 会更新字段和同名索引，保留其他字段及索引；已有表的主键不同或 SQLite 表被外键引用时停止，需要另写专用迁移。SQLite 升级失败会回滚，重建表保留原有触发器和自增序号。
 
-安装包始终使用迁移配置的连接和表前缀。新版逐行备份支持二进制、空值和大整数，并兼容读取旧 JSONL 数据文件。更新后请重新生成原来的安装包；运行新生成的脚本也需要同步更新 ThinkLibrary。生成或写入失败时保留同类旧脚本及备份，成功发布后才替换。
+安装包始终使用迁移配置的连接和表前缀。新版逐行备份支持二进制、空值和大整数，并兼容读取旧 JSONL 数据文件。恢复到 SQLite 整数列时，超出 64 位有符号整数范围的记录会明确报错并回滚本次恢复，避免自动转为浮点数丢失精度。SQLite 的时间默认表达式与同名字符串、主键字段的可空属性分别保留。更新后请重新生成原来的安装包；运行新生成的脚本也需要同步更新 ThinkLibrary。生成或写入失败时保留同类旧脚本及备份，成功发布后才替换。
 
-SQLite 回归测试直接使用内存数据库。可通过 `PHINX_TEST_MYSQL_PORT=端口 vendor/bin/phpunit -c phpunit.xml.dist` 额外运行 MySQL 往返验证（在 ThinkLibrary 目录执行）。该测试只用于可丢弃的本机 MySQL 实例：数据库名为 `phinx_fixture`，账号 `root`、空密码，会重建并清理 `original`、`copy_original`、`secondary`、`copy_secondary` 四张测试表。
+SQLite 回归测试直接使用内存数据库。可通过 `PHINX_TEST_MYSQL_PORT=端口 vendor/bin/phpunit -c phpunit.xml.dist` 额外运行 MySQL 往返验证（在 ThinkLibrary 目录执行）。该测试只用于可丢弃的本机 MySQL 实例：数据库名为 `phinx_fixture`，账号 `root`、空密码，会创建并清理 `original`、`copy_original`、`secondary`、`copy_secondary`、`timestamp_defaults` 测试表，其中前四张表会在测试前重建。
 
 ## 使用说明
 

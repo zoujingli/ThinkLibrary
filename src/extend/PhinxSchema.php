@@ -99,6 +99,19 @@ class PhinxSchema
         return [$adapter, $table];
     }
 
+    public static function driver(AdapterInterface $adapter): string
+    {
+        [$adapter] = self::connection($adapter, '');
+        // 工厂和直接构造适配器时都允许省略 adapter 选项。
+        if ($adapter instanceof MysqlAdapter) {
+            return 'mysql';
+        }
+        if ($adapter instanceof SQLiteAdapter) {
+            return 'sqlite';
+        }
+        return $adapter->getAdapterType();
+    }
+
     public static function read($connect, string $table): array
     {
         $driver = strtolower($connect->getConfig('type'));
@@ -174,16 +187,17 @@ class PhinxSchema
     public static function prepareFields(AdapterInterface $adapter, array $fields): array
     {
         [$adapter] = self::connection($adapter, '');
-        $driver = $adapter->getAdapterType();
+        $driver = self::driver($adapter);
         foreach ($fields as &$field) {
             [$name, $type] = $field;
             $options = $field[2] ?? [];
             $mysqlType = $options['mysql_type'] ?? null;
             $literalDefault = !empty($options['default_literal']);
+            $expressionDefault = !empty($options['default_expression']);
             if ($driver !== 'mysql' && (!empty($options['mysql_only']) || !empty($options['update']))) {
                 throw new \RuntimeException("{$driver} 不支持字段 {$name} 的 MySQL 专有定义 " . ($mysqlType ?? $options['update']));
             }
-            unset($options['mysql_only'], $options['mysql_type'], $options['default_literal']);
+            unset($options['mysql_only'], $options['mysql_type'], $options['default_literal'], $options['default_expression']);
             $default = $options['default'] ?? null;
             if ($driver === 'sqlite' && $type === 'integer' && is_string($default) && preg_match('/^\d{19,}$/', $default) && (strlen($default) > 19 || strcmp($default, '9223372036854775807') > 0)) {
                 throw new \RuntimeException("sqlite 无法精确保存字段 {$name} 的无符号大整数默认值");
@@ -195,13 +209,21 @@ class PhinxSchema
                 continue;
             }
             if (is_string($default) && strpos($default, 'CURRENT_TIMESTAMP') === 0) {
-                if (!$literalDefault && in_array($type, ['timestamp', 'datetime'], true) && preg_match('/^CURRENT_TIMESTAMP(?:\([0-6]\))?$/', $default)) {
+                if (!$literalDefault && ($expressionDefault || in_array($type, ['timestamp', 'datetime'], true)) && preg_match('/^CURRENT_TIMESTAMP(?:\([0-6]\))?$/', $default)) {
                     if ($driver === 'sqlite' && preg_match('/\(([1-6])\)$/', $default)) {
                         throw new \RuntimeException("sqlite 不支持字段 {$name} 的小数秒时间默认表达式");
                     }
-                    $options['default'] = $driver === 'sqlite' ? 'CURRENT_TIMESTAMP' : $default;
+                    $expression = $driver === 'sqlite' ? 'CURRENT_TIMESTAMP' : $default;
+                    if ($driver === 'mysql' && !in_array($type, ['timestamp', 'datetime'], true)) {
+                        $expression = '(' . $expression . ')';
+                    }
+                    $options['default'] = Literal::from($expression);
                 } else {
-                    $options['default'] = Literal::from($adapter->getConnection()->quote($default));
+                    $literal = $adapter->getConnection()->quote($default);
+                    if ($driver === 'mysql' && in_array($type, ['text', 'binary', 'json'], true) && version_compare($adapter->getConnection()->getAttribute(\PDO::ATTR_SERVER_VERSION), '8', '>=')) {
+                        $literal = '(' . $literal . ')';
+                    }
+                    $options['default'] = Literal::from($literal);
                 }
             }
             if ($driver === 'mysql' && $mysqlType !== null) {
@@ -381,13 +403,17 @@ class PhinxSchema
             $type = preg_replace('/^real$/', 'float', $type);
             $default = $column['dflt_value'];
             $literalDefault = false;
+            $expressionDefault = false;
             if ($default !== null) {
                 if (preg_match("/^'(.*)'$/s", $default, $match)) {
                     $default = str_replace("''", "'", $match[1]);
                     $literalDefault = true;
                 } elseif (strtoupper($default) === 'NULL') {
                     $default = null;
-                } elseif (!is_numeric($default) && strtoupper($default) !== 'CURRENT_TIMESTAMP') {
+                } elseif (strtoupper($default) === 'CURRENT_TIMESTAMP') {
+                    $default = 'CURRENT_TIMESTAMP';
+                    $expressionDefault = true;
+                } elseif (!is_numeric($default)) {
                     throw new \RuntimeException("暂不支持 SQLite 字段 {$column['name']} 的默认表达式");
                 }
             }
@@ -396,9 +422,11 @@ class PhinxSchema
                 $field[2]['default'] = $default;
                 $field[2]['default_literal'] = true;
             }
+            if ($expressionDefault) {
+                $field[2]['default_expression'] = true;
+            }
             if ($column['pk']) {
                 $primary[(int)$column['pk']] = $column['name'];
-                $field[2]['null'] = false;
             }
             $fields[] = $field;
         }
