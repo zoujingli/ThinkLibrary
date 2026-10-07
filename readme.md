@@ -119,6 +119,16 @@
 
 版权所有 Copyright © 2014-2026 by ThinkAdmin (https://thinkadmin.top) All rights reserved。
 
+## 数据库安装包兼容性
+
+`php think xadmin:package` 可从 MySQL 或 SQLite 生成结构及数据安装包。字段优先使用 `integer`、`string`、`text`、`binary`、`float`、`decimal`，日期时间及 JSON 按实际用途保留。MySQL 的整数宽度、长文本、二进制等原始定义通过选项保存，在 MySQL 上恢复时保持原有类型；SQLite 使用对应通用类型，不依赖不同版本 Phinx 的长度常量。
+
+MySQL 的 `ENUM` / `SET`、`BIT`、`YEAR`、`ZEROFILL`、`ON UPDATE` 及全文/前缀等专有索引不能直接转换到 SQLite，迁移会在操作对应表之前报错。SQLite 的部分索引、表达式索引、生成列及 `CHECK`、外键、`STRICT`、`WITHOUT ROWID` 等尚不支持导出的结构也会明确报错。`--force` 会更新字段和同名索引，保留其他字段及索引；已有表的主键不同或 SQLite 表被外键引用时停止，需要另写专用迁移。SQLite 升级失败会回滚，重建表保留原有触发器和自增序号。
+
+安装包始终使用迁移配置的连接和表前缀。新版逐行备份支持二进制、空值和大整数，并兼容读取旧 JSONL 数据文件。更新后请重新生成原来的安装包；运行新生成的脚本也需要同步更新 ThinkLibrary。生成或写入失败时保留同类旧脚本及备份，成功发布后才替换。
+
+SQLite 回归测试直接使用内存数据库。可通过 `PHINX_TEST_MYSQL_PORT=端口 vendor/bin/phpunit -c phpunit.xml.dist` 额外运行 MySQL 往返验证（在 ThinkLibrary 目录执行）。该测试只用于可丢弃的本机 MySQL 实例：数据库名为 `phinx_fixture`，账号 `root`、空密码，会重建并清理 `original`、`copy_original`、`secondary`、`copy_secondary` 四张测试表。
+
 ## 使用说明
 
 1. **依赖管理**：ThinkLibrary 需要 Composer 支持进行安装和依赖管理。

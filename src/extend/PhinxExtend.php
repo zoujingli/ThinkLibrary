@@ -20,8 +20,6 @@ declare(strict_types=1);
 
 namespace think\admin\extend;
 
-use Phinx\Db\Adapter\AdapterInterface;
-use Phinx\Db\Adapter\MysqlAdapter;
 use Phinx\Db\Table;
 use think\admin\Library;
 use think\admin\model\SystemMenu;
@@ -38,9 +36,13 @@ class PhinxExtend
      * 批量写入菜单.
      * @param array $zdata 菜单数据
      * @param mixed $exists 检测条件
+     * @param null|Table $table 迁移目标表，指定时 $exists 必须为空
      */
-    public static function write2menu(array $zdata, $exists = []): bool
+    public static function write2menu(array $zdata, $exists = [], ?Table $table = null): bool
     {
+        if ($table !== null && !empty($exists)) {
+            throw new \InvalidArgumentException('指定迁移目标表时不支持模型查询条件');
+        }
         // 检查是否需要写入菜单
         try {
             if (!empty($exists) && SystemMenu::mk()->where($exists)->findOrEmpty()->isExists()) {
@@ -51,13 +53,13 @@ class PhinxExtend
         }
         // 循环写入系统菜单数据
         foreach ($zdata as $one) {
-            $pid1 = static::write1menu($one);
+            $pid1 = static::write1menu($one, 0, $table);
             if (!empty($one['subs'])) {
                 foreach ($one['subs'] as $two) {
-                    $pid2 = static::write1menu($two, $pid1);
+                    $pid2 = static::write1menu($two, $pid1, $table);
                     if (!empty($two['subs'])) {
                         foreach ($two['subs'] as $thr) {
-                            static::write1menu($thr, $pid2);
+                            static::write1menu($thr, $pid2, $table);
                         }
                     }
                 }
@@ -74,44 +76,77 @@ class PhinxExtend
      */
     public static function upgrade(Table $table, array $fields, array $indexs = [], bool $force = false): Table
     {
-        [$_exists, $_fields] = [[], array_column($fields, 0)];
-        if ($isExists = $table->exists()) {
-            // 数据表存在且不强制时退出操作
-            if (empty($force)) {
-                return $table;
-            }
-            foreach ($table->getColumns() as $column) {
-                $_exists[] = $name = $column->getName();
-                if (!in_array($name, $_fields)) {
-                    // @todo 为保证数据安全暂不删字段
-                    // $table->removeColumn($name);
-                    // $table->hasIndex($name) || $table->removeIndex($name);
-                }
-            }
+        $table->setAdapter(PhinxSchema::compatibleAdapter($table->getAdapter(), $fields));
+        $isExists = $table->exists();
+        if ($isExists && !$force) {
+            return $table;
         }
-        foreach ($fields as $field) {
-            if (in_array($field[0], $_exists)) {
-                $table->changeColumn($field[0], ...array_slice($field, 1));
+        $sourceFields = $fields;
+        $fields = PhinxSchema::prepareFields($table->getAdapter(), $fields);
+        [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+        // 先检查所有索引，避免因不支持的定义留下半张表。
+        self::prepareIndexes($table, $indexs);
+        self::validatePrimaryKey($table, $isExists, $fields);
+        $existing = [];
+        if ($isExists && $fields) {
+            if ($adapter->getAdapterType() === 'mysql') {
+                $existing = array_column($adapter->fetchAll('SHOW FULL COLUMNS FROM ' . PhinxSchema::quote($name)), 'Field');
+            } elseif ($adapter->getAdapterType() === 'sqlite') {
+                $existing = array_column($adapter->fetchAll('PRAGMA table_info(' . PhinxSchema::quote($name) . ')'), 'name');
+                PhinxSchema::validateSqliteReferences($adapter, $name);
             } else {
-                $table->addColumn($field[0], ...array_slice($field, 1));
+                $existing = array_map(function ($column) { return $column->getName(); }, $table->getColumns());
             }
         }
-        if ($isExists) {
-            $table->update();
-            self::syncTableIndexes($table->getName(), $indexs);
-        } else {
-            // 新表创建时直接挂载索引定义
-            foreach ($indexs as $spec) {
-                [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
-                if (empty($columns)) {
-                    continue;
+        $sqlite = $adapter->getAdapterType() === 'sqlite' && !PhinxSchema::isDryRun($adapter);
+        $sequence = $sqlite && $isExists && $adapter->hasTable('sqlite_sequence')
+            ? ($adapter->fetchRow('SELECT seq FROM sqlite_sequence WHERE name = ' . $adapter->getConnection()->quote($name))['seq'] ?? null) : null;
+        if ($sqlite) {
+            $adapter->execute('SAVEPOINT phinx_table_upgrade');
+        }
+        try {
+            if ($isExists && $fields && $adapter instanceof PhinxSqliteColumns) {
+                $adapter->replaceFields($name, $sourceFields);
+            } else {
+                foreach ($fields as $field) {
+                    if (in_array($field[0], $existing, true)) {
+                        $table->changeColumn($field[0], $field[1], $field[2]);
+                    } else {
+                        $table->addColumn($field[0], $field[1], $field[2]);
+                    }
                 }
-                $table->addIndex($columns, $options);
             }
-            $table->create();
-        }
-        if ($table->hasColumn('id')) {
-            $table->changeColumn('id', 'integer', ['limit' => 11, 'identity' => true]);
+            $temporaryIndex = null;
+            if ($isExists) {
+                $table->update();
+                self::syncTableOptions($table);
+            } else {
+                // MySQL 自增列在建表时就必须有索引；非主键自增列使用临时索引过渡。
+                if ($adapter->getAdapterType() === 'mysql') {
+                    foreach ($fields as $field) {
+                        if (!empty($field[2]['identity']) && $field[0] !== (((array)($table->getOptions()['primary_key'] ?? []))[0] ?? null)) {
+                            $temporaryIndex = 'phinx_identity_' . substr(sha1($table->getName()), 0, 12);
+                            $table->addIndex([str_replace('`', '``', $field[0])], ['name' => $temporaryIndex]);
+                        }
+                    }
+                }
+                $table->create();
+            }
+            self::syncTableIndexes($table, $indexs, $temporaryIndex);
+            if ($sequence !== null) {
+                // SQLite 重建表后不能复用曾经发放、后来删除的自增 ID。
+                $statement = $adapter->getConnection()->prepare('UPDATE sqlite_sequence SET seq = MAX(seq, CAST(? AS INTEGER)) WHERE name = ?');
+                $statement->execute([$sequence, $name]);
+            }
+            if ($sqlite) {
+                $adapter->execute('RELEASE SAVEPOINT phinx_table_upgrade');
+            }
+        } catch (\Throwable $exception) {
+            if ($sqlite) {
+                $adapter->execute('ROLLBACK TO SAVEPOINT phinx_table_upgrade');
+                $adapter->execute('RELEASE SAVEPOINT phinx_table_upgrade');
+            }
+            throw $exception;
         }
         return $table;
     }
@@ -123,9 +158,7 @@ class PhinxExtend
      */
     public static function create2table(array $tables = [], string $class = 'InstallTable', bool $force = false): array
     {
-        if (Library::$sapp->db->connect()->getConfig('type') !== 'mysql') {
-            throw new \Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
-        }
+        self::validateClass($class);
         $br = "\r\n";
         $content = static::_build2table($tables, true, $force);
         $content = substr($content, strpos($content, "\n") + 1);
@@ -139,9 +172,9 @@ class PhinxExtend
      */
     public static function create2backup(array $tables = [], string $class = 'InstallPackage', bool $progress = true): array
     {
-        if (Library::$sapp->db->connect()->getConfig('type') !== 'mysql') {
-            throw new \Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
-        }
+        self::validateClass($class);
+        $connect = Library::$sapp->db->connect();
+        $tables = PhinxSchema::exportTables($connect, $tables);
         // 处理菜单数据
         [$menuData, $menuList] = [[], SystemMenu::mk()->where(['status' => 1])->order('sort desc,id asc')->select()->toArray()];
         foreach (DataExtend::arr2tree($menuList) as $sub1) {
@@ -171,30 +204,73 @@ class PhinxExtend
         if (count($tables) > 0) {
             foreach ($tables as $table) {
                 if (($count = ($db = Library::$sapp->db->table($table))->count()) > 0) {
-                    $dataFileName = "{$version}/{$table}.data";
+                    $dataFileName = $version . '/' . sha1($table) . '.data';
                     $dataFilePath = syspath("database/migrations/{$dataFileName}");
                     is_dir($dataDirectory = dirname($dataFilePath)) || mkdir($dataDirectory, 0777, true);
                     $progress && ProcessService::message(" -- Starting write {$table}.data ..." . PHP_EOL);
-                    [$used, $fp] = [0, fopen($dataFilePath, 'w+')];
-                    foreach ($db->cursor() as $item) {
-                        fwrite($fp, json_encode($item, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\r\n");
-                        if ($progress && ($number = sprintf('%.4f', (++$used / $count) * 100) . '%')) {
+                    $used = PhinxBackup::write($db->cursor(), $dataFilePath, function ($used) use ($progress, $table, $count) {
+                        if ($progress && ($number = sprintf('%.4f', ($used / $count) * 100) . '%')) {
                             ProcessService::message(" -- -- write {$table}.data: {$used}/{$count} {$number}", 1);
                         }
-                    }
-                    fclose($fp);
-                    $extra[$table] = $dataFileName;
+                    });
+                    $extra[PhinxSchema::logicalName($connect, $table)] = $dataFileName;
                     $progress && ProcessService::message(" -- Finished write {$table}.data, Total {$used} rows.", 2);
                 }
             }
         }
 
         // 生成迁移脚本
+        return ['file' => $filename, 'text' => self::renderBackup($class, $extra, $menuData)];
+    }
+
+    /**
+     * 新脚本写入成功后才清理同类旧脚本和数据，生成失败时保留原备份。
+     */
+    public static function saveMigration(array $migration): bool
+    {
+        $filename = $migration['file'];
+        if (!preg_match('/^\d{14}_[a-z0-9_]+\.php$/iD', $filename)) {
+            throw new \InvalidArgumentException('无效的迁移文件名');
+        }
+        token_get_all($migration['text'], TOKEN_PARSE);
+        $directory = syspath('database/migrations');
+        if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+            throw new \RuntimeException('无法创建迁移目录');
+        }
+        $temporary = tempnam($directory, '.migration-');
+        if ($temporary === false) {
+            throw new \RuntimeException('无法创建迁移临时文件');
+        }
+        try {
+            if (file_put_contents($temporary, $migration['text']) !== strlen($migration['text']) || !rename($temporary, $directory . DIRECTORY_SEPARATOR . $filename)) {
+                throw new \RuntimeException('迁移脚本写入失败，旧脚本已保留');
+            }
+        } finally {
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
+        }
+        $suffix = substr($filename, 14);
+        foreach (new \DirectoryIterator($directory) as $info) {
+            $previous = $info->getFilename();
+            if ($info->isFile() && !$info->isLink() && $previous !== $filename && preg_match('/^\d{14}_/', $previous) && substr($previous, 14) === $suffix) {
+                if (!unlink($info->getPathname())) {
+                    throw new \RuntimeException("旧迁移脚本清理失败 {$previous}");
+                }
+                $data = $directory . DIRECTORY_SEPARATOR . substr($previous, 0, 14);
+                if (is_dir($data) && !is_link($data)) {
+                    ToolsExtend::remove($data);
+                }
+            }
+        }
+        return true;
+    }
+
+    private static function renderBackup(string $class, array $tables, array $menus): string
+    {
+        self::validateClass($class);
         $template = file_get_contents(dirname(__DIR__) . '/service/bin/package.stub');
-        $dataJson = json_encode($extra, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $menuJson = json_encode($menuData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $replaces = ['__CLASS__' => $class, '__MENU_JSON__' => $menuJson, '__DATA_JSON__' => $dataJson];
-        return ['file' => $filename, 'text' => str_replace(array_keys($replaces), array_values($replaces), $template)];
+        return strtr($template, ['__CLASS__' => $class, '__MENU__' => self::_arr2str($menus), '__DATA__' => self::_arr2str($tables)]);
     }
 
     /**
@@ -202,9 +278,9 @@ class PhinxExtend
      * @param array $menu 菜单数据
      * @param int $ppid 上级菜单
      */
-    private static function write1menu(array $menu, int $ppid = 0): int
+    private static function write1menu(array $menu, int $ppid = 0, ?Table $table = null): int
     {
-        return (int)SystemMenu::mk()->insertGetId([
+        $row = [
             'pid' => $ppid,
             'url' => empty($menu['url']) ? (empty($menu['node']) ? '#' : $menu['node']) : $menu['url'],
             'sort' => $menu['sort'] ?? 0,
@@ -213,7 +289,20 @@ class PhinxExtend
             'title' => $menu['name'] ?? ($menu['title'] ?? ''),
             'params' => $menu['params'] ?? '',
             'target' => $menu['target'] ?? '_self',
-        ]);
+        ];
+        if ($table !== null) {
+            [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+            if (PhinxSchema::isDryRun($adapter)) {
+                return 0;
+            }
+            // 旧版 SQLite 适配器批量插入不转义单引号，菜单内容始终通过参数绑定。
+            $columns = array_map([$adapter, 'quoteColumnName'], array_keys($row));
+            $connection = $adapter->getConnection();
+            $statement = $connection->prepare('INSERT INTO ' . $adapter->quoteTableName($name) . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', array_fill(0, count($row), '?')) . ')');
+            $statement->execute(array_values($row));
+            return (int)$connection->lastInsertId();
+        }
+        return (int)SystemMenu::mk()->insertGetId($row);
     }
 
     /**
@@ -259,395 +348,298 @@ class PhinxExtend
     }
 
     /**
-     * 同步已存在数据表的索引结构，避免同列索引配置变更时被跳过。
+     * 在执行 DDL 前解析并检查索引。
      */
-    private static function syncTableIndexes(string $table, array $indexs): void
+    private static function prepareIndexes(Table $table, array $specs): array
     {
-        $desired = [];
-        foreach ($indexs as $spec) {
-            [$columns, $options] = self::parseIndexSpec($table, $spec);
-            if (empty($columns)) {
-                continue;
-            }
-            $index = self::normalizeIndex($table, $columns, $options);
-            $desired[self::indexCacheKey($index)] = $index;
-        }
-        if (empty($desired)) {
-            return;
-        }
-
-        $existing = array_values(self::loadTableIndexes($table));
-        $used = [];
-        $drops = [];
-        $creates = [];
-
-        foreach ($desired as $expect) {
-            [$exact, $conflicts] = [[], []];
-            foreach ($existing as $idx => $current) {
-                if (isset($used[$idx])) {
-                    continue;
-                }
-                $sameDefinition = self::indexDefinitionKey($current) === self::indexDefinitionKey($expect);
-                $sameColumns = $current['columns'] === $expect['columns'];
-                $sameName = $current['name'] === $expect['name'];
-                if ($sameDefinition) {
-                    $exact[] = $idx;
-                    continue;
-                }
-                if ($sameColumns || $sameName) {
-                    $conflicts[] = $idx;
-                }
-            }
-
-            if (!empty($exact)) {
-                $primary = array_shift($exact);
-                $used[$primary] = true;
-
-                foreach ($conflicts as $idx) {
-                    $drops[$existing[$idx]['name']] = $existing[$idx]['name'];
-                    $used[$idx] = true;
-                }
-                foreach ($exact as $idx) {
-                    $drops[$existing[$idx]['name']] = $existing[$idx]['name'];
-                    $used[$idx] = true;
-                }
-
-                if ($existing[$primary]['name'] !== $expect['name']) {
-                    $drops[$existing[$primary]['name']] = $existing[$primary]['name'];
-                    $creates[$expect['name']] = $expect;
-                }
-                continue;
-            }
-
-            foreach ($conflicts as $idx) {
-                $drops[$existing[$idx]['name']] = $existing[$idx]['name'];
-                $used[$idx] = true;
-            }
-            $creates[$expect['name']] = $expect;
-        }
-
-        $connect = Library::$sapp->db->connect();
-        foreach ($drops as $name) {
-            $connect->execute(self::buildDropIndexSql($table, $name));
-        }
-        foreach ($creates as $index) {
-            $connect->execute(self::buildAddIndexSql($table, $index));
-        }
-    }
-
-    /**
-     * 读取当前数据表索引定义.
-     * @return array<string, array<string, mixed>>
-     */
-    private static function loadTableIndexes(string $table): array
-    {
+        [$adapter] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+        $driver = $adapter->getAdapterType();
         $indexes = [];
-        foreach (Library::$sapp->db->connect()->query('SHOW INDEX FROM ' . self::quoteIdentifier($table)) as $index) {
-            $keyName = strval($index['Key_name'] ?? '');
-            if ($keyName === '' || $keyName === 'PRIMARY') {
+        foreach ($specs as $spec) {
+            [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
+            if (!$columns) {
                 continue;
             }
-            $column = strval($index['Column_name'] ?? '');
-            $indexes[$keyName]['name'] = $keyName;
-            $indexes[$keyName]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
-            $indexes[$keyName]['columns'][intval($index['Seq_in_index'] ?? 0)] = $column;
-            if (is_numeric($index['Sub_part'] ?? null) && intval($index['Sub_part']) > 0) {
-                $indexes[$keyName]['limits'][$column] = intval($index['Sub_part']);
+            $index = self::normalizeIndex($table->getName(), $columns, $options);
+            if (!in_array($index['type'], ['btree', 'fulltext', 'spatial', 'hash'], true)) {
+                throw new \RuntimeException("不支持的索引类型 {$index['type']}");
             }
-        }
-        foreach ($indexes as $name => $index) {
-            $columns = $index['columns'] ?? [];
-            ksort($columns);
-            $columns = array_values(array_filter($columns, 'strlen'));
-            $indexes[$name] = [
-                'name' => $name,
-                'unique' => !empty($index['unique']),
-                'columns' => $columns,
-                'limits' => self::normalizeIndexLimits($columns, $index['limits'] ?? []),
-            ];
+            if ($driver !== 'mysql' && ($index['type'] !== 'btree' || $index['limits'] || !$index['visible'] || $index['comment'] !== '')) {
+                throw new \RuntimeException("{$driver} 不支持索引 {$index['name']} 的 {$index['type']} / MySQL 专有选项");
+            }
+            if (isset($indexes[$index['name']]) && $indexes[$index['name']] !== $index) {
+                throw new \RuntimeException("索引名称重复：{$index['name']}");
+            }
+            if ($driver === 'sqlite') {
+                [, $physicalName] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+                $other = $adapter->fetchRow("SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = " . $adapter->getConnection()->quote($index['name']));
+                if ($other && $other['tbl_name'] !== $physicalName) {
+                    throw new \RuntimeException("sqlite 索引名称 {$index['name']} 已被表 {$other['tbl_name']} 使用");
+                }
+            }
+            $indexes[$index['name']] = $index;
         }
         return $indexes;
     }
 
-    /**
-     * 规范化索引配置.
-     * @param array<int, string> $columns
-     * @param array<string, mixed> $options
-     * @return array{name:string,unique:bool,columns:array<int, string>,limits:array<string, int>}
-     */
-    private static function normalizeIndex(string $table, array $columns, array $options): array
+    private static function validatePrimaryKey(Table $table, bool $exists, array $fields): void
     {
-        $columns = array_values(array_filter(array_map('strval', $columns), 'strlen'));
-        $unique = !empty($options['unique']);
-        $name = strval($options['name'] ?? self::genIndexName($table, $columns, $unique));
-        return [
-            'name' => $name,
-            'unique' => $unique,
-            'columns' => $columns,
-            'limits' => self::normalizeIndexLimits($columns, $options['limit'] ?? []),
-        ];
+        $options = $table->getOptions();
+        if (!array_key_exists('id', $options) || $options['id'] !== false) {
+            return;
+        }
+        [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+        $primary = (array)($options['primary_key'] ?? []);
+        if ($adapter->getAdapterType() === 'sqlite') {
+            foreach ($fields as $field) {
+                if (!empty($field[2]['identity']) && $primary !== [$field[0]]) {
+                    throw new \RuntimeException("sqlite 不支持 {$name} 的非单列主键自增字段");
+                }
+            }
+        }
+        if (!$exists) {
+            return;
+        }
+        $current = [];
+        if ($adapter->getAdapterType() === 'mysql') {
+            foreach ($adapter->fetchAll('SHOW INDEX FROM ' . PhinxSchema::quote($name)) as $row) {
+                if ($row['Key_name'] === 'PRIMARY') {
+                    $current[(int)$row['Seq_in_index']] = $row['Column_name'];
+                }
+            }
+        } elseif ($adapter->getAdapterType() === 'sqlite') {
+            foreach ($adapter->fetchAll('PRAGMA table_info(' . PhinxSchema::quote($name) . ')') as $row) {
+                if ($row['pk']) {
+                    $current[(int)$row['pk']] = $row['name'];
+                }
+            }
+        } else {
+            return;
+        }
+        ksort($current);
+        if (array_values($current) !== $primary) {
+            throw new \RuntimeException("数据表 {$name} 主键不同，请通过专用迁移变更主键；未执行强制更新");
+        }
+    }
+
+    private static function syncTableOptions(Table $table): void
+    {
+        [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+        $options = $table->getOptions();
+        if ($adapter->getAdapterType() !== 'mysql' || !array_intersect_key($options, array_flip(['engine', 'collation', 'comment']))) {
+            return;
+        }
+        $current = $adapter->fetchRow('SHOW TABLE STATUS WHERE Name = ' . $adapter->getConnection()->quote($name));
+        $clauses = [];
+        foreach (['engine' => 'Engine', 'collation' => 'Collation', 'comment' => 'Comment'] as $option => $key) {
+            if (isset($options[$option]) && $options[$option] !== ($current[$key] ?? null)) {
+                if ($option === 'comment') {
+                    $clauses[] = 'COMMENT = ' . $adapter->getConnection()->quote($options[$option]);
+                } elseif ($option === 'engine') {
+                    $clauses[] = 'ENGINE = ' . PhinxSchema::quote($options[$option]);
+                } else {
+                    $clauses[] = 'DEFAULT CHARACTER SET ' . PhinxSchema::quote(explode('_', $options[$option])[0]) . ' COLLATE ' . PhinxSchema::quote($options[$option]);
+                }
+            }
+        }
+        if ($clauses) {
+            $adapter->execute('ALTER TABLE ' . PhinxSchema::quote($name) . ' ' . implode(', ', $clauses));
+        }
     }
 
     /**
-     * 规范化索引前缀长度配置.
-     * @param array<int, string> $columns
-     * @param mixed $limits
-     * @return array<string, int>
+     * 仅替换同名且结构有变化的索引，保留同列的其他索引。
      */
+    private static function syncTableIndexes(Table $table, array $specs, ?string $temporaryIndex = null): void
+    {
+        $desired = self::prepareIndexes($table, $specs);
+        if (!$desired && $temporaryIndex === null) {
+            return;
+        }
+        [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
+        $driver = $adapter->getAdapterType();
+        if ($driver === 'mysql') {
+            $rows = PhinxSchema::isDryRun($adapter) && !$adapter->hasTable($name) ? [] : PhinxSchema::mysqlIndexes($adapter->fetchAll('SHOW INDEX FROM ' . PhinxSchema::quote($name)));
+            unset($rows['PRIMARY']);
+        } elseif ($driver === 'sqlite') {
+            $rows = PhinxSchema::sqliteIndexes([$adapter, 'fetchAll'], $name);
+        } else {
+            // 其他适配器保持使用 Phinx 的标准索引接口。
+            foreach ($specs as $spec) {
+                [$columns, $options] = self::parseIndexSpec($table->getName(), $spec);
+                if ($columns && !$table->hasIndexByName($options['name'])) {
+                    $table->addIndex($columns, $options);
+                }
+            }
+            $table->update();
+            return;
+        }
+        $existing = [];
+        foreach ($rows as $row) {
+            $existing[$row['name']] = self::normalizeIndex($name, $row['columns'], $row);
+        }
+        $drops = $adds = [];
+        foreach ($desired as $indexName => $index) {
+            if (isset($existing[$indexName])) {
+                if ($existing[$indexName] === $index) {
+                    continue;
+                }
+                $drops[] = $indexName;
+            }
+            $adds[] = $index;
+        }
+        if ($temporaryIndex !== null) {
+            $drops[] = $temporaryIndex;
+        }
+        if ($driver === 'mysql') {
+            $clauses = $fulltext = [];
+            foreach ($drops as $indexName) {
+                $clauses[$indexName] = 'DROP INDEX ' . PhinxSchema::quote($indexName);
+            }
+            foreach ($adds as $index) {
+                $prefix = $index['unique'] ? 'UNIQUE ' : '';
+                if (in_array($index['type'], ['fulltext', 'spatial'], true)) {
+                    $prefix = strtoupper($index['type']) . ' ';
+                }
+                $clause = 'ADD ' . $prefix . 'INDEX ' . PhinxSchema::quote($index['name']) . ' (' . self::indexColumnsSql($index) . ')';
+                if ($index['type'] === 'hash') {
+                    $clause .= ' USING HASH';
+                }
+                if ($index['comment'] !== '') {
+                    $clause .= ' COMMENT ' . $adapter->getConnection()->quote($index['comment']);
+                }
+                if (!$index['visible']) {
+                    $clause .= ' INVISIBLE';
+                }
+                if ($index['type'] === 'fulltext') {
+                    // MySQL 每条 ALTER 只允许创建一个 FULLTEXT；同名替换仍在同一条语句中。
+                    $fulltext[] = (isset($clauses[$index['name']]) ? $clauses[$index['name']] . ', ' : '') . $clause;
+                    unset($clauses[$index['name']]);
+                } else {
+                    $clauses[] = $clause;
+                }
+            }
+            if ($clauses) {
+                // 同一条 ALTER 同时删除和创建，避免中途失败后只剩删除结果。
+                $adapter->execute('ALTER TABLE ' . PhinxSchema::quote($name) . ' ' . implode(', ', $clauses));
+            }
+            foreach ($fulltext as $clause) {
+                $adapter->execute('ALTER TABLE ' . PhinxSchema::quote($name) . ' ' . $clause);
+            }
+        } elseif ($drops || $adds) {
+            $adapter->execute('SAVEPOINT phinx_index_sync');
+            try {
+                foreach ($drops as $indexName) {
+                    $adapter->execute('DROP INDEX ' . PhinxSchema::quote($indexName));
+                }
+                foreach ($adds as $index) {
+                    $adapter->execute('CREATE ' . ($index['unique'] ? 'UNIQUE ' : '') . 'INDEX ' . PhinxSchema::quote($index['name']) . ' ON ' . PhinxSchema::quote($name) . ' (' . self::indexColumnsSql($index) . ')');
+                }
+                $adapter->execute('RELEASE SAVEPOINT phinx_index_sync');
+            } catch (\Throwable $exception) {
+                $adapter->execute('ROLLBACK TO SAVEPOINT phinx_index_sync');
+                $adapter->execute('RELEASE SAVEPOINT phinx_index_sync');
+                throw $exception;
+            }
+        }
+    }
+
+    private static function normalizeIndex(string $table, array $columns, array $options): array
+    {
+        $type = strtolower($options['type'] ?? 'btree');
+        $unique = !empty($options['unique']) || $type === 'unique';
+        $order = [];
+        foreach ($columns as $column) {
+            $direction = strtoupper($options['order'][$column] ?? 'ASC');
+            if (!in_array($direction, ['ASC', 'DESC'], true)) {
+                throw new \RuntimeException("无效的索引排序 {$direction}");
+            }
+            if ($direction === 'DESC') {
+                $order[$column] = $direction;
+            }
+        }
+        return [
+            'name' => $options['name'] ?? self::genIndexName($table, $columns, $unique),
+            'columns' => array_values($columns),
+            'unique' => $unique,
+            'type' => $type === 'unique' ? 'btree' : $type,
+            'limits' => self::normalizeIndexLimits($columns, $options['limit'] ?? []),
+            'order' => $order,
+            'comment' => $options['comment'] ?? '',
+            'visible' => $options['visible'] ?? true,
+        ];
+    }
+
     private static function normalizeIndexLimits(array $columns, $limits): array
     {
         $result = [];
-        if (is_numeric($limits) && count($columns) === 1) {
-            $result[$columns[0]] = intval($limits);
-            return $result;
-        }
-        if (!is_array($limits)) {
-            return $result;
-        }
         foreach ($columns as $column) {
-            if (isset($limits[$column]) && is_numeric($limits[$column])) {
-                $result[$column] = intval($limits[$column]);
+            $limit = is_array($limits) ? ($limits[$column] ?? null) : $limits;
+            if (is_numeric($limit) && (int)$limit > 0) {
+                $result[$column] = (int)$limit;
             }
         }
         return $result;
     }
 
-    /**
-     * 生成索引缓存键，避免重复定义.
-     * @param array<string, mixed> $index
-     */
-    private static function indexCacheKey(array $index): string
+    private static function indexColumnsSql(array $index): string
     {
-        return $index['name'] . '|' . self::indexDefinitionKey($index);
-    }
-
-    /**
-     * 生成索引定义键，用于比较结构是否一致.
-     * @param array<string, mixed> $index
-     */
-    private static function indexDefinitionKey(array $index): string
-    {
-        return json_encode([
-            'columns' => array_values($index['columns'] ?? []),
-            'unique' => !empty($index['unique']),
-            'limits' => $index['limits'] ?? [],
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    }
-
-    /**
-     * 生成删除索引 SQL.
-     */
-    private static function buildDropIndexSql(string $table, string $name): string
-    {
-        return sprintf('ALTER TABLE %s DROP INDEX %s', self::quoteIdentifier($table), self::quoteIdentifier($name));
-    }
-
-    /**
-     * 生成新增索引 SQL.
-     * @param array{name:string,unique:bool,columns:array<int, string>,limits:array<string, int>} $index
-     */
-    private static function buildAddIndexSql(string $table, array $index): string
-    {
-        $segments = [];
+        $columns = [];
         foreach ($index['columns'] as $column) {
-            $segment = self::quoteIdentifier($column);
-            if (!empty($index['limits'][$column])) {
-                $segment .= '(' . intval($index['limits'][$column]) . ')';
+            $sql = PhinxSchema::quote($column);
+            if (isset($index['limits'][$column])) {
+                $sql .= '(' . $index['limits'][$column] . ')';
             }
-            $segments[] = $segment;
+            if (isset($index['order'][$column])) {
+                $sql .= ' ' . $index['order'][$column];
+            }
+            $columns[] = $sql;
         }
-        $prefix = !empty($index['unique']) ? 'ADD UNIQUE INDEX' : 'ADD INDEX';
-        return sprintf(
-            'ALTER TABLE %s %s %s (%s)',
-            self::quoteIdentifier($table),
-            $prefix,
-            self::quoteIdentifier($index['name']),
-            implode(', ', $segments)
-        );
+        return implode(', ', $columns);
     }
 
     /**
-     * 简单的 MySQL 标识符转义.
-     */
-    private static function quoteIdentifier(string $name): string
-    {
-        return '`' . str_replace('`', '``', $name) . '`';
-    }
-
-    /**
-     * 数组转代码
+     * 按值导出 PHP，不能对导出结果中的空白或占位符再做替换。
      */
     private static function _arr2str(array $data): string
     {
-        if (empty($data)) {
-            return '[]';
+        $items = [];
+        $isList = array_values($data) === $data;
+        foreach ($data as $key => $value) {
+            $export = is_array($value) ? self::_arr2str($value) : var_export($value, true);
+            $items[] = ($isList ? '' : var_export($key, true) . ' => ') . $export;
         }
-        return preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ']', '['], var_export($data, true));
+        return '[' . implode(', ', $items) . ']';
     }
 
-    /**
-     * 生成数据库表格创建模板
-     * @param array $tables 指定数据表
-     * @param bool $rehtml 是否返回内容
-     * @param bool $force 强制更新结构
-     * @throws \Exception
-     */
     private static function _build2table(array $tables = [], bool $rehtml = false, bool $force = false): string
     {
-        $br = "\r\n";
         $connect = Library::$sapp->db->connect();
-        if ($connect->getConfig('type') !== 'mysql') {
-            throw new \Exception(' ** Notify: 只支持 MySql 数据库生成数据库脚本');
-        }
-        $schema = $connect->getConfig('database');
-        $content = '<?php' . "{$br}{$br}\t/**{$br}\t * 创建数据库{$br}\t */{$br}\tpublic function change()\n\t{";
-        foreach ($tables as $table) {
-            $content .= "{$br}\t\t\$this->_create_{$table}();";
-        }
-        $content .= "{$br}\t}{$br}{$br}";
-
-        // 字段默认长度
-        $sizes = ['tinyint' => 4, 'smallint' => 6, 'mediumint' => 9, 'int' => 11, 'bigint' => 20];
-
-        // 字段类型转换 ( 仅需定义与MySQL不同的配置 )
-        $types = [
-            // 整形数字
-            'tinyint' => AdapterInterface::PHINX_TYPE_TINY_INTEGER,
-            'smallint' => AdapterInterface::PHINX_TYPE_SMALL_INTEGER,
-            'int' => AdapterInterface::PHINX_TYPE_INTEGER,
-            'bigint' => AdapterInterface::PHINX_TYPE_BIG_INTEGER,
-            // 字符类型
-            'varchar' => AdapterInterface::PHINX_TYPE_STRING,
-            'tinytext' => AdapterInterface::PHINX_TYPE_TEXT,
-            'mediumtext' => AdapterInterface::PHINX_TYPE_TEXT,
-            'longtext' => AdapterInterface::PHINX_TYPE_TEXT,
-            // 仅 mysql 有的字段需要单独处理
-            'set' => AdapterInterface::PHINX_TYPE_STRING,
-            'enum' => AdapterInterface::PHINX_TYPE_STRING,
-            'year' => AdapterInterface::PHINX_TYPE_INTEGER,
-            'mediumint' => AdapterInterface::PHINX_TYPE_INTEGER,
-            'tinyblob' => AdapterInterface::PHINX_TYPE_BLOB,
-            'longblob' => AdapterInterface::PHINX_TYPE_BLOB,
-            'mediumblob' => AdapterInterface::PHINX_TYPE_BLOB,
-        ];
-
-        foreach ($tables as $table) {
-            // 读取数据表 - 备注参数
-            $comment = Library::$sapp->db->table('information_schema.TABLES')->where([
-                'TABLE_SCHEMA' => $schema, 'TABLE_NAME' => $table,
-            ])->value('TABLE_COMMENT', '');
-
-            // 读取数据表 - 自动生成结构
-            $class = Str::studly($table);
-            $content .= <<<CODE
-    /**
-     * 创建数据对象
-     * @class {$class}
-     * @table {$table}
-     * @return void
-     */
-    private function _create_{$table}() 
-    {
-        // 创建数据表对象
-        \$table = \$this->table('{$table}', [
-            'engine' => 'InnoDB', 'collation' => 'utf8mb4_general_ci', 'comment' => '{$comment}',
-        ]);
-        // 创建或更新数据表
-        PhinxExtend::upgrade(\$table, _FIELDS_, _INDEXS_, __FORCE__);
-    }
-CODE;
-            // 生成字段内容
-            $_fieldString = '[' . PHP_EOL;
-            foreach (Library::$sapp->db->getFields($table) as $field) {
-                if ($field['name'] === 'id') {
-                    continue;
-                }
-                $type = $types[$field['type']] ?? $field['type'];
-                $data = ['default' => $field['default'], 'null' => empty($field['notnull']), 'comment' => $field['comment'] ?? ''];
-                if ($field['type'] === 'longtext') {
-                    $data = array_merge(['limit' => MysqlAdapter::TEXT_LONG], $data);
-                } elseif ($field['type'] === 'enum') {
-                    $type = $types[$field['type']] ?? 'string';
-                    $data = array_merge(['limit' => 10], $data);
-                } elseif (preg_match('/(tinyblob|blob|mediumblob|longblob|varbinary|bit|binary|varchar|char)\((\d+)\)/', $field['type'], $attr)) {
-                    $type = $types[$attr[1]] ?? 'string';
-                    $data = array_merge(['limit' => intval($attr[2])], $data);
-                } elseif (preg_match('/(tinyint|smallint|mediumint|int|bigint)\((\d+)\)/', $field['type'], $attr)) {
-                    $type = $types[$attr[1]] ?? 'integer';
-                    $data = array_merge(['limit' => intval($attr[2])], $data, ['default' => intval($data['default'])]);
-                } elseif (preg_match('/(tinyint|smallint|mediumint|int|bigint)\s+unsigned/i', $field['type'], $attr)) {
-                    $type = $types[$attr[1]] ?? 'integer';
-                    if (isset($sizes[$attr[1]])) {
-                        $data = array_merge(['limit' => $sizes[$attr[1]]], $data);
-                    }
-                    $data['default'] = intval($data['default']);
-                } elseif (preg_match('/(float|decimal)\((\d+),(\d+)\)/', $field['type'], $attr)) {
-                    $type = $types[$attr[1]] ?? 'decimal';
-                    $data = array_merge(['precision' => intval($attr[2]), 'scale' => intval($attr[3])], $data);
-                } elseif (preg_match('/^(timestamp|datetime)(?:\(([0-6])\))?$/i', $field['type'], $attr)) {
-                    $type = strtolower($attr[1]);
-                    if (isset($attr[2])) {
-                        $data = array_merge(['limit' => intval($attr[2])], $data);
-                    }
-                    // Phinx 仅将大写 CURRENT_TIMESTAMP 识别为 SQL 表达式。
-                    if (is_string($data['default']) && preg_match('/^CURRENT_TIMESTAMP(?:\(([0-6]?)\))?$/i', trim($data['default']), $timestamp)) {
-                        $precision = $timestamp[1] ?? '';
-                        $data['default'] = 'CURRENT_TIMESTAMP' . ($precision === '' ? '' : "({$precision})");
-                    }
-                }
-                $_fieldString .= "\t\t\t['{$field['name']}', '{$type}', " . self::_arr2str($data) . '],' . PHP_EOL;
+        $calls = $methods = [];
+        foreach (PhinxSchema::exportTables($connect, $tables) as $table) {
+            [$options, $fields, $indexes] = PhinxSchema::read($connect, $table);
+            $method = '_create_' . sha1($table);
+            $calls[] = "        \$this->{$method}();";
+            $fieldSource = [];
+            foreach ($fields as $field) {
+                $fieldSource[] = '            ' . self::_arr2str($field) . ',';
             }
-            $_fieldString .= "\t\t]";
-            // 生成索引内容
-            $_indexs = [];
-            foreach (Library::$sapp->db->connect()->query("show index from {$table}") as $index) {
-                $keyName = strval($index['Key_name'] ?? '');
-                if ($keyName === '' || $keyName === 'PRIMARY') {
-                    continue;
-                }
-                $_indexs[$keyName]['unique'] = intval($index['Non_unique'] ?? 1) === 0;
-                $column = strval($index['Column_name'] ?? '');
-                $_indexs[$keyName]['columns'][intval($index['Seq_in_index'] ?? 0)] = $column;
-                if (is_numeric($index['Sub_part'] ?? null) && intval($index['Sub_part']) > 0) {
-                    $_indexs[$keyName]['limits'][$column] = intval($index['Sub_part']);
-                }
-            }
-            ksort($_indexs);
-            $_indexSpecs = [];
-            foreach ($_indexs as $index) {
-                $columns = $index['columns'] ?? [];
-                ksort($columns);
-                $columns = array_values(array_filter($columns, 'strlen'));
-                if (empty($columns)) {
-                    continue;
-                }
-                $options = [];
-                if (!empty($index['limits'])) {
-                    $limits = [];
-                    foreach ($columns as $column) {
-                        if (isset($index['limits'][$column])) {
-                            $limits[$column] = intval($index['limits'][$column]);
-                        }
-                    }
-                    if (!empty($limits)) {
-                        $options['limit'] = $limits;
-                    }
-                }
-                if (!empty($index['unique'])) {
-                    $options['unique'] = true;
-                }
-                if (count($columns) === 1 && empty($options)) {
-                    $_indexSpecs[] = $columns[0];
-                } elseif (count($columns) > 1 && empty($options)) {
-                    $_indexSpecs[] = $columns;
-                } else {
-                    $_indexSpecs[] = array_merge(['columns' => $columns], $options);
-                }
-            }
-            $_indexString = self::_arr2str($_indexSpecs);
-            $content = str_replace(['_FIELDS_', '_INDEXS_', '__FORCE__'], [$_fieldString, $_indexString, $force ? 'true' : 'false'], $content) . PHP_EOL . PHP_EOL;
+            $methods[] = "    private function {$method}()\n    {\n"
+                . '        $table = $this->table(' . var_export(PhinxSchema::logicalName($connect, $table), true) . ', ' . self::_arr2str($options) . ");\n"
+                . "        PhinxExtend::upgrade(\$table, [\n" . implode("\n", $fieldSource) . "\n        ], "
+                . self::_arr2str($indexes) . ', ' . ($force ? 'true' : 'false') . ");\n    }";
         }
+        $content = "<?php\n\n    public function change()\n    {\n" . implode("\n", $calls) . "\n    }\n\n" . implode("\n\n", $methods) . "\n";
         return $rehtml ? $content : highlight_string($content, true);
+    }
+
+    private static function validateClass(string $class): void
+    {
+        if (!preg_match('/^[a-z_][a-z0-9_]*$/iD', $class)) {
+            throw new \InvalidArgumentException("无效的迁移类名 {$class}");
+        }
+        // 同时拒绝 PHP 保留字，避免写出不可解析的脚本。
+        token_get_all('<?php class ' . $class . ' {}', TOKEN_PARSE);
     }
 
     /**
@@ -657,17 +649,14 @@ CODE;
     private static function nextFile(string $class): string
     {
         [$snake, $items] = [Str::snake($class), [20010000000000]];
-        ToolsExtend::find(syspath('database/migrations'), 1, function (\SplFileInfo $info) use ($snake, &$items) {
-            if ($info->isFile()) {
-                $bname = pathinfo($info->getBasename(), PATHINFO_FILENAME);
-                $items[] = $version = intval(substr($bname, 0, 14));
-                if ($snake === substr($bname, 15) && unlink($info->getRealPath())) {
-                    if (is_dir($dataPath = $info->getPath() . DIRECTORY_SEPARATOR . $version)) {
-                        ToolsExtend::remove($dataPath);
-                    }
+        $directory = syspath('database/migrations');
+        if (is_dir($directory)) {
+            foreach (new \DirectoryIterator($directory) as $info) {
+                if (preg_match('/^(\d{14})(?:_|$)/D', $info->getFilename(), $matches)) {
+                    $items[] = (int)$matches[1];
                 }
             }
-        });
+        }
 
         // 计算下一个版本号
         return sprintf("%s_{$snake}.php", min($items) - 1);

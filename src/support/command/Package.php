@@ -23,6 +23,7 @@ namespace think\admin\support\command;
 use think\admin\Command;
 use think\admin\Exception;
 use think\admin\extend\PhinxExtend;
+use think\admin\extend\PhinxSchema;
 use think\admin\Library;
 use think\admin\service\SystemService;
 use think\console\input\Option;
@@ -97,7 +98,7 @@ class Package extends Command
 
         // 去除忽略的数据表
         $ignore = Library::$sapp->config->get('phinx.ignore', []);
-        $tables = array_unique(array_diff($tables, $ignore, ['migrations']));
+        $tables = PhinxSchema::exportTables(Library::$sapp->db->connect(), array_diff($tables, $ignore, ['migrations']));
 
         // 创建数据库结构安装脚本
         [$prefix, $groups] = ['', []];
@@ -114,10 +115,10 @@ class Package extends Command
         [$total, $count] = [count($groups), 0];
         $this->setQueueMessage($total, 0, '开始创建数据表创建脚本！');
         foreach ($groups as $key => $tbs) {
-            $name = 'Install' . ucfirst($key) . 'Table';
+            $group = preg_match('/^[a-z0-9_]+$/iD', (string)$key) ? ucfirst((string)$key) : 'Group' . substr(sha1((string)$key), 0, 12);
+            $name = 'Install' . $group . 'Table';
             $phinx = PhinxExtend::create2table($tbs, $name, $force);
-            $target = syspath("database/migrations/{$phinx['file']}");
-            if (file_put_contents($target, $phinx['text']) !== false) {
+            if (PhinxExtend::saveMigration($phinx)) {
                 $this->setQueueMessage($total, ++$count, "创建数据库 {$name} 安装脚本成功！");
             } else {
                 $this->setQueueMessage($total, ++$count, "创建数据库 {$name} 安装脚本失败！");
@@ -153,13 +154,12 @@ class Package extends Command
         if (empty($ignore)) {
             $ignore = ['system_queue', 'system_oplog'];
         }
-        $tables = array_unique(array_diff($tables, $ignore, ['migrations']));
+        $tables = PhinxSchema::exportTables(Library::$sapp->db->connect(), array_diff($tables, $ignore, ['migrations']));
 
         // 创建数据库记录安装脚本
         $this->setQueueMessage(4, 1, '开始创建数据包安装脚本！');
         $phinx = PhinxExtend::create2backup($tables);
-        $target = syspath("database/migrations/{$phinx['file']}");
-        if (file_put_contents($target, $phinx['text']) !== false) {
+        if (PhinxExtend::saveMigration($phinx)) {
             $this->setQueueMessage(4, 2, '成功创建数据包安装脚本！');
             return true;
         }

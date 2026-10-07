@@ -24,6 +24,7 @@ use Phinx\Db\Adapter\MysqlAdapter;
 use Phinx\Db\Table\Column;
 use PHPUnit\Framework\TestCase;
 use think\admin\extend\PhinxExtend;
+use think\admin\extend\PhinxSchema;
 use think\admin\Library;
 
 /**
@@ -111,15 +112,21 @@ class PhinxExtendTest extends TestCase
 
     private function getColumnSql(Column $column): string
     {
-        $adapter = new class([]) extends MysqlAdapter {
-            public function columnSql(Column $column): string
+        $adapter = new class(['adapter' => 'mysql']) extends MysqlAdapter {
+            public function __construct(array $options)
             {
-                // 内存连接仅用于字符串转义，SQL 由 MySQL 适配器生成。
+                parent::__construct($options);
+                // 内存连接仅用于字符串转义，SQL 由迁移实际使用的 MySQL 适配器生成。
                 $this->connection = new \PDO('sqlite::memory:');
-                return $this->getColumnSqlDefinition($column);
             }
         };
-        return $adapter->columnSql($column);
+        $fields = [[$column->getName(), $column->getType(), ['default' => $column->getDefault(), 'null' => $column->getNull(), 'limit' => $column->getLimit()]]];
+        $adapter = PhinxSchema::compatibleAdapter($adapter, $fields);
+        [$field] = PhinxSchema::prepareFields($adapter, $fields);
+        $column = (new Column())->setName($field[0])->setType($field[1])->setOptions($field[2]);
+        $method = new \ReflectionMethod($adapter, 'getColumnSqlDefinition');
+        $method->setAccessible(true);
+        return $method->invoke($adapter, $column);
     }
 
     private function buildMigration(array $indexes, bool $force, ?array $fields = null): string
@@ -165,6 +172,11 @@ class PhinxExtendTest extends TestCase
                 return '迁移测试';
             }
 
+            public function find(): array
+            {
+                return ['ENGINE' => 'InnoDB', 'TABLE_COLLATION' => 'utf8mb4_general_ci', 'TABLE_COMMENT' => '迁移测试'];
+            }
+
             public function getFields(string $table): array
             {
                 return $this->fields;
@@ -172,6 +184,11 @@ class PhinxExtendTest extends TestCase
 
             public function query(string $sql): array
             {
+                if (stripos($sql, 'SHOW FULL COLUMNS') === 0) {
+                    return array_map(function ($field) {
+                        return ['Field' => $field['name'], 'Type' => $field['type'], 'Default' => $field['default'], 'Null' => $field['notnull'] ? 'NO' : 'YES', 'Extra' => '', 'Comment' => $field['comment'] ?? ''];
+                    }, $this->fields);
+                }
                 return $this->indexes;
             }
         };
