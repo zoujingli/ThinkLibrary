@@ -82,6 +82,8 @@ trait PhinxLegacyColumns
         }
         if ($mysql && isset($options['mysql_type'])) {
             $sql = preg_replace_callback('/^[a-z]+/i', function ($match) { return strtoupper($match[0]); }, $options['mysql_type']);
+        } elseif (!$mysql && isset($options['sqlite_type'])) {
+            $sql = $options['sqlite_type'];
         } else {
             $definition = $this->getSqlType($type, $options['limit'] ?? null);
             $sql = strtoupper($definition['name']);

@@ -414,20 +414,43 @@ class PhinxRoundTripTest extends TestCase
         $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
         $database->execute('CREATE TABLE natural(code TEXT PRIMARY KEY, note TEXT)');
         $database->execute('CREATE TABLE compound(code TEXT, note TEXT, PRIMARY KEY(code, note))');
+        $database->execute('CREATE TABLE int_key(code INT PRIMARY KEY, note TEXT)');
+        $database->execute('CREATE TABLE bigint_key(code BIGINT PRIMARY KEY, note TEXT)');
+        $database->execute('CREATE TABLE sized_key(code INTEGER(8) PRIMARY KEY, note TEXT)');
         $directory = sys_get_temp_dir() . '/phinx-nullable-key-' . bin2hex(random_bytes(8));
         mkdir($directory);
         try {
-            foreach (['natural', 'compound'] as $name) {
-                $database->execute("INSERT INTO {$name} VALUES (NULL, 'existing')");
+            foreach (['natural', 'compound', 'int_key', 'bigint_key', 'sized_key'] as $name) {
+                $database->execute("INSERT INTO {$name} VALUES (NULL, 'existing'), (NULL, 'second')");
                 $target = $this->sqlite();
                 $this->runMigration($this->generateFrom($database, [$name]), $target);
                 $path = $directory . '/' . $name . '.data';
                 PhinxBackup::write($database->query('SELECT * FROM ' . $name), $path);
-                self::assertSame(1, PhinxBackup::restore(new Table($name, [], $target), $path));
-                self::assertSame(['code' => null, 'note' => 'existing'], $target->fetchRow('SELECT * FROM ' . $name));
+                self::assertSame(2, PhinxBackup::restore(new Table($name, [], $target), $path));
+                self::assertSame($database->query('SELECT * FROM ' . $name), $target->fetchAll('SELECT * FROM ' . $name), $name);
+                PhinxExtend::upgrade(new Table($name, ['id' => false, 'primary_key' => $name === 'compound' ? ['code', 'note'] : ['code']], $target), [['note', 'string', ['null' => true]]], [], true);
+                $target->execute("INSERT INTO {$name}(note) VALUES ('third')");
+                self::assertNull($target->fetchRow("SELECT code FROM {$name} WHERE note = 'third'")['code']);
             }
         } finally {
             ToolsExtend::remove($directory);
+        }
+    }
+
+    public function testSqliteConflictPoliciesAreRejectedBeforeExport(): void
+    {
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        foreach (['code TEXT UNIQUE ON CONFLICT REPLACE', 'code TEXT PRIMARY KEY ON CONFLICT IGNORE', 'code TEXT NOT NULL ON CONFLICT FAIL'] as $definition) {
+            $database->execute('CREATE TABLE conflict_demo(' . $definition . ')');
+            try {
+                $this->generateFrom($database, ['conflict_demo']);
+                self::fail('An unsupported conflict policy must not silently become ABORT');
+            } catch (\RuntimeException $exception) {
+                self::assertStringContainsString('专有表约束', $exception->getMessage());
+            } finally {
+                $database->execute('DROP TABLE conflict_demo');
+            }
         }
     }
 

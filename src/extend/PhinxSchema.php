@@ -192,12 +192,13 @@ class PhinxSchema
             [$name, $type] = $field;
             $options = $field[2] ?? [];
             $mysqlType = $options['mysql_type'] ?? null;
+            $sqliteType = $options['sqlite_type'] ?? null;
             $literalDefault = !empty($options['default_literal']);
             $expressionDefault = !empty($options['default_expression']);
             if ($driver !== 'mysql' && (!empty($options['mysql_only']) || !empty($options['update']))) {
                 throw new \RuntimeException("{$driver} 不支持字段 {$name} 的 MySQL 专有定义 " . ($mysqlType ?? $options['update']));
             }
-            unset($options['mysql_only'], $options['mysql_type'], $options['default_literal'], $options['default_expression']);
+            unset($options['mysql_only'], $options['mysql_type'], $options['sqlite_type'], $options['default_literal'], $options['default_expression']);
             $default = $options['default'] ?? null;
             if ($driver === 'sqlite' && $type === 'integer' && is_string($default) && preg_match('/^\d{19,}$/', $default) && (strlen($default) > 19 || strcmp($default, '9223372036854775807') > 0)) {
                 throw new \RuntimeException("sqlite 无法精确保存字段 {$name} 的无符号大整数默认值");
@@ -238,6 +239,9 @@ class PhinxSchema
                 unset($options['signed'], $options['precision'], $options['scale']);
             }
             if ($driver === 'sqlite') {
+                if ($sqliteType !== null) {
+                    $type = Literal::from($sqliteType);
+                }
                 // SQLite 的整数本身为 64 位，identity 必须声明成 INTEGER。
                 if (!empty($options['identity'])) {
                     $type = 'integer';
@@ -385,7 +389,7 @@ class PhinxSchema
         $sql = $definition[0]['sql'] ?? '';
         // 忽略字符串、引号标识符和注释后检查不能无损导出的表级约束。
         $structure = preg_replace('/\x27(?:\x27\x27|[^\x27])*\x27|"(?:""|[^"])*"|`(?:``|[^`])*`|\[[^\]]*\]|--[^\n]*|\/\*.*?\*\//s', '', $sql);
-        if (preg_match('/\bWITHOUT\s+ROWID\b|\bSTRICT\s*$|\bCHECK\s*\(|\bREFERENCES\b|\bPRIMARY\s+KEY\s+DESC\b|\bCOLLATE\b/i', $structure)) {
+        if (preg_match('/\bWITHOUT\s+ROWID\b|\bSTRICT\s*$|\bCHECK\s*\(|\bREFERENCES\b|\bPRIMARY\s+KEY\s+DESC\b|\bCOLLATE\b|\bON\s+CONFLICT\b/i', $structure)) {
             throw new \RuntimeException("暂不支持 SQLite 表 {$table} 的专有表约束");
         }
         $columns = $connect->query('PRAGMA table_xinfo(' . self::quote($table) . ')');
@@ -427,6 +431,10 @@ class PhinxSchema
             }
             if ($column['pk']) {
                 $primary[(int)$column['pk']] = $column['name'];
+                // 只有精确的 INTEGER 单列主键才是 rowid 别名；INT/BIGINT 允许空值。
+                if ($field[1] === 'integer' && strcasecmp($column['type'], 'integer') !== 0) {
+                    $field[2]['sqlite_type'] = strtoupper($column['type']);
+                }
             }
             $fields[] = $field;
         }
