@@ -98,12 +98,13 @@ class Package extends Command
 
         // 去除忽略的数据表
         $ignore = Library::$sapp->config->get('phinx.ignore', []);
-        $tables = PhinxSchema::exportTables(Library::$sapp->db->connect(), array_diff($tables, $ignore, ['migrations']));
+        $connect = Library::$sapp->db->connect();
+        $tables = PhinxSchema::exportTables($connect, $tables, array_merge($ignore, ['migrations']));
 
         // 创建数据库结构安装脚本
         [$prefix, $groups] = ['', []];
         foreach ($tables as $table) {
-            $attr = explode('_', $table);
+            $attr = explode('_', PhinxSchema::logicalName($connect, $table));
             if ($attr[0] === 'plugin') {
                 array_shift($attr);
             }
@@ -154,7 +155,7 @@ class Package extends Command
         if (empty($ignore)) {
             $ignore = ['system_queue', 'system_oplog'];
         }
-        $tables = PhinxSchema::exportTables(Library::$sapp->db->connect(), array_diff($tables, $ignore, ['migrations']));
+        $tables = PhinxSchema::exportTables(Library::$sapp->db->connect(), $tables, array_merge($ignore, ['migrations']));
 
         // 创建数据库记录安装脚本
         $this->setQueueMessage(4, 1, '开始创建数据包安装脚本！');

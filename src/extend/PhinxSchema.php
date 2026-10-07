@@ -33,10 +33,12 @@ use Phinx\Util\Literal;
  */
 class PhinxSchema
 {
-    public static function exportTables($connect, array $tables): array
+    public static function exportTables($connect, array $tables, array $ignore = []): array
     {
-        return array_values(array_filter(array_unique($tables), function ($table) use ($connect) {
-            return $connect->getConfig('type') !== 'sqlite' || strpos($table, 'sqlite_') !== 0;
+        return array_values(array_filter(array_unique($tables), function ($table) use ($connect, $ignore) {
+            return !in_array($table, $ignore, true)
+                && !in_array(self::logicalName($connect, $table), $ignore, true)
+                && ($connect->getConfig('type') !== 'sqlite' || strpos($table, 'sqlite_') !== 0);
         }));
     }
 
