@@ -584,6 +584,16 @@ CODE;
                 } elseif (preg_match('/(float|decimal)\((\d+),(\d+)\)/', $field['type'], $attr)) {
                     $type = $types[$attr[1]] ?? 'decimal';
                     $data = array_merge(['precision' => intval($attr[2]), 'scale' => intval($attr[3])], $data);
+                } elseif (preg_match('/^(timestamp|datetime)(?:\(([0-6])\))?$/i', $field['type'], $attr)) {
+                    $type = strtolower($attr[1]);
+                    if (isset($attr[2])) {
+                        $data = array_merge(['limit' => intval($attr[2])], $data);
+                    }
+                    // Phinx 仅将大写 CURRENT_TIMESTAMP 识别为 SQL 表达式。
+                    if (is_string($data['default']) && preg_match('/^CURRENT_TIMESTAMP(?:\(([0-6]?)\))?$/i', trim($data['default']), $timestamp)) {
+                        $precision = $timestamp[1] ?? '';
+                        $data['default'] = 'CURRENT_TIMESTAMP' . ($precision === '' ? '' : "({$precision})");
+                    }
                 }
                 $_fieldString .= "\t\t\t['{$field['name']}', '{$type}', " . self::_arr2str($data) . '],' . PHP_EOL;
             }
