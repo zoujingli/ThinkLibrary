@@ -479,6 +479,9 @@ class PhinxExtend
      */
     private static function _arr2str(array $data): string
     {
+        if (empty($data)) {
+            return '[]';
+        }
         return preg_replace(['#\s+#', '#, \)$#', '#^array \( #'], [' ', ']', '['], var_export($data, true));
     }
 
