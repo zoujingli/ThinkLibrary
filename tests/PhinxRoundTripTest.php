@@ -444,6 +444,71 @@ class PhinxRoundTripTest extends TestCase
         self::assertSame(3, substr_count(implode("\n", $adapter->statements), 'DOUBLE NULL'));
     }
 
+    public function testSqliteBackupKeepsSequenceForPopulatedAndEmptyTables(): void
+    {
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $names = ['live_sequence', 'empty_sequence'];
+        foreach ($names as $name) {
+            $database->execute('CREATE TABLE ' . $name . '(id INTEGER PRIMARY KEY AUTOINCREMENT)');
+            $database->execute('INSERT INTO ' . $name . ' VALUES (1), (9000)');
+            $database->execute('DELETE FROM ' . $name . ($name === 'live_sequence' ? ' WHERE id = 9000' : ''));
+        }
+        $target = $this->sqlite();
+        $prefix = new TablePrefixAdapter($target);
+        $prefix->setOptions(['adapter' => 'sqlite', 'table_prefix' => 'copy_']);
+        $this->runMigration($this->generateFrom($database, $names), $prefix);
+        $directory = sys_get_temp_dir() . '/phinx-sequence-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        try {
+            $paths = $this->backupFrom($database, $names, $directory);
+            foreach ($names as $name) {
+                PhinxBackup::restore(new Table($name, [], $prefix), $paths[$name]);
+                $database->execute('INSERT INTO ' . $name . ' DEFAULT VALUES');
+                $target->execute('INSERT INTO copy_' . $name . ' DEFAULT VALUES');
+                self::assertSame(9001, (int)$target->fetchRow('SELECT MAX(id) AS id FROM copy_' . $name)['id']);
+                self::assertSame((int)$database->query('SELECT MAX(id) AS id FROM ' . $name)[0]['id'], (int)$target->fetchRow('SELECT MAX(id) AS id FROM copy_' . $name)['id']);
+            }
+            $target->execute('INSERT INTO copy_empty_sequence VALUES (20000)');
+            $target->execute('DELETE FROM copy_empty_sequence');
+            PhinxBackup::restore(new Table('empty_sequence', [], $prefix), $paths['empty_sequence']);
+            $target->execute('INSERT INTO copy_empty_sequence DEFAULT VALUES');
+            self::assertSame(20001, (int)$target->fetchRow('SELECT id FROM copy_empty_sequence')['id']);
+        } finally {
+            ToolsExtend::remove($directory);
+        }
+    }
+
+    public function testBackupReusesPreparedStatementsWithinEachBatch(): void
+    {
+        $connection = new class('sqlite::memory:') extends \PDO {
+            public $prepares = 0;
+
+            public function prepare($query, $options = []): \PDOStatement
+            {
+                ++$this->prepares;
+                return parent::prepare($query, $options);
+            }
+        };
+        $connection->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
+        $connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $adapter = new SQLiteAdapter(['adapter' => 'sqlite', 'memory' => true]);
+        $adapter->setConnection($connection);
+        $adapter->execute('CREATE TABLE sample(id INTEGER, payload BLOB)');
+        $connection->prepares = 0;
+        $directory = sys_get_temp_dir() . '/phinx-prepares-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        try {
+            $path = $directory . '/rows.data';
+            PhinxBackup::write(array_fill(0, 300, ['id' => 1, 'payload' => "\xFF\x00"]), $path);
+            self::assertSame(300, PhinxBackup::restore(new Table('sample', [], $adapter), $path));
+            self::assertLessThanOrEqual(3, $connection->prepares);
+            self::assertSame(300, (int)$adapter->fetchRow("SELECT COUNT(*) AS n FROM sample WHERE payload = X'FF00'")['n']);
+        } finally {
+            ToolsExtend::remove($directory);
+        }
+    }
+
     public function testSqliteAdapterWithoutDriverOptionCanUpgradeAndRestore(): void
     {
         $adapter = new SQLiteAdapter(['connection' => new \PDO('sqlite::memory:'), 'name' => ':memory:']);

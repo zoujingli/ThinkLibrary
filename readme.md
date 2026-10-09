@@ -133,6 +133,8 @@ SQLite 数据备份使用 v2 记录每个值的实际存储类型，保留 TEXT 
 
 SQLite 的原字段声明通过 `sqlite_type` 保留，避免 `DATETIME`、`JSON` 等字段恢复后改变存储类型与排序行为；浮点字段迁移到 MySQL 时使用 `DOUBLE` 保留双精度。旧版 Phinx 的普通列继续使用原适配器编译，仅对原始类型、精度、默认表达式及非空约束等缺失能力补充兼容处理。
 
+SQLite 自增表的数据文件首行另存历史序号，即使记录已全部删除也会打包；恢复时不会降低目标表已有序号。无序号头的旧备份仍可读取，含序号头的新备份需要同步更新 ThinkLibrary。
+
 SQLite 回归测试直接使用内存数据库。可通过 `PHINX_TEST_MYSQL_PORT=端口 vendor/bin/phpunit -c phpunit.xml.dist` 额外运行 MySQL 往返验证（在 ThinkLibrary 目录执行）。该测试只用于可丢弃的本机 MySQL 实例：数据库名为 `phinx_fixture`，账号 `root`、空密码，会创建并清理结构、默认值和备份测试表及空的 `system_menu` 表。测试覆盖真实打包入口和带前缀恢复，不应指向业务数据库。
 
 ## 使用说明

@@ -31,6 +31,37 @@ class PhinxBackup
 
     private const TYPED_PREFIX = 'ThinkAdminBackup:2:';
 
+    private const SEQUENCE_PREFIX = 'ThinkAdminBackup:sequence:';
+
+    public static function readSqliteSequence(\PDO $connection, string $table): ?string
+    {
+        if ($connection->query("SELECT name FROM sqlite_master WHERE name = 'sqlite_sequence'")->fetchColumn() === false) {
+            return null;
+        }
+        $sequence = $connection->query('SELECT seq FROM sqlite_sequence WHERE name = ' . $connection->quote($table))->fetchColumn();
+        return $sequence === false ? null : (string)$sequence;
+    }
+
+    public static function restoreSqliteSequence(\PDO $connection, string $table, ?string $sequence): void
+    {
+        if ($sequence === null) {
+            return;
+        }
+        self::validateType('integer', $sequence);
+        $definition = $connection->query("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = " . $connection->quote($table))->fetchColumn();
+        $structure = preg_replace('/\x27(?:\x27\x27|[^\x27])*\x27|"(?:""|[^"])*"|`(?:``|[^`])*`|\[[^\]]*\]|--[^\n]*|\/\*.*?\*\//s', '', (string)$definition);
+        if (!preg_match('/\bAUTOINCREMENT\b/i', $structure)) {
+            return;
+        }
+        $statement = $connection->prepare('UPDATE sqlite_sequence SET seq = MAX(seq, CAST(? AS INTEGER)) WHERE name = ?');
+        $statement->execute([$sequence, $table]);
+        if ($statement->rowCount() === 0) {
+            // 空表尚未发放编号时 sqlite_sequence 没有对应记录。
+            $statement = $connection->prepare('INSERT INTO sqlite_sequence(name, seq) VALUES (?, CAST(? AS INTEGER))');
+            $statement->execute([$table, $sequence]);
+        }
+    }
+
     public static function isEmpty(Table $table): bool
     {
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
@@ -116,7 +147,8 @@ class PhinxBackup
      */
     public static function writeTable($connect, string $table, string $path, ?callable $progress = null): int
     {
-        return self::writeRecords(self::readTable($connect, $table), $path, $progress);
+        $sequence = $connect->getConfig('type') === 'sqlite' ? self::readSqliteSequence($connect->connect(), $table) : null;
+        return self::writeRecords(self::readTable($connect, $table), $path, $progress, $sequence);
     }
 
     /**
@@ -160,6 +192,7 @@ class PhinxBackup
         }
         $ownsTransaction = $driver !== 'sqlite' && !$connection->inTransaction();
         $count = $lineNumber = 0;
+        $sequence = null;
         try {
             if ($ownsTransaction) {
                 $connection->beginTransaction();
@@ -170,6 +203,11 @@ class PhinxBackup
                 while (($line = fgets($stream)) !== false) {
                     ++$lineNumber;
                     if (trim($line) === '') {
+                        continue;
+                    }
+                    if ($lineNumber === 1 && strpos($line, self::SEQUENCE_PREFIX) === 0) {
+                        $sequence = substr(rtrim($line, "\r\n"), strlen(self::SEQUENCE_PREFIX));
+                        self::validateType('integer', $sequence);
                         continue;
                     }
                     $row = self::decodeRow(rtrim($line, "\r\n"), $types);
@@ -193,6 +231,9 @@ class PhinxBackup
                 }
                 if ($batch) {
                     self::insertRows($adapter, $name, $batch, $bitColumns, $binaryColumns);
+                }
+                if ($driver === 'sqlite') {
+                    self::restoreSqliteSequence($connection, $name, $sequence);
                 }
                 $adapter->execute('RELEASE SAVEPOINT phinx_backup_restore');
                 if ($ownsTransaction) {
@@ -251,7 +292,7 @@ class PhinxBackup
         }
     }
 
-    private static function writeRecords(iterable $records, string $path, ?callable $progress): int
+    private static function writeRecords(iterable $records, string $path, ?callable $progress, ?string $sequence = null): int
     {
         $stream = fopen($path, 'xb');
         if ($stream === false) {
@@ -259,6 +300,13 @@ class PhinxBackup
         }
         $count = 0;
         try {
+            if ($sequence !== null) {
+                self::validateType('integer', $sequence);
+                $header = self::SEQUENCE_PREFIX . $sequence . "\n";
+                if (fwrite($stream, $header) !== strlen($header)) {
+                    throw new \RuntimeException("备份写入失败 {$path}");
+                }
+            }
             foreach ($records as [$row, $types]) {
                 $line = self::encodeRow($row, $types) . "\n";
                 $offset = 0;
@@ -311,6 +359,7 @@ class PhinxBackup
 
     private static function insertRows($adapter, string $table, array $rows, array $bitColumns, array $binaryColumns): void
     {
+        $statements = [];
         foreach ($rows as [$row, $types]) {
             $columns = $values = [];
             foreach ($row as $column => $value) {
@@ -324,7 +373,8 @@ class PhinxBackup
                     $values[] = '?';
                 }
             }
-            $statement = $adapter->getConnection()->prepare('INSERT INTO ' . $adapter->quoteTableName($table) . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
+            $sql = 'INSERT INTO ' . $adapter->quoteTableName($table) . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')';
+            $statement = $statements[$sql] ?? ($statements[$sql] = $adapter->getConnection()->prepare($sql));
             $position = 0;
             foreach ($row as $column => $value) {
                 $type = $value === null ? \PDO::PARAM_NULL : (is_int($value) || is_bool($value) ? \PDO::PARAM_INT : \PDO::PARAM_STR);

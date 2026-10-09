@@ -100,8 +100,7 @@ class PhinxExtend
             }
         }
         $sqlite = $driver === 'sqlite' && !PhinxSchema::isDryRun($adapter);
-        $sequence = $sqlite && $isExists && $adapter->hasTable('sqlite_sequence')
-            ? ($adapter->fetchRow('SELECT seq FROM sqlite_sequence WHERE name = ' . $adapter->getConnection()->quote($name))['seq'] ?? null) : null;
+        $sequence = $sqlite && $isExists ? PhinxBackup::readSqliteSequence($adapter->getConnection(), $name) : null;
         if ($sqlite) {
             $adapter->execute('SAVEPOINT phinx_table_upgrade');
         }
@@ -136,8 +135,7 @@ class PhinxExtend
             self::syncTableIndexes($table, $indexs, $temporaryIndex);
             if ($sequence !== null) {
                 // SQLite 重建表后不能复用曾经发放、后来删除的自增 ID。
-                $statement = $adapter->getConnection()->prepare('UPDATE sqlite_sequence SET seq = MAX(seq, CAST(? AS INTEGER)) WHERE name = ?');
-                $statement->execute([$sequence, $name]);
+                PhinxBackup::restoreSqliteSequence($adapter->getConnection(), $name, $sequence);
             }
             if ($sqlite) {
                 $adapter->execute('RELEASE SAVEPOINT phinx_table_upgrade');
@@ -204,7 +202,8 @@ class PhinxExtend
         [$extra, $version] = [[], strstr($filename = static::nextFile($class), '_', true)];
         if (count($tables) > 0) {
             foreach ($tables as $table) {
-                if (($count = ($db = Library::$sapp->db->table($table))->count()) > 0) {
+                $count = Library::$sapp->db->table($table)->count();
+                if ($count > 0 || ($connect->getConfig('type') === 'sqlite' && PhinxBackup::readSqliteSequence($connect->connect(), $table) !== null)) {
                     $dataFileName = $version . '/' . sha1($table) . '.data';
                     $dataFilePath = syspath("database/migrations/{$dataFileName}");
                     is_dir($dataDirectory = dirname($dataFilePath)) || mkdir($dataDirectory, 0777, true);
