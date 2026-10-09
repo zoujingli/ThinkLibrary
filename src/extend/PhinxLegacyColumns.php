@@ -39,8 +39,18 @@ trait PhinxLegacyColumns
         $this->connection = $adapter->getConnection();
         // Phinx 3.0 的父构造器会检查迁移表，并回调 fetchAll / execute。
         parent::__construct($adapter->getOptions(), $adapter->getInput(), $adapter->getOutput());
+        $mysql = PhinxSchema::driver($this) === 'mysql';
         foreach ($fields as $field) {
-            $this->definitions[$field[0]] = $this->compileColumn($field);
+            $options = $field[2] ?? [];
+            $custom = array_intersect_key($options, array_flip(['mysql_type', 'sqlite_type', 'collation', 'precision', 'scale', 'default_literal', 'default_expression']));
+            $temporal = in_array($field[1], ['timestamp', 'datetime', 'time'], true) && isset($options['limit']);
+            $timestamp = is_string($options['default'] ?? null) && strpos($options['default'], 'CURRENT_TIMESTAMP') === 0;
+            $textDefault = $mysql && in_array($field[1], ['text', 'binary', 'json'], true) && is_string($options['default'] ?? null) && version_compare($this->connection->getAttribute(\PDO::ATTR_SERVER_VERSION), '8', '>=');
+            $notNull = !$mysql && isset($options['null']) && !$options['null'] && !isset($options['default']);
+            // 普通列沿用父适配器，保留 values、布尔默认值等原有选项语义。
+            if ($custom || $temporal || $timestamp || $textDefault || $notNull) {
+                $this->definitions[$field[0]] = $this->compileColumn($field);
+            }
         }
     }
 
@@ -65,6 +75,12 @@ trait PhinxLegacyColumns
     public function getColumns($tableName): array
     {
         return $this->wrappedAdapter->getColumns($tableName);
+    }
+
+    public function isValidColumnType(Column $column): bool
+    {
+        // 已编译的原始定义不依赖旧版类型名单，例如 SQLite 的 JSON 声明。
+        return isset($this->definitions[$column->getName()]) || parent::isValidColumnType($column);
     }
 
     protected function getColumnSqlDefinition(Column $column): string
@@ -99,6 +115,9 @@ trait PhinxLegacyColumns
             if ($mysql && isset($options['signed']) && !$options['signed']) {
                 $sql .= ' unsigned';
             }
+            if (!empty($options['values'])) {
+                $sql .= '(' . implode(', ', array_map(function ($value) { return $value === null ? 'NULL' : $this->connection->quote($value); }, $options['values'])) . ')';
+            }
         }
         if ($mysql && !empty($options['collation'])) {
             $sql .= ' COLLATE ' . $options['collation'];
@@ -108,6 +127,7 @@ trait PhinxLegacyColumns
             $sql .= $mysql ? ' AUTO_INCREMENT' : ' PRIMARY KEY AUTOINCREMENT';
         }
         $default = $options['default'] ?? null;
+        $defaultSql = $this->getDefaultValueDefinition($default, $type);
         if ($default !== null) {
             if (empty($options['default_literal']) && (!empty($options['default_expression']) || in_array($type, ['timestamp', 'datetime'], true)) && is_string($default) && preg_match('/^CURRENT_TIMESTAMP(?:\([0-6]\))?$/', $default)) {
                 if (!$mysql && preg_match('/\([1-6]\)/', $default)) {
@@ -117,16 +137,19 @@ trait PhinxLegacyColumns
                 if ($mysql && !in_array($type, ['timestamp', 'datetime'], true)) {
                     $default = '(' . $default . ')';
                 }
+                $defaultSql = ' DEFAULT ' . $default;
             } elseif ($mysql && strpos($options['mysql_type'] ?? '', 'bit(') === 0 && is_string($default) && preg_match("/^b'[01]+'$/i", $default)) {
                 // MySQL 的位字面量保持原样。
-            } else {
-                $default = $this->connection->quote((string)$default);
+                $defaultSql = ' DEFAULT ' . $default;
+            } elseif (is_string($default)) {
+                $default = $this->connection->quote($default);
                 if ($mysql && in_array($type, ['text', 'binary', 'json'], true) && version_compare($this->connection->getAttribute(\PDO::ATTR_SERVER_VERSION), '8', '>=')) {
                     $default = '(' . $default . ')';
                 }
+                $defaultSql = ' DEFAULT ' . $default;
             }
-            $sql .= ' DEFAULT ' . $default;
         }
+        $sql .= $defaultSql;
         if ($mysql && !empty($options['comment'])) {
             $sql .= ' COMMENT ' . $this->connection->quote($options['comment']);
         }

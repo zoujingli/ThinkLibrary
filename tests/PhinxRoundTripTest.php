@@ -28,6 +28,7 @@ use Phinx\Db\Table;
 use PHPUnit\Framework\TestCase;
 use think\admin\extend\PhinxBackup;
 use think\admin\extend\PhinxExtend;
+use think\admin\extend\PhinxMysqlColumns;
 use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\DbManager;
@@ -98,6 +99,30 @@ class PhinxRoundTripTest extends TestCase
         $sql = implode("\n", $adapter->statements);
         self::assertStringContainsString("COLLATE utf8mb4_bin NULL DEFAULT 'CURRENT_TIMESTAMP'", $sql);
         self::assertStringContainsString('DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)', $sql);
+    }
+
+    public function testMysqlNativeTextAndBlobDefaultsRemainExpressions(): void
+    {
+        foreach (['text', 'mediumtext', 'longtext', 'blob', 'mediumblob', 'longblob'] as $type) {
+            $adapter = new RecordingMysqlAdapter();
+            $fields = [$this->field('value', $type, "Bob's value")];
+            $this->runMigration($this->generate(['sample' => ['fields' => $fields]]), $adapter);
+            self::assertStringContainsString("DEFAULT ('Bob''s value')", implode("\n", $adapter->statements), $type);
+        }
+    }
+
+    public function testLegacyColumnsKeepNativeEnumAndBooleanOptions(): void
+    {
+        $adapter = new RecordingMysqlAdapter();
+        $fields = [
+            ['kind', 'enum', ['values' => ['draft', 'live'], 'default' => 'draft']],
+            ['enabled', 'boolean', ['default' => false]],
+            ['custom_flag', 'integer', ['mysql_type' => 'tinyint(1)', 'default' => false]],
+        ];
+        PhinxExtend::upgrade(new Table('sample', ['id' => false], new PhinxMysqlColumns($adapter, $fields)), $fields);
+        $sql = implode("\n", $adapter->statements);
+        self::assertSame(1, preg_match("/ENUM\\('draft',\\s*'live'\\)/", $sql), $sql);
+        self::assertSame(2, substr_count($sql, 'DEFAULT 0'), $sql);
     }
 
     public function testIndexesPreserveNamesTypesPrefixesAndOrder(): void
@@ -386,6 +411,39 @@ class PhinxRoundTripTest extends TestCase
         $target->execute("INSERT INTO original(code) VALUES ('one')");
     }
 
+    public function testSqliteDeclaredTypesPreserveValueStorageAndOrdering(): void
+    {
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $database->execute('CREATE TABLE affinity(stamp DATETIME, meta JSON, amount DECIMAL(10,2), flag BOOLEAN, raw BINARY(10))');
+        $database->execute("INSERT INTO affinity VALUES (2, 2, 2.25, 1, 2), (10, 10, 10.5, 0, '10')");
+        $target = $this->sqlite();
+        $this->runMigration($this->generateFrom($database, ['affinity']), $target);
+        $directory = sys_get_temp_dir() . '/phinx-affinity-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        try {
+            $path = $directory . '/rows.data';
+            PhinxBackup::writeTable($database->connect(), 'affinity', $path);
+            self::assertSame(2, PhinxBackup::restore(new Table('affinity', [], $target), $path));
+            $select = 'SELECT stamp, meta, amount, flag, raw, typeof(stamp), typeof(meta), typeof(raw) FROM affinity ORDER BY stamp';
+            self::assertSame($database->query($select), $target->fetchAll($select));
+            PhinxExtend::upgrade(new Table('affinity', ['id' => false], $target), [['extra', 'string', ['null' => true]]], [], true);
+            self::assertSame($database->query($select), $target->fetchAll($select));
+        } finally {
+            ToolsExtend::remove($directory);
+        }
+    }
+
+    public function testSqliteFloatingTypesKeepDoublePrecisionOnMysql(): void
+    {
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $database->execute('CREATE TABLE floats(real_value REAL, float_value FLOAT, double_value DOUBLE(10,2))');
+        $adapter = new RecordingMysqlAdapter();
+        $this->runMigration($this->generateFrom($database, ['floats']), $adapter);
+        self::assertSame(3, substr_count(implode("\n", $adapter->statements), 'DOUBLE NULL'));
+    }
+
     public function testSqliteAdapterWithoutDriverOptionCanUpgradeAndRestore(): void
     {
         $adapter = new SQLiteAdapter(['connection' => new \PDO('sqlite::memory:'), 'name' => ':memory:']);
@@ -549,8 +607,8 @@ class PhinxRoundTripTest extends TestCase
                 optional INT DEFAULT NULL, maximum BIGINT UNSIGNED DEFAULT 18446744073709551615,
                 code CHAR(16), name VARCHAR(100) COLLATE utf8mb4_bin DEFAULT 'CURRENT_TIMESTAMP',
                 status ENUM('draft','Bob''s') DEFAULT 'draft', colors SET('red','blue'), flag BIT(1) DEFAULT b'1',
-                payload VARBINARY(512), fixed BINARY(16), body MEDIUMTEXT, large_text LONGTEXT,
-                medium_data MEDIUMBLOB, large_data LONGBLOB, amount DECIMAL(20,0) UNSIGNED DEFAULT 0,
+                payload VARBINARY(512), fixed BINARY(16), body MEDIUMTEXT DEFAULT ('hello'), large_text LONGTEXT DEFAULT ('hello'),
+                medium_data MEDIUMBLOB DEFAULT ('hello'), large_data LONGBLOB DEFAULT ('hello'), amount DECIMAL(20,0) UNSIGNED DEFAULT 0,
                 approximate FLOAT(10,2), precise DOUBLE(10,2), year_value YEAR, clock TIME(3),
                 created TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
                 INDEX short_name (name(10)), INDEX long_name (name(20)),
@@ -643,7 +701,7 @@ class PhinxRoundTripTest extends TestCase
         }
         $database = new DbManager();
         $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
-        $database->execute("CREATE TABLE timestamp_defaults(created TEXT DEFAULT current_timestamp, note TEXT DEFAULT 'CURRENT_TIMESTAMP', stamp DATETIME DEFAULT CURRENT_TIMESTAMP)");
+        $database->execute("CREATE TABLE timestamp_defaults(created TEXT DEFAULT current_timestamp, note TEXT DEFAULT 'CURRENT_TIMESTAMP', stamp DATETIME DEFAULT CURRENT_TIMESTAMP, fraction REAL DEFAULT 1e100)");
         $adapter = new MysqlAdapter(['host' => '127.0.0.1', 'port' => (int)$port, 'name' => 'phinx_fixture', 'user' => 'root', 'pass' => '', 'charset' => 'utf8mb4']);
         try {
             $this->runMigration($this->generateFrom($database, ['timestamp_defaults']), $adapter);
@@ -652,6 +710,7 @@ class PhinxRoundTripTest extends TestCase
             self::assertSame('CURRENT_TIMESTAMP', $row['note']);
             self::assertSame(1, preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $row['created']));
             self::assertSame($row['created'], $row['stamp']);
+            self::assertSame(1e100, (float)$row['fraction']);
         } finally {
             $adapter->execute('DROP TABLE IF EXISTS timestamp_defaults');
         }
@@ -954,7 +1013,13 @@ class RecordingMysqlAdapter extends MysqlAdapter
     public function __construct()
     {
         parent::__construct(['adapter' => 'mysql']);
-        $this->connection = new \PDO('sqlite::memory:');
+        $this->connection = new class('sqlite::memory:') extends \PDO {
+            #[\ReturnTypeWillChange]
+            public function getAttribute($attribute)
+            {
+                return $attribute === \PDO::ATTR_SERVER_VERSION ? '8.4.0' : parent::getAttribute($attribute);
+            }
+        };
     }
 
     public function getAttribute(int $attribute)

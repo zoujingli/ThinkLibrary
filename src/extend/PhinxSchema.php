@@ -205,6 +205,10 @@ class PhinxSchema
             if ($driver === 'sqlite' && $type === 'integer' && is_string($default) && preg_match('/^\d{19,}$/', $default) && (strlen($default) > 19 || strcmp($default, '9223372036854775807') > 0)) {
                 throw new \RuntimeException("sqlite 无法精确保存字段 {$name} 的无符号大整数默认值");
             }
+            if ($driver === 'sqlite') {
+                // SQLite 不存储字段备注；旧 Phinx 会把备注拼成未转义的 SQL 注释。
+                unset($options['comment'], $options['collation'], $options['encoding'], $options['signed']);
+            }
             // 旧适配器已保留完整列 SQL，Column 仅承载其认识的通用选项。
             if (!self::supportsLiteral() && in_array($driver, ['mysql', 'sqlite'], true)) {
                 $valid = array_flip(['limit', 'default', 'null', 'identity', 'precision', 'scale', 'after', 'update', 'comment', 'signed', 'timezone', 'properties', 'values']);
@@ -230,6 +234,10 @@ class PhinxSchema
                 }
             }
             if ($driver === 'mysql' && $mysqlType !== null) {
+                // Literal 类型绕过了 Phinx 对 TEXT/BLOB 默认值的表达式包装。
+                if (in_array($type, ['text', 'binary', 'json'], true) && is_string($options['default'] ?? null) && version_compare($adapter->getAttribute(\PDO::ATTR_SERVER_VERSION), '8', '>=')) {
+                    $options['default'] = Literal::from('(' . $adapter->getConnection()->quote($options['default']) . ')');
+                }
                 $type = Literal::from(preg_replace_callback('/^[a-z]+/i', function ($match) { return strtoupper($match[0]); }, $mysqlType));
                 unset($options['signed'], $options['limit'], $options['precision'], $options['scale']);
                 if (stripos($mysqlType, 'bit(') === 0 && is_string($default) && preg_match("/^b'[01]+'$/i", $default)) {
@@ -243,13 +251,12 @@ class PhinxSchema
             if ($driver === 'sqlite') {
                 if ($sqliteType !== null) {
                     $type = Literal::from($sqliteType);
+                    unset($options['limit'], $options['precision'], $options['scale']);
                 }
                 // SQLite 的整数本身为 64 位，identity 必须声明成 INTEGER。
                 if (!empty($options['identity'])) {
                     $type = 'integer';
                 }
-                // SQLite 不存储字段备注；Phinx 会把备注拼成未转义的 SQL 注释。
-                unset($options['comment'], $options['collation'], $options['encoding'], $options['signed']);
             }
             $field = [$name, $type, $options];
         }
@@ -455,6 +462,12 @@ class PhinxSchema
                 }
             }
             $field = self::mysqlField(['Field' => $column['name'], 'Type' => $type, 'Null' => $column['notnull'] ? 'NO' : 'YES', 'Default' => $default]);
+            // 保留 SQLite 原声明的亲和性和主键语义，通用类型仅用于跨库迁移。
+            $field[2]['sqlite_type'] = $column['type'];
+            if ($field[1] === 'float') {
+                // SQLite 的 REAL/FLOAT/DOUBLE 均为双精度，也不限制声明的小数位数。
+                $field[2]['mysql_type'] = 'double';
+            }
             if ($literalDefault) {
                 $field[2]['default'] = $default;
                 $field[2]['default_literal'] = true;
@@ -464,10 +477,6 @@ class PhinxSchema
             }
             if ($column['pk']) {
                 $primary[(int)$column['pk']] = $column['name'];
-                // 只有精确的 INTEGER 单列主键才是 rowid 别名；INT/BIGINT 允许空值。
-                if ($field[1] === 'integer' && strcasecmp($column['type'], 'integer') !== 0) {
-                    $field[2]['sqlite_type'] = strtoupper($column['type']);
-                }
             }
             $fields[] = $field;
         }
