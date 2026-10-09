@@ -23,16 +23,36 @@ namespace think\admin\extend;
 use Phinx\Db\Table;
 
 /**
- * 带版本的逐行备份：字符串按字节保存，仍可读取原来的 JSONL 文件。
+ * 数据表逐行备份与恢复，保留字符串字节及 SQLite 存储类型.
+ * 兼容旧版 JSONL 和带版本前缀的记录，SQLite 自增序号可独立保存在文件首行.
+ * @class PhinxBackup
  */
 class PhinxBackup
 {
+    /**
+     * 字节安全的第一版记录前缀，不含 SQLite 存储类型.
+     * @var string
+     */
     private const PREFIX = 'ThinkAdminBackup:1:';
 
+    /**
+     * 第二版记录前缀，每个字段额外保存 SQLite 存储类型.
+     * @var string
+     */
     private const TYPED_PREFIX = 'ThinkAdminBackup:2:';
 
+    /**
+     * 可选的 SQLite 自增序号头前缀，仅允许出现在文件首行.
+     * @var string
+     */
     private const SEQUENCE_PREFIX = 'ThinkAdminBackup:sequence:';
 
+    /**
+     * 读取 SQLite 表已发放的自增序号，保留删除数据后的历史值.
+     * @param \PDO $connection SQLite 数据库连接
+     * @param string $table 已解析前后缀的物理表名
+     * @return null|string 序号以字符串返回，无对应记录时返回 null
+     */
     public static function readSqliteSequence(\PDO $connection, string $table): ?string
     {
         if ($connection->query("SELECT name FROM sqlite_master WHERE name = 'sqlite_sequence'")->fetchColumn() === false) {
@@ -42,6 +62,14 @@ class PhinxBackup
         return $sequence === false ? null : (string)$sequence;
     }
 
+    /**
+     * 恢复 AUTOINCREMENT 表的历史序号，不降低目标表的现有序号.
+     * 事务由调用方管理；无序号或目标表未声明 AUTOINCREMENT 时不处理.
+     * @param \PDO $connection SQLite 数据库连接
+     * @param string $table 已解析前后缀的物理表名
+     * @param null|string $sequence 备份或重建表前读取的自增序号
+     * @throws \RuntimeException 序号不是有效的 64 位有符号整数
+     */
     public static function restoreSqliteSequence(\PDO $connection, string $table, ?string $sequence): void
     {
         if ($sequence === null) {
@@ -62,12 +90,24 @@ class PhinxBackup
         }
     }
 
+    /**
+     * 检查迁移目标表是否为空，dry-run 时不查询并返回 false.
+     * @param Table $table 已存在的迁移目标表
+     * @return bool 是否允许按空表处理
+     */
     public static function isEmpty(Table $table): bool
     {
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
         return !PhinxSchema::isDryRun($adapter) && (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM ' . $adapter->quoteTableName($name))['total'] === 0;
     }
 
+    /**
+     * 编码一行备份数据，字段名和字符串值使用 Base64 保留原始字节.
+     * @param array<int|string, mixed> $row 字段值映射，仅接受标量和 null
+     * @param array<int|string, string> $types SQLite 存储类型映射；为空时使用第一版格式
+     * @return string 不含末尾换行的备份记录
+     * @throws \RuntimeException 字段值、存储类型或 JSON 编码无效
+     */
     public static function encodeRow(array $row, array $types = []): string
     {
         $values = [];
@@ -89,6 +129,13 @@ class PhinxBackup
         return ($types ? self::TYPED_PREFIX : self::PREFIX) . $json;
     }
 
+    /**
+     * 解码旧版 JSONL 或第一、第二版备份记录，不处理自增序号头.
+     * @param string $line 不含末尾换行的数据记录
+     * @param null|array<int|string, string> $types 输出参数，非第二版记录时置为空数组
+     * @return array<int|string, mixed> 按原始字段名还原的字段值
+     * @throws \RuntimeException 记录损坏、版本不支持或存储类型无效
+     */
     public static function decodeRow(string $line, ?array &$types = null): array
     {
         $types = [];
@@ -131,6 +178,14 @@ class PhinxBackup
         return $row;
     }
 
+    /**
+     * 将可迭代行数据写入第一版备份文件.
+     * @param iterable<array<int|string, mixed>> $rows 字段值映射的迭代集合
+     * @param string $path 尚不存在的目标文件路径，父目录须已创建
+     * @param null|callable $progress 进度回调，接收已写入的数据行数
+     * @return int 成功写入的数据行数
+     * @throws \RuntimeException 编码或文件写入失败
+     */
     public static function write(iterable $rows, string $path, ?callable $progress = null): int
     {
         $records = (function () use ($rows) {
@@ -142,8 +197,14 @@ class PhinxBackup
     }
 
     /**
-     * 在读取边界保留 SQLite 每值类型及旧 mysqlnd 会截断的小数秒，不改变应用连接配置。
-     * @param mixed $connect
+     * 备份整表，保留 SQLite 每值类型、自增序号及 MySQL 时间小数秒.
+     * 仅在读取时转换必要的值，不改变应用连接配置；带历史序号的空表仍写入序号头.
+     * @param object $connect 提供 getConfig、query 和 connect 接口的 ThinkORM 连接
+     * @param string $table 包含前缀的物理表名
+     * @param string $path 尚不存在的目标文件路径，父目录须已创建
+     * @param null|callable $progress 进度回调，接收已写入的数据行数
+     * @return int 成功写入的数据行数，不含序号头
+     * @throws \RuntimeException 数据库类型不支持、数据编码或文件写入失败
      */
     public static function writeTable($connect, string $table, string $path, ?callable $progress = null): int
     {
@@ -152,7 +213,13 @@ class PhinxBackup
     }
 
     /**
-     * 使用迁移连接恢复到空表，坏行直接报错；支持事务的目标表会回滚。
+     * 使用迁移连接恢复空表，按批复用预编译语句并逐行绑定数据.
+     * 支持事务的目标表失败时回滚；已有事务仅回滚本次保存点，自行开启的事务自行提交.
+     * @param Table $table 已存在的迁移目标表
+     * @param string $path 兼容旧版 JSONL 的备份文件路径
+     * @param null|callable $progress 进度回调，接收已读取的数据行数，不代表事务已提交
+     * @return int 恢复的数据行数；dry-run 或目标表非空时返回 0
+     * @throws \RuntimeException 文件不可读或恢复失败，记录处理失败时附文件路径和行号
      */
     public static function restore(Table $table, string $path, ?callable $progress = null): int
     {
@@ -254,6 +321,13 @@ class PhinxBackup
         return $count;
     }
 
+    /**
+     * 逐行读取物理表，保留浮点精度、时间小数秒和 SQLite 每值存储类型.
+     * @param object $connect 提供 getConfig、query 和 connect 接口的 ThinkORM 连接
+     * @param string $table 包含前缀的物理表名
+     * @return \Generator<int, array{0:array,1:array}> 每项为 [字段值映射, 存储类型映射]，MySQL 类型映射为空
+     * @throws \RuntimeException 数据库类型不支持或无法读取表字段
+     */
     private static function readTable($connect, string $table): \Generator
     {
         $driver = $connect->getConfig('type');
@@ -292,6 +366,15 @@ class PhinxBackup
         }
     }
 
+    /**
+     * 独占创建备份文件，写入失败时删除本次创建的不完整文件.
+     * @param iterable<array{0:array,1:array}> $records 每项为 [字段值映射, 存储类型映射]
+     * @param string $path 尚不存在的目标文件路径，父目录须已创建
+     * @param null|callable $progress 进度回调，接收已写入的数据行数，不含序号头
+     * @param null|string $sequence 可选的 SQLite 自增序号，写入文件首行
+     * @return int 成功写入的数据行数，不含序号头
+     * @throws \RuntimeException 记录、序号校验或文件写入失败
+     */
     private static function writeRecords(iterable $records, string $path, ?callable $progress, ?string $sequence = null): int
     {
         $stream = fopen($path, 'xb');
@@ -334,6 +417,12 @@ class PhinxBackup
         return $count;
     }
 
+    /**
+     * 校验字段值与 SQLite 存储类型是否匹配，整数限定在 64 位有符号范围内.
+     * @param mixed $type 外部记录中的类型标记，应为 null、text、blob、real 或 integer 字符串
+     * @param mixed $value 待校验的字段值
+     * @throws \RuntimeException 类型标记或字段值无效
+     */
     private static function validateType($type, $value): void
     {
         if (($type === 'null' && $value === null)
@@ -345,6 +434,11 @@ class PhinxBackup
         throw new \RuntimeException('备份字段存储类型损坏');
     }
 
+    /**
+     * 通过字符串比较判断十进制整数是否超出 64 位有符号范围，避免提前转换丢失精度.
+     * @param string $value 待检查的数值字符串
+     * @return bool 超出范围时返回 true，非整数字符串返回 false
+     */
     private static function integerOverflows(string $value): bool
     {
         $value = trim($value);
@@ -357,6 +451,15 @@ class PhinxBackup
         return strlen($digits) > 19 || (strlen($digits) === 19 && strcmp($digits, $limit) > 0);
     }
 
+    /**
+     * 在当前批次内按 SQL 复用预编译语句，保留数值及二进制绑定语义.
+     * 逐行执行插入，事务及失败回滚由 restore 管理.
+     * @param object $adapter 已解包的 Phinx 迁移适配器，提供 PDO 连接及标识符引用接口
+     * @param string $table 已解析前后缀的物理表名
+     * @param array<int, array{0:array,1:array}> $rows 每项为 [字段值映射, SQLite 存储类型映射]
+     * @param string[] $bitColumns 需要按无符号整数转换的 MySQL BIT 字段名
+     * @param string[] $binaryColumns 缺少逐值类型信息时需要按 LOB 绑定的字段名
+     */
     private static function insertRows($adapter, string $table, array $rows, array $bitColumns, array $binaryColumns): void
     {
         $statements = [];

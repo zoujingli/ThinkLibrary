@@ -23,7 +23,9 @@ namespace think\admin\extend;
 use Phinx\Db\Adapter\MysqlAdapter;
 
 /**
- * Phinx 3.0 的 MySQL 列定义兼容层。
+ * 旧版 Phinx 的 MySQL 列定义兼容层.
+ * 由 PhinxSchema 为缺少 Literal 或列排序规则接口的版本创建，普通列沿用父适配器.
+ * @class PhinxMysqlColumns
  * @internal
  */
 class PhinxMysqlColumns extends MysqlAdapter

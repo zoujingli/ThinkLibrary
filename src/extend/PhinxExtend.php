@@ -33,10 +33,12 @@ use think\helper\Str;
 class PhinxExtend
 {
     /**
-     * 批量写入菜单.
-     * @param array $zdata 菜单数据
+     * 按父子顺序写入最多三级菜单，可使用指定的迁移连接.
+     * @param array<int, array> $zdata 菜单数据，子级使用 subs 字段
      * @param mixed $exists 检测条件
      * @param null|Table $table 迁移目标表，指定时 $exists 必须为空
+     * @return bool 菜单处理完成时返回 true，已有匹配数据或前置查询失败时返回 false
+     * @throws \InvalidArgumentException 指定迁移目标表时同时传入非空检测条件
      */
     public static function write2menu(array $zdata, $exists = [], ?Table $table = null): bool
     {
@@ -69,10 +71,14 @@ class PhinxExtend
     }
 
     /**
-     * 升级更新数据表.
-     * @param array $fields 字段配置
-     * @param array $indexs 索引配置
-     * @param bool $force 强制更新
+     * 创建或更新数据表，保留未指定的字段及其他名称的索引.
+     * SQLite 更新使用保存点保护；MySQL DDL 遵循数据库隐式提交规则.
+     * @param Table $table 携带目标表名、表选项及迁移适配器的表对象
+     * @param array<int, array> $fields 字段配置，每项为 [名称, 类型, 选项（可选）]
+     * @param array<int, mixed> $indexs 索引配置，支持字段名、字段列表或带 columns 的选项数组
+     * @param bool $force 是否更新已存在的表，为 false 时已有表直接返回
+     * @return Table 传入的迁移表对象
+     * @throws \RuntimeException 结构定义不支持、主键不一致或 SQLite 表被外键引用
      */
     public static function upgrade(Table $table, array $fields, array $indexs = [], bool $force = false): Table
     {
@@ -151,9 +157,14 @@ class PhinxExtend
     }
 
     /**
-     * 创建数据库安装脚本.
-     * @return string[]
-     * @throws \Exception
+     * 生成数据库结构迁移的文件名与源码，由 saveMigration 负责保存.
+     * @param string[] $tables 待导出的物理表名
+     * @param string $class 不含命名空间的迁移类名
+     * @param bool $force 生成的迁移是否强制更新已存在的表
+     * @return array{file:string,text:string} 迁移文件名及 PHP 源码
+     * @throws \InvalidArgumentException 迁移类名格式无效
+     * @throws \ParseError 迁移类名为 PHP 保留字
+     * @throws \RuntimeException 表结构读取失败或包含不支持的定义
      */
     public static function create2table(array $tables = [], string $class = 'InstallTable', bool $force = false): array
     {
@@ -166,8 +177,14 @@ class PhinxExtend
     }
 
     /**
-     * 创建数据库备份脚本.
-     * @throws \Exception
+     * 生成数据恢复脚本并写出配套备份文件，包含启用的菜单数据.
+     * @param string[] $tables 待备份的物理表名
+     * @param string $class 不含命名空间的迁移类名
+     * @param bool $progress 是否通过 ProcessService 输出备份进度
+     * @return array{file:string,text:string} 迁移文件名及 PHP 源码，数据文件已写入迁移目录
+     * @throws \InvalidArgumentException 迁移类名格式无效
+     * @throws \ParseError 迁移类名为 PHP 保留字
+     * @throws \RuntimeException 数据备份失败
      */
     public static function create2backup(array $tables = [], string $class = 'InstallPackage', bool $progress = true): array
     {
@@ -224,7 +241,12 @@ class PhinxExtend
     }
 
     /**
-     * 新脚本写入成功后才清理同类旧脚本和数据，生成失败时保留原备份。
+     * 校验并保存迁移脚本，新脚本写入成功后才清理同类旧脚本和配套数据.
+     * @param array{file:string,text:string} $migration 迁移文件名及完整 PHP 源码
+     * @return bool 脚本保存及旧文件清理完成时返回 true
+     * @throws \InvalidArgumentException 迁移文件名无效
+     * @throws \ParseError 迁移源码存在语法错误
+     * @throws \RuntimeException 目录创建、脚本保存或旧脚本清理失败
      */
     public static function saveMigration(array $migration): bool
     {
@@ -266,6 +288,13 @@ class PhinxExtend
         return true;
     }
 
+    /**
+     * 填充数据恢复脚本模板，按 PHP 字面量导出表映射及菜单数据.
+     * @param string $class 不含命名空间的迁移类名
+     * @param array<string, string> $tables 逻辑表名到迁移目录内备份相对路径的映射
+     * @param array<int, array> $menus 菜单树数据
+     * @return string 完整的数据恢复迁移源码
+     */
     private static function renderBackup(string $class, array $tables, array $menus): string
     {
         self::validateClass($class);
@@ -275,8 +304,10 @@ class PhinxExtend
 
     /**
      * 单个写入菜单.
-     * @param array $menu 菜单数据
-     * @param int $ppid 上级菜单
+     * @param array<string, mixed> $menu 菜单数据
+     * @param int $ppid 上级菜单 ID，顶级菜单使用 0
+     * @param null|Table $table 迁移目标表，为 null 时使用 SystemMenu 模型连接
+     * @return int 新菜单 ID，迁移 dry-run 时返回 0
      */
     private static function write1menu(array $menu, int $ppid = 0, ?Table $table = null): int
     {
@@ -306,14 +337,11 @@ class PhinxExtend
     }
 
     /**
-     * 生成索引名称.
-     *
-     * 生成规则: idx_[表名hash后4位]_[表名缩写]_[字段缩写]
-     * 缩写规则: 取每个下划线分隔部分的第一个字母
-     *
-     * @param string $table 表名
-     * @param array<int, string>|string $name 字段名
-     * @return string 生成的索引名称
+     * 使用项目统一命名规则生成索引名称.
+     * @param string $table 参与命名的表名
+     * @param array<int, string>|string $name 单个字段名或有序字段列表
+     * @param bool $unique 是否使用唯一索引命名规则
+     * @return string IndexNameService 生成的索引名称
      */
     private static function genIndexName(string $table, $name, bool $unique = false): string
     {
@@ -321,8 +349,10 @@ class PhinxExtend
     }
 
     /**
-     * @param mixed $spec
-     * @return array{0:array<int, string>,1:array<string, mixed>}
+     * 解析索引简写或完整配置，缺少名称时使用统一规则生成.
+     * @param string $table 参与索引命名的表名
+     * @param mixed $spec 单字段名、字段列表或带 columns 的索引选项数组
+     * @return array{0:array<int, string>,1:array<string, mixed>} [字段列表, 索引选项]，无法识别时均为空
      */
     private static function parseIndexSpec(string $table, $spec): array
     {
@@ -348,7 +378,11 @@ class PhinxExtend
     }
 
     /**
-     * 在执行 DDL 前解析并检查索引。
+     * 在执行 DDL 前解析索引，检查目标数据库支持范围及名称冲突.
+     * @param Table $table 迁移目标表
+     * @param array<int, mixed> $specs 索引简写或完整配置列表
+     * @return array<string, array> 按索引名分组的标准化索引定义，空字段配置被忽略
+     * @throws \RuntimeException 索引定义不支持、排序无效或名称冲突
      */
     private static function prepareIndexes(Table $table, array $specs): array
     {
@@ -382,6 +416,13 @@ class PhinxExtend
         return $indexes;
     }
 
+    /**
+     * 检查显式禁用默认 id 的表配置，拒绝隐式变更主键或非法 SQLite 自增定义.
+     * @param Table $table 携带目标主键配置的迁移表
+     * @param bool $exists 目标表是否已存在
+     * @param array<int, array> $fields 已按目标适配器准备的字段配置
+     * @throws \RuntimeException 已有主键与目标配置不同，或 SQLite 自增列不是单列主键
+     */
     private static function validatePrimaryKey(Table $table, bool $exists, array $fields): void
     {
         $options = $table->getOptions();
@@ -423,6 +464,10 @@ class PhinxExtend
         }
     }
 
+    /**
+     * 同步 MySQL 表显式指定的引擎、默认排序规则和备注，仅修改差异项.
+     * @param Table $table 已存在并携带目标选项的迁移表，其他数据库不处理
+     */
     private static function syncTableOptions(Table $table): void
     {
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
@@ -449,7 +494,12 @@ class PhinxExtend
     }
 
     /**
-     * 仅替换同名且结构有变化的索引，保留同列的其他索引。
+     * 同步目标索引，仅替换同名且结构变化的项，并移除建表时的自增临时索引.
+     * MySQL 合并可合并的 ALTER 操作；SQLite 使用保存点保护本次索引变更.
+     * @param Table $table 已存在的迁移目标表
+     * @param array<int, mixed> $specs 索引简写或完整配置列表
+     * @param null|string $temporaryIndex 待移除的 MySQL 自增临时索引名
+     * @throws \RuntimeException 索引定义不受支持、排序无效或名称冲突
      */
     private static function syncTableIndexes(Table $table, array $specs, ?string $temporaryIndex = null): void
     {
@@ -545,6 +595,14 @@ class PhinxExtend
         }
     }
 
+    /**
+     * 统一索引配置的默认值和结构，用于比较现有索引与目标定义.
+     * @param string $table 缺少索引名称时参与命名的表名
+     * @param string[] $columns 有序索引字段名
+     * @param array<string, mixed> $options 原始索引选项
+     * @return array{name:string,columns:array,unique:bool,type:string,limits:array,order:array,comment:string,visible:bool} 标准化索引定义
+     * @throws \RuntimeException 字段排序方向不是 ASC 或 DESC
+     */
     private static function normalizeIndex(string $table, array $columns, array $options): array
     {
         $type = strtolower($options['type'] ?? 'btree');
@@ -571,6 +629,12 @@ class PhinxExtend
         ];
     }
 
+    /**
+     * 将统一或逐列指定的索引前缀长度转换为有效字段映射.
+     * @param string[] $columns 索引字段名
+     * @param mixed $limits 所有列共用的长度，或字段名到长度的映射
+     * @return array<string, int> 仅包含指定字段且长度为正整数的映射
+     */
     private static function normalizeIndexLimits(array $columns, $limits): array
     {
         $result = [];
@@ -583,6 +647,11 @@ class PhinxExtend
         return $result;
     }
 
+    /**
+     * 生成索引字段 SQL，保留字段顺序、前缀长度和降序选项.
+     * @param array<string, mixed> $index normalizeIndex 返回的标准化索引定义
+     * @return string 逗号分隔且已引用字段名的 SQL 片段，不含外层括号
+     */
     private static function indexColumnsSql(array $index): string
     {
         $columns = [];
@@ -600,7 +669,9 @@ class PhinxExtend
     }
 
     /**
-     * 按值导出 PHP，不能对导出结果中的空白或占位符再做替换。
+     * 递归导出 PHP 数组字面量，保留字符串中的空白及模板占位符原文.
+     * @param array $data 待导出的数组，可包含嵌套数组
+     * @return string 使用短数组语法的 PHP 字面量
      */
     private static function _arr2str(array $data): string
     {
@@ -613,6 +684,14 @@ class PhinxExtend
         return '[' . implode(', ', $items) . ']';
     }
 
+    /**
+     * 根据真实表结构生成 change 入口及各表迁移方法.
+     * @param string[] $tables 待导出的物理表名
+     * @param bool $rehtml 是否返回原始 PHP 源码，为 false 时返回语法高亮 HTML
+     * @param bool $force 生成的迁移是否强制更新已存在的表
+     * @return string 带 PHP 开始标记的类内方法源码，或对应的高亮 HTML
+     * @throws \RuntimeException 表结构读取失败或包含不支持的定义
+     */
     private static function _build2table(array $tables = [], bool $rehtml = false, bool $force = false): string
     {
         $connect = Library::$sapp->db->connect();
@@ -634,6 +713,12 @@ class PhinxExtend
         return $rehtml ? $content : highlight_string($content, true);
     }
 
+    /**
+     * 校验无命名空间的迁移类名，并通过 PHP 解析器拒绝保留字.
+     * @param string $class 待用于生成源码及文件名的类名
+     * @throws \InvalidArgumentException 类名不是合法的标识符格式
+     * @throws \ParseError 类名为 PHP 保留字
+     */
     private static function validateClass(string $class): void
     {
         if (!preg_match('/^[a-z_][a-z0-9_]*$/iD', $class)) {
@@ -644,8 +729,9 @@ class PhinxExtend
     }
 
     /**
-     * 生成下一个脚本名称.
-     * @param string $class 脚本类名
+     * 沿用递减版本规则生成脚本名称，使安装脚本排在现有迁移之前.
+     * @param string $class 已通过校验的迁移类名
+     * @return string 版本号与下划线风格类名组成的 PHP 文件名
      */
     private static function nextFile(string $class): string
     {

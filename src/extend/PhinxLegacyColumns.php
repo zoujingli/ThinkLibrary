@@ -24,20 +24,35 @@ use Phinx\Db\Adapter\AdapterInterface;
 use Phinx\Db\Table\Column;
 
 /**
- * 旧版 Phinx 缺失的类型、精度和默认值能力；不修改依赖或切换连接。
+ * 补充旧版 Phinx 缺失的列类型、精度和默认值能力.
+ * 复用原适配器的连接及执行行为，仅为需要兼容的字段保存完整列定义.
  * @internal
  */
 trait PhinxLegacyColumns
 {
+    /**
+     * 需要兼容的字段名到 SQL 列定义的映射，定义不含列名.
+     * @var array<string, string>
+     */
     private $definitions = [];
 
+    /**
+     * 提供连接、查询和 dry-run 行为的原迁移适配器.
+     * @var AdapterInterface
+     */
     private $wrappedAdapter;
 
+    /**
+     * 复用原适配器配置和 PDO，仅预编译旧版本无法完整表达的字段.
+     * @param AdapterInterface $adapter 已解包的 MySQL / SQLite 迁移适配器
+     * @param array<int, array> $fields 原始字段配置，每项为 [名称, 类型, 选项（可选）]
+     * @throws \RuntimeException 目标数据库不支持字段的专有定义
+     */
     public function __construct(AdapterInterface $adapter, array $fields)
     {
         $this->wrappedAdapter = $adapter;
         $this->connection = $adapter->getConnection();
-        // Phinx 3.0 的父构造器会检查迁移表，并回调 fetchAll / execute。
+        // 旧版父构造器会检查迁移表，并回调 fetchAll / execute。
         parent::__construct($adapter->getOptions(), $adapter->getInput(), $adapter->getOutput());
         $mysql = PhinxSchema::driver($this) === 'mysql';
         foreach ($fields as $field) {
@@ -54,16 +69,28 @@ trait PhinxLegacyColumns
         }
     }
 
+    /**
+     * 委托原适配器执行 SQL，保留其日志及 dry-run 行为.
+     * {@inheritDoc}
+     */
     public function execute($sql, array $params = []): int
     {
         return $this->wrappedAdapter->execute($sql, $params);
     }
 
+    /**
+     * 委托原适配器查询，保留原连接和结果格式.
+     * {@inheritDoc}
+     */
     public function fetchAll($sql): array
     {
         return $this->wrappedAdapter->fetchAll($sql);
     }
 
+    /**
+     * 检查物理表是否存在，SQLite 直接查询元数据以准确匹配名称.
+     * {@inheritDoc}
+     */
     public function hasTable($tableName): bool
     {
         if (PhinxSchema::driver($this) === 'sqlite') {
@@ -72,22 +99,40 @@ trait PhinxLegacyColumns
         return $this->wrappedAdapter->hasTable($tableName);
     }
 
+    /**
+     * 通过原适配器读取列对象，沿用原有元数据解析规则.
+     * {@inheritDoc}
+     */
     public function getColumns($tableName): array
     {
         return $this->wrappedAdapter->getColumns($tableName);
     }
 
+    /**
+     * 允许已预编译的字段定义通过旧版类型检查，其余列沿用父适配器校验.
+     * {@inheritDoc}
+     */
     public function isValidColumnType(Column $column): bool
     {
         // 已编译的原始定义不依赖旧版类型名单，例如 SQLite 的 JSON 声明。
         return isset($this->definitions[$column->getName()]) || parent::isValidColumnType($column);
     }
 
+    /**
+     * 优先使用已预编译的兼容列定义，普通列仍由父适配器生成.
+     * {@inheritDoc}
+     */
     protected function getColumnSqlDefinition(Column $column): string
     {
         return $this->definitions[$column->getName()] ?? parent::getColumnSqlDefinition($column);
     }
 
+    /**
+     * 编译需要兼容的列定义，区分默认字面量、时间表达式和位字面量.
+     * @param array{0:string,1:string,2?:array} $field [字段名, 通用类型, 字段选项（可选）]
+     * @return string 不含字段名的 SQL 列定义
+     * @throws \RuntimeException SQLite 不支持该 MySQL 专有定义或小数秒时间默认值
+     */
     private function compileColumn(array $field): string
     {
         [$name, $type] = $field;

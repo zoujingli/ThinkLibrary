@@ -29,10 +29,19 @@ use Phinx\Db\Table\Column;
 use Phinx\Util\Literal;
 
 /**
- * 读取原始结构，以少量通用类型生成迁移；数据库专有定义只在对应适配器上使用。
+ * 数据表结构读取与迁移字段转换.
+ * 使用通用类型描述字段，并通过选项保留 MySQL / SQLite 原始定义及兼容约束.
+ * @class PhinxSchema
  */
 class PhinxSchema
 {
+    /**
+     * 筛选并去重待导出的物理表名，排除忽略项及 SQLite 内部表.
+     * @param object $connect 提供 getConfig 接口的数据库连接
+     * @param string[] $tables 待导出的物理表名
+     * @param string[] $ignore 要忽略的物理表名或去前缀后的逻辑表名
+     * @return string[] 保持原顺序且下标连续的物理表名
+     */
     public static function exportTables($connect, array $tables, array $ignore = []): array
     {
         return array_values(array_filter(array_unique($tables), function ($table) use ($connect, $ignore) {
@@ -42,6 +51,12 @@ class PhinxSchema
         }));
     }
 
+    /**
+     * 移除物理表名开头的连接前缀，供迁移在目标环境重新应用前缀.
+     * @param object $connect 提供 getConfig 接口的数据库连接
+     * @param string $table 物理表名
+     * @return string 去除匹配前缀后的逻辑表名
+     */
     public static function logicalName($connect, string $table): string
     {
         $prefix = (string)$connect->getConfig('prefix');
@@ -49,7 +64,11 @@ class PhinxSchema
     }
 
     /**
-     * Phinx 3.0 没有 Literal / 列排序规则接口，兼容适配器在同一 PDO 上编译列定义。
+     * 为缺少 Literal 或列排序规则接口的旧版 Phinx 补充列定义能力.
+     * 保留适配器包装关系及原 PDO 连接，普通列仍由父适配器编译.
+     * @param AdapterInterface $adapter 当前迁移适配器，可包含多层包装
+     * @param array<int, array> $fields 原始字段配置，每项为 [名称, 类型, 选项（可选）]
+     * @return AdapterInterface 支持所需字段定义的原适配器或兼容适配器
      */
     public static function compatibleAdapter(AdapterInterface $adapter, array $fields): AdapterInterface
     {
@@ -70,11 +89,22 @@ class PhinxSchema
         return $adapter;
     }
 
+    /**
+     * 读取适配器的 dry-run 状态，兼容未提供该接口的旧版本.
+     * @param AdapterInterface $adapter 迁移适配器
+     * @return bool 未提供 dry-run 接口时返回 false
+     */
     public static function isDryRun(AdapterInterface $adapter): bool
     {
         return method_exists($adapter, 'isDryRunEnabled') && $adapter->isDryRunEnabled();
     }
 
+    /**
+     * 拒绝重建被外键引用的 SQLite 表，避免删除原表时触发级联操作.
+     * @param AdapterInterface $adapter 已解包的 SQLite 迁移适配器
+     * @param string $name 已解析前后缀的物理表名
+     * @throws \RuntimeException 存在引用目标表的外键，包括自引用
+     */
     public static function validateSqliteReferences(AdapterInterface $adapter, string $name): void
     {
         // 事务中不能临时关闭外键，重建被引用表可能触发级联删除。
@@ -88,7 +118,10 @@ class PhinxSchema
     }
 
     /**
-     * 解析迁移实际使用的连接和物理表名，兼容多层前后缀适配器。
+     * 解析迁移实际使用的适配器和物理表名，兼容多层前后缀包装.
+     * @param AdapterInterface $adapter 当前迁移适配器
+     * @param string $table 包装适配器接收的表名
+     * @return array{0:AdapterInterface,1:string} [最内层适配器, 应用各层前后缀后的物理表名]
      */
     public static function connection(AdapterInterface $adapter, string $table): array
     {
@@ -101,6 +134,11 @@ class PhinxSchema
         return [$adapter, $table];
     }
 
+    /**
+     * 识别实际数据库驱动，优先依据适配器类型以兼容缺少配置项的实例.
+     * @param AdapterInterface $adapter 当前迁移适配器，可包含多层包装
+     * @return string mysql、sqlite 或其他适配器返回的驱动标识
+     */
     public static function driver(AdapterInterface $adapter): string
     {
         [$adapter] = self::connection($adapter, '');
@@ -114,6 +152,13 @@ class PhinxSchema
         return $adapter->getAdapterType();
     }
 
+    /**
+     * 读取 MySQL / SQLite 表结构，转换为迁移可用的表、字段及索引配置.
+     * @param object $connect 数据库连接或提供兼容查询接口的对象
+     * @param string $table 包含前缀的物理表名
+     * @return array{0:array,1:array,2:array} [表选项, 字段列表, 索引列表]，字段为 [名称, 类型, 选项]
+     * @throws \RuntimeException 数据表不存在、驱动或结构定义不受支持
+     */
     public static function read($connect, string $table): array
     {
         $driver = strtolower($connect->getConfig('type'));
@@ -145,6 +190,12 @@ class PhinxSchema
         return [$options, $fields, array_values($indexes)];
     }
 
+    /**
+     * 按索引名汇总 MySQL 索引元数据，保留字段顺序、前缀长度和排序方向.
+     * @param array<int, array<string, mixed>> $rows SHOW INDEX 查询结果
+     * @return array<string, array> 索引名到迁移索引配置的映射，主键使用 PRIMARY 键
+     * @throws \RuntimeException 存在不支持的表达式索引
+     */
     public static function mysqlIndexes(array $rows): array
     {
         $indexes = [];
@@ -184,7 +235,12 @@ class PhinxSchema
     }
 
     /**
-     * 在实际运行的数据库上选择类型，不能无损转换的专有结构在执行 DDL 前报错。
+     * 按目标数据库准备字段类型、默认值和选项，在执行 DDL 前拒绝不支持的专有定义.
+     * 移除迁移专用标记；旧版适配器依赖 compatibleAdapter 预先保存的完整列定义.
+     * @param AdapterInterface $adapter 已经 compatibleAdapter 处理的迁移适配器
+     * @param array<int, array> $fields 原始字段配置，每项为 [名称, 类型, 选项（可选）]
+     * @return array<int, array{0:string,1:Literal|string,2:array}> 可直接交给 Phinx 的字段配置
+     * @throws \RuntimeException 目标数据库不支持字段定义或无法精确保存整数默认值
      */
     public static function prepareFields(AdapterInterface $adapter, array $fields): array
     {
@@ -263,6 +319,13 @@ class PhinxSchema
         return $fields;
     }
 
+    /**
+     * 读取 SQLite 非主键索引，将内部唯一约束名称转换为可迁移的索引名.
+     * @param callable $query 查询回调，接收 SQL 并返回关联数组行列表
+     * @param string $table 已解析前后缀的物理表名
+     * @return array<string, array> 索引名到迁移索引配置的映射
+     * @throws \RuntimeException 存在部分索引、表达式索引或非 BINARY 排序规则
+     */
     public static function sqliteIndexes(callable $query, string $table): array
     {
         $indexes = [];
@@ -295,16 +358,33 @@ class PhinxSchema
         return $indexes;
     }
 
+    /**
+     * 引用单个 MySQL / SQLite 标识符，不解析带点的限定名称.
+     * @param string $name 原始表名、字段名或索引名
+     * @return string 已转义内部反引号的 SQL 标识符
+     */
     public static function quote(string $name): string
     {
         return '`' . str_replace('`', '``', $name) . '`';
     }
 
+    /**
+     * 检查当前 Phinx 是否同时支持 Literal 和列排序规则接口.
+     * @return bool 是否可以使用原生接口承载完整列定义
+     */
     private static function supportsLiteral(): bool
     {
         return method_exists(Column::class, 'getCollation') && class_exists(Literal::class);
     }
 
+    /**
+     * 将 MySQL 格式的字段元数据归一化为通用类型，专有语义保存在附加选项中.
+     * @param array<string, mixed> $field SHOW FULL COLUMNS 格式的字段元数据
+     * @param null|object $connect 读取默认表达式原始字面量时使用的数据库连接
+     * @param string $table 读取原始建表语句时使用的物理表名
+     * @return array{0:string,1:string,2:array} [字段名, 通用类型, 字段选项]
+     * @throws \RuntimeException 类型、生成列、不可见列或默认表达式不受支持
+     */
     private static function mysqlField(array $field, $connect = null, string $table = ''): array
     {
         $source = $field['Type'];
@@ -395,6 +475,14 @@ class PhinxSchema
         return [$field['Field'], $type, $options];
     }
 
+    /**
+     * 从 MySQL 建表语句还原括号内的字符串默认值，仅接受单个字符串常量.
+     * @param null|object $connect 提供 query 接口的数据库连接
+     * @param string $table 包含前缀的物理表名
+     * @param string $column 字段名
+     * @return string 解除 SQL 转义后的原始字符串
+     * @throws \RuntimeException 缺少连接或默认值不是支持的字符串字面量
+     */
     private static function mysqlLiteralDefault($connect, string $table, string $column): string
     {
         // MySQL 8 的 COLUMN_DEFAULT 会额外转义，甚至重编码非 ASCII 字符。
@@ -421,6 +509,13 @@ class PhinxSchema
         throw new \RuntimeException("暂不支持字段 {$column} 的默认表达式");
     }
 
+    /**
+     * 读取 SQLite 表结构，保留原始类型声明、主键顺序及自增属性.
+     * @param object $connect 提供 query 接口的数据库连接或兼容对象
+     * @param string $table 包含前缀的物理表名
+     * @return array{0:array,1:array,2:array} [表选项, 字段列表, 索引列表]
+     * @throws \RuntimeException 表不存在或包含不支持的约束、字段、默认值及索引
+     */
     private static function readSqlite($connect, string $table): array
     {
         $fields = $primary = [];
