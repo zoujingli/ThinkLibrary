@@ -1,75 +1,39 @@
-####### 可解析的提交前缀 ########
-#  ci: 持续集成
-#  fix: 修改
-#  feat: 新增
-#  refactor: 重构
-#  docs: 文档
-#  style: 样式
-#  chore: 其他
-#  build: 构建
-#  pref: 优化
-#  test: 测试
-###############################
+name: Create Release
 
 on:
   push:
     tags:
-      - 'v*' # 仅匹配 v* 版本标签，如 v1.0、v20.15.10
+      - 'v*'
 
-name: Create Release
-permissions: write-all
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
+      - name: Checkout tagged code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm install -g gen-git-log
-
-      - name: Find Last Tag
-        id: last_tag
-        run: |
-          # 获取所有标签，按版本号降序排序
-          all_tags=$(git tag --list --sort=-version:refname)
-
-          # 获取最新的标签
-          LATEST_TAG=$(echo "$all_tags" | head -n 1)
-          
-          # 获取倒数第二个标签（如果有）
-          SECOND_LATEST_TAG=$(echo "$all_tags" | sed -n '2p')
-
-          # 如果没有任何标签，默认 v1.0.0
-          LATEST_TAG=${LATEST_TAG:-v1.0.0}
-          SECOND_LATEST_TAG=${SECOND_LATEST_TAG:-v1.0.0}
-
-          # 设置环境变量
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-          echo "SECOND_LATEST_TAG=$SECOND_LATEST_TAG" >> $GITHUB_ENV
-
-      - name: Generate Release Notes
-        run: |
-          rm -rf log
-          mkdir -p log
-          git-log -m tag -f -S $SECOND_LATEST_TAG -v ${LATEST_TAG#v}
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create release for the triggering tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.LATEST_TAG }}
-          release_name: Release ${{ env.LATEST_TAG }}
-          body_path: log/${{ env.LATEST_TAG }}.md
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          # 重跑同一标签保持幂等，补发旧版本时始终使用触发本次工作流的标签。
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists."
+            exit 0
+          fi
+          options=()
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            options+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --title "Release $RELEASE_TAG" --generate-notes "${options[@]}"
