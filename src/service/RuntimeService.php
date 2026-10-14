@@ -238,16 +238,12 @@ class RuntimeService
     /**
      * 初始化命令行.
      * @param null|App $app 应用实例，未指定时从容器获取
-     * @return int 命令退出码，初始化或嵌套命令异常时返回 1
+     * @return int 关闭控制台自动退出时返回命令退出码
+     * @throws \Throwable 初始化或控制台未处理的异常交由调用方处理
      */
     public static function doConsoleInit(?App $app = null): int
     {
-        try {
-            return static::init($app)->console->run();
-        } catch (\Throwable $exception) {
-            ProcessService::message($exception->getMessage());
-            return 1;
-        }
+        return static::init($app)->console->run();
     }
 
     /**

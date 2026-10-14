@@ -69,7 +69,8 @@ class Publish extends Command
         }
         // 执行数据库脚本
         if ($this->input->getOption('migrate')) {
-            $this->app->console->call('migrate:run', [], 'console');
+            // 直接运行子命令，避免 Console::call 关闭外层异常捕获，导致升级失败仍以 0 退出。
+            $this->app->console->find('migrate:run')->run(new Input(['migrate:run']), new Output('console'));
         }
         return $this;
     }
