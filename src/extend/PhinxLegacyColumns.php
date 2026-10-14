@@ -72,10 +72,16 @@ trait PhinxLegacyColumns
     /**
      * 委托原适配器执行 SQL，保留其日志及 dry-run 行为.
      * {@inheritDoc}
+     * @throws \RuntimeException 旧版 PDO 静默返回执行失败
      */
     public function execute($sql, array $params = []): int
     {
-        return $this->wrappedAdapter->execute($sql, $params);
+        $result = $this->wrappedAdapter->execute($sql, $params);
+        // PHP 7 的 PDO 默认静默返回 false，显式抛出 SQL 错误才能触发保存点回滚。
+        if ($result === false) {
+            throw new \RuntimeException('迁移 SQL 执行失败：' . ($this->connection->errorInfo()[2] ?? '未知数据库错误'));
+        }
+        return $result;
     }
 
     /**

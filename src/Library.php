@@ -56,6 +56,12 @@ class Library extends Service
         // 静态应用赋值
         static::$sapp = $this->app;
 
+        // 旧版迁移读取平铺配置，ORM 使用 connections；只补缺失项，保留显式配置。
+        $database = $this->app->config->get('database', []);
+        if (isset($database['connections'][$database['default'] ?? ''])) {
+            $this->app->config->set($database + $database['connections'][$database['default']], 'database');
+        }
+
         // 注册 ThinkAdmin 指令
         $this->commands([
             Queue::class,
