@@ -488,7 +488,11 @@ class PhinxBackup
                 }
                 $statement->bindValue(++$position, $value, $type);
             }
-            $statement->execute();
+            // PHP 7 的 PDO 默认静默返回 false；必须显式检查，否则约束失败会被统计为已恢复。
+            if ($statement->execute() === false) {
+                $error = $statement->errorInfo();
+                throw new \RuntimeException('备份记录写入失败：' . ($error[2] ?? '未知数据库错误'));
+            }
         }
     }
 }

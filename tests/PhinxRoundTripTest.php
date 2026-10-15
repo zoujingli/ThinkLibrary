@@ -368,6 +368,36 @@ class PhinxRoundTripTest extends TestCase
         }
     }
 
+    /**
+     * 旧版 PDO 静默模式下，约束失败也必须回滚并抛出异常。
+     * PHP 7 的 SQLite 适配器未主动设置 ERRMODE_EXCEPTION，直接检查 execute() 返回值才能覆盖该路径。
+     */
+    public function testBackupRestoreChecksSilentPdoExecutionFailure(): void
+    {
+        $connection = new \PDO('sqlite::memory:');
+        $adapter = new SQLiteAdapter(['adapter' => 'sqlite', 'memory' => true]);
+        $adapter->setConnection($connection);
+        $adapter->execute('CREATE TABLE restore_failure (id INTEGER PRIMARY KEY, code TEXT UNIQUE)');
+        $directory = sys_get_temp_dir() . '/phinx-backup-silent-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        $path = $directory . '/rows.data';
+        try {
+            PhinxBackup::write([
+                ['id' => 1, 'code' => 'duplicate'],
+                ['id' => 2, 'code' => 'duplicate'],
+            ], $path);
+            try {
+                PhinxBackup::restore(new Table('restore_failure', [], $adapter), $path);
+                self::fail('静默 PDO 约束失败必须抛出异常');
+            } catch (\RuntimeException $exception) {
+                self::assertStringContainsString('第 2 行失败', $exception->getMessage());
+                self::assertSame(0, (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM restore_failure')['total']);
+            }
+        } finally {
+            ToolsExtend::remove($directory);
+        }
+    }
+
     public function testSqliteSourceCanBeGeneratedAndExecuted(): void
     {
         $source = $this->sqlite();
