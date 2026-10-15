@@ -177,7 +177,7 @@ class PhinxExtend
     }
 
     /**
-     * 生成数据恢复脚本并写出配套备份文件，包含启用的菜单数据.
+     * 生成数据恢复脚本并写出配套备份文件，包含文件摘要及启用的菜单数据.
      * @param string[] $tables 待备份的物理表名
      * @param string $class 不含命名空间的迁移类名
      * @param bool $progress 是否通过 ProcessService 输出备份进度
@@ -216,7 +216,7 @@ class PhinxExtend
         }
 
         // 备份数据表
-        [$extra, $version] = [[], strstr($filename = static::nextFile($class), '_', true)];
+        [$extra, $checksums, $version] = [[], [], strstr($filename = static::nextFile($class), '_', true)];
         if (count($tables) > 0) {
             foreach ($tables as $table) {
                 $count = Library::$sapp->db->table($table)->count();
@@ -230,14 +230,20 @@ class PhinxExtend
                             ProcessService::message(" -- -- write {$table}.data: {$used}/{$count} {$number}", 1);
                         }
                     });
-                    $extra[PhinxSchema::logicalName($connect, $table)] = $dataFileName;
+                    $checksum = hash_file('sha256', $dataFilePath);
+                    if ($checksum === false) {
+                        throw new \RuntimeException("无法校验备份文件 {$dataFilePath}");
+                    }
+                    $name = PhinxSchema::logicalName($connect, $table);
+                    $extra[$name] = $dataFileName;
+                    $checksums[$name] = $checksum;
                     $progress && ProcessService::message(" -- Finished write {$table}.data, Total {$used} rows.", 2);
                 }
             }
         }
 
         // 生成迁移脚本
-        return ['file' => $filename, 'text' => self::renderBackup($class, $extra, $menuData)];
+        return ['file' => $filename, 'text' => self::renderBackup($class, $extra, $menuData, $checksums)];
     }
 
     /**
@@ -293,13 +299,14 @@ class PhinxExtend
      * @param string $class 不含命名空间的迁移类名
      * @param array<string, string> $tables 逻辑表名到迁移目录内备份相对路径的映射
      * @param array<int, array> $menus 菜单树数据
+     * @param array<string, string> $checksums 逻辑表名到 SHA-256 摘要的映射，旧调用可省略
      * @return string 完整的数据恢复迁移源码
      */
-    private static function renderBackup(string $class, array $tables, array $menus): string
+    private static function renderBackup(string $class, array $tables, array $menus, array $checksums = []): string
     {
         self::validateClass($class);
         $template = file_get_contents(dirname(__DIR__) . '/service/bin/package.stub');
-        return strtr($template, ['__CLASS__' => $class, '__MENU__' => self::_arr2str($menus), '__DATA__' => self::_arr2str($tables)]);
+        return strtr($template, ['__CLASS__' => $class, '__MENU__' => self::_arr2str($menus), '__DATA__' => self::_arr2str($tables), '__CHECKSUMS__' => self::_arr2str($checksums)]);
     }
 
     /**

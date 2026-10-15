@@ -30,11 +30,13 @@ class __CLASS__ extends Migrator
     /**
      * 安装扩展数据
      * @return void
+     * @throws \RuntimeException 备份文件不完整或数据恢复失败
      */
     private function inserData()
     {
         // 待解析处理数据
         $tables = __DATA__;
+        $checksums = __CHECKSUMS__;
         // 解析并写入扩展数据
         if (count($tables) > 0) {
             foreach ($tables as $table => $path) {
@@ -42,7 +44,7 @@ class __CLASS__ extends Migrator
                 ProcessService::message(" -- Starting write {$table} table ..." . PHP_EOL);
                 $ls = PhinxBackup::restore($this->table($table), __DIR__ . DIRECTORY_SEPARATOR . $path, function ($ls) use ($name) {
                     ProcessService::message(" -- -- {$name}:{$ls}", 1);
-                });
+                }, $checksums[$table] ?? null);
                 ProcessService::message(" -- Finished write {$table} table, Total {$ls} rows.", 2);
             }
         }

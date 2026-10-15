@@ -309,7 +309,7 @@ class PhinxRoundTripTest extends TestCase
 
     public function testBackupTemplatePreservesQuotesBackslashesAndPlaceholders(): void
     {
-        $menus = [['name' => "Bob's C:\\path  中文\n__CLASS__ __DATA__ __MENU__"]];
+        $menus = [['name' => "Bob's C:\\path  中文\n__CLASS__ __DATA__ __MENU__ __CHECKSUMS__"]];
         $tables = ["a'b" => 'path\data'];
         $method = new \ReflectionMethod(PhinxExtend::class, 'renderBackup');
         $method->setAccessible(true);
@@ -394,6 +394,63 @@ class PhinxRoundTripTest extends TestCase
                 self::assertSame(0, (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM restore_failure')['total']);
             }
         } finally {
+            ToolsExtend::remove($directory);
+        }
+    }
+
+    /**
+     * 真实生成的备份迁移必须在写入前识别合法行截断、空文件和内容变更。
+     * 恢复原文件后可重试；已有数据时仍沿用跳过恢复的约定。
+     */
+    public function testGeneratedBackupChecksumRejectsIncompleteFiles(): void
+    {
+        $database = new DbManager();
+        $database->setConfig(['default' => 'fixture', 'connections' => ['fixture' => ['type' => 'sqlite', 'database' => ':memory:']]]);
+        $database->execute('CREATE TABLE original (id INTEGER PRIMARY KEY, value BLOB)');
+        foreach (range(1, 205) as $id) {
+            $database->execute('INSERT INTO original (id, value) VALUES (?, ?)', [$id, "\xff\0record-{$id}"]);
+        }
+        $adapter = $this->sqlite();
+        $adapter->execute('CREATE TABLE original (id INTEGER PRIMARY KEY, value BLOB)');
+        $adapter->execute('CREATE TABLE system_config(type TEXT, name TEXT, value TEXT)');
+        $adapter->execute('CREATE TABLE system_user(id INTEGER, username TEXT, nickname TEXT, password TEXT, headimg TEXT)');
+        $adapter->execute('CREATE TABLE system_menu(id INTEGER PRIMARY KEY, pid INTEGER, url TEXT, sort INTEGER, icon TEXT, node TEXT, title TEXT, params TEXT, target TEXT)');
+        $directory = sys_get_temp_dir() . '/phinx-backup-integrity-' . bin2hex(random_bytes(8));
+        mkdir($directory);
+        ob_start();
+        try {
+            $files = $this->backupFrom($database, ['original'], $directory, $generated);
+            $path = $files['original'];
+            $complete = file_get_contents($path);
+            $script = $directory . '/database/migrations/' . $generated['file'];
+            file_put_contents($script, $generated['text']);
+            require $script;
+            $class = new \ReflectionClass(\BackupStorageFixture::class);
+            $migration = $class->newInstanceArgs($class->getConstructor()->getNumberOfRequiredParameters() > 1 ? ['testing', 20000000000000] : [20000000000000]);
+            $migration->setAdapter($adapter);
+            $lines = explode("\n", $complete);
+            foreach (['', implode("\n", array_slice($lines, 0, 100)) . "\n", $complete . $lines[0] . "\n"] as $incomplete) {
+                file_put_contents($path, $incomplete);
+                $failure = null;
+                try {
+                    $migration->change();
+                } catch (\RuntimeException $exception) {
+                    $failure = $exception;
+                }
+                self::assertInstanceOf(\RuntimeException::class, $failure, '备份不完整时不能登记恢复成功');
+                self::assertStringContainsString('完整性校验失败', $failure->getMessage());
+                self::assertSame(0, (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM original')['total']);
+                self::assertSame(0, (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM system_config')['total']);
+            }
+            file_put_contents($path, $complete);
+            $migration->change();
+            self::assertSame(205, (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM original')['total']);
+            self::assertSame("\xff\0record-205", $adapter->fetchRow('SELECT value FROM original WHERE id = 205')['value']);
+            file_put_contents($path, '');
+            $migration->change();
+            self::assertSame(205, (int)$adapter->fetchRow('SELECT COUNT(*) AS total FROM original')['total']);
+        } finally {
+            ob_end_clean();
             ToolsExtend::remove($directory);
         }
     }
@@ -951,7 +1008,7 @@ class PhinxRoundTripTest extends TestCase
         return array_merge(['Field' => $name, 'Type' => $type, 'Null' => 'YES', 'Default' => $default, 'Extra' => '', 'Comment' => '', 'Collation' => null], $extra);
     }
 
-    private function backupFrom(DbManager $database, array $tables, string $directory): array
+    private function backupFrom(DbManager $database, array $tables, string $directory, ?array &$migration = null): array
     {
         $database->execute('CREATE TABLE IF NOT EXISTS system_menu(id INTEGER, status INTEGER, sort INTEGER)');
         $app = Library::$sapp;

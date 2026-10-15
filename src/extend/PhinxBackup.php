@@ -218,10 +218,11 @@ class PhinxBackup
      * @param Table $table 已存在的迁移目标表
      * @param string $path 兼容旧版 JSONL 的备份文件路径
      * @param null|callable $progress 进度回调，接收已读取的数据行数，不代表事务已提交
+     * @param null|string $checksum 可选 SHA-256 摘要，在写入前校验文件；null 保持旧备份读取兼容
      * @return int 恢复的数据行数；dry-run 或目标表非空时返回 0
-     * @throws \RuntimeException 文件不可读或恢复失败，记录处理失败时附文件路径和行号
+     * @throws \RuntimeException 文件不可读、完整性校验失败或恢复失败，记录处理失败时附文件路径和行号
      */
-    public static function restore(Table $table, string $path, ?callable $progress = null): int
+    public static function restore(Table $table, string $path, ?callable $progress = null, ?string $checksum = null): int
     {
         [$adapter, $name] = PhinxSchema::connection($table->getAdapter(), $table->getName());
         if (PhinxSchema::isDryRun($adapter)) {
@@ -261,6 +262,16 @@ class PhinxBackup
         $count = $lineNumber = 0;
         $sequence = null;
         try {
+            if ($checksum !== null) {
+                // 校验与恢复复用同一文件句柄，空文件或合法行截断也必须在写入前失败。
+                $context = hash_init('sha256');
+                if (hash_update_stream($context, $stream) === false || !hash_equals($checksum, hash_final($context))) {
+                    throw new \RuntimeException("备份文件完整性校验失败 {$path}");
+                }
+                if (!rewind($stream)) {
+                    throw new \RuntimeException("无法重新读取备份文件 {$path}");
+                }
+            }
             if ($ownsTransaction) {
                 $connection->beginTransaction();
             }
