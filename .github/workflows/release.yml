@@ -20,20 +20,46 @@ jobs:
     steps:
       - name: Checkout tagged code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create release for the triggering tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
           # 重跑同一标签保持幂等，补发旧版本时始终使用触发本次工作流的标签。
           if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $RELEASE_TAG already exists."
             exit 0
           fi
+          tag_ref="refs/tags/$RELEASE_TAG"
+          git rev-parse --verify "$tag_ref^{commit}" >/dev/null
           options=()
+          history_options=(--tags --abbrev=0 --match 'v*')
           if [[ "$RELEASE_TAG" == *-* ]]; then
             options+=(--prerelease)
+          else
+            history_options+=(--exclude 'v*-*')
           fi
+          # 直接拆分的提交没有合并 PR；按触发标签的历史生成明细，避免自动说明只剩比较链接。
+          # 稳定版跳过预发布标签，首次发布列出全部历史，补发旧版不混入后续提交。
+          previous_tag=$(git describe "${history_options[@]}" "$tag_ref^" 2>/dev/null || true)
+          range=$tag_ref
+          if [[ -n "$previous_tag" ]]; then
+            range="refs/tags/$previous_tag..$tag_ref"
+          fi
+          notes=$(mktemp)
+          trap 'rm -- "$notes"' EXIT
+          {
+            printf '## 更新内容\n\n'
+            git log --reverse --format="- %s ([%h](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/%H))" "$range" --
+            if [[ -n "$previous_tag" ]]; then
+              printf '\n**完整变更**: %s/%s/compare/%s...%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$previous_tag" "$RELEASE_TAG"
+            else
+              printf '\n**提交历史**: %s/%s/commits/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$RELEASE_TAG"
+            fi
+          } > "$notes"
           gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
-            --verify-tag --title "Release $RELEASE_TAG" --generate-notes "${options[@]}"
+            --verify-tag --title "Release $RELEASE_TAG" --notes-file "$notes" "${options[@]}"
