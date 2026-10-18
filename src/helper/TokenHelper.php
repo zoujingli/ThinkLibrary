@@ -37,7 +37,7 @@ class TokenHelper extends Helper
     public function init(bool $return = false)
     {
         $this->class->csrf_state = true;
-        if (!$this->app->request->isPost()) {
+        if (in_array($this->app->request->method(), ['GET', 'HEAD', 'OPTIONS'], true)) {
             return true;
         }
         $token = $this->app->request->post('_token_');
