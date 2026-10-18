@@ -121,7 +121,8 @@ class Library extends Service
     }
 
     /**
-     * 初始化服务
+     * 初始化共享文件并注册系统中间件。
+     * 全局中间件由 ThinkPHP Http 加载，应用中间件由 MultAccess 加载，避免跨队列重复执行。
      */
     public function register()
     {
@@ -139,10 +140,6 @@ class Library extends Service
         if (is_file($file = "{$dir}event{$ext}")) {
             $this->app->loadEvent(include $file);
         }
-        if (is_file($file = "{$dir}middleware{$ext}")) {
-            $this->app->middleware->import(include $file, 'app');
-        }
-
         // 终端 HTTP 访问时特殊处理
         if (!$this->app->runningInConsole()) {
             // 动态注释 CORS 跨域处理
