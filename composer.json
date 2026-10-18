@@ -13,8 +13,8 @@
     "email": "zoujingli@qq.com",
     "wiki": "https://thinkadmin.top",
     "forum": "https://thinkadmin.top",
-    "source": "https://gitee.com/zoujingli/ThinkLibrary",
-    "issues": "https://gitee.com/zoujingli/ThinkLibrary/issues"
+    "source": "https://github.com/zoujingli/ThinkLibrary",
+    "issues": "https://github.com/zoujingli/ThinkAdminDeveloper/issues"
   },
   "require": {
     "php": ">=7.1",
