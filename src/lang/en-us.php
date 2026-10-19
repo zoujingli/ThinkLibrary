@@ -120,6 +120,7 @@ $base = [
     // 存储引擎翻译
     '本地服务器存储' => 'Local Storage',
     '自建Alist存储' => 'Alist Storage',
+    '自建MinIO存储' => 'MinIO Storage',
     '又拍云USS存储' => 'Upyun USS',
     '阿里云OSS存储' => 'Aliyun OSS',
     '腾讯云COS存储' => 'Tencent COS',

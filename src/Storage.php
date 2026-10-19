@@ -163,6 +163,7 @@ abstract class Storage
     {
         return [
             'local' => lang('本地服务器存储'),
+            'minio' => lang('自建MinIO存储'),
             'alist' => lang('自建Alist存储'),
             'qiniu' => lang('七牛云对象存储'),
             'upyun' => lang('又拍云USS存储'),
