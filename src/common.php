@@ -399,6 +399,19 @@ if (!function_exists('http_post')) {
         return HttpExtend::post($url, $data, $options);
     }
 }
+if (!function_exists('http_multi')) {
+    /**
+     * 并发网络请求，保留输入键及单请求的 string|false 返回语义.
+     * @param array $requests 每项包含 url、可选 method 和 options
+     * @param int $concurrency 同时执行上限；失败不自动重试
+     * @throws InvalidArgumentException 请求格式或并发上限无效
+     * @throws RuntimeException 多请求调度失败
+     */
+    function http_multi(array $requests, int $concurrency = 10): array
+    {
+        return HttpExtend::multiRequest($requests, $concurrency);
+    }
+}
 if (!function_exists('data_save')) {
     /**
      * 数据增量保存.

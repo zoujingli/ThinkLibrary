@@ -172,7 +172,7 @@ abstract class Storage
     }
 
     /**
-     * 使用CURL读取网络资源.
+     * 使用 CURL 读取网络资源；沿用失败或空内容返回空字符串的约定，结束时释放句柄.
      * @param string $url 资源地址
      */
     public static function curlGet(string $url): string
@@ -184,9 +184,14 @@ abstract class Storage
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        $body = curl_exec($ch) ?: '';
-        curl_close($ch);
-        return $body;
+        try {
+            return curl_exec($ch) ?: '';
+        } finally {
+            // PHP 7 释放资源，PHP 8 由对象析构释放（8.5 已弃用 curl_close）。
+            if (PHP_VERSION_ID < 80000) {
+                curl_close($ch);
+            }
+        }
     }
 
     /**

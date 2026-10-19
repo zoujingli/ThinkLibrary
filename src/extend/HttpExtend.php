@@ -86,13 +86,111 @@ class HttpExtend
     }
 
     /**
-     * 以 CURL 模拟网络请求
+     * 以 CURL 模拟网络请求；传输失败返回 false，配置或回调异常释放句柄后原样传递.
      * @param string $method 模拟请求方式
      * @param string $location 模拟请求地址
      * @param array $options 请求参数[headers,query,data,cookie,cookie_file,timeout,returnHeader]
      * @return bool|string
      */
     public static function request(string $method, string $location, array $options = [])
+    {
+        $curl = curl_init();
+        try {
+            static::configureCurl($curl, $method, $location, $options);
+            return curl_exec($curl);
+        } finally {
+            // PHP 8 起句柄是自动释放的对象；8.5 已弃用无作用的 curl_close。
+            if (PHP_VERSION_ID < 80000) {
+                curl_close($curl);
+            }
+        }
+    }
+
+    /**
+     * 并发请求，保留输入键和顺序；传输失败为 false，HTTP 错误仍返回响应内容.
+     * @param array $requests 请求列表，每项包含 url、可选 method（默认 GET）和 options
+     * @param int $concurrency 同时执行上限，单项超时从开始执行时计算
+     * @return array 每项返回 string|false，空响应保留为空字符串
+     * @throws \InvalidArgumentException 请求格式或并发上限无效
+     * @throws \RuntimeException 多请求调度失败；配置或回调异常原样传递，始终释放句柄
+     */
+    public static function multiRequest(array $requests, int $concurrency = 10): array
+    {
+        if ($concurrency < 1) {
+            throw new \InvalidArgumentException('HTTP 并发上限必须大于零');
+        }
+        foreach ($requests as $request) {
+            if (!is_array($request) || !isset($request['url']) || !is_string($request['url'])
+                || (isset($request['method']) && !is_string($request['method']))
+                || (isset($request['options']) && !is_array($request['options']))) {
+                throw new \InvalidArgumentException('HTTP 并发请求格式无效');
+            }
+        }
+        $results = array_fill_keys(array_keys($requests), false);
+        if (!$requests) {
+            return $results;
+        }
+        $multi = curl_multi_init();
+        $handles = [];
+        $keys = array_keys($requests);
+        $offset = 0;
+        try {
+            do {
+                while ($offset < count($keys) && count($handles) < $concurrency) {
+                    $key = $keys[$offset++];
+                    $request = $requests[$key];
+                    $handles[$key] = curl_init();
+                    static::configureCurl($handles[$key], $request['method'] ?? 'GET', $request['url'], $request['options'] ?? []);
+                    if (curl_multi_add_handle($multi, $handles[$key]) !== CURLM_OK) {
+                        throw new \RuntimeException('无法加入 HTTP 并发请求');
+                    }
+                }
+                do {
+                    $status = curl_multi_exec($multi, $running);
+                } while ($status === CURLM_CALL_MULTI_PERFORM);
+                if ($status !== CURLM_OK) {
+                    throw new \RuntimeException('HTTP 并发调度失败：' . curl_multi_strerror($status));
+                }
+                while ($info = curl_multi_info_read($multi)) {
+                    foreach ($handles as $key => $curl) {
+                        if ($curl === $info['handle']) {
+                            $results[$key] = $info['result'] === CURLE_OK ? curl_multi_getcontent($curl) : false;
+                            curl_multi_remove_handle($multi, $curl);
+                            if (PHP_VERSION_ID < 80000) {
+                                curl_close($curl);
+                            }
+                            unset($handles[$key]);
+                            break;
+                        }
+                    }
+                }
+                unset($info, $curl);
+                if ($handles && (count($handles) >= $concurrency || $offset >= count($keys))) {
+                    if (curl_multi_select($multi, 1.0) === -1) {
+                        usleep(1000);
+                    }
+                }
+            } while ($handles || $offset < count($keys));
+            return $results;
+        } finally {
+            foreach ($handles as $curl) {
+                curl_multi_remove_handle($multi, $curl);
+                if (PHP_VERSION_ID < 80000) {
+                    curl_close($curl);
+                }
+            }
+            curl_multi_close($multi);
+        }
+    }
+
+    /**
+     * 复用单请求配置，保持查询、表单、文件、Cookie 与自定义 cURL 参数行为.
+     * @param \CurlHandle|resource $curl 请求句柄
+     * @param string $method 请求方式
+     * @param string $location 请求地址
+     * @param array $options 请求配置，配置异常由调用方释放句柄后继续传递
+     */
+    private static function configureCurl($curl, string $method, string $location, array $options): void
     {
         // GET 参数设置
         if (!empty($options['query'])) {
@@ -103,7 +201,6 @@ class HttpExtend
                 $location .= $options['query'];
             }
         }
-        $curl = curl_init();
         // Agent 代理设置
         curl_setopt($curl, CURLOPT_USERAGENT, $options['agent'] ?? static::getUserAgent());
         // Cookie 信息设置
@@ -154,9 +251,6 @@ class HttpExtend
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-        $content = curl_exec($curl);
-        curl_close($curl);
-        return $content;
     }
 
     /**
