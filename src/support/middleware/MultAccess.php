@@ -27,8 +27,8 @@ use think\admin\service\NodeService;
 use think\admin\service\RuntimeService;
 use think\admin\service\SystemService;
 use think\App;
-use think\Container;
 use think\Config;
+use think\Container;
 use think\Event;
 use think\exception\HttpException;
 use think\Request;
@@ -45,6 +45,9 @@ class MultAccess
      * @var App
      */
     private $app;
+
+    /** @var bool 是否由常驻 Worker 请求复用应用实例 */
+    private $workerStateEnabled = false;
 
     /**
      * 应用路径.
@@ -70,6 +73,12 @@ class MultAccess
     /** @var array 应用初始化时的容器实例快照 */
     private $baseInstances;
 
+    /** @var array 应用初始化时的容器回调快照 */
+    private $baseInvokeCallbacks;
+
+    /** @var array 应用初始化时的服务快照 */
+    private $baseServices;
+
     /** @var array 应用初始化时的事件快照 */
     private $baseEvents;
 
@@ -88,10 +97,17 @@ class MultAccess
     public function __construct(App $app)
     {
         $this->app = $app;
+        // FPM/CLI 每次请求都会创建新的应用，不需要承担 Worker 状态快照的反射和复制开销。
+        $this->workerStateEnabled = method_exists($app, 'resetWorkerState');
+        if (!$this->workerStateEnabled) {
+            return;
+        }
         $this->baseConfig = $app->config->get();
         $this->baseConfigHooks = $this->readProperty($app->config, Config::class, 'hook');
         $this->baseBindings = $this->readProperty($app, App::class, 'bind');
         $this->baseInstances = $this->readProperty($app, Container::class, 'instances');
+        $this->baseInvokeCallbacks = $this->readProperty($app, Container::class, 'invokeCallback');
+        $this->baseServices = $this->readProperty($app, App::class, 'services');
         // 路由对象必须由下一次 Http::run() 按当前应用重新创建，不能随基线恢复。
         unset($this->baseInstances[$app->getAlias('route')]);
         $event = $app->event;
@@ -130,6 +146,9 @@ class MultAccess
      */
     public function resetApplicationState(): void
     {
+        if (!$this->workerStateEnabled) {
+            return;
+        }
         $this->restoreBaseState();
         [$this->appPath, $this->appSpace] = ['', ''];
     }
@@ -265,6 +284,8 @@ class MultAccess
         $this->writeProperty($this->app->config, Config::class, 'hook', $this->baseConfigHooks);
         $this->writeProperty($this->app->config, Config::class, 'config', $this->baseConfig);
         $this->writeProperty($this->app, App::class, 'bind', $this->baseBindings);
+        $this->writeProperty($this->app, Container::class, 'invokeCallback', $this->baseInvokeCallbacks);
+        $this->writeProperty($this->app, App::class, 'services', $this->baseServices);
         $currentInstances = $this->readProperty($this->app, Container::class, 'instances');
         $instances = $this->baseInstances;
         // 保留请求、会话及基础服务对象，交由现有 Worker 清理逻辑继续复用，避免丢失会话数据。
