@@ -24,8 +24,12 @@ use think\admin\extend\ToolsExtend;
 use think\admin\Library;
 use think\admin\Plugin;
 use think\admin\service\NodeService;
+use think\admin\service\RuntimeService;
 use think\admin\service\SystemService;
 use think\App;
+use think\Container;
+use think\Config;
+use think\Event;
 use think\exception\HttpException;
 use think\Request;
 use think\Response;
@@ -54,12 +58,57 @@ class MultAccess
      */
     private $appSpace;
 
+    /** @var array 应用初始化时的配置快照 */
+    private $baseConfig;
+
+    /** @var array 应用初始化时的配置获取器快照 */
+    private $baseConfigHooks;
+
+    /** @var array 应用初始化时的容器绑定快照 */
+    private $baseBindings;
+
+    /** @var array 应用初始化时的容器实例快照 */
+    private $baseInstances;
+
+    /** @var array 应用初始化时的事件快照 */
+    private $baseEvents;
+
+    /** @var string 应用初始化时的命名空间 */
+    private $baseNamespace;
+
+    /** @var string 应用初始化时的应用路径 */
+    private $baseAppPath;
+
+    /** @var array HTTP 应用上下文快照 */
+    private $baseHttp;
+
     /**
      * App constructor.
      */
     public function __construct(App $app)
     {
         $this->app = $app;
+        $this->baseConfig = $app->config->get();
+        $this->baseConfigHooks = $this->readProperty($app->config, Config::class, 'hook');
+        $this->baseBindings = $this->readProperty($app, App::class, 'bind');
+        $this->baseInstances = $this->readProperty($app, Container::class, 'instances');
+        // 路由对象必须由下一次 Http::run() 按当前应用重新创建，不能随基线恢复。
+        unset($this->baseInstances[$app->getAlias('route')]);
+        $event = $app->event;
+        $this->baseEvents = [
+            'listener' => $this->readProperty($event, Event::class, 'listener'),
+            'observer' => $this->readProperty($event, Event::class, 'observer'),
+            'bind' => $this->readProperty($event, Event::class, 'bind'),
+        ];
+        $this->baseNamespace = $app->getNamespace();
+        $this->baseAppPath = $app->getAppPath();
+        $http = $app->http;
+        $this->baseHttp = [
+            'name' => $http->getName(),
+            'path' => $http->getPath(),
+            'routePath' => $http->getRoutePath(),
+            'isBind' => $http->isBind(),
+        ];
     }
 
     /**
@@ -74,6 +123,15 @@ class MultAccess
         return $this->app->middleware->pipeline('app')->send($request)->then(function ($request) use ($next) {
             return $next($request);
         });
+    }
+
+    /**
+     * 恢复应用初始化状态，供常驻 Worker 在 HttpRun 事件前清理上次请求.
+     */
+    public function resetApplicationState(): void
+    {
+        $this->restoreBaseState();
+        [$this->appPath, $this->appSpace] = ['', ''];
     }
 
     /**
@@ -197,5 +255,78 @@ class MultAccess
             $this->app->lang->switchLangSet($this->app->lang->getLangSet());
         }
         return true;
+    }
+
+    /**
+     * 恢复应用初始化状态，避免多应用请求互相污染.
+     */
+    private function restoreBaseState(): void
+    {
+        $this->writeProperty($this->app->config, Config::class, 'hook', $this->baseConfigHooks);
+        $this->writeProperty($this->app->config, Config::class, 'config', $this->baseConfig);
+        $this->writeProperty($this->app, App::class, 'bind', $this->baseBindings);
+        $currentInstances = $this->readProperty($this->app, Container::class, 'instances');
+        $instances = $this->baseInstances;
+        // 保留请求、会话及基础服务对象，交由现有 Worker 清理逻辑继续复用，避免丢失会话数据。
+        foreach (['request', 'session', 'cookie', 'db', 'cache', 'log', 'view'] as $name) {
+            $key = $this->app->getAlias($name);
+            if (array_key_exists($key, $currentInstances)) {
+                $instances[$key] = $currentInstances[$key];
+            }
+        }
+        $instances[static::class] = $this;
+        $this->writeProperty($this->app, Container::class, 'instances', $instances);
+        $event = $this->app->event;
+        foreach ($this->baseEvents as $name => $value) {
+            $this->writeProperty($event, Event::class, $name, $value);
+        }
+
+        $this->app->setNamespace($this->baseNamespace)->setAppPath($this->baseAppPath);
+        $http = $this->app->http;
+        $this->writeProperty($http, get_class($http), 'name', $this->baseHttp['name']);
+        $this->writeProperty($http, get_class($http), 'path', $this->baseHttp['path']);
+        $this->writeProperty($http, get_class($http), 'routePath', $this->baseHttp['routePath']);
+        $http->setBind($this->baseHttp['isBind']);
+
+        // RuntimeService::sync() 在 HttpRun 事件中执行；恢复基线后重新应用其动态应用映射。
+        RuntimeService::apply();
+    }
+
+    /**
+     * 读取非公开属性，兼容 PHP 7.1 至 8.5.
+     * @param object $object 对象
+     * @param string $class 声明类
+     * @param string $name 属性名称
+     * @return mixed
+     */
+    private function readProperty($object, string $class, string $name)
+    {
+        if (!property_exists($class, $name)) {
+            return null;
+        }
+        $property = new \ReflectionProperty($class, $name);
+        if (PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+        return $property->getValue($object);
+    }
+
+    /**
+     * 写入非公开属性，兼容 PHP 7.1 至 8.5.
+     * @param object $object 对象
+     * @param string $class 声明类
+     * @param string $name 属性名称
+     * @param mixed $value 属性值
+     */
+    private function writeProperty($object, string $class, string $name, $value): void
+    {
+        if (!property_exists($class, $name)) {
+            return;
+        }
+        $property = new \ReflectionProperty($class, $name);
+        if (PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+        $property->setValue($object, $value);
     }
 }
