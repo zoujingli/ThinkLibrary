@@ -186,7 +186,7 @@ CREATE TABLE `system_oplog`
 (
     `id`        bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     `node`      varchar(200)  NOT NULL DEFAULT '' COMMENT '当前操作节点',
-    `geoip`     varchar(15)   NOT NULL DEFAULT '' COMMENT '操作者IP地址',
+    `geoip`     varchar(45)   NOT NULL DEFAULT '' COMMENT '操作者IP地址',
     `action`    varchar(200)  NOT NULL DEFAULT '' COMMENT '操作行为名称',
     `content`   varchar(1024) NOT NULL DEFAULT '' COMMENT '操作内容描述',
     `username`  varchar(50)   NOT NULL DEFAULT '' COMMENT '操作人用户名',
