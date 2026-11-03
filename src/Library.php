@@ -145,8 +145,9 @@ class Library extends Service
             // 动态注释 CORS 跨域处理
             $this->app->middleware->add(function (Request $request, \Closure $next): Response {
                 $header = ['X-Frame-Options' => $this->app->config->get('app.cors_frame') ?: 'sameorigin'];
+                $corsEnabled = $this->app->config->get('app.cors_on', true);
                 // HTTP.CORS 跨域规则配置
-                if ($this->app->config->get('app.cors_on', true) && ($origin = $request->header('origin', '-')) !== '-') {
+                if ($corsEnabled && ($origin = $request->header('origin', '-')) !== '-') {
                     if (is_string($hosts = $this->app->config->get('app.cors_host', []))) {
                         $hosts = str2arr($hosts);
                     }
@@ -160,7 +161,7 @@ class Library extends Service
                     }
                 }
                 // 跨域预请求状态处理
-                if ($request->isOptions()) {
+                if ($corsEnabled && $request->isOptions()) {
                     throw new HttpResponseException(response()->code(204)->header($header));
                 }
                 return $next($request)->header($header);
