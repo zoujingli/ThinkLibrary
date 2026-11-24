@@ -86,7 +86,9 @@ class Controller extends \stdClass
      */
     public function __construct(App $app)
     {
-        if (in_array($app->request->action(), get_class_methods(__CLASS__))) {
+        $action = strtolower($app->request->action());
+        $methods = array_map('strtolower', get_class_methods(__CLASS__));
+        if (in_array($action, $methods, true)) {
             $this->error('禁止访问内置方法！');
         }
         $this->get = $app->request->get();
