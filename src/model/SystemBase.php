@@ -66,7 +66,12 @@ class SystemBase extends Model
     public static function items(string $type, array &$data = [], string $field = 'base_code', string $bind = 'base_info'): array
     {
         $map = ['type' => $type, 'status' => 1, 'deleted' => 0];
-        $bases = static::mk()->where($map)->order('sort desc,id asc')->column('code,name,content', 'code');
+        $bases = static::mk()->where($map)->order('sort desc,id asc')->column('code,name,content,id,sort', 'code');
+        foreach ($bases as $code => &$base) {
+            $base = ['code' => $base['code'] ?? $code] + $base;
+            unset($base['id'], $base['sort']);
+        }
+        unset($base);
         if (count($data) > 0) {
             foreach ($data as &$vo) {
                 $vo[$bind] = $bases[$vo[$field]] ?? [];
